@@ -4,5 +4,6 @@
 ; Feel free to edit by hand, but take care to ensure
 ; the list structure remains intact.
 
-(("Gemini protocol" "gopher://zaibatsu.circumlunar.space/1/~solderpunk/gemini")
+(("(Recent updates from all sundogs)" "gopher://zaibatsu.circumlunar.space:70/1/updates/")
+ ("Gemini protocol" "gopher://zaibatsu.circumlunar.space/1/~solderpunk/gemini")
  ("circumlunar.space" "gopher://circumlunar.space/1"))
