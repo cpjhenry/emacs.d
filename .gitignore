@@ -1,4 +1,4 @@
 auto-save-list/
-network-security.data
-elpa/*
+elpa/
 !elpa/.gitkeep
+network-security.data
