@@ -20,7 +20,7 @@
 (setq initial-major-mode 'text-mode)
 (setq-default major-mode 'text-mode)
 
-;; Initialize package manager
+;;; Initialize package manager
 (eval-and-compile
 	(require 'package)
 	(setq package-archives '(
@@ -41,15 +41,11 @@
 	(require 'use-package)
 	(setf use-package-always-ensure t))
 
-;; settings
-;(add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
-
-;; Add directories to load-path
-(eval-and-compile
+;;; settings
+(eval-and-compile ;; Add directories to load-path
 	(mapc #'(lambda (path)
 		(add-to-list 'load-path (expand-file-name path user-emacs-directory)))
 		'("init" "site-lisp")))
-
 (setq custom-file (concat user-emacs-directory "/custom.el"))
 ;(load custom-file 'noerror)
 (setq default-directory (concat (getenv "HOME") "/Documents/"))
@@ -68,6 +64,9 @@
 	'((".*" . ,temporary-file-directory)))
 (setq auto-save-file-name-transforms
 	'((".*" ,temporary-file-directory t)))
+
+(require 'backup-each-save)
+(add-hook 'after-save-hook 'backup-each-save)
 
 ;; Remove unneeded buffers
 (setq inhibit-startup-echo-area-message t)
