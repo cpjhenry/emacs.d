@@ -73,18 +73,16 @@
 (defvar backup-each-save-mirror-location "~/.backups")
 
 (defvar backup-each-save-remote-files nil
-  "Whether to backup remote files at each save.
-
-Defaults to nil.")
+	"Whether to backup remote files at each save. Defaults to nil.")
 
 (defvar backup-each-save-time-format "%Y_%m_%d_%H_%M_%S"
-  "Format given to `format-time-string' which is appended to the filename.")
+	"Format given to `format-time-string' which is appended to the filename.")
 
 (defvar backup-each-save-filter-function 'identity
-  "Function which should return non-nil if the file should be backed up.")
+	"Function which should return non-nil if the file should be backed up.")
 
 (defvar backup-each-save-size-limit 500000
-  "Maximum size of a file (in bytes) that should be copied at each savepoint.
+	"Maximum size of a file (in bytes) that should be copied at each savepoint.
 
 If a file is greater than this size, don't make a backup of it.
 Setting this variable to nil disables backup suppressions based
@@ -92,39 +90,39 @@ on size.")
 
 (unless (fboundp 'file-remote-p) ;; emacs 21.4 on debian at least,
 				 ;; doesn't provide file-remote-p
-  (defun file-remote-p (file) ;; stolen from files.el
-    "Test whether FILE specifies a location on a remote system.
+	(defun file-remote-p (file) ;; stolen from files.el
+	  "Test whether FILE specifies a location on a remote system.
 Return an identification of the system if the location is indeed
 remote.  The identification of the system may comprise a method
 to access the system and its hostname, amongst other things.
 
 For example, the filename \"/user@host:/foo\" specifies a location
 on the system \"/user@host:\"."
-    (let ((handler (find-file-name-handler file 'file-remote-p)))
-      (if handler
+	  (let ((handler (find-file-name-handler file 'file-remote-p)))
+	    (if handler
 	  (funcall handler 'file-remote-p file)
 	nil))))
 
 ;;;###autoload
 (defun backup-each-save ()
-  (let ((bfn (buffer-file-name)))
-    (when (and (or backup-each-save-remote-files
+	(let ((bfn (buffer-file-name)))
+		(when (and (or backup-each-save-remote-files
 		   (not (file-remote-p bfn)))
 	       (funcall backup-each-save-filter-function bfn)
 	       (or (not backup-each-save-size-limit)
 		   (<= (buffer-size) backup-each-save-size-limit)))
-      (copy-file bfn (backup-each-save-compute-location bfn) t t t))))
+		(copy-file bfn (backup-each-save-compute-location bfn) t t t))))
 
 (defun backup-each-save-compute-location (filename)
-  (let* ((containing-dir (file-name-directory filename))
-	 (basename (file-name-nondirectory filename))
-	 (backup-container
-	  (format "%s/%s"
-		  backup-each-save-mirror-location
-		  containing-dir)))
-     (when (not (file-exists-p backup-container))
-       (make-directory backup-container t))
-     (format "%s/%s-%s" backup-container basename
+	(let* ((containing-dir (file-name-directory filename))
+		(basename (file-name-nondirectory filename))
+		(backup-container
+		(format "%s/%s"
+			backup-each-save-mirror-location
+		  	(replace-regexp-in-string (getenv "HOME") "" containing-dir)))) ;; fix directory depth
+	   (when (not (file-exists-p backup-container))
+	     (make-directory backup-container t))
+	   (format "%s/%s-%s" backup-container basename
 	   (format-time-string backup-each-save-time-format))))
 
 (provide 'backup-each-save)

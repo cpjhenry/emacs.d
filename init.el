@@ -51,7 +51,7 @@
 (setq default-directory (concat (getenv "HOME") "/Documents/"))
 
 (setq ring-bell-function 'ignore)
-(setq shell-file-name "bash") ;; force full subshell
+(setq shell-file-name "/usr/local/bin/bash") ;; force full subshell
 (setq shell-command-switch "-ic")
 (setq ispell-program-name "/usr/local/bin/aspell") ;; spell checker
 (setq ispell-list-command "--list") ;; correct command
