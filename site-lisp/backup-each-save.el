@@ -119,7 +119,7 @@ on the system \"/user@host:\"."
 		(backup-container
 		(format "%s/%s"
 			backup-each-save-mirror-location
-		  	(replace-regexp-in-string (getenv "HOME") "" containing-dir)))) ;; fix directory depth
+		  	(replace-regexp-in-string (getenv "HOME") "" containing-dir)))) ;; fix directory depth / pjh
 	   (when (not (file-exists-p backup-container))
 	     (make-directory backup-container t))
 	   (format "%s/%s-%s" backup-container basename
