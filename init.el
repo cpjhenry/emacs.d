@@ -49,6 +49,10 @@
 (setq custom-file (concat user-emacs-directory "/custom.el"))
 ;(load custom-file 'noerror)
 (setq default-directory (concat (getenv "HOME") "/Documents/"))
+(setenv "PATH"
+	(concat "/usr/local/bin" ":"
+	(getenv "PATH")))
+(setq exec-path (getenv "PATH"))
 
 (setq ring-bell-function 'ignore)
 (setq shell-file-name "/usr/local/bin/bash") ;; force full subshell
@@ -59,11 +63,6 @@
 ;; backups
 (setq make-backup-files nil)
 (setq auto-save-default nil)
-
-(setq backup-directory-alist
-	'((".*" . ,temporary-file-directory)))
-(setq auto-save-file-name-transforms
-	'((".*" ,temporary-file-directory t)))
 
 (require 'backup-each-save)
 (add-hook 'after-save-hook 'backup-each-save)
@@ -104,6 +103,9 @@
 (defalias 'ssm 'shell-script-mode)
 (defalias 'om 'org-mode)
 
+(defalias 'fly 'flyspell-mode)
+(defalias 'go 'elpher)
+
 ;; New empty buffer
 (defun xah-new-empty-buffer ()
 	"Open a new empty buffer."
@@ -127,12 +129,16 @@
 (use-package elpher) ;; gopher
 ;(require "gopher.el")
 
+(use-package ssh)
+
 ;; Org-mode stuff
 (global-set-key (kbd "C-c l") 'org-store-link)
 (global-set-key (kbd "C-c a") 'org-agenda)
 (global-set-key (kbd "C-c c") 'org-capture)
 
-;; Emacs Text mode
+(use-package vterm)
+
+;;; Emacs Text mode
 (use-package visual-fill-column)
 (setq visual-line-fringe-indicators '(nil right-curly-arrow))
 ;(add-hook 'text-mode-hook 'turn-on-visual-line-mode)
