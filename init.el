@@ -10,6 +10,7 @@
 (set-default-font "Inconsolata-21")
 
 (setq mac-emulate-three-button-mouse t)
+(setq ns-function-modifier 'hyper) ;; Mac function key is Hyper
 (tool-bar-mode -1) 	;; turn off tool bar
 (scroll-bar-mode -1);; turn off scrollbar
 (toggle-frame-maximized)
@@ -45,20 +46,24 @@
 (eval-and-compile ;; Add directories to load-path
 	(mapc #'(lambda (path)
 		(add-to-list 'load-path (expand-file-name path user-emacs-directory)))
-		'("init" "site-lisp")))
+		'(
+		"init"
+		"site-lisp"
+		"site-lisp/sunrise-commander")))
 (setq custom-file (concat user-emacs-directory "/custom.el"))
 ;(load custom-file 'noerror)
 (setq default-directory (concat (getenv "HOME") "/Documents/"))
-(setenv "PATH"
-	(concat "/usr/local/bin" ":"
-	(getenv "PATH")))
-(setq exec-path (getenv "PATH"))
+;(setenv "PATH"
+;	(concat "/usr/local/bin" ":"
+;	(getenv "PATH")))
+;(setq exec-path (getenv "PATH"))
 
 (setq ring-bell-function 'ignore)
 (setq shell-file-name "/usr/local/bin/bash") ;; force full subshell
 (setq shell-command-switch "-ic")
 (setq ispell-program-name "/usr/local/bin/aspell") ;; spell checker
 (setq ispell-list-command "--list") ;; correct command
+(setq sentence-end-double-space nil)
 
 ;; backups
 (setq make-backup-files nil)
@@ -119,6 +124,8 @@
 	(global-set-key (kbd "C-n") 'xah-new-empty-buffer) ; Ctrl+n
 
 ;;; Initialize packages
+(use-package elpher) ;; gopher ;;(require "gopher.el")
+
 (use-package markdown-mode
 	:commands (markdown-mode gfm-mode)
 	:mode (("README\\.md\\'" . gfm-mode)
@@ -126,15 +133,20 @@
 				 ("\\.markdown\\'" . markdown-mode))
 	:init (setq markdown-command "multimarkdown"))
 
-(use-package elpher) ;; gopher
-;(require "gopher.el")
-
-(use-package ssh)
-
 ;; Org-mode stuff
 (global-set-key (kbd "C-c l") 'org-store-link)
 (global-set-key (kbd "C-c a") 'org-agenda)
 (global-set-key (kbd "C-c c") 'org-capture)
+
+;FIXME key bindings and other issues here
+;(use-package 'helm-descbinds)
+;(helm-descbinds-mode)
+
+(use-package ssh)
+
+;TODO Fix sunrise so it doesn't interfere with built-in 'sunrise' command
+;(require 'sunrise)
+;(add-to-list 'auto-mode-alist '("\\.srvm\\'" . sunrise-virtual-mode))
 
 (use-package vterm)
 
@@ -150,6 +162,7 @@
 	:bind ("C-c f" . olivetti-mode)
 	:config
 	(progn
+		(text-mode)
 		(setf olivetti-body-width 80)
 		(visual-line-mode))
 	:mode ("\\.txt\\'" . olivetti-mode))
@@ -161,6 +174,9 @@
        (define-key flyspell-mouse-map [down-mouse-3] #'flyspell-correct-word)
        (define-key flyspell-mouse-map [mouse-3] #'undefined)
        (setq flyspell-issue-message-flag nil)))
+
+(use-package wc-mode)
+(add-hook 'text-mode-hook 'wc-mode)
 
 ;; use shift + arrow keys to switch between visible buffers
 (require 'windmove)
@@ -181,3 +197,9 @@
 	(when buffer-file-name (save-buffer)))
 ;; automatically save buffers associated with files on frame (app) switch
 (add-hook 'focus-out-hook (lambda () (save-some-buffers t)))
+
+;; set super arrow keys
+(global-set-key (kbd "<s-left>") 'move-beginning-of-line)
+(global-set-key (kbd "<s-right>") 'move-end-of-line)
+(global-set-key (kbd "<s-up>") 'beginning-of-buffer)
+(global-set-key (kbd "<s-down>") 'end-of-buffer)
