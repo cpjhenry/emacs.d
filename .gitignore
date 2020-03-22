@@ -1,4 +1,6 @@
 auto-save-list/
 elpa/
 !elpa/.gitkeep
+init/ercrc.el
+url/
 network-security.data
