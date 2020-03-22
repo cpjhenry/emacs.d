@@ -9,15 +9,16 @@
 
 (set-default-font "Inconsolata-21")
 
-(setq mac-emulate-three-button-mouse t)
+;; Mac Command key is Super (by default)
 (setq ns-function-modifier 'hyper) ;; Mac function key is Hyper
+(setq mac-emulate-three-button-mouse t)
 (tool-bar-mode -1) 	;; turn off tool bar
 (scroll-bar-mode -1);; turn off scrollbar
 (toggle-frame-maximized)
 ;(toggle-frame-fullscreen)
 
 (setq default-frame-alist
-	'((background-color . "ivory"))) ;; list-color-display
+	'((background-color . "ivory"))) ;; use 'list-colors-display'
 (setq initial-major-mode 'text-mode)
 (setq-default major-mode 'text-mode)
 
@@ -58,12 +59,13 @@
 ;	(getenv "PATH")))
 ;(setq exec-path (getenv "PATH"))
 
-(setq ring-bell-function 'ignore)
-(setq shell-file-name "/usr/local/bin/bash") ;; force full subshell
-(setq shell-command-switch "-ic")
-(setq ispell-program-name "/usr/local/bin/aspell") ;; spell checker
+;(setq case-fold-search nil) ;; case in/sensitive searches (insensitive (t), sensitive <nil>) <M-c> toggles
 (setq ispell-list-command "--list") ;; correct command
+(setq ispell-program-name "/usr/local/bin/aspell") ;; spell checker
+(setq ring-bell-function 'ignore)
 (setq sentence-end-double-space nil)
+(setq shell-command-switch "-ic")
+(setq shell-file-name "/usr/local/bin/bash") ;; force full subshell
 
 ;; backups
 (setq make-backup-files nil)
@@ -166,6 +168,7 @@
 		(setf olivetti-body-width 80)
 		(visual-line-mode))
 	:mode ("\\.txt\\'" . olivetti-mode))
+(add-hook 'markdown-mode-hook 'olivetti-mode)
 
 ;; Flyspell
 (add-hook 'text-mode-hook 'flyspell-mode)
