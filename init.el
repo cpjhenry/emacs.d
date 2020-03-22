@@ -9,7 +9,7 @@
 
 (set-default-font "Inconsolata-21")
 
-;; Mac Command key is Super (by default)
+;; Mac command key is Super (by default)
 (setq ns-function-modifier 'hyper) ;; Mac function key is Hyper
 (setq mac-emulate-three-button-mouse t)
 (tool-bar-mode -1) 	;; turn off tool bar
@@ -47,12 +47,9 @@
 (eval-and-compile ;; Add directories to load-path
 	(mapc #'(lambda (path)
 		(add-to-list 'load-path (expand-file-name path user-emacs-directory)))
-		'(
-		"init"
+		'("init"
 		"site-lisp"
 		"site-lisp/sunrise-commander")))
-(setq custom-file (concat user-emacs-directory "/custom.el"))
-;(load custom-file 'noerror)
 (setq default-directory (concat (getenv "HOME") "/Documents/"))
 ;(setenv "PATH"
 ;	(concat "/usr/local/bin" ":"
@@ -78,10 +75,13 @@
 (setq inhibit-startup-echo-area-message t)
 (setq inhibit-startup-message t) ;; 'About Emacs'
 (setq initial-scratch-message nil) ;; Makes *scratch* empty
+(defun create-scratch-buffer ()
+	(interactive)
+	(switch-to-buffer (get-buffer-create "*scratch*"))
+	(text-mode))
 (defun remove-scratch-buffer () ;; Removes *scratch* from buffer after the mode has been set
 	(if (get-buffer "*scratch*")
-		(kill-buffer "*scratch*")))
-	;(add-hook 'after-change-major-mode-hook 'remove-scratch-buffer)
+		(kill-buffer "*scratch*"))) ;(add-hook 'after-change-major-mode-hook 'remove-scratch-buffer)
 (setq-default message-log-max nil) ;; Removes *messages* from the buffer
 (kill-buffer "*Messages*")
 (add-hook 'minibuffer-exit-hook ;; Removes *Completions* from buffer after you've opened a file
@@ -111,9 +111,8 @@
 (defalias 'om 'org-mode)
 
 (defalias 'fly 'flyspell-mode)
-(defalias 'go 'elpher)
 
-;; New empty buffer
+;; new empty buffer
 (defun xah-new-empty-buffer ()
 	"Open a new empty buffer."
 	(interactive)
@@ -125,8 +124,43 @@
 		))
 	(global-set-key (kbd "C-n") 'xah-new-empty-buffer) ; Ctrl+n
 
+;; define function to shutdown emacs server instance
+(defun server-shutdown ()
+	"Save buffers, Quit, and Shutdown (kill) server"
+	(interactive)
+	(save-some-buffers)
+	(kill-emacs))
+
+;;; Custom variables
+(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+(load custom-file)
+
+;;; Theme
+(use-package smart-mode-line
+	:config
+	(sml/setup))
+(add-to-list 'sml/replacer-regexp-list '("^:Doc:Projects" ":DocProj:") t)
+
+;; Mode Line
+(setq display-time-24hr-format t)
+(setq display-time-default-load-average nil)
+(display-time-mode)
+(display-battery-mode)
+
 ;;; Initialize packages
-(use-package elpher) ;; gopher ;;(require "gopher.el")
+(use-package elfeed)
+(global-set-key (kbd "C-c w") 'elfeed)
+'(elfeed-feeds '(
+	"https://www.questionablecontent.net/QCRSS.xml"
+	"http://feeds.feedburner.com/TheAtlantic"
+	))
+
+(use-package elpher) ;; gopher
+(global-set-key (kbd "C-c g") 'elpher)
+
+(easy-menu-add-item  nil '("tools")
+	["IRC with ERC" erc t])
+(load "ercrc.el")
 
 (use-package markdown-mode
 	:commands (markdown-mode gfm-mode)
