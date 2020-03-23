@@ -17,6 +17,7 @@
 (toggle-frame-maximized)
 ;(toggle-frame-fullscreen)
 
+(set-default 'frame-title-format "")
 (setq default-frame-alist
 	'((background-color . "ivory"))) ;; use 'list-colors-display'
 (setq initial-major-mode 'text-mode)
@@ -51,9 +52,9 @@
 		"site-lisp"
 		"site-lisp/sunrise-commander")))
 (setq default-directory (concat (getenv "HOME") "/Documents/"))
-;(setenv "PATH"
-;	(concat "/usr/local/bin" ":"
-;	(getenv "PATH")))
+(setenv "PATH"
+	(concat "/usr/local/bin" ":"
+	(getenv "PATH")))
 ;(setq exec-path (getenv "PATH"))
 
 ;(setq case-fold-search nil) ;; case in/sensitive searches (insensitive (t), sensitive <nil>) <M-c> toggles
@@ -63,6 +64,10 @@
 (setq sentence-end-double-space nil)
 (setq shell-command-switch "-ic")
 (setq shell-file-name "/usr/local/bin/bash") ;; force full subshell
+(setq visual-line-fringe-indicators '(nil right-curly-arrow))
+
+(setq inhibit-startup-buffer-menu t) ;; Don't show *Buffer list*
+(add-hook 'window-setup-hook 'delete-other-windows) ;; Show only one active window
 
 ;; backups
 (setq make-backup-files nil)
@@ -73,28 +78,57 @@
 
 ;; Remove unneeded buffers
 (setq inhibit-startup-echo-area-message t)
-(setq inhibit-startup-message t) ;; 'About Emacs'
-(setq initial-scratch-message nil) ;; Makes *scratch* empty
+(setq inhibit-startup-message t) 	;; 'About Emacs'
+(setq initial-scratch-message nil) 	;; Makes *scratch* empty
+(setq-default message-log-max nil) 	;; Removes *messages* from the buffer
+(kill-buffer "*Messages*")
+(add-hook 'minibuffer-exit-hook 	;; Removes *Completions* from buffer after you've opened a file
+	'(lambda () (let ((buffer "*Completions*"))
+		(and (get-buffer buffer)
+		(kill-buffer buffer)))))
+
 (defun create-scratch-buffer ()
+	"create new *scratch* buffer"
 	(interactive)
 	(switch-to-buffer (get-buffer-create "*scratch*"))
 	(text-mode))
-(defun remove-scratch-buffer () ;; Removes *scratch* from buffer after the mode has been set
-	(if (get-buffer "*scratch*")
-		(kill-buffer "*scratch*"))) ;(add-hook 'after-change-major-mode-hook 'remove-scratch-buffer)
-(setq-default message-log-max nil) ;; Removes *messages* from the buffer
-(kill-buffer "*Messages*")
-(add-hook 'minibuffer-exit-hook ;; Removes *Completions* from buffer after you've opened a file
-			'(lambda ()
-				(let ((buffer "*Completions*"))
-				(and (get-buffer buffer)
-				(kill-buffer buffer)))))
 
-;; opening multiple files
-(setq inhibit-startup-buffer-menu t) ;; Don't show *Buffer list*
-(add-hook 'window-setup-hook 'delete-other-windows) ;; Show only one active window
+(defun nuke-all-buffers ()
+	"kill all buffers, leaving *scratch* only"
+	(interactive)
+	(mapcar (lambda (x) (kill-buffer x))
+		(buffer-list))
+	(delete-other-windows))
+	(global-set-key (kbd "s-K") 'nuke-all-buffers)
 
-;; convenient
+(defun xah-new-empty-buffer ()
+	"new empty buffer"
+	(interactive)
+	(let ((buf (generate-new-buffer "untitled\.txt")))
+		(switch-to-buffer buf)
+		(funcall (and initial-major-mode))
+		(setq buffer-offer-save t)
+		(olivetti-mode)))
+	(global-set-key (kbd "C-n") 'xah-new-empty-buffer)
+
+(defun mydired-sort ()
+	"Sort dired listings with directories first."
+	(save-excursion
+		(let (buffer-read-only)
+			(forward-line 2) ;; beyond dir. header 
+			(sort-regexp-fields t "^.*$" "[ ]*." (point) (point-max)))
+		(set-buffer-modified-p nil)))
+
+(defadvice dired-readin
+	(after dired-after-updating-hook first () activate)
+	"Sort dired listings with directories first before adding marks."
+	(mydired-sort))
+
+(global-set-key (kbd "s-1") (kbd "C-x 1"))
+(global-set-key (kbd "s-2") (kbd "C-x o C-x 1"))
+(global-set-key (kbd "s-0") (kbd "C-x 0"))
+
+;; Aliases
 (defalias 'yes-or-no-p 'y-or-n-p)
 (defalias 'rs 'replace-string)
 
@@ -112,28 +146,9 @@
 
 (defalias 'fly 'flyspell-mode)
 
-;; new empty buffer
-(defun xah-new-empty-buffer ()
-	"Open a new empty buffer."
-	(interactive)
-	(let ((buf (generate-new-buffer "untitled\.txt")))
-		(switch-to-buffer buf)
-		(funcall (and initial-major-mode))
-		(setq buffer-offer-save t)
-		(olivetti-mode)
-		))
-	(global-set-key (kbd "C-n") 'xah-new-empty-buffer) ; Ctrl+n
-
-;; define function to shutdown emacs server instance
-(defun server-shutdown ()
-	"Save buffers, Quit, and Shutdown (kill) server"
-	(interactive)
-	(save-some-buffers)
-	(kill-emacs))
-
 ;;; Custom variables
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-(load custom-file)
+(if (file-exists-p custom-file) (load custom-file))
 
 ;;; Theme
 (use-package smart-mode-line
@@ -147,6 +162,13 @@
 (display-time-mode)
 (display-battery-mode)
 
+;;; Emacs server
+(defun server-shutdown ()
+	"Save buffers, Quit, and Shutdown (kill) server."
+	(interactive)
+	(save-some-buffers)
+	(kill-emacs))
+
 ;;; Initialize packages
 (use-package elfeed)
 (global-set-key (kbd "C-c w") 'elfeed)
@@ -158,9 +180,12 @@
 (use-package elpher) ;; gopher
 (global-set-key (kbd "C-c g") 'elpher)
 
+(load (expand-file-name "ercrc.el" user-emacs-directory)) ;; IRC
 (easy-menu-add-item  nil '("tools")
 	["IRC with ERC" erc t])
-(load "ercrc.el")
+
+(use-package go)
+(setq gnugo-program "/usr/local/bin/gnugo")
 
 (use-package markdown-mode
 	:commands (markdown-mode gfm-mode)
@@ -169,14 +194,14 @@
 				 ("\\.markdown\\'" . markdown-mode))
 	:init (setq markdown-command "multimarkdown"))
 
+(use-package nswbuff)
+(global-set-key (kbd "<C-tab>") 'nswbuff-switch-to-next-buffer)
+(global-set-key (kbd "<C-S-kp-tab>") 'nswbuff-switch-to-previous-buffer)
+
 ;; Org-mode stuff
 (global-set-key (kbd "C-c l") 'org-store-link)
 (global-set-key (kbd "C-c a") 'org-agenda)
 (global-set-key (kbd "C-c c") 'org-capture)
-
-;FIXME key bindings and other issues here
-;(use-package 'helm-descbinds)
-;(helm-descbinds-mode)
 
 (use-package ssh)
 
@@ -187,13 +212,6 @@
 (use-package vterm)
 
 ;;; Emacs Text mode
-(use-package visual-fill-column)
-(setq visual-line-fringe-indicators '(nil right-curly-arrow))
-;(add-hook 'text-mode-hook 'turn-on-visual-line-mode)
-;(add-hook 'visual-line-mode-hook #'visual-fill-column-mode)
-;(add-hook 'text-mode-hook '(lambda() (set-fill-column 80)))
-
-;; Olivetti
 (use-package olivetti
 	:bind ("C-c f" . olivetti-mode)
 	:config
@@ -204,7 +222,6 @@
 	:mode ("\\.txt\\'" . olivetti-mode))
 (add-hook 'markdown-mode-hook 'olivetti-mode)
 
-;; Flyspell
 (add-hook 'text-mode-hook 'flyspell-mode)
 (eval-after-load "flyspell"
     '(progn
@@ -240,3 +257,11 @@
 (global-set-key (kbd "<s-right>") 'move-end-of-line)
 (global-set-key (kbd "<s-up>") 'beginning-of-buffer)
 (global-set-key (kbd "<s-down>") 'end-of-buffer)
+
+;; Un-fill-paragraph    
+(defun unfill-paragraph ()
+	"Takes a multi-line paragraph and makes it into a single line of text."
+	(interactive)
+	(let ((fill-column (point-max)))
+	(fill-paragraph nil)))
+(define-key global-map "\M-Q" 'unfill-paragraph)
