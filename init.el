@@ -147,7 +147,7 @@
 (defalias 'fly 'flyspell-mode)
 
 ;;; Custom variables
-(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+(setq custom-file (concat user-emacs-directory "custom.el"))
 (if (file-exists-p custom-file) (load custom-file))
 
 ;;; Theme
@@ -180,7 +180,7 @@
 (use-package elpher) ;; gopher
 (global-set-key (kbd "C-c g") 'elpher)
 
-(load (expand-file-name "ercrc.el" user-emacs-directory)) ;; IRC
+(load (concat user-emacs-directory "ercrc.el")) ;; IRC
 (easy-menu-add-item  nil '("tools")
 	["IRC with ERC" erc t])
 
