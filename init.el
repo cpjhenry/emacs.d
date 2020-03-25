@@ -45,7 +45,6 @@
 (setq default-directory (concat (getenv "HOME") "/Documents/"))
 (setenv "PATH" (concat "/usr/local/bin" ":" (getenv "PATH")))
 
-;(setq case-fold-search nil) ;; case in/sensitive searches (insensitive (t), sensitive <nil>) <M-c> toggles
 (setq ispell-list-command "--list") ;; correct command
 (setq ispell-program-name "/usr/local/bin/aspell") ;; spell checker
 (setq ring-bell-function 'ignore)
@@ -83,6 +82,11 @@
 	(interactive)
 	(switch-to-buffer (get-buffer-create "*scratch*"))
 	(text-mode))
+
+(defun remove-scratch-buffer ()
+	"Kill *scratch* buffer."	
+	(if (get-buffer "*scratch*")
+	(kill-buffer "*scratch*")))
 
 (defun nuke-all-buffers ()
 	"Kill all buffers, leaving *scratch* only."
@@ -161,10 +165,7 @@
 
 ;;; Initialize packages
 (use-package elfeed)
-(setq elfeed-feeds '(
-	("https://endlessparentheses.com/atom.xml" tech productivity)
-	("https://www.questionablecontent.net/QCRSS.xml" comic)
-	("http://www.reddit.com/r/emacs/.rss" emacs) ))
+(load (concat user-emacs-directory "elfeedrc.el")) ;; IRC
 (setq elfeed-use-curl t)
 (easy-menu-add-item  nil '("tools") ["Read web feeds" elfeed t])
 (global-set-key (kbd "C-c w") 'elfeed)
@@ -268,7 +269,7 @@
 ;; arrow keys
 (global-set-key (kbd "<s-left>") 'move-beginning-of-line)
 (global-set-key (kbd "<s-right>") 'move-end-of-line)
-;(global-set-key (kbd "<s-up>") 'beginning-of-buffer)
-;(global-set-key (kbd "<s-down>") 'end-of-buffer)
-(global-set-key (kbd "<s-M-up>") 'backward-page)
-(global-set-key (kbd "<s-M-down>") 'forward-page)
+(global-set-key (kbd "<s-up>") 'beginning-of-buffer)
+(global-set-key (kbd "<s-down>") 'end-of-buffer)
+(global-set-key (kbd "<s-prior>") 'backward-page) ;; s-H-up
+(global-set-key (kbd "<s-next>") 'forward-page) ;; s-H-down

@@ -3,5 +3,6 @@ elpa/
 !elpa/.gitkeep
 eshell/
 url/
+elfeedrc.el
 ercrc.el
 network-security.data
