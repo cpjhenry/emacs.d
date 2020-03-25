@@ -15,7 +15,6 @@
 (tool-bar-mode -1) 	;; turn off tool bar
 (scroll-bar-mode -1);; turn off scrollbar
 (toggle-frame-maximized)
-;(toggle-frame-fullscreen)
 
 (set-default 'frame-title-format "")
 (setq default-frame-alist
@@ -26,17 +25,10 @@
 ;;; Initialize package manager
 (eval-and-compile
 	(require 'package)
-	(setq package-archives '(
-							("org" . "https://orgmode.org/elpa/")
+	(setq package-archives '(("org" . "https://orgmode.org/elpa/")
 							("melpa" . "https://melpa.org/packages/")
-							("gnu" . "http://elpa.gnu.org/packages/")
-							))
-	(setq package-archive-priorities '(
-							("org" . 3)
-							("melpa" . 2)
-							("gnu" . 1)
-							))
-
+							("gnu" . "http://elpa.gnu.org/packages/")))
+	(setq package-archive-priorities '(("org" . 3)("melpa" . 2)("gnu" . 1)))
 	(package-initialize)
 	;(package-refresh-contents) ;; i always fetch the archive contents on startup and during compilation
 	(unless (package-installed-p 'use-package)
@@ -46,28 +38,23 @@
 
 ;;; settings
 (eval-and-compile ;; Add directories to load-path
-	(mapc #'(lambda (path)
-		(add-to-list 'load-path (expand-file-name path user-emacs-directory)))
-		'("init"
+	(mapc #'(lambda (path)(add-to-list 'load-path (expand-file-name path user-emacs-directory))) '(
+		"init"
 		"site-lisp"
-		"site-lisp/sunrise-commander")))
+		"site-lisp/sunrise-commander" )))
 (setq default-directory (concat (getenv "HOME") "/Documents/"))
-(setenv "PATH"
-	(concat "/usr/local/bin" ":"
-	(getenv "PATH")))
-;(setq exec-path (getenv "PATH"))
+(setenv "PATH" (concat "/usr/local/bin" ":" (getenv "PATH")))
 
 ;(setq case-fold-search nil) ;; case in/sensitive searches (insensitive (t), sensitive <nil>) <M-c> toggles
 (setq ispell-list-command "--list") ;; correct command
 (setq ispell-program-name "/usr/local/bin/aspell") ;; spell checker
 (setq ring-bell-function 'ignore)
 (setq sentence-end-double-space nil)
-(setq shell-command-switch "-ic")
-(setq shell-file-name "/usr/local/bin/bash") ;; force full subshell
+(setq-default tab-width 4)
 (setq visual-line-fringe-indicators '(nil right-curly-arrow))
 
-(setq inhibit-startup-buffer-menu t) ;; Don't show *Buffer list*
-(add-hook 'window-setup-hook 'delete-other-windows) ;; Show only one active window
+;(setq shell-file-name "/usr/local/bin/bash") ;; force full subshell
+;(setq shell-command-switch "-ic")
 
 ;; backups
 (setq make-backup-files nil)
@@ -76,7 +63,7 @@
 (require 'backup-each-save)
 (add-hook 'after-save-hook 'backup-each-save)
 
-;; Remove unneeded buffers
+;; remove unneeded buffers
 (setq inhibit-startup-echo-area-message t)
 (setq inhibit-startup-message t) 	;; 'About Emacs'
 (setq initial-scratch-message nil) 	;; Makes *scratch* empty
@@ -87,14 +74,18 @@
 		(and (get-buffer buffer)
 		(kill-buffer buffer)))))
 
+;; opening multiple files
+(setq inhibit-startup-buffer-menu t) ;; Don't show *Buffer list*
+(add-hook 'window-setup-hook 'delete-other-windows) ;; Show only one active window
+
 (defun create-scratch-buffer ()
-	"create new *scratch* buffer"
+	"Create new *scratch* buffer."
 	(interactive)
 	(switch-to-buffer (get-buffer-create "*scratch*"))
 	(text-mode))
 
 (defun nuke-all-buffers ()
-	"kill all buffers, leaving *scratch* only"
+	"Kill all buffers, leaving *scratch* only."
 	(interactive)
 	(mapcar (lambda (x) (kill-buffer x))
 		(buffer-list))
@@ -102,7 +93,7 @@
 	(global-set-key (kbd "s-K") 'nuke-all-buffers)
 
 (defun xah-new-empty-buffer ()
-	"new empty buffer"
+	"Create new empty buffer."
 	(interactive)
 	(let ((buf (generate-new-buffer "untitled\.txt")))
 		(switch-to-buffer buf)
@@ -144,19 +135,18 @@
 (defalias 'ssm 'shell-script-mode)
 (defalias 'om 'org-mode)
 
-(defalias 'fly 'flyspell-mode)
+(defalias 'flym 'flyspell-mode)
 
 ;;; Custom variables
 (setq custom-file (concat user-emacs-directory "custom.el"))
 (if (file-exists-p custom-file) (load custom-file))
 
-;;; Theme
+;;; Mode Line
 (use-package smart-mode-line
 	:config
 	(sml/setup))
 (add-to-list 'sml/replacer-regexp-list '("^:Doc:Projects" ":DocProj:") t)
 
-;; Mode Line
 (setq display-time-24hr-format t)
 (setq display-time-default-load-average nil)
 (display-time-mode)
@@ -171,20 +161,26 @@
 
 ;;; Initialize packages
 (use-package elfeed)
+(setq elfeed-feeds '(
+	("https://endlessparentheses.com/atom.xml" tech productivity)
+	("https://www.questionablecontent.net/QCRSS.xml" comic)
+	("http://www.reddit.com/r/emacs/.rss" emacs) ))
+(setq elfeed-use-curl t)
+(easy-menu-add-item  nil '("tools") ["Read web feeds" elfeed t])
 (global-set-key (kbd "C-c w") 'elfeed)
-'(elfeed-feeds '(
-	"https://www.questionablecontent.net/QCRSS.xml"
-	"http://feeds.feedburner.com/TheAtlantic"
-	))
 
 (use-package elpher) ;; gopher
+(add-hook 'elpher-mode-hook (lambda () 
+	(setq left-margin-width 20)
+	(set-window-buffer nil (current-buffer)) ))
+(easy-menu-add-item  nil '("tools") ["Gopher" elpher t])
 (global-set-key (kbd "C-c g") 'elpher)
 
 (load (concat user-emacs-directory "ercrc.el")) ;; IRC
-(easy-menu-add-item  nil '("tools")
-	["IRC with ERC" erc t])
+(easy-menu-add-item  nil '("tools")	["IRC with ERC" erc t])
+(global-set-key (kbd "C-c e") 'erc)
 
-(use-package go)
+(use-package go) ;; Game of Go
 (setq gnugo-program "/usr/local/bin/gnugo")
 
 (use-package markdown-mode
@@ -194,7 +190,7 @@
 				 ("\\.markdown\\'" . markdown-mode))
 	:init (setq markdown-command "multimarkdown"))
 
-(use-package nswbuff)
+(use-package nswbuff) ;; buffer switching
 (global-set-key (kbd "<C-tab>") 'nswbuff-switch-to-next-buffer)
 (global-set-key (kbd "<C-S-kp-tab>") 'nswbuff-switch-to-previous-buffer)
 
@@ -211,6 +207,16 @@
 
 (use-package vterm)
 
+;;; Lisp & Help modes
+(add-hook 'emacs-lisp-mode-hook 'prettify-symbols-mode)
+(add-hook 'emacs-lisp-mode-hook 'show-paren-mode)
+(setq show-paren-style 'mixed)
+(add-hook 'emacs-lisp-mode-hook 'electric-pair-mode)
+
+(use-package form-feed) ;; ^L
+(add-hook 'emacs-lisp-mode-hook 'form-feed-mode)
+(add-hook 'help-mode-hook 'form-feed-mode)
+
 ;;; Emacs Text mode
 (use-package olivetti
 	:bind ("C-c f" . olivetti-mode)
@@ -224,10 +230,17 @@
 
 (add-hook 'text-mode-hook 'flyspell-mode)
 (eval-after-load "flyspell"
-    '(progn
-       (define-key flyspell-mouse-map [down-mouse-3] #'flyspell-correct-word)
-       (define-key flyspell-mouse-map [mouse-3] #'undefined)
-       (setq flyspell-issue-message-flag nil)))
+	'(progn
+		(define-key flyspell-mouse-map [down-mouse-3] #'flyspell-correct-word)
+		(define-key flyspell-mouse-map [mouse-3] #'undefined)
+		(setq flyspell-issue-message-flag nil)))
+
+(defun unfill-paragraph ()
+	"Takes a multi-line paragraph and makes it into a single line of text."
+	(interactive)
+	(let ((fill-column (point-max)))
+	(fill-paragraph nil)))
+(global-set-key (kbd "M-Q") 'unfill-paragraph)
 
 (use-package wc-mode)
 (add-hook 'text-mode-hook 'wc-mode)
@@ -252,16 +265,10 @@
 ;; automatically save buffers associated with files on frame (app) switch
 (add-hook 'focus-out-hook (lambda () (save-some-buffers t)))
 
-;; set super arrow keys
+;; arrow keys
 (global-set-key (kbd "<s-left>") 'move-beginning-of-line)
 (global-set-key (kbd "<s-right>") 'move-end-of-line)
-(global-set-key (kbd "<s-up>") 'beginning-of-buffer)
-(global-set-key (kbd "<s-down>") 'end-of-buffer)
-
-;; Un-fill-paragraph    
-(defun unfill-paragraph ()
-	"Takes a multi-line paragraph and makes it into a single line of text."
-	(interactive)
-	(let ((fill-column (point-max)))
-	(fill-paragraph nil)))
-(define-key global-map "\M-Q" 'unfill-paragraph)
+;(global-set-key (kbd "<s-up>") 'beginning-of-buffer)
+;(global-set-key (kbd "<s-down>") 'end-of-buffer)
+(global-set-key (kbd "<s-M-up>") 'backward-page)
+(global-set-key (kbd "<s-M-down>") 'forward-page)
