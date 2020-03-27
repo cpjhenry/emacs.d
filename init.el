@@ -24,6 +24,15 @@
 (setq initial-major-mode 'text-mode)
 (setq-default major-mode 'text-mode)
 
+;; Add directories to load-path
+(eval-and-compile
+	(mapc #'(lambda (path)(add-to-list 'load-path (expand-file-name path user-emacs-directory))) '(
+		"init"
+		"site-lisp"
+		"site-lisp/sunrise-commander" )))
+(setq default-directory (concat (getenv "HOME") "/Documents/"))
+(setenv "PATH" (concat "/usr/local/bin" ":" (getenv "PATH")))
+
 ;;; Initialize package manager
 (eval-and-compile
 	(require 'package)
@@ -39,14 +48,6 @@
 	(setf use-package-always-ensure t))
 
 ;;; settings
-(eval-and-compile ;; Add directories to load-path
-	(mapc #'(lambda (path)(add-to-list 'load-path (expand-file-name path user-emacs-directory))) '(
-		"init"
-		"site-lisp"
-		"site-lisp/sunrise-commander" )))
-(setq default-directory (concat (getenv "HOME") "/Documents/"))
-(setenv "PATH" (concat "/usr/local/bin" ":" (getenv "PATH")))
-
 (setq ispell-list-command "--list") ;; correct command
 (setq ispell-program-name "/usr/local/bin/aspell") ;; spell checker
 (setq ring-bell-function 'ignore)
@@ -87,6 +88,7 @@
 
 (defun remove-scratch-buffer ()
 	"Kill *scratch* buffer."	
+	(interactive)
 	(if (get-buffer "*scratch*")
 	(kill-buffer "*scratch*")))
 
@@ -140,7 +142,7 @@
 		(set-visited-file-name newname)
 		(set-buffer-modified-p nil) t))))
  
- (defun mydired-sort ()
+(defun mydired-sort ()
 	"Sort dired listings with directories first."
 	(save-excursion
 		(let (buffer-read-only)
