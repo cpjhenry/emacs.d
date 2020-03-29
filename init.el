@@ -9,6 +9,7 @@
 
 (set-default-font "Inconsolata-21")
 
+;; Mac option key is Meta (by default)
 ;; Mac command key is Super (by default)
 (setq ns-function-modifier 'hyper) ;; Mac function key is Hyper
 (setq ns-right-alternate-modifier 'alt) ;; Mac right option key is Alt
@@ -53,6 +54,8 @@
 (setq ring-bell-function 'ignore)
 (setq sentence-end-double-space nil)
 (setq-default tab-width 4)
+(setq tramp-default-method "ssh")
+(setq tramp-syntax 'simplified)
 (setq visual-line-fringe-indicators '(nil right-curly-arrow))
 
 ;(setq shell-file-name "/usr/local/bin/bash") ;; force full subshell
