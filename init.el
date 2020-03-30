@@ -1,4 +1,4 @@
-;;; Emacs configuration / pjh 
+;;; Emacs configuration / pjh
 
 ;;; Initialize terminal
 (set-terminal-coding-system 'utf-8)
