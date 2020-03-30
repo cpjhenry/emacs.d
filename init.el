@@ -7,7 +7,7 @@
 
 (setq user-mail-address "cpjhenry@gmail.com")
 
-(set-default-font "Inconsolata-23")
+(set-default-font "Inconsolata-21")
 
 ;; Mac option key is Meta (by default)
 ;; Mac command key is Super (by default)
