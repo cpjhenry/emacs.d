@@ -7,7 +7,7 @@
 
 (setq user-mail-address "cpjhenry@gmail.com")
 
-(set-default-font "Inconsolata-21")
+(set-frame-font "Inconsolata 21")
 
 ;; Mac option key is Meta (by default)
 ;; Mac command key is Super (by default)
@@ -60,6 +60,9 @@
 
 ;(setq shell-file-name "/usr/local/bin/bash") ;; force full subshell
 ;(setq shell-command-switch "-ic")
+
+(setq delete-by-moving-to-trash t)
+(setq trash-directory "~/.Trash")
 
 ;; backups
 (setq make-backup-files nil)
@@ -230,6 +233,15 @@
 				 ("\\.markdown\\'" . markdown-mode))
 	:init (setq markdown-command "multimarkdown"))
 
+(defun markdown-preview-file ()
+	"Run Marked on the current file and revert the buffer"
+	(interactive)
+	(shell-command
+	(format "open -a /Applications/Marked\\ 2.app %s"
+		(shell-quote-argument (buffer-file-name))))
+	)  
+(global-set-key "\C-co" 'markdown-preview-file) 
+
 (use-package nswbuff) ;; buffer switching
 (global-set-key (kbd "<C-tab>") 'nswbuff-switch-to-next-buffer)
 (global-set-key (kbd "<C-S-kp-tab>") 'nswbuff-switch-to-previous-buffer)
@@ -240,6 +252,8 @@
 (global-set-key (kbd "C-c c") 'org-capture)
 
 (use-package ssh)
+(use-package org-bullets)
+(add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
 
 ;TODO Fix sunrise so it doesn't interfere with built-in 'sunrise' command
 ;(require 'sunrise)
@@ -275,6 +289,14 @@
 		(define-key flyspell-mouse-map [mouse-3] #'undefined)
 		(setq flyspell-issue-message-flag nil)))
 
+(use-package smooth-scrolling)
+
+(defun insert-tab-char ()
+  "Insert a tab char. (ASCII 9, \t)"
+  (interactive)
+  (insert "\t"))
+(global-set-key (kbd "TAB") 'insert-tab-char) ; same as Ctrl+i
+
 (defun unfill-paragraph ()
 	"Takes a multi-line paragraph and makes it into a single line of text."
 	(interactive)
@@ -284,10 +306,6 @@
 
 (use-package wc-mode)
 (add-hook 'text-mode-hook 'wc-mode)
-
-;; use shift + arrow keys to switch between visible buffers
-(require 'windmove)
-(windmove-default-keybindings 'meta) ;; ‘M-left’ and ‘M-right’ to switch windows
 
 ;; automatically save buffers associated with files on buffer or window switch
 (defadvice switch-to-buffer (before save-buffer-now activate)
@@ -305,6 +323,16 @@
 ;; automatically save buffers associated with files on frame (app) switch
 (add-hook 'focus-out-hook (lambda () (save-some-buffers t)))
 
+;; use shift + arrow keys to switch between visible buffers
+(require 'windmove)
+(windmove-default-keybindings 'meta) ;; ‘M-left’ and ‘M-right’ to switch windows
+
+;; resizing 'windows' (i.e., inside the frame)
+(global-set-key (kbd "S-M-<left>") 'shrink-window-horizontally)
+(global-set-key (kbd "S-M-<right>") 'enlarge-window-horizontally)
+(global-set-key (kbd "S-M-<down>") 'shrink-window)
+(global-set-key (kbd "S-M-<up>") 'enlarge-window)  
+
 ;; arrow keys
 (global-set-key (kbd "<s-left>") 'move-beginning-of-line)
 (global-set-key (kbd "<s-right>") 'move-end-of-line)
@@ -316,3 +344,13 @@
 ;; alternate keys
 (global-set-key "\C-w" 'backward-kill-word)
 (global-set-key "\C-x\C-k" 'kill-region)
+
+(global-set-key (kbd "s-=") 'text-scale-increase)
+(global-set-key (kbd "s--") 'text-scale-decrease)
+
+(global-set-key (kbd "C-s") 'isearch-forward-regexp)
+(global-set-key (kbd "\C-r") 'isearch-backward-regexp)
+(global-set-key (kbd "C-M-s") 'isearch-forward)
+(global-set-key (kbd "C-M-r") 'isearch-backward)
+
+(global-set-key (kbd "C-z") 'undo)
