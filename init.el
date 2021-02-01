@@ -42,7 +42,7 @@
 							("gnu" . "http://elpa.gnu.org/packages/")))
 	(setq package-archive-priorities '(("org" . 3)("melpa" . 2)("gnu" . 1)))
 	(package-initialize)
-	;(package-refresh-contents) ;; i always fetch the archive contents on startup and during compilation
+	;(package-refresh-contents) ;; I always fetch the archive contents on startup and during compilation
 	(unless (package-installed-p 'use-package)
 		(package-install 'use-package))
 	(require 'use-package)
