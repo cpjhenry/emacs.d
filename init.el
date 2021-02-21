@@ -191,6 +191,7 @@
 	:config
 	(sml/setup))
 (add-to-list 'sml/replacer-regexp-list '("^:Doc:Projects" ":DocProj:") t)
+;(add-to-list 'sml/replacer-regexp-list '("^~/gemini" ":gem:") t)
 
 (setq display-time-24hr-format t)
 (setq display-time-default-load-average nil)
@@ -305,6 +306,11 @@
 
 (use-package wc-mode)
 (add-hook 'text-mode-hook 'wc-mode)
+
+(defun insert-date ()
+	(interactive)
+	(insert (format-time-string "%Y-%m-%d")))
+(global-set-key (kbd "C-c d") 'insert-date)
 
 ;; automatically save buffers associated with files on buffer or window switch
 (defadvice switch-to-buffer (before save-buffer-now activate)
