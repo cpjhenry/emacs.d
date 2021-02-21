@@ -4,10 +4,9 @@
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
 (prefer-coding-system 'utf-8)
+(set-frame-font "Inconsolata 21")
 
 (setq user-mail-address "cpjhenry@gmail.com")
-
-(set-frame-font "Inconsolata 21")
 
 ;; Mac option key is Meta (by default)
 ;; Mac command key is Super (by default)
@@ -31,7 +30,7 @@
 		"init"
 		"site-lisp"
 		"site-lisp/sunrise-commander" )))
-(setq default-directory (concat (getenv "HOME") "/Documents/"))
+;(setq default-directory (concat (getenv "HOME") "/Documents/"))
 (setenv "PATH" (concat "/usr/local/bin" ":" (getenv "PATH")))
 
 ;;; Initialize package manager
