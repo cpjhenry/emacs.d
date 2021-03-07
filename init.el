@@ -5,8 +5,12 @@
 (set-keyboard-coding-system 'utf-8)
 (prefer-coding-system 'utf-8)
 (set-frame-font "Inconsolata 21")
+(set-background-color "ivory")
 
 (setq user-mail-address "cpjhenry@gmail.com")
+(setq calendar-latitude 45.3)
+(setq calendar-longitude -75.8)
+(setq calendar-location-name "Ottawa")
 
 ;; Mac option key is Meta (by default)
 ;; Mac command key is Super (by default)
@@ -16,11 +20,10 @@
 
 (tool-bar-mode -1) 	;; turn off tool bar
 (scroll-bar-mode -1);; turn off scrollbar
+;(menu-bar-mode -1)
 (toggle-frame-maximized)
-
 (set-default 'frame-title-format "")
-(setq default-frame-alist
-	'((background-color . "ivory"))) ;; use 'list-colors-display'
+
 (setq initial-major-mode 'text-mode)
 (setq-default major-mode 'text-mode)
 
@@ -30,8 +33,8 @@
 		"init"
 		"site-lisp"
 		"site-lisp/sunrise-commander" )))
-;(setq default-directory (concat (getenv "HOME") "/Documents/"))
-(setenv "PATH" (concat "/usr/local/bin" ":" (getenv "PATH")))
+(setq default-directory "~/")
+(setenv "PATH" (concat "/usr/local/bin/" ":" (getenv "PATH")))
 
 ;;; Initialize package manager
 (eval-and-compile
@@ -41,27 +44,29 @@
 							("gnu" . "http://elpa.gnu.org/packages/")))
 	(setq package-archive-priorities '(("org" . 3)("melpa" . 2)("gnu" . 1)))
 	(package-initialize)
-	;(package-refresh-contents) ;; I always fetch the archive contents on startup and during compilation
+	;(package-refresh-contents) ;; Fetch the archive contents on startup and during compilation
 	(unless (package-installed-p 'use-package)
 		(package-install 'use-package))
 	(require 'use-package)
 	(setf use-package-always-ensure t))
 
 ;;; settings
+(setq-default tab-width 4)
+(setq-default fill-column 52)
+
 (setq ispell-list-command "--list") ;; correct command
 (setq ispell-program-name "/usr/local/bin/aspell") ;; spell checker
 (setq ring-bell-function 'ignore)
 (setq sentence-end-double-space nil)
-(setq-default tab-width 4)
 (setq tramp-default-method "ssh")
 (setq tramp-syntax 'simplified)
 (setq visual-line-fringe-indicators '(nil right-curly-arrow))
 
-;(setq shell-file-name "/usr/local/bin/bash") ;; force full subshell
-;(setq shell-command-switch "-ic")
-
 (setq delete-by-moving-to-trash t)
 (setq trash-directory "~/.Trash")
+
+;(setq shell-file-name "/usr/local/bin/bash") ;; force full subshell
+;(setq shell-command-switch "-ic")
 
 ;; backups
 (setq make-backup-files nil)
@@ -76,7 +81,7 @@
 (setq initial-scratch-message nil) 	;; Makes *scratch* empty
 (setq-default message-log-max nil) 	;; Removes *messages* from the buffer
 (kill-buffer "*Messages*")
-(add-hook 'minibuffer-exit-hook 	;; Removes *Completions* from buffer after you've opened a file
+(add-hook 'minibuffer-exit-hook 	;; Removes *Completions* buffer when done
 	'(lambda () (let ((buffer "*Completions*"))
 		(and (get-buffer buffer)
 		(kill-buffer buffer)))))
@@ -85,102 +90,27 @@
 (setq inhibit-startup-buffer-menu t) ;; Don't show *Buffer list*
 (add-hook 'window-setup-hook 'delete-other-windows) ;; Show only one active window
 
-(defun create-scratch-buffer ()
-	"Create new *scratch* buffer."
-	(interactive)
-	(switch-to-buffer (get-buffer-create "*scratch*"))
-	(text-mode))
+;; file and buffer functions
+(load "filesandbuffers.el")
+(load "print2pdf.el")
 
-(defun remove-scratch-buffer ()
-	"Kill *scratch* buffer."	
-	(interactive)
-	(if (get-buffer "*scratch*")
-	(kill-buffer "*scratch*")))
+;; print functions
+(load "page-dimensions.el")
+(setq printer-name "Brother_HL_L2370DW_series")
+(setq ps-paper-type 'a5)
+(setq ps-lpr-switches '("-o media=a5"))
+(setq ps-font-size 11)
 
-(defun nuke-all-buffers ()
-	"Kill all buffers, leaving *scratch* only."
-	(interactive)
-	(mapcar (lambda (x) (kill-buffer x))
-		(buffer-list))
-	(delete-other-windows))
-	(global-set-key (kbd "s-K") 'nuke-all-buffers)
+(setq ps-left-margin 36)
+(setq ps-right-margin 36)
+(setq ps-top-margin 36)
+(setq ps-bottom-margin 36)
 
-(defun xah-new-empty-buffer ()
-	"Create new empty buffer."
-	(interactive)
-	(let ((buf (generate-new-buffer "untitled\.txt")))
-		(switch-to-buffer buf)
-		(funcall (and initial-major-mode))
-		(setq buffer-offer-save t)
-		(olivetti-mode)))
-	(global-set-key (kbd "C-n") 'xah-new-empty-buffer)
-
-(defun rename-file-and-buffer (new-name)
-	"Renames both current buffer and file it's visiting to NEW-NAME."
-	(interactive "sNew name: ")
-	(let ((name (buffer-name))
-		(filename (buffer-file-name)))
-	(if (not filename)
-		(message "Buffer '%s' is not visiting a file!" name)
-	(if (get-buffer new-name)
-		(message "A buffer named '%s' already exists!" new-name)
-	(progn
-		(rename-file filename new-name 1)
-		(rename-buffer new-name)
-		(set-visited-file-name new-name)
-		(set-buffer-modified-p nil))))))
-
-(defun move-buffer-file (dir)
-	"Moves both current buffer and file it's visiting to DIR."
-	(interactive "DNew directory: ")
-	(let* ((name (buffer-name))
-		(filename (buffer-file-name))
-		(dir
-		(if (string-match dir "\\(?:/\\|\\\\)$")
-		(substring dir 0 -1) dir))
-		(newname (concat dir "/" name)))
-	(if (not filename)
-		(message "Buffer '%s' is not visiting a file!" name)
-	(progn
-		(copy-file filename newname 1)
-		(delete-file filename)
-		(set-visited-file-name newname)
-		(set-buffer-modified-p nil) t))))
- 
-(defun mydired-sort ()
-	"Sort dired listings with directories first."
-	(save-excursion
-		(let (buffer-read-only)
-			(forward-line 2) ;; beyond dir. header 
-			(sort-regexp-fields t "^.*$" "[ ]*." (point) (point-max)))
-		(set-buffer-modified-p nil)))
-
-(defadvice dired-readin
-	(after dired-after-updating-hook first () activate)
-	"Sort dired listings with directories first before adding marks."
-	(mydired-sort))
-
-(global-set-key (kbd "s-1") (kbd "C-x 1"))
-(global-set-key (kbd "s-2") (kbd "C-x o C-x 1"))
-(global-set-key (kbd "s-0") (kbd "C-x 0"))
-
-;; Aliases
-(defalias 'yes-or-no-p 'y-or-n-p)
-(defalias 'rs 'replace-string)
-
-(defalias 'lcd 'list-colors-display)
-(defalias 'ds 'desktop-save)
-(defalias 'dt 'desktop-save)
-(defalias 'dsm 'desktop-save-mode)
-
-(defalias 'elm 'emacs-lisp-mode)
-(defalias 'hm 'html-mode)
-(defalias 'jsm 'js-mode)
-(defalias 'fm 'fundamental-mode)
-(defalias 'ssm 'shell-script-mode)
-(defalias 'om 'org-mode)
-
-(defalias 'flym 'flyspell-mode)
+(setq ps-print-header nil)
+(setq ps-print-header-frame nil)
+(setq ps-header-title-font-size 9)
+(setq ps-header-offset 9)
+(setq ps-header-lines 1)
 
 ;;; Custom variables
 (setq custom-file (concat user-emacs-directory "custom.el"))
@@ -188,10 +118,10 @@
 
 ;;; Mode Line
 (use-package smart-mode-line
-	:config
-	(sml/setup))
+	:config (sml/setup))
 (add-to-list 'sml/replacer-regexp-list '("^:Doc:Projects" ":DocProj:") t)
-;(add-to-list 'sml/replacer-regexp-list '("^~/gemini" ":gem:") t)
+(add-to-list 'sml/replacer-regexp-list '("^.*/gemini/" ":gem:") t)
+(add-to-list 'sml/replacer-regexp-list '("^.*City of Ottawa/" ":CoO:") t)
 
 (setq display-time-24hr-format t)
 (setq display-time-default-load-average nil)
@@ -207,59 +137,40 @@
 
 ;;; Initialize packages
 (use-package elfeed)
-(load (concat user-emacs-directory "elfeedrc.el")) ;; IRC
+(load "elfeedrc.el") ; load feeds
 (setq elfeed-use-curl t)
 (easy-menu-add-item  nil '("tools") ["Read web feeds" elfeed t])
-(global-set-key (kbd "C-c w") 'elfeed)
 
-(use-package elpher) ;; gopher
+(use-package elpher)
 (add-hook 'elpher-mode-hook (lambda () 
 	(setq left-margin-width 20)
 	(set-window-buffer nil (current-buffer)) ))
 (easy-menu-add-item  nil '("tools") ["Gopher" elpher t])
-(global-set-key (kbd "C-c g") 'elpher)
 
-(load (concat user-emacs-directory "ercrc.el")) ;; IRC
+(advice-add 'eww-browse-url :around 'elpher:eww-browse-url)
+(defun elpher:eww-browse-url (original url &optional new-window)
+	"Handle gemini links."
+	(cond ((string-match-p "\\`\\(gemini\\|gopher\\)://" url)
+	(require 'elpher)
+	(elpher-go url))
+	(t (funcall original url new-window))))
+
+(load "ercrc.el") ; load irc config
 (easy-menu-add-item  nil '("tools")	["IRC with ERC" erc t])
-(global-set-key (kbd "C-c e") 'erc)
 
 (use-package go) ;; Game of Go
 (setq gnugo-program "/usr/local/bin/gnugo")
 
-(use-package markdown-mode
-	:commands (markdown-mode gfm-mode)
-	:mode (("README\\.md\\'" . gfm-mode)
-				 ("\\.md\\'" . markdown-mode)
-				 ("\\.markdown\\'" . markdown-mode))
-	:init (setq markdown-command "multimarkdown"))
-
-(defun markdown-preview-file ()
-	"Run Marked on the current file and revert the buffer"
-	(interactive)
-	(shell-command
-	(format "open -a /Applications/Marked\\ 2.app %s"
-		(shell-quote-argument (buffer-file-name))))
-	)  
-(global-set-key "\C-co" 'markdown-preview-file) 
+(use-package osx-browse) ;; set Chrome as default browser
+(osx-browse-mode 1)
+(setq browse-url-browser-function 'osx-browse-url-chrome)
 
 (use-package nswbuff) ;; buffer switching
-(global-set-key (kbd "<C-tab>") 'nswbuff-switch-to-next-buffer)
-(global-set-key (kbd "<C-S-kp-tab>") 'nswbuff-switch-to-previous-buffer)
-
-;; Org-mode stuff
-(global-set-key (kbd "C-c l") 'org-store-link)
-(global-set-key (kbd "C-c a") 'org-agenda)
-(global-set-key (kbd "C-c c") 'org-capture)
-
 (use-package ssh)
-(use-package org-bullets)
-(add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
-
-;TODO Fix sunrise so it doesn't interfere with built-in 'sunrise' command
-;(require 'sunrise)
-;(add-to-list 'auto-mode-alist '("\\.srvm\\'" . sunrise-virtual-mode))
-
 (use-package vterm)
+
+(use-package which-key)
+(which-key-mode)
 
 ;;; Lisp & Help modes
 (add-hook 'emacs-lisp-mode-hook 'prettify-symbols-mode)
@@ -267,16 +178,34 @@
 (setq show-paren-style 'mixed)
 (add-hook 'emacs-lisp-mode-hook 'electric-pair-mode)
 
-(use-package form-feed) ;; ^L
+(use-package form-feed) ;; navigate using ^L
 (add-hook 'emacs-lisp-mode-hook 'form-feed-mode)
 (add-hook 'help-mode-hook 'form-feed-mode)
 
+;;; Org-mode
+(setq org-directory "~/Documents/org")
+(setq org-agenda-files (list (concat org-directory "/daily.org")
+							 (concat org-directory "/work.org") ))
+(setq org-default-notes-file (concat org-directory "/daily.org"))
+(setq org-agenda-skip-scheduled-if-done t)
+(setq org-agenda-skip-deadline-if-done t)
+(setq org-agenda-todo-ignore-scheduled nil)
+(setq org-agenda-todo-ignore-deadlines nil)
+(setq org-agenda-start-on-weekday nil)
+(add-hook 'org-agenda-finalize-hook (lambda () (delete-other-windows)))
+
+(setq org-todo-keywords
+      '((sequence "TODO" "DONE")))
+(setq org-todo-keyword-faces
+      '(("INPROGRESS" . (:foreground "blue" :weight bold)))) ; add inprogress keyword
+(setq org-log-done t)
+
+(use-package org-bullets)
+(add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+
 ;;; Emacs Text mode
 (use-package olivetti
-	:bind ("C-c f" . olivetti-mode)
-	:config
-	(progn
-		(text-mode)
+	:config (progn (text-mode)
 		(setf olivetti-body-width 80)
 		(visual-line-mode))
 	:mode ("\\.txt\\'" . olivetti-mode))
@@ -290,27 +219,38 @@
 		(setq flyspell-issue-message-flag nil)))
 
 (use-package smooth-scrolling)
+(use-package wc-mode)
+(add-hook 'text-mode-hook 'wc-mode)
 
 (defun insert-tab-char ()
   "Insert a tab char. (ASCII 9, \t)"
   (interactive)
   (insert "\t"))
-(global-set-key (kbd "TAB") 'insert-tab-char) ; same as Ctrl+i
 
 (defun unfill-paragraph ()
 	"Takes a multi-line paragraph and makes it into a single line of text."
 	(interactive)
 	(let ((fill-column (point-max)))
 	(fill-paragraph nil)))
-(global-set-key (kbd "M-Q") 'unfill-paragraph)
-
-(use-package wc-mode)
-(add-hook 'text-mode-hook 'wc-mode)
 
 (defun insert-date ()
 	(interactive)
 	(insert (format-time-string "%Y-%m-%d")))
-(global-set-key (kbd "C-c d") 'insert-date)
+
+;; Markdown
+(use-package markdown-mode
+	:commands (markdown-mode gfm-mode)
+	:mode (("README\\.md\\'" . gfm-mode)
+				 ("\\.md\\'" . markdown-mode)
+				 ("\\.markdown\\'" . markdown-mode))
+	:init (setq markdown-command "/usr/local/bin/multimarkdown"))
+
+(defun markdown-preview-file ()
+	"Run Marked on the current file and revert the buffer"
+	(interactive)
+	(shell-command
+	(format "open -a /Applications/Marked\\ 2.app %s"
+		(shell-quote-argument (buffer-file-name)))) )  
 
 ;; automatically save buffers associated with files on buffer or window switch
 (defadvice switch-to-buffer (before save-buffer-now activate)
@@ -328,34 +268,83 @@
 ;; automatically save buffers associated with files on frame (app) switch
 (add-hook 'focus-out-hook (lambda () (save-some-buffers t)))
 
-;; use shift + arrow keys to switch between visible buffers
+;; use alt + arrow keys to switch between visible buffers
 (require 'windmove)
 (windmove-default-keybindings 'meta) ;; ‘M-left’ and ‘M-right’ to switch windows
 
 ;; resizing 'windows' (i.e., inside the frame)
-(global-set-key (kbd "S-M-<left>") 'shrink-window-horizontally)
-(global-set-key (kbd "S-M-<right>") 'enlarge-window-horizontally)
-(global-set-key (kbd "S-M-<down>") 'shrink-window)
-(global-set-key (kbd "S-M-<up>") 'enlarge-window)  
+(global-set-key (kbd "M-S-<left>") 'shrink-window-horizontally)
+(global-set-key (kbd "M-S-<right>") 'enlarge-window-horizontally)
+(global-set-key (kbd "M-S-<down>") 'shrink-window)
+(global-set-key (kbd "M-S-<up>") 'enlarge-window)  
 
 ;; arrow keys
-(global-set-key (kbd "<s-left>") 'move-beginning-of-line)
-(global-set-key (kbd "<s-right>") 'move-end-of-line)
-(global-set-key (kbd "<s-up>") 'beginning-of-buffer)
-(global-set-key (kbd "<s-down>") 'end-of-buffer)
-(global-set-key (kbd "<s-prior>") 'backward-page) ;; s-H-up
-(global-set-key (kbd "<s-next>") 'forward-page) ;; s-H-down
+(global-set-key (kbd "s-<left>") 'move-beginning-of-line)
+(global-set-key (kbd "s-<right>") 'move-end-of-line)
+(global-set-key (kbd "s-<up>") 'beginning-of-buffer)
+(global-set-key (kbd "s-<down>") 'end-of-buffer)
+(global-set-key (kbd "s-<prior>") 'backward-page) ;; s-H-up
+(global-set-key (kbd "s-<next>") 'forward-page) ;; s-H-down
 
 ;; alternate keys
-(global-set-key "\C-w" 'backward-kill-word)
-(global-set-key "\C-x\C-k" 'kill-region)
+(global-unset-key (kbd "C-x C-z"))
 
-(global-set-key (kbd "s-=") 'text-scale-increase)
-(global-set-key (kbd "s--") 'text-scale-decrease)
+(global-set-key (kbd "C-w") 'backward-kill-word)
+(global-set-key (kbd "C-S-k") 'kill-whole-line)
+(global-set-key (kbd "C-x C-k") 'kill-region)
 
 (global-set-key (kbd "C-s") 'isearch-forward-regexp)
-(global-set-key (kbd "\C-r") 'isearch-backward-regexp)
+(global-set-key (kbd "C-r") 'isearch-backward-regexp)
 (global-set-key (kbd "C-M-s") 'isearch-forward)
 (global-set-key (kbd "C-M-r") 'isearch-backward)
 
 (global-set-key (kbd "C-z") 'undo)
+
+;; Shortcuts
+(global-set-key (kbd "s-1") (kbd "C-x 1"))
+(global-set-key (kbd "s-2") (kbd "C-x o C-x 1"))
+(global-set-key (kbd "s-0") (kbd "C-x 0"))
+(global-set-key (kbd "s-=") 'text-scale-increase)
+(global-set-key (kbd "s--") 'text-scale-decrease)
+
+(global-set-key (kbd "s-w") 'kill-current-buffer)
+(global-set-key (kbd "s-K") 'nuke-all-buffers)
+(global-set-key (kbd "C-n") 'xah-new-empty-buffer)
+(global-set-key (kbd "C-<tab>") 'nswbuff-switch-to-next-buffer)
+(global-set-key (kbd "C-S-<tab>") 'nswbuff-switch-to-previous-buffer)
+
+(global-set-key (kbd "C-c a") 'org-agenda)
+(global-set-key (kbd "C-c c") 'org-capture)
+(global-set-key (kbd "C-c d") 'insert-date)
+(global-set-key (kbd "C-c e") 'erc)					; IRC
+(global-set-key (kbd "C-c f") 'elfeed)
+(global-set-key (kbd "C-c g") 'elpher)				; gopher / gemini
+(global-set-key (kbd "C-c l") 'org-store-link)
+(global-set-key (kbd "C-c m") 'markdown-mode)
+(global-set-key (kbd "C-c o") 'markdown-preview-file) 
+(global-set-key (kbd "C-c t") 'olivetti-mode)
+(global-set-key (kbd "C-c w") 'eww)					; www
+(global-set-key (kbd "H-c") 'calendar)
+(global-set-key (kbd "M-Q") 'unfill-paragraph)
+(global-set-key (kbd "TAB") 'insert-tab-char)		; same as Ctrl+i
+(global-set-key (kbd "M-p") 'lpr-buffer)
+(global-set-key (kbd "s-p") 'ps-print-buffer)
+
+;; Aliases
+(defalias 'yes-or-no-p 'y-or-n-p)
+
+(defalias 'ds 'desktop-save)
+(defalias 'dsm 'desktop-save-mode)
+(defalias 'lcd 'list-colors-display)
+(defalias 'li 'lorem-ipsum-insert-paragraphs)
+(defalias 'ppc 'ps-print-customize)
+(defalias 'rs 'replace-string)
+
+(defalias 'elm 'emacs-lisp-mode)
+(defalias 'flym 'flyspell-mode)
+(defalias 'fm 'fundamental-mode)
+(defalias 'hm 'html-mode)
+(defalias 'jsm 'js-mode)
+(defalias 'mm 'markdown-mode)
+(defalias 'om 'org-mode)
+(defalias 'ssm 'shell-script-mode)
