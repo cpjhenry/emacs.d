@@ -3,7 +3,8 @@ elpa/
 !elpa/.gitkeep
 eshell/
 url/
-elfeedrc.el
-ercrc.el
+init/elfeedrc.el
+init/ercrc.el
 network-security.data
 tramp
+diary
