@@ -1,6 +1,6 @@
-;;; Emacs configuration / pjh
+;; Emacs configuration / pjh
 
-;;; Initialize terminal
+;; Initialize terminal
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
 (prefer-coding-system 'utf-8)
@@ -12,14 +12,14 @@
 (setq calendar-longitude -75.8)
 (setq calendar-location-name "Ottawa")
 
-;; Mac option key is Meta (by default)
-;; Mac command key is Super (by default)
-(setq ns-function-modifier 'hyper) ;; Mac function key is Hyper
-(setq ns-right-alternate-modifier 'alt) ;; Mac right option key is Alt
-(setq mac-emulate-three-button-mouse t)
+; Mac option key is Meta (by default)
+; Mac command key is Super (by default)
+(setq ns-function-modifier 'hyper) ; Mac function key is Hyper
+(setq ns-right-alternate-modifier 'alt) ; Mac right option key is Alt
+(mouse-avoidance-mode 'banish) ; jump to corner when typing
 
-(tool-bar-mode -1) 	;; turn off tool bar
-(scroll-bar-mode -1);; turn off scrollbar
+(tool-bar-mode -1) 	; turn off tool bar
+(scroll-bar-mode -1); turn off scrollbar
 ;(menu-bar-mode -1)
 (toggle-frame-maximized)
 (set-default 'frame-title-format "")
@@ -36,7 +36,7 @@
 (setq default-directory "~/")
 (setenv "PATH" (concat "/usr/local/bin/" ":" (getenv "PATH")))
 
-;;; Initialize package manager
+;; Initialize package manager
 (eval-and-compile
 	(require 'package)
 	(setq package-archives '(("org" . "https://orgmode.org/elpa/")
@@ -44,18 +44,18 @@
 							("gnu" . "http://elpa.gnu.org/packages/")))
 	(setq package-archive-priorities '(("org" . 3)("melpa" . 2)("gnu" . 1)))
 	(package-initialize)
-	;(package-refresh-contents) ;; Fetch the archive contents on startup and during compilation
+	;(package-refresh-contents) ; Fetch the archive contents on startup and during compilation
 	(unless (package-installed-p 'use-package)
 		(package-install 'use-package))
 	(require 'use-package)
 	(setf use-package-always-ensure t))
 
-;;; settings
+;; settings
 (setq-default tab-width 4)
 (setq-default fill-column 52)
 
-(setq ispell-list-command "--list") ;; correct command
-(setq ispell-program-name "/usr/local/bin/aspell") ;; spell checker
+(setq ispell-list-command "--list") ; correct command
+(setq ispell-program-name "/usr/local/bin/aspell") ; spell checker
 (setq ring-bell-function 'ignore)
 (setq sentence-end-double-space nil)
 (setq tramp-default-method "ssh")
@@ -65,7 +65,7 @@
 (setq delete-by-moving-to-trash t)
 (setq trash-directory "~/.Trash")
 
-;(setq shell-file-name "/usr/local/bin/bash") ;; force full subshell
+;(setq shell-file-name "/usr/local/bin/bash") ; force full subshell
 ;(setq shell-command-switch "-ic")
 
 ;; backups
@@ -77,18 +77,18 @@
 
 ;; remove unneeded buffers
 (setq inhibit-startup-echo-area-message t)
-(setq inhibit-startup-message t) 	;; 'About Emacs'
-(setq initial-scratch-message nil) 	;; Makes *scratch* empty
-(setq-default message-log-max nil) 	;; Removes *messages* from the buffer
+(setq inhibit-startup-message t) 	; 'About Emacs'
+(setq initial-scratch-message nil) 	; Makes *scratch* empty
+(setq-default message-log-max nil) 	; Removes *messages* from the buffer
 (kill-buffer "*Messages*")
-(add-hook 'minibuffer-exit-hook 	;; Removes *Completions* buffer when done
+(add-hook 'minibuffer-exit-hook 	; Removes *Completions* buffer when done
 	'(lambda () (let ((buffer "*Completions*"))
 		(and (get-buffer buffer)
 		(kill-buffer buffer)))))
 
 ;; opening multiple files
-(setq inhibit-startup-buffer-menu t) ;; Don't show *Buffer list*
-(add-hook 'window-setup-hook 'delete-other-windows) ;; Show only one active window
+(setq inhibit-startup-buffer-menu t) ; Don't show *Buffer list*
+(add-hook 'window-setup-hook 'delete-other-windows) ; Show only one active window
 
 ;; file and buffer functions
 (load "filesandbuffers.el")
@@ -112,11 +112,11 @@
 (setq ps-header-offset 9)
 (setq ps-header-lines 1)
 
-;;; Custom variables
+;; Custom variables
 (setq custom-file (concat user-emacs-directory "custom.el"))
 (if (file-exists-p custom-file) (load custom-file))
 
-;;; Mode Line
+;; Mode Line
 (use-package smart-mode-line
 	:config (sml/setup))
 (add-to-list 'sml/replacer-regexp-list '("^:Doc:Projects" ":DocProj:") t)
@@ -128,22 +128,30 @@
 (display-time-mode)
 (display-battery-mode)
 
-;;; Emacs server
+;; Emacs server
 (defun server-shutdown ()
 	"Save buffers, Quit, and Shutdown (kill) server."
 	(interactive)
 	(save-some-buffers)
 	(kill-emacs))
 
-;;; Initialize packages
+;; Initialize packages
 (use-package elfeed)
-(load "elfeedrc.el") ; load feeds
+(load "elfeedrc.el") ; feeds config
 (setq elfeed-use-curl t)
 (easy-menu-add-item  nil '("tools") ["Read web feeds" elfeed t])
+(defun elfeed-mark-all-as-read ()
+	(interactive)
+	(mark-whole-buffer)
+	(elfeed-search-untag-all-unread) )
+(define-key elfeed-search-mode-map (kbd "R") 'elfeed-mark-all-as-read)
 
 (use-package elpher)
 (add-hook 'elpher-mode-hook (lambda () 
-	(setq left-margin-width 20)
+	(local-set-key (kbd "A-<left>") 'elpher-back)
+	(local-set-key (kbd "A-<up>")   'scroll-down-command)
+	(local-set-key (kbd "A-<down>") 'scroll-up-command)
+	(setq left-margin-width 15)
 	(set-window-buffer nil (current-buffer)) ))
 (easy-menu-add-item  nil '("tools") ["Gopher" elpher t])
 
@@ -154,39 +162,42 @@
 	(require 'elpher)
 	(elpher-go url))
 	(t (funcall original url new-window))))
+(add-hook 'eww-mode-hook (lambda ()
+	(local-set-key (kbd "A-<left>") 'eww-back-url)))
 
-(load "ercrc.el") ; load irc config
+(load "ercrc.el") ; irc config
 (easy-menu-add-item  nil '("tools")	["IRC with ERC" erc t])
 
-(use-package go) ;; Game of Go
+(use-package go) ; Game of Go
 (setq gnugo-program "/usr/local/bin/gnugo")
 
-(use-package osx-browse) ;; set Chrome as default browser
+(use-package osx-browse) ; set Chrome as default browser
 (osx-browse-mode 1)
 (setq browse-url-browser-function 'osx-browse-url-chrome)
 
-(use-package nswbuff) ;; buffer switching
+(use-package nswbuff) ; buffer switching
 (use-package ssh)
 (use-package vterm)
 
 (use-package which-key)
 (which-key-mode)
 
-;;; Lisp & Help modes
+;; Lisp & Help modes
 (add-hook 'emacs-lisp-mode-hook 'prettify-symbols-mode)
 (add-hook 'emacs-lisp-mode-hook 'show-paren-mode)
 (setq show-paren-style 'mixed)
 (add-hook 'emacs-lisp-mode-hook 'electric-pair-mode)
 
-(use-package form-feed) ;; navigate using ^L
+(use-package form-feed) ; navigate using ^L
 (add-hook 'emacs-lisp-mode-hook 'form-feed-mode)
 (add-hook 'help-mode-hook 'form-feed-mode)
 
-;;; Org-mode
+;; Org-mode
 (setq org-directory "~/Documents/org")
 (setq org-agenda-files (list (concat org-directory "/daily.org")
 							 (concat org-directory "/work.org") ))
-(setq org-default-notes-file (concat org-directory "/daily.org"))
+(setq org-default-notes-file (concat org-directory "/notes.org"))
+(setq org-startup-folded t)
 (setq org-agenda-skip-scheduled-if-done t)
 (setq org-agenda-skip-deadline-if-done t)
 (setq org-agenda-todo-ignore-scheduled nil)
@@ -202,8 +213,13 @@
 
 (use-package org-bullets)
 (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+(org-link-set-parameters ; link type: gemini://host/index.gmi
+	"gemini"
+	:follow (lambda (path) (elpher-go (concat "gemini:" path)))
+	:face '(:foreground "turquoise" :weight bold)
+	:display 'full)
 
-;;; Emacs Text mode
+;; Emacs Text mode
 (use-package olivetti
 	:config (progn (text-mode)
 		(setf olivetti-body-width 80)
@@ -221,21 +237,7 @@
 (use-package smooth-scrolling)
 (use-package wc-mode)
 (add-hook 'text-mode-hook 'wc-mode)
-
-(defun insert-tab-char ()
-  "Insert a tab char. (ASCII 9, \t)"
-  (interactive)
-  (insert "\t"))
-
-(defun unfill-paragraph ()
-	"Takes a multi-line paragraph and makes it into a single line of text."
-	(interactive)
-	(let ((fill-column (point-max)))
-	(fill-paragraph nil)))
-
-(defun insert-date ()
-	(interactive)
-	(insert (format-time-string "%Y-%m-%d")))
+(load "text.el") ; text functions
 
 ;; Markdown
 (use-package markdown-mode
@@ -252,25 +254,10 @@
 	(format "open -a /Applications/Marked\\ 2.app %s"
 		(shell-quote-argument (buffer-file-name)))) )  
 
-;; automatically save buffers associated with files on buffer or window switch
-(defadvice switch-to-buffer (before save-buffer-now activate)
-	(when buffer-file-name (save-buffer)))
-(defadvice other-window (before other-window-now activate)
-	(when buffer-file-name (save-buffer)))
-(defadvice windmove-up (before other-window-now activate)
-	(when buffer-file-name (save-buffer)))
-(defadvice windmove-down (before other-window-now activate)
-	(when buffer-file-name (save-buffer)))
-(defadvice windmove-left (before other-window-now activate)
-	(when buffer-file-name (save-buffer)))
-(defadvice windmove-right (before other-window-now activate)
-	(when buffer-file-name (save-buffer)))
-;; automatically save buffers associated with files on frame (app) switch
-(add-hook 'focus-out-hook (lambda () (save-some-buffers t)))
-
-;; use alt + arrow keys to switch between visible buffers
-(require 'windmove)
-(windmove-default-keybindings 'meta) ;; ‘M-left’ and ‘M-right’ to switch windows
+;; buffers
+(load "savebuffers.el") ; automatically save buffers
+(require 'windmove) ; use alt + arrow keys to switch between visible buffers
+(windmove-default-keybindings 'meta) ; ‘M-left’ and ‘M-right’ to switch windows
 
 ;; resizing 'windows' (i.e., inside the frame)
 (global-set-key (kbd "M-S-<left>") 'shrink-window-horizontally)
@@ -283,8 +270,8 @@
 (global-set-key (kbd "s-<right>") 'move-end-of-line)
 (global-set-key (kbd "s-<up>") 'beginning-of-buffer)
 (global-set-key (kbd "s-<down>") 'end-of-buffer)
-(global-set-key (kbd "s-<prior>") 'backward-page) ;; s-H-up
-(global-set-key (kbd "s-<next>") 'forward-page) ;; s-H-down
+(global-set-key (kbd "s-<prior>") 'backward-page) ; s-H-up
+(global-set-key (kbd "s-<next>") 'forward-page) ; s-H-down
 
 ;; alternate keys
 (global-unset-key (kbd "C-x C-z"))
@@ -313,6 +300,7 @@
 (global-set-key (kbd "C-<tab>") 'nswbuff-switch-to-next-buffer)
 (global-set-key (kbd "C-S-<tab>") 'nswbuff-switch-to-previous-buffer)
 
+(global-set-key (kbd "C-c D") 'insert-iso-date)
 (global-set-key (kbd "C-c a") 'org-agenda)
 (global-set-key (kbd "C-c c") 'org-capture)
 (global-set-key (kbd "C-c d") 'insert-date)
