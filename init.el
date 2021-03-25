@@ -1,9 +1,7 @@
 ;; Emacs configuration / pjh
 
 ;; Initialize terminal
-(set-terminal-coding-system 'utf-8)
-(set-keyboard-coding-system 'utf-8)
-(prefer-coding-system 'utf-8)
+(set-language-environment 'utf-8)
 (set-frame-font "Inconsolata 21")
 (set-background-color "ivory")
 
@@ -16,7 +14,7 @@
 ; Mac command key is Super (by default)
 (setq ns-function-modifier 'hyper) ; Mac function key is Hyper
 (setq ns-right-alternate-modifier 'alt) ; Mac right option key is Alt
-(mouse-avoidance-mode 'banish) ; jump to corner when typing
+;(mouse-avoidance-mode 'banish) ; jump to corner when typing
 
 (tool-bar-mode -1) 	; turn off tool bar
 (scroll-bar-mode -1); turn off scrollbar
@@ -35,6 +33,15 @@
 		"site-lisp/sunrise-commander" )))
 (setq default-directory "~/")
 (setenv "PATH" (concat "/usr/local/bin/" ":" (getenv "PATH")))
+
+(setq diary-file "~/.emacs.d/diary")
+(setq diary-show-holidays-flag nil)
+(add-hook 'diary-list-entries-hook 'diary-sort-entries t)
+(setq lunar-phase-names '(
+	"● New Moon"
+	"☽ First Quarter Moon"
+	"○ Full Moon"
+	"☾ Last Quarter Moon"))
 
 ;; Initialize package manager
 (eval-and-compile
@@ -119,14 +126,20 @@
 ;; Mode Line
 (use-package smart-mode-line
 	:config (sml/setup))
-(add-to-list 'sml/replacer-regexp-list '("^:Doc:Projects" ":DocProj:") t)
+(add-to-list 'sml/replacer-regexp-list '("^:Doc:org/" ":org:") t)
+(add-to-list 'sml/replacer-regexp-list '("^:Doc:Projects/" ":DocProj:") t)
 (add-to-list 'sml/replacer-regexp-list '("^.*/gemini/" ":gem:") t)
 (add-to-list 'sml/replacer-regexp-list '("^.*City of Ottawa/" ":CoO:") t)
+(add-to-list 'sml/replacer-regexp-list '("^:CoO:Operations/" ":Ops:") t)
+(add-to-list 'sml/replacer-regexp-list '("^:Ops:!PDG/" ":PDG:") t)
 
 (setq display-time-24hr-format t)
 (setq display-time-default-load-average nil)
 (display-time-mode)
 (display-battery-mode)
+
+;; Tabs
+;(load "centaur.el")
 
 ;; Emacs server
 (defun server-shutdown ()
@@ -168,12 +181,12 @@
 (load "ercrc.el") ; irc config
 (easy-menu-add-item  nil '("tools")	["IRC with ERC" erc t])
 
-(use-package go) ; Game of Go
+(use-package gnugo) ; Game of Go
 (setq gnugo-program "/usr/local/bin/gnugo")
+(easy-menu-add-item  nil '("tools" "games") ["Go" gnugo t])
 
-(use-package osx-browse) ; set Chrome as default browser
-(osx-browse-mode 1)
-(setq browse-url-browser-function 'osx-browse-url-chrome)
+(setq browse-url-browser-function 'browse-url-generic
+	browse-url-generic-program (concat user-emacs-directory "g-c") )
 
 (use-package nswbuff) ; buffer switching
 (use-package ssh)
@@ -194,14 +207,18 @@
 
 ;; Org-mode
 (setq org-directory "~/Documents/org")
-(setq org-agenda-files (list (concat org-directory "/daily.org")
-							 (concat org-directory "/work.org") ))
 (setq org-default-notes-file (concat org-directory "/notes.org"))
 (setq org-startup-folded t)
+
+(add-hook 'org-mode-hook (lambda () (org-indent-mode) ))
+
+(setq org-agenda-files (list (concat org-directory "/daily.org")
+							 (concat org-directory "/work.org") ))
+(setq org-agenda-include-diary t)
 (setq org-agenda-skip-scheduled-if-done t)
 (setq org-agenda-skip-deadline-if-done t)
-(setq org-agenda-todo-ignore-scheduled nil)
-(setq org-agenda-todo-ignore-deadlines nil)
+(setq org-agenda-todo-ignore-scheduled t)
+(setq org-agenda-todo-ignore-deadlines t)
 (setq org-agenda-start-on-weekday nil)
 (add-hook 'org-agenda-finalize-hook (lambda () (delete-other-windows)))
 
@@ -211,13 +228,54 @@
       '(("INPROGRESS" . (:foreground "blue" :weight bold)))) ; add inprogress keyword
 (setq org-log-done t)
 
-(use-package org-bullets)
-(add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
 (org-link-set-parameters ; link type: gemini://host/index.gmi
 	"gemini"
 	:follow (lambda (path) (elpher-go (concat "gemini:" path)))
 	:face '(:foreground "turquoise" :weight bold)
 	:display 'full)
+
+(org-link-set-parameters ; link type: gopher
+	"gopher"
+	:follow (lambda (path) (elpher-go (concat "gopher:" path)))
+	:face '(:foreground "blue" :weight bold)
+	:display 'full)
+
+(load "ol-man.el") ; link type: man
+
+(defun org-toggle-iimage-in-org ()
+	"display images in your org file"
+	(interactive)
+	(if (face-underline-p 'org-link)
+		(set-face-underline-p 'org-link nil)
+		(set-face-underline-p 'org-link t))
+	(iimage-mode ‘toggle))
+
+;; see https://orgmode.org/list/87r5718ytv.fsf@sputnik.localhost
+(eval-after-load 'org-list
+  '(add-hook 'org-checkbox-statistics-hook (function ndk/checkbox-list-complete)))
+(defun ndk/checkbox-list-complete ()
+  (save-excursion
+    (org-back-to-heading t)
+    (let ((beg (point)) end)
+      (end-of-line)
+      (setq end (point))
+      (goto-char beg)
+      (if (re-search-forward "\\[\\([0-9]*%\\)\\]\\|\\[\\([0-9]*\\)/\\([0-9]*\\)\\]" end t)
+            (if (match-end 1)
+                (if (equal (match-string 1) "100%")
+                    ;; all done - do the state change
+                    (org-todo 'done)
+                  (org-todo 'todo))
+              (if (and (> (match-end 2) (match-beginning 2))
+                       (equal (match-string 2) (match-string 3)))
+                  (org-todo 'done)
+                (org-todo 'todo)))))))
+
+(add-hook 'visual-line-mode-hook
+	(lambda () (when (derived-mode-p 'org-mode)
+		(local-set-key (kbd "C-a") #'org-beginning-of-line)
+		(local-set-key (kbd "C-e") #'org-end-of-line)
+		(local-set-key (kbd "C-k") #'org-kill-line))))
 
 ;; Emacs Text mode
 (use-package olivetti
@@ -265,9 +323,19 @@
 (global-set-key (kbd "M-S-<down>") 'shrink-window)
 (global-set-key (kbd "M-S-<up>") 'enlarge-window)  
 
-;; arrow keys
+;; arrow keys (Darwin)
+;; <home>  is fn-left	<end> is fn-right
+;; <prior> is fn-up		<next> is fn-down
+(put 'scroll-left 'disabled nil)
+(global-set-key (kbd "<home>") 'scroll-right)
+(global-set-key (kbd "<end>" ) 'scroll-left)
+; <prior>	'scroll-down-command
+; <next>	'scroll-up-command
+
 (global-set-key (kbd "s-<left>") 'move-beginning-of-line)
 (global-set-key (kbd "s-<right>") 'move-end-of-line)
+(global-set-key (kbd "s-M-<left>") 'backward-sentence)
+(global-set-key (kbd "s-M-<right>") 'forward-sentence)
 (global-set-key (kbd "s-<up>") 'beginning-of-buffer)
 (global-set-key (kbd "s-<down>") 'end-of-buffer)
 (global-set-key (kbd "s-<prior>") 'backward-page) ; s-H-up
@@ -294,12 +362,14 @@
 (global-set-key (kbd "s-=") 'text-scale-increase)
 (global-set-key (kbd "s--") 'text-scale-decrease)
 
-(global-set-key (kbd "s-w") 'kill-current-buffer)
 (global-set-key (kbd "s-K") 'nuke-all-buffers)
-(global-set-key (kbd "C-n") 'xah-new-empty-buffer)
+(global-set-key (kbd "s-b") 'create-scratch-buffer)
+(global-set-key (kbd "s-n") 'xah-new-empty-buffer)
+(global-set-key (kbd "s-w") 'kill-current-buffer)	; "s-k"
 (global-set-key (kbd "C-<tab>") 'nswbuff-switch-to-next-buffer)
 (global-set-key (kbd "C-S-<tab>") 'nswbuff-switch-to-previous-buffer)
 
+(global-set-key (kbd "C-c #") 'toggle-truncate-lines)
 (global-set-key (kbd "C-c D") 'insert-iso-date)
 (global-set-key (kbd "C-c a") 'org-agenda)
 (global-set-key (kbd "C-c c") 'org-capture)
@@ -335,4 +405,5 @@
 (defalias 'jsm 'js-mode)
 (defalias 'mm 'markdown-mode)
 (defalias 'om 'org-mode)
+(defalias 'obm 'org-bullets-mode)
 (defalias 'ssm 'shell-script-mode)
