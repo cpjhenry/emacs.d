@@ -6,6 +6,5 @@ url/
 init/elfeedrc.el
 init/ercrc.el
 diary
-elpher-bookmarks
 network-security.data
 tramp
