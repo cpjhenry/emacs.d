@@ -27,10 +27,10 @@
 
 ;; Add directories to load-path
 (eval-and-compile
-	(mapc #'(lambda (path)(add-to-list 'load-path (expand-file-name path user-emacs-directory))) '(
+	(mapc #'(lambda (path)
+	(add-to-list 'load-path (expand-file-name path user-emacs-directory))) '(
 		"init"
-		"site-lisp"
-		"site-lisp/sunrise-commander" )))
+		"site-lisp" ) ))
 (setq default-directory "~/")
 (setenv "PATH" (concat "/usr/local/bin/" ":" (getenv "PATH")))
 
