@@ -70,3 +70,12 @@
 	(after dired-after-updating-hook first () activate)
 	"Sort dired listings with directories first before adding marks."
 	(mydired-sort))
+
+(defun set-window-width (n)
+	"Set the selected window's width."
+	(adjust-window-trailing-edge (selected-window) (- n (window-width)) t))
+
+(defun set-80-columns ()
+	"Set the selected window to 80 columns."
+	(interactive)
+	(set-window-width 80))

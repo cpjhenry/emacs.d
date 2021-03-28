@@ -4,7 +4,7 @@
 ; Feel free to edit by hand, but take care to ensure
 ; the list structure remains intact.
 
-(("gemini://kaun.ca" "gemini://kaun.ca/")
+(
  ("Hex's GC" "gemini://hexdsl.co.uk/")
  ("2021-03-11 - Burn The Web" "gemini://hexdsl.co.uk/log/20210311-burn_the_web.gmi")
  ("Ben's Gemlog ☪" "gemini://kwiecien.us/logarion/date.gmi")
@@ -36,7 +36,9 @@
  ("slugmax" "gopher://republic.circumlunar.space:70/1/~slugmax/phlog")
  ("tilde.institute" "gopher://tilde.institute:70/")
  ("Gemtext cheatsheet" "gemini://gemini.circumlunar.space/docs/cheatsheet.gmi")
+ ("kaun.ca" "gemini://kaun.ca/")
  ("kaun.ca" "gopher://kaun.ca/")
  ("cpj" "gopher://zaibatsu.circumlunar.space:70/1/~cpj/phlog")
  ("(Recent updates from all sundogs)" "gopher://zaibatsu.circumlunar.space:70/1/updates/")
- ("zaibatsu" "gopher://zaibatsu.circumlunar.space/"))
+ ("zaibatsu" "gopher://zaibatsu.circumlunar.space/")
+)
