@@ -2,9 +2,12 @@ auto-save-list/
 elpa/
 !elpa/.gitkeep
 eshell/
+request/
 url/
 init/elfeedrc.el
 init/ercrc.el
+init/snrc.el
+.persistent-scratch
 diary
 network-security.data
 tramp

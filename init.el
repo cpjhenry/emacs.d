@@ -34,7 +34,7 @@
 (setq default-directory "~/")
 (setenv "PATH" (concat "/usr/local/bin/" ":" (getenv "PATH")))
 
-(setq diary-file "~/.emacs.d/diary")
+(setq diary-file "~/Documents/diary")
 (setq diary-show-holidays-flag nil)
 (add-hook 'diary-list-entries-hook 'diary-sort-entries t)
 (setq lunar-phase-names '(
@@ -82,12 +82,17 @@
 (require 'backup-each-save)
 (add-hook 'after-save-hook 'backup-each-save)
 
+;; buffers
+(use-package nswbuff) ; buffer switching
+(setq nswbuff-clear-delay 1.5)
+(setq nswbuff-display-intermediate-buffers t)
+(setq nswbuff-exclude-buffer-regexps'("^ .*" "^\\*Messages\\*"))
+
 ;; remove unneeded buffers
 (setq inhibit-startup-echo-area-message t)
 (setq inhibit-startup-message t) 	; 'About Emacs'
 (setq initial-scratch-message nil) 	; Makes *scratch* empty
-(setq-default message-log-max nil) 	; Removes *messages* from the buffer
-(kill-buffer "*Messages*")
+;(setq-default message-log-max nil) 	; Removes *messages* from the buffer
 (add-hook 'minibuffer-exit-hook 	; Removes *Completions* buffer when done
 	'(lambda () (let ((buffer "*Completions*"))
 		(and (get-buffer buffer)
@@ -98,11 +103,11 @@
 (add-hook 'window-setup-hook 'delete-other-windows) ; Show only one active window
 
 ;; file and buffer functions
-(load "filesandbuffers.el")
-(load "print2pdf.el")
+(load "autosavebuffers")
+(load "filesandbuffers")
 
 ;; print functions
-(load "page-dimensions.el")
+(load "page-dimensions")
 (setq printer-name "Brother_HL_L2370DW_series")
 (setq ps-paper-type 'a5)
 (setq ps-lpr-switches '("-o media=a5"))
@@ -118,6 +123,7 @@
 (setq ps-header-title-font-size 9)
 (setq ps-header-offset 9)
 (setq ps-header-lines 1)
+(load "print2pdf")
 
 ;; Custom variables
 (setq custom-file (concat user-emacs-directory "custom.el"))
@@ -139,7 +145,7 @@
 (display-battery-mode)
 
 ;; Tabs
-;(load "centaur.el")
+;(load "centaur")
 
 ;; Emacs server
 (defun server-shutdown ()
@@ -148,9 +154,17 @@
 	(save-some-buffers)
 	(kill-emacs))
 
+;; Startup time
+(defun efs/display-startup-time ()
+	(message "Emacs loaded in %s with %d garbage collections."
+	(format "%.2f seconds"
+		(float-time (time-subtract after-init-time before-init-time)))
+	gcs-done) )
+(add-hook 'emacs-startup-hook #'efs/display-startup-time)
+
 ;; Initialize packages
 (use-package elfeed)
-(load "elfeedrc.el") ; feeds config
+(load "elfeedrc") ; feeds config
 (setq elfeed-use-curl t)
 (easy-menu-add-item  nil '("tools") ["Read web feeds" elfeed t])
 (defun elfeed-mark-all-as-read ()
@@ -164,10 +178,16 @@
 	(local-set-key (kbd "A-<left>") 'elpher-back)
 	(local-set-key (kbd "A-<up>")   'scroll-down-command)
 	(local-set-key (kbd "A-<down>") 'scroll-up-command)
-	(setq left-margin-width 15)
+	(setq-local left-margin-width 15)
+	(setq-local gnutls-verify-error nil)
 	(set-window-buffer nil (current-buffer)) ))
 (easy-menu-add-item  nil '("tools") ["Gopher" elpher t])
 
+(load "ercrc") ; irc config
+(easy-menu-add-item  nil '("tools")	["IRC with ERC" erc t])
+
+(setq browse-url-browser-function 'browse-url-generic ; eww
+	browse-url-generic-program (concat user-emacs-directory "g-c") )
 (advice-add 'eww-browse-url :around 'elpher:eww-browse-url)
 (defun elpher:eww-browse-url (original url &optional new-window)
 	"Handle gemini links."
@@ -178,17 +198,20 @@
 (add-hook 'eww-mode-hook (lambda ()
 	(local-set-key (kbd "A-<left>") 'eww-back-url)))
 
-(load "ercrc.el") ; irc config
-(easy-menu-add-item  nil '("tools")	["IRC with ERC" erc t])
-
 (use-package gnugo) ; Game of Go
 (setq gnugo-program "/usr/local/bin/gnugo")
 (easy-menu-add-item  nil '("tools" "games") ["Go" gnugo t])
 
-(setq browse-url-browser-function 'browse-url-generic
-	browse-url-generic-program (concat user-emacs-directory "g-c") )
+(use-package persistent-scratch)
+(persistent-scratch-setup-default)
 
-(use-package nswbuff) ; buffer switching
+(require 'simplenote2)
+(load "snrc")
+(simplenote2-setup)
+(setq simplenote2-markdown-notes-mode 'markdown-mode)
+(add-hook 'simplenote2-create-note-hook (lambda ()
+	(simplenote2-set-markdown) ))
+
 (use-package ssh)
 (use-package vterm)
 
@@ -210,37 +233,22 @@
 (setq org-default-notes-file (concat org-directory "/notes.org"))
 (setq org-startup-folded t)
 
-(add-hook 'org-mode-hook (lambda () (org-indent-mode) ))
+(add-hook 'org-mode-hook 'org-indent-mode)
 
-(setq org-agenda-files (list (concat org-directory "/daily.org")
-							 (concat org-directory "/work.org") ))
+(setq org-agenda-files (list org-directory))
 (setq org-agenda-include-diary t)
 (setq org-agenda-skip-scheduled-if-done t)
 (setq org-agenda-skip-deadline-if-done t)
 (setq org-agenda-todo-ignore-scheduled t)
 (setq org-agenda-todo-ignore-deadlines t)
 (setq org-agenda-start-on-weekday nil)
-(add-hook 'org-agenda-finalize-hook (lambda () (delete-other-windows)))
+(add-hook 'org-agenda-finalize-hook 'delete-other-windows)
 
 (setq org-todo-keywords
       '((sequence "TODO" "DONE")))
 (setq org-todo-keyword-faces
       '(("INPROGRESS" . (:foreground "blue" :weight bold)))) ; add inprogress keyword
 (setq org-log-done t)
-
-(org-link-set-parameters ; link type: gemini://host/index.gmi
-	"gemini"
-	:follow (lambda (path) (elpher-go (concat "gemini:" path)))
-	:face '(:foreground "turquoise" :weight bold)
-	:display 'full)
-
-(org-link-set-parameters ; link type: gopher
-	"gopher"
-	:follow (lambda (path) (elpher-go (concat "gopher:" path)))
-	:face '(:foreground "blue" :weight bold)
-	:display 'full)
-
-(load "ol-man.el") ; link type: man
 
 (defun org-toggle-iimage-in-org ()
 	"display images in your org file"
@@ -250,32 +258,14 @@
 		(set-face-underline-p 'org-link t))
 	(iimage-mode ‘toggle))
 
-;; see https://orgmode.org/list/87r5718ytv.fsf@sputnik.localhost
-(eval-after-load 'org-list
-  '(add-hook 'org-checkbox-statistics-hook (function ndk/checkbox-list-complete)))
-(defun ndk/checkbox-list-complete ()
-  (save-excursion
-    (org-back-to-heading t)
-    (let ((beg (point)) end)
-      (end-of-line)
-      (setq end (point))
-      (goto-char beg)
-      (if (re-search-forward "\\[\\([0-9]*%\\)\\]\\|\\[\\([0-9]*\\)/\\([0-9]*\\)\\]" end t)
-            (if (match-end 1)
-                (if (equal (match-string 1) "100%")
-                    ;; all done - do the state change
-                    (org-todo 'done)
-                  (org-todo 'todo))
-              (if (and (> (match-end 2) (match-beginning 2))
-                       (equal (match-string 2) (match-string 3)))
-                  (org-todo 'done)
-                (org-todo 'todo)))))))
-
 (add-hook 'visual-line-mode-hook
 	(lambda () (when (derived-mode-p 'org-mode)
 		(local-set-key (kbd "C-a") #'org-beginning-of-line)
 		(local-set-key (kbd "C-e") #'org-end-of-line)
 		(local-set-key (kbd "C-k") #'org-kill-line))))
+
+(load "org-links")
+(load "org-stats-complete")
 
 ;; Emacs Text mode
 (use-package olivetti
@@ -283,7 +273,6 @@
 		(setf olivetti-body-width 80)
 		(visual-line-mode))
 	:mode ("\\.txt\\'" . olivetti-mode))
-(add-hook 'markdown-mode-hook 'olivetti-mode)
 
 (add-hook 'text-mode-hook 'flyspell-mode)
 (eval-after-load "flyspell"
@@ -293,9 +282,11 @@
 		(setq flyspell-issue-message-flag nil)))
 
 (use-package smooth-scrolling)
+
 (use-package wc-mode)
 (add-hook 'text-mode-hook 'wc-mode)
-(load "text.el") ; text functions
+
+(load "textfunctions") ; text functions
 
 ;; Markdown
 (use-package markdown-mode
@@ -303,19 +294,24 @@
 	:mode (("README\\.md\\'" . gfm-mode)
 				 ("\\.md\\'" . markdown-mode)
 				 ("\\.markdown\\'" . markdown-mode))
-	:init (setq markdown-command "/usr/local/bin/multimarkdown"))
+	:init
+	(setq markdown-command "/usr/local/bin/multimarkdown"))
+(add-hook 'markdown-mode-hook (lambda ()
+	(setq-local left-margin-width 15)
+	(setq-local right-margin-width 15)
+	(visual-line-mode) ))
 
 (defun markdown-preview-file ()
 	"Run Marked on the current file and revert the buffer"
 	(interactive)
-	(shell-command
-	(format "open -a /Applications/Marked\\ 2.app %s"
-		(shell-quote-argument (buffer-file-name)))) )  
+	(shell-command (format "open -a /Applications/Marked\\ 2.app %s"
+		(shell-quote-argument (buffer-file-name)) )) )
 
-;; buffers
-(load "savebuffers.el") ; automatically save buffers
+;; buffer movement
 (require 'windmove) ; use alt + arrow keys to switch between visible buffers
 (windmove-default-keybindings 'meta) ; ‘M-left’ and ‘M-right’ to switch windows
+
+(kill-buffer "*Messages*")
 
 ;; resizing 'windows' (i.e., inside the frame)
 (global-set-key (kbd "M-S-<left>") 'shrink-window-horizontally)
@@ -389,7 +385,8 @@
 (global-set-key (kbd "s-p") 'ps-print-buffer)
 
 ;; Aliases
-(defalias 'yes-or-no-p 'y-or-n-p)
+(defalias 'yes-or-no-p 'y-or-n-p) ; y or n is enough
+(defalias 'list-buffers 'ibuffer) ; always use ibuffer
 
 (defalias 'ds 'desktop-save)
 (defalias 'dsm 'desktop-save-mode)
@@ -407,3 +404,7 @@
 (defalias 'om 'org-mode)
 (defalias 'obm 'org-bullets-mode)
 (defalias 'ssm 'shell-script-mode)
+(defalias 'vlm 'visual-line-mode)
+
+(defalias 'sn 'simplenote2-list)
+(defalias 'snsm 'simplenote2-set-markdown)
