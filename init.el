@@ -29,8 +29,9 @@
 (eval-and-compile
 	(mapc #'(lambda (path)
 	(add-to-list 'load-path (expand-file-name path user-emacs-directory))) '(
+		"etc"
 		"init"
-		"site-lisp" ) ))
+		"var" ) ))
 (setq default-directory "~/")
 (setenv "PATH" (concat "/usr/local/bin/" ":" (getenv "PATH")))
 
@@ -88,6 +89,9 @@
 (setq nswbuff-display-intermediate-buffers t)
 (setq nswbuff-exclude-buffer-regexps'("^ .*" "^\\*Messages\\*"))
 
+(use-package persistent-scratch)
+(persistent-scratch-setup-default)
+
 ;; remove unneeded buffers
 (setq inhibit-startup-echo-area-message t)
 (setq inhibit-startup-message t) 	; 'About Emacs'
@@ -103,8 +107,8 @@
 (add-hook 'window-setup-hook 'delete-other-windows) ; Show only one active window
 
 ;; file and buffer functions
-(load "autosavebuffers")
-(load "filesandbuffers")
+(load "init-buffers-autosave")
+(load "init-filesandbuffers")
 
 ;; print functions
 (load "page-dimensions")
@@ -123,7 +127,6 @@
 (setq ps-header-title-font-size 9)
 (setq ps-header-offset 9)
 (setq ps-header-lines 1)
-(load "print2pdf")
 
 ;; Custom variables
 (setq custom-file (concat user-emacs-directory "custom.el"))
@@ -145,7 +148,7 @@
 (display-battery-mode)
 
 ;; Tabs
-;(load "centaur")
+;(load "init-tabs")
 
 ;; Emacs server
 (defun server-shutdown ()
@@ -174,6 +177,7 @@
 (define-key elfeed-search-mode-map (kbd "R") 'elfeed-mark-all-as-read)
 
 (use-package elpher)
+(setq elpher-bookmarks-file (concat user-emacs-directory "var/elpher-bookmarks") )
 (add-hook 'elpher-mode-hook (lambda () 
 	(local-set-key (kbd "A-<left>") 'elpher-back)
 	(local-set-key (kbd "A-<up>")   'scroll-down-command)
@@ -201,9 +205,6 @@
 (use-package gnugo) ; Game of Go
 (setq gnugo-program "/usr/local/bin/gnugo")
 (easy-menu-add-item  nil '("tools" "games") ["Go" gnugo t])
-
-(use-package persistent-scratch)
-(persistent-scratch-setup-default)
 
 (require 'simplenote2)
 (load "snrc")
@@ -264,8 +265,7 @@
 		(local-set-key (kbd "C-e") #'org-end-of-line)
 		(local-set-key (kbd "C-k") #'org-kill-line))))
 
-(load "org-links")
-(load "org-stats-complete")
+(load "init-org-mode")
 
 ;; Emacs Text mode
 (use-package olivetti
@@ -286,7 +286,7 @@
 (use-package wc-mode)
 (add-hook 'text-mode-hook 'wc-mode)
 
-(load "textfunctions") ; text functions
+(load "init-text") ; text functions
 
 ;; Markdown
 (use-package markdown-mode

@@ -1,7 +1,7 @@
 (use-package centaur-tabs
-	:demand
-	:config
-	(centaur-tabs-mode t))
+;	:config
+;	(centaur-tabs-mode t)
+	)
 (centaur-tabs-headline-match)
 (centaur-tabs-change-fonts "Inconsolata" 160)
 (setq centaur-tabs--buffer-show-groups t)

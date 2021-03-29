@@ -1,7 +1,9 @@
+;; text functions
+
 (defun insert-tab-char ()
-  "Insert a tab char. (ASCII 9, \t)"
-  (interactive)
-  (insert "\t"))
+	"Insert a tab char. (ASCII 9, \t)"
+	(interactive)
+	(insert "\t"))
 
 (defun unfill-paragraph ()
 	"Takes a multi-line paragraph and makes it into a single line of text."
@@ -35,5 +37,4 @@
 			do (todo it (elfeed-entry-link entry)))
 		(mapc #'elfeed-search-update-entry entries)
 		(unless (use-region-p) (forward-line))))
-
 ;(define-key elfeed-search-mode-map (kbd "m") 'elfeed-mail-todo)
