@@ -4,9 +4,9 @@ elpa/
 eshell/
 request/
 url/
-init/elfeedrc.el
-init/ercrc.el
-init/snrc.el
+etc/elfeedrc.el
+etc/ercrc.el
+etc/snrc.el
 .persistent-scratch
 diary
 network-security.data
