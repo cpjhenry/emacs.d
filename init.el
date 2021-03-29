@@ -30,7 +30,6 @@
 	(mapc #'(lambda (path)
 	(add-to-list 'load-path (expand-file-name path user-emacs-directory))) '(
 		"etc"
-		"init"
 		"var" ) ))
 (setq default-directory "~/")
 (setenv "PATH" (concat "/usr/local/bin/" ":" (getenv "PATH")))
@@ -62,7 +61,9 @@
 (setq-default tab-width 4)
 (setq-default fill-column 52)
 
-(setq auto-save-list-file-prefix	(concat user-emacs-directory "/var/auto-save/sessions/"))
+(setq auto-save-list-file-prefix	(concat user-emacs-directory "var/auto-save/sessions/"))
+(setq eshell-aliases-file			(concat user-emacs-directory "etc/eshell/aliases"))
+(setq eshell-directory-name			(concat user-emacs-directory "var/eshell/"))
 (setq ispell-list-command "--list") ; correct command
 (setq ispell-program-name "/usr/local/bin/aspell") ; spell checker
 (setq request-storage-directory		(concat user-emacs-directory "var/request/storage/"))
@@ -118,7 +119,7 @@
 (load "init-filesandbuffers")
 
 ;; print functions
-(load "page-dimensions")
+(load "init-page-dimensions")
 (setq printer-name "Brother_HL_L2370DW_series")
 (setq ps-paper-type 'a5)
 (setq ps-lpr-switches '("-o media=a5"))
@@ -174,7 +175,7 @@
 
 ;; Initialize packages
 (use-package elfeed)
-(load "elfeedrc") ; feeds config
+(load "rc-elfeed") ; feeds config
 (setq elfeed-use-curl t)
 (easy-menu-add-item  nil '("tools") ["Read web feeds" elfeed t])
 (defun elfeed-mark-all-as-read ()
@@ -194,7 +195,7 @@
 	(set-window-buffer nil (current-buffer)) ))
 (easy-menu-add-item  nil '("tools") ["Gopher" elpher t])
 
-(load "ercrc") ; irc config
+(load "rc-erc") ; irc config
 (easy-menu-add-item  nil '("tools")	["IRC with ERC" erc t])
 
 (setq browse-url-browser-function 'browse-url-generic ; eww
@@ -219,7 +220,7 @@
 (easy-menu-add-item  nil '("tools" "games") ["Go" gnugo t])
 
 (require 'simplenote2)
-(load "snrc")
+(load "rc-sn")
 (simplenote2-setup)
 (setq simplenote2-markdown-notes-mode 'markdown-mode)
 (add-hook 'simplenote2-create-note-hook (lambda ()
