@@ -62,12 +62,19 @@
 (setq-default tab-width 4)
 (setq-default fill-column 52)
 
+(setq auto-save-list-file-prefix	(concat user-emacs-directory "/var/auto-save/sessions/"))
 (setq ispell-list-command "--list") ; correct command
 (setq ispell-program-name "/usr/local/bin/aspell") ; spell checker
+(setq request-storage-directory		(concat user-emacs-directory "var/request/storage/"))
 (setq ring-bell-function 'ignore)
 (setq sentence-end-double-space nil)
 (setq tramp-default-method "ssh")
+(setq tramp-auto-save-directory		(concat user-emacs-directory "var/tramp/auto-save/"))
+(setq tramp-persistency-file-name	(concat user-emacs-directory "var/tramp/persistency"))
 (setq tramp-syntax 'simplified)
+(setq url-cache-directory			(concat user-emacs-directory "var/url/cache/"))
+(setq url-configuration-directory	(concat user-emacs-directory "var/url/configuration/"))
+
 (setq visual-line-fringe-indicators '(nil right-curly-arrow))
 
 (setq delete-by-moving-to-trash t)
@@ -191,7 +198,7 @@
 (easy-menu-add-item  nil '("tools")	["IRC with ERC" erc t])
 
 (setq browse-url-browser-function 'browse-url-generic ; eww
-	browse-url-generic-program (concat user-emacs-directory "g-c") )
+	browse-url-generic-program (concat user-emacs-directory "var/g-c") )
 (advice-add 'eww-browse-url :around 'elpher:eww-browse-url)
 (defun elpher:eww-browse-url (original url &optional new-window)
 	"Handle gemini links."
@@ -200,7 +207,12 @@
 	(elpher-go url))
 	(t (funcall original url new-window))))
 (add-hook 'eww-mode-hook (lambda ()
-	(local-set-key (kbd "A-<left>") 'eww-back-url)))
+	(local-set-key (kbd "A-<left>") 'eww-back-url) ))
+(setq eww-bookmarks-directory (concat user-emacs-directory "var/eww") )
+
+(add-hook 'Info-mode-hook (lambda ()
+	(local-set-key (kbd "A-<left>" ) 'Info-history-back)
+	(local-set-key (kbd "A-<right>") 'Info-history-forward) ))
 
 (use-package gnugo) ; Game of Go
 (setq gnugo-program "/usr/local/bin/gnugo")
