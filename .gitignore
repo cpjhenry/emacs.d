@@ -8,6 +8,5 @@ etc/elfeedrc.el
 etc/ercrc.el
 etc/snrc.el
 .persistent-scratch
-diary
 network-security.data
-tramp
+var/tramp/persistency
