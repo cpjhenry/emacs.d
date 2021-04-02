@@ -61,25 +61,31 @@
 (setq-default tab-width 4)
 (setq-default fill-column 52)
 
-(setq auto-save-list-file-prefix	(concat user-emacs-directory "var/auto-save/sessions/"))
-(setq eshell-aliases-file			(concat user-emacs-directory "etc/eshell/aliases"))
-(setq eshell-directory-name			(concat user-emacs-directory "var/eshell/"))
+(setq delete-by-moving-to-trash t)
 (setq ispell-list-command "--list") ; correct command
 (setq ispell-program-name "/usr/local/bin/aspell") ; spell checker
-(setq request-storage-directory		(concat user-emacs-directory "var/request/storage/"))
+(setq recentf-max-menu-items 25)
+(setq recentf-max-saved-items 25)
 (setq ring-bell-function 'ignore)
 (setq sentence-end-double-space nil)
 (setq tramp-default-method "ssh")
-(setq tramp-auto-save-directory		(concat user-emacs-directory "var/tramp/auto-save/"))
-(setq tramp-persistency-file-name	(concat user-emacs-directory "var/tramp/persistency"))
 (setq tramp-syntax 'simplified)
-(setq url-cache-directory			(concat user-emacs-directory "var/url/cache/"))
-(setq url-configuration-directory	(concat user-emacs-directory "var/url/configuration/"))
-
+(setq trash-directory "~/.Trash")
 (setq visual-line-fringe-indicators '(nil right-curly-arrow))
 
-(setq delete-by-moving-to-trash t)
-(setq trash-directory "~/.Trash")
+(setq auto-save-list-file-prefix	(concat user-emacs-directory "var/auto-save/sessions/"))
+(setq elfeed-db-directory			(concat user-emacs-directory "var/elfeed/db/"))
+(setq elfeed-enclosure-default-dir	(concat user-emacs-directory "var/elfeed/enclosures/"))
+(setq elfeed-score-score-file		(concat user-emacs-directory "etc/elfeed/score/score.el"))
+(setq eshell-aliases-file			(concat user-emacs-directory "etc/eshell/aliases"))
+(setq eshell-directory-name			(concat user-emacs-directory "var/eshell/"))
+(setq recentf-save-file				(concat user-emacs-directory "var/recentf"))
+(setq request-storage-directory		(concat user-emacs-directory "var/request/storage/"))
+(setq simplenote2-directory			(concat user-emacs-directory "var/simplenote2/"))
+(setq tramp-auto-save-directory		(concat user-emacs-directory "var/tramp/auto-save/"))
+(setq tramp-persistency-file-name	(concat user-emacs-directory "var/tramp/persistency"))
+(setq url-cache-directory			(concat user-emacs-directory "var/url/cache/"))
+(setq url-configuration-directory	(concat user-emacs-directory "var/url/configuration/"))
 
 ;(setq shell-file-name "/usr/local/bin/bash") ; force full subshell
 ;(setq shell-command-switch "-ic")
@@ -117,6 +123,7 @@
 ;; file and buffer functions
 (load "init-buffers-autosave")
 (load "init-filesandbuffers")
+(recentf-mode t)
 
 ;; print functions
 (load "init-page-dimensions")
@@ -176,6 +183,7 @@
 ;; Initialize packages
 (use-package elfeed)
 (load "rc-elfeed") ; feeds config
+(eval-after-load 'elfeed `(make-directory ,(concat user-emacs-directory "var/elfeed/") t))
 (setq elfeed-use-curl t)
 (easy-menu-add-item  nil '("tools") ["Read web feeds" elfeed t])
 (defun elfeed-mark-all-as-read ()
@@ -245,8 +253,8 @@
 ;; Org-mode
 (setq org-directory "~/Documents/org")
 (setq org-default-notes-file (concat org-directory "/notes.org"))
-(setq org-startup-folded t)
-
+(setq org-startup-folded 'content) ; folded children content all
+(setq org-catch-invisible-edits 'smart)
 (add-hook 'org-mode-hook 'org-indent-mode)
 
 (setq org-agenda-files (list org-directory))
