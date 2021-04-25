@@ -4,7 +4,8 @@
 ; Feel free to edit by hand, but take care to ensure
 ; the list structure remains intact.
 
-(("gopher://gopher.club/1/users/otr/" "gopher://gopher.club/1/users/otr/")
+(("shufei/" "gemini://gemini.circumlunar.space/~shufei/")
+ ("gopher://gopher.club/1/users/otr/" "gopher://gopher.club/1/users/otr/")
  ("gopher://home.quix.us/1/audio/otradio" "gopher://home.quix.us/1/audio/otradio")
  ("Hex's GC" "gemini://hexdsl.co.uk/")
  ("Ben's Gemlog ☪" "gemini://kwiecien.us/logarion/date.gmi")
@@ -39,4 +40,5 @@
  ("kaun.ca" "gopher://kaun.ca/")
  ("cpj" "gopher://zaibatsu.circumlunar.space:70/1/~cpj/phlog")
  ("(Recent updates from all sundogs)" "gopher://zaibatsu.circumlunar.space:70/1/updates/")
- ("zaibatsu" "gopher://zaibatsu.circumlunar.space/"))
+ ("zaibatsu" "gopher://zaibatsu.circumlunar.space/")
+ ("kaun diagnostics" "gopher://kaun.ca/1/server-diag"))
