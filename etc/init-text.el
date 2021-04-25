@@ -38,3 +38,9 @@
 		(mapc #'elfeed-search-update-entry entries)
 		(unless (use-region-p) (forward-line))))
 ;(define-key elfeed-search-mode-map (kbd "m") 'elfeed-mail-todo)
+
+(defun markdown-preview-file ()
+	"Run Marked on the current file and revert the buffer"
+	(interactive)
+	(shell-command (format "open -a /Applications/Marked\\ 2.app %s"
+		(shell-quote-argument (buffer-file-name)) )) )

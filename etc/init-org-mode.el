@@ -81,3 +81,11 @@
 						(equal (match-string 2) (match-string 3)))
 						(org-todo 'done)
 						(org-todo 'todo)))))))
+
+(defun org-toggle-iimage-in-org ()
+	"display images in your org file"
+	(interactive)
+	(if (face-underline-p 'org-link)
+		(set-face-underline-p 'org-link nil)
+		(set-face-underline-p 'org-link t))
+	(iimage-mode ‘toggle))

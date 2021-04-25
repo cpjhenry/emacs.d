@@ -4,13 +4,26 @@
 	"Create new *scratch* buffer."
 	(interactive)
 	(switch-to-buffer (get-buffer-create "*scratch*"))
-	(text-mode))
+	(funcall (and initial-major-mode)) )
+
+(defun switch-to-scratch ()
+	"Switch to scratch buffer."
+	(interactive)
+	(switch-to-buffer "*scratch*") )
 
 (defun remove-scratch-buffer ()
 	"Kill *scratch* buffer."	
 	(interactive)
 	(if (get-buffer "*scratch*")
-	(kill-buffer "*scratch*")))
+	(kill-buffer "*scratch*")) )
+
+(defun new-empty-buffer ()
+	"Create new empty buffer."
+	(interactive)
+	(let ((buf (generate-new-buffer "untitled\.txt")))
+		(switch-to-buffer buf)
+		(funcall (and initial-major-mode))
+		(setq buffer-offer-save t) ))
 
 (defun nuke-all-buffers ()
 	"Kill all buffers, leaving *scratch* only."
@@ -18,15 +31,6 @@
 	(mapcar (lambda (x) (kill-buffer x))
 		(buffer-list))
 	(delete-other-windows))
-
-(defun xah-new-empty-buffer ()
-	"Create new empty buffer."
-	(interactive)
-	(let ((buf (generate-new-buffer "untitled\.txt")))
-		(switch-to-buffer buf)
-		(funcall (and initial-major-mode))
-		(setq buffer-offer-save t)
-		(olivetti-mode)))
 
 (defun rename-file-and-buffer (new-name)
 	"Renames both current buffer and file it's visiting to NEW-NAME."
@@ -94,3 +98,19 @@
  (shell-command cmd)
  (shell-command "rm tmp.ps")
  (message (concat "File printed in : "(buffer-name) ".pdf")) )
+
+;; automatically save buffers associated with files on buffer or window switch
+(defadvice switch-to-buffer (before save-buffer-now activate)
+	(when buffer-file-name (save-buffer)))
+(defadvice other-window (before other-window-now activate)
+	(when buffer-file-name (save-buffer)))
+(defadvice windmove-up (before other-window-now activate)
+	(when buffer-file-name (save-buffer)))
+(defadvice windmove-down (before other-window-now activate)
+	(when buffer-file-name (save-buffer)))
+(defadvice windmove-left (before other-window-now activate)
+	(when buffer-file-name (save-buffer)))
+(defadvice windmove-right (before other-window-now activate)
+	(when buffer-file-name (save-buffer)))
+;; automatically save buffers associated with files on frame (app) switch
+(add-hook 'focus-out-hook (lambda () (save-some-buffers t)))
