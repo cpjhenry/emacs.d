@@ -224,7 +224,7 @@
 (easy-menu-add-item  nil '("tools")	["IRC with ERC" erc t])
 
 (setq browse-url-browser-function 'browse-url-generic ; eww
-	browse-url-generic-program (concat user-emacs-directory "var/g-c") )
+	browse-url-generic-program "/Applications/Firefox.app/Contents/MacOS/firefox")
 
 (advice-add 'eww-browse-url :around 'elpher:eww-browse-url)
 (defun elpher:eww-browse-url (original url &optional new-window)
