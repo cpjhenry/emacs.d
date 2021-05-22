@@ -1,5 +1,19 @@
 ;; org-mode
 
+(setq org-todo-keywords
+      '((sequence "TODO" "DONE")))
+(setq org-todo-keyword-faces
+      '(("INPROGRESS" . (:foreground "blue" :weight bold)))) ; add inprogress keyword
+
+(setq org-emphasis-alist
+  '(("*" bold)
+    ("**" bold)
+    ("/" italic)
+    ("_" italic)
+    ("=" (:background "maroon" :foreground "white"))
+    ("~" (:background "deep sky blue" :foreground "MidnightBlue"))
+    ("+" (:strike-through t)) ))
+
 (require 'ol)
 
 (org-link-set-parameters ; link type: gemini://host/index.gmi
@@ -13,7 +27,6 @@
 	:follow (lambda (path) (elpher-go (concat "gopher:" path)))
 	:face '(:foreground "blue" :weight bold)
 	:display 'full)
-
 
 (org-link-set-parameters "man" ; links to man pages in Org mode
 	:follow #'org-man-open
@@ -89,3 +102,10 @@
 		(set-face-underline-p 'org-link nil)
 		(set-face-underline-p 'org-link t))
 	(iimage-mode ‘toggle))
+
+(setq org-capture-templates
+      '(("c" "Cookbook" entry (file "~/Documents/org/cookbook.org")
+         "%(org-chef-get-recipe-from-url)"
+         :empty-lines 1)
+        ("m" "Manual Cookbook" entry (file "~/Documents/org/cookbook.org")
+         "* %^{Recipe title: }\n  :PROPERTIES:\n  :source-url:\n  :servings:\n  :prep-time:\n  :cook-time:\n  :ready-in:\n  :END:\n** Ingredients\n   %?\n** Directions\n\n")))
