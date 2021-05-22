@@ -1,29 +1,35 @@
 ;; Emacs configuration / pjh
 
+;; Load theme
+(add-to-list 'load-path (concat user-emacs-directory "var/nano-emacs") )
+(load "nano-faces")
+
 ;; Initialize terminal
 (set-language-environment 'utf-8)
 (set-frame-font "Inconsolata 21")
-(set-background-color "ivory")
+(set-background-color "Ivory")
 
 (setq user-mail-address "cpjhenry@gmail.com")
 (setq calendar-latitude 45.3)
 (setq calendar-longitude -75.8)
 (setq calendar-location-name "Ottawa")
 
-; Mac option key is Meta (by default)
 ; Mac command key is Super (by default)
+; Mac option key is Meta (by default)
 (setq ns-function-modifier 'hyper) ; Mac function key is Hyper
 (setq ns-right-alternate-modifier 'alt) ; Mac right option key is Alt
-;(mouse-avoidance-mode 'banish) ; jump to corner when typing
 (define-key key-translation-map (kbd "<H-mouse-1>") (kbd "<mouse-2>"))
 
 (tool-bar-mode -1) 	; turn off tool bar
 (scroll-bar-mode -1); turn off scrollbar
 ;(menu-bar-mode -1)
 (toggle-frame-maximized)
-(set-default 'frame-title-format "")
+(setq frame-title-format nil)
+(setq ns-use-native-fullscreen t)
+(setq mac-use-title-bar nil)
 (setq use-dialog-box nil)
 (setq use-file-dialog nil)
+(setq pop-up-windows nil)
 (setq ns-pop-up-frames nil)
 
 ;; Initialize package manager
@@ -34,7 +40,7 @@
 							("melpa" . "https://melpa.org/packages/")
 							("gnu" . "http://elpa.gnu.org/packages/")))
 	(setq package-archive-priorities '(("org" . 3)("melpa" . 2)("gnu" . 1)))
-	;(package-initialize)
+	(package-initialize)
 	;(package-refresh-contents) ; Fetch the archive contents on startup and during compilation
 	(unless (package-installed-p 'use-package)
 		(package-install 'use-package))
@@ -44,14 +50,14 @@
 ;; Add directories to load-path
 (eval-and-compile
 	(mapc #'(lambda (path)
-	(add-to-list 'load-path (expand-file-name path user-emacs-directory))) '(
-		"etc" "var" ) ))
+	(add-to-list 'load-path (expand-file-name path user-emacs-directory))) 
+		'("etc" "var") ))
 (setq default-directory "~/")
 (use-package exec-path-from-shell :init (exec-path-from-shell-initialize) )
 
 ;; settings
 (setq initial-major-mode 'text-mode)
-(setq-default major-mode 'text-mode)
+(setq default-major-mode 'text-mode)
 (setq-default tab-width 4)
 (setq-default fill-column 52)
 (setq-default help-window-select t)
@@ -88,6 +94,7 @@
 (setq url-configuration-directory	(concat user-emacs-directory "var/url/configuration/"))
 
 (setq diary-file "~/Documents/diary")
+;(calendar-set-date-style ‘iso)
 (setq diary-show-holidays-flag nil)
 (add-hook 'diary-list-entries-hook 'diary-sort-entries t)
 (setq lunar-phase-names '(
@@ -109,8 +116,7 @@
 (setq nswbuff-display-intermediate-buffers t)
 (setq nswbuff-exclude-buffer-regexps'("^ .*" "^\\*Messages\\*"))
 
-(use-package persistent-scratch)
-(persistent-scratch-setup-default)
+(use-package persistent-scratch :config (persistent-scratch-setup-default) )
 
 ;; remove unneeded messages and buffers
 (setq inhibit-startup-message t) 	; 'About Emacs'
@@ -132,6 +138,7 @@
 ;; file and buffer functions
 (load "init-filesandbuffers")
 (recentf-mode t)
+(run-at-time nil (* 5 60) 'recentf-save-list)
 (add-to-list 'recentf-exclude ".emacs.d/elpa/")
 (add-to-list 'recentf-exclude ".emacs.d/etc/")
 (add-to-list 'recentf-exclude ".emacs.d/var/")
@@ -156,7 +163,7 @@
 
 ;; Custom variables
 (setq custom-file (concat user-emacs-directory "custom.el"))
-(if (file-exists-p custom-file) (load custom-file))
+(load custom-file 'noerror)
 
 ;; Mode Line
 (use-package smart-mode-line :config (sml/setup))
@@ -197,6 +204,7 @@
 (defun todayscookie () (message (cookie "/usr/local/share/games/fortunes/fortunes")))
 (add-hook 'window-setup-hook 'todayscookie)
 
+
 ;; Initialize packages
 (use-package elfeed)
 (load "rc-elfeed") ; feeds config
@@ -244,14 +252,14 @@
 (load "rc-sn")
 (simplenote2-setup)
 (setq simplenote2-markdown-notes-mode 'markdown-mode)
-(add-hook 'simplenote2-create-note-hook (lambda ()
-	(simplenote2-set-markdown) ))
+(add-hook 'simplenote2-create-note-hook (lambda () (simplenote2-set-markdown) ))
 
 (use-package smooth-scrolling :config (smooth-scrolling-mode))
 (use-package ssh)
 (use-package wc-mode)
 (use-package which-key :config (which-key-mode))
 
+
 ;; Lisp & Help modes
 (add-hook 'emacs-lisp-mode-hook 'prettify-symbols-mode)
 (add-hook 'emacs-lisp-mode-hook 'show-paren-mode)
@@ -265,21 +273,29 @@
 	(local-set-key (kbd "A-<left>" ) 'Info-history-back)
 	(local-set-key (kbd "A-<right>") 'Info-history-forward) ))
 
+
 ;; Org-mode
+(require 'org)
 (setq org-directory "~/Documents/org")
+(setq org-agenda-files (list org-directory))
+(setq org-agenda-diary-file (concat org-directory "/diary.org"))
 (setq org-default-notes-file (concat org-directory "/notes.org"))
-(setq org-startup-folded 'content) ; folded children content all
 
+(setq org-mobile-directory "~/Library/Mobile Documents/iCloud~com~mobileorg~mobileorg/Documents")
+(setq org-mobile-inbox-for-pull "from-mobile.org")
+;(use-package org-mobile-sync :config (org-mobile-sync-mode 1))
+
+(setq org-startup-folded 'content) ; folded children content all
+(setq org-startup-truncated nil) ; fix org-mode table wrapping
 (setq org-catch-invisible-edits 'smart)
 (setq org-ctrl-k-protect-subtree t)
+(setq org-enable-priority-commands nil)
 (setq org-export-with-toc nil)
 (setq org-footnote-auto-adjust t)
-(setq org-odt-preferred-output-format "docx")
+(setq org-log-done t)
 (setq org-special-ctrl-a/e t)
-(add-hook 'org-mode-hook 'org-indent-mode)
 
-(setq org-agenda-files (list org-directory))
-(setq org-agenda-include-diary t)
+(setq org-agenda-include-diary nil)
 (setq org-agenda-skip-scheduled-if-done t)
 (setq org-agenda-skip-deadline-if-done t)
 (setq org-agenda-todo-ignore-scheduled t)
@@ -287,16 +303,18 @@
 (setq org-agenda-start-on-weekday nil)
 (add-hook 'org-agenda-finalize-hook 'delete-other-windows)
 
-(setq org-todo-keywords
-      '((sequence "TODO" "DONE")))
-(setq org-todo-keyword-faces
-      '(("INPROGRESS" . (:foreground "blue" :weight bold)))) ; add inprogress keyword
-(setq org-log-done t)
+;(setq org-odt-convert-process "unoconv")
+;(setq org-odt-preferred-output-format "docx")
 
-(setq org-startup-truncated nil) ; fix org-mode table wrapping
-(load "org-phscroll.el")
+(use-package org-autolist)
+(add-hook 'org-mode-hook (lambda () (org-autolist-mode)))
+(use-package org-chef :ensure t)
+(add-hook 'org-mode-hook 'org-indent-mode)
+
+(load "org-phscroll.el") ; org-table fix
 (load "init-org-mode") ; org-mode functions
 
+
 ;; Emacs Text and Markdown modes
 (add-hook 'text-mode-hook (lambda ()
 	(abbrev-mode)
@@ -358,6 +376,8 @@
 (global-set-key (kbd "C-w") 'backward-kill-word)
 (global-set-key (kbd "C-S-k") 'kill-whole-line)
 (global-set-key (kbd "C-x C-k") 'kill-region)
+(global-set-key (kbd "C-x C-r") 'recentf-open-files)
+(global-set-key (kbd "C-X C-g") 'recentf-open-files-compl)
 
 (global-set-key (kbd "C-s") 'isearch-forward-regexp)
 (global-set-key (kbd "C-r") 'isearch-backward-regexp)
@@ -395,14 +415,18 @@
 (global-set-key (kbd "C-c l") 'org-store-link)
 (global-set-key (kbd "C-c m") 'markdown-mode)
 (global-set-key (kbd "C-c o") 'markdown-preview-file) 
-(global-set-key (kbd "C-c s") 'switch-to-scratch)
 (global-set-key (kbd "C-c t") 'olivetti-mode)
 (global-set-key (kbd "C-c w") 'eww-list-bookmarks)	; www
-(global-set-key (kbd "H-c") 'calendar)
-(global-set-key (kbd "M-Q") 'unfill-paragraph)
+
 (global-set-key (kbd "TAB") 'insert-tab-char)		; same as Ctrl+i
+(global-set-key (kbd "M-Q") 'unfill-paragraph)
 (global-set-key (kbd "M-p") 'lpr-buffer)
 (global-set-key (kbd "s-p") 'ps-print-buffer)
+
+(global-set-key (kbd "H-a") (kbd "C-c a a"))
+(global-set-key (kbd "H-c") 'calendar)
+(global-set-key (kbd "H-d") (lambda() (interactive) (find-file "~/Documents/org/daily.org")) )
+(global-set-key (kbd "H-w") (lambda() (interactive) (find-file "~/Documents/!dbin/words.org")) )
 
 ;; Aliases
 (defalias 'yes-or-no-p 'y-or-n-p) ; y or n is enough
