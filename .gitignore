@@ -9,6 +9,7 @@ games/
 request/
 url/
 var/elfeed/
+var/nano-emacs/
 var/recentf
 var/simplenote2/
 var/tramp/persistency
