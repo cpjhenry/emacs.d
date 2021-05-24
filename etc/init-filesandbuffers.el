@@ -27,6 +27,19 @@
 		(buffer-list))
 	(delete-other-windows))
 
+(defun kill-other-buffers ()
+	"Kill all other buffers."
+	(interactive)
+	(mapc 'kill-buffer (delq (current-buffer) (buffer-list)))
+	(kill-dired-buffers))
+
+(defun kill-dired-buffers ()
+	(interactive)
+	(mapc (lambda (buffer) 
+		(when (eq 'dired-mode (buffer-local-value 'major-mode buffer)) 
+		(kill-buffer buffer))) 
+		(buffer-list)))
+
 (defun rename-file-and-buffer (new-name)
 	"Renames both current buffer and file it's visiting to NEW-NAME."
 	(interactive "sNew name: ")

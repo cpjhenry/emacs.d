@@ -77,6 +77,8 @@
 (setq trash-directory "~/.Trash")
 (setq visual-line-fringe-indicators '(nil right-curly-arrow))
 
+(electric-indent-mode -1)
+
 (setq abbrev-file-name				(concat user-emacs-directory "etc/abbrev_defs"))
 (setq auto-save-list-file-prefix	(concat user-emacs-directory "var/auto-save/sessions/"))
 (setq elfeed-db-directory			(concat user-emacs-directory "var/elfeed/db/"))
@@ -102,6 +104,10 @@
 	"☽ First Quarter Moon"
 	"○ Full Moon"
 	"☾ Last Quarter Moon"))
+(setq holiday-bahai-holidays nil)
+(setq holiday-christian-holidays nil)
+(setq holiday-hebrew-holidays nil)
+(setq holiday-islamic-holidays nil)
 
 ;; backups
 (setq make-backup-files nil)
@@ -275,7 +281,7 @@
 
 
 ;; Org-mode
-(require 'org)
+(use-package org)
 (setq org-directory "~/Documents/org")
 (setq org-agenda-files (list org-directory))
 (setq org-agenda-diary-file (concat org-directory "/diary.org"))
@@ -289,11 +295,13 @@
 (setq org-startup-truncated nil) ; fix org-mode table wrapping
 (setq org-catch-invisible-edits 'smart)
 (setq org-ctrl-k-protect-subtree t)
+(setq org-ellipsis "…")
 (setq org-enable-priority-commands nil)
 (setq org-export-with-toc nil)
 (setq org-footnote-auto-adjust t)
 (setq org-log-done t)
 (setq org-special-ctrl-a/e t)
+(setq org-tags-exclude-from-inheritance '("PROJECT"))
 
 (setq org-agenda-include-diary nil)
 (setq org-agenda-skip-scheduled-if-done t)
@@ -307,11 +315,11 @@
 ;(setq org-odt-preferred-output-format "docx")
 
 (use-package org-autolist)
-(add-hook 'org-mode-hook (lambda () (org-autolist-mode)))
+(add-hook 'org-mode-hook (lambda () (org-autolist-mode)) )
 (use-package org-chef :ensure t)
 (add-hook 'org-mode-hook 'org-indent-mode)
 
-(load "org-phscroll.el") ; org-table fix
+(load "org-phscroll") ; org-table fix
 (load "init-org-mode") ; org-mode functions
 
 
@@ -342,6 +350,7 @@
 (load "init-text") ; text functions
 (create-scratch-buffer)
 
+
 ;; buffer movement
 (require 'windmove) ; use alt + arrow keys to switch between visible buffers
 (windmove-default-keybindings 'meta) ; ‘M-left’ and ‘M-right’ to switch windows
@@ -353,22 +362,25 @@
 (global-set-key (kbd "M-S-<up>") 'enlarge-window)  
 
 ;; arrow keys (Darwin)
-;; <home>  is fn-left	<end> is fn-right
+;; <home>  is fn-left	<end>  is fn-right
 ;; <prior> is fn-up		<next> is fn-down
-(put 'scroll-left 'disabled nil)
-(global-set-key (kbd "<home>") 'scroll-right)
-(global-set-key (kbd "<end>" ) 'scroll-left)
-; <prior>	'scroll-down-command
-; <next>	'scroll-up-command
-
-(global-set-key (kbd "s-<left>") 'move-beginning-of-line)
+(global-set-key (kbd "<home>"   ) 'move-beginning-of-line)
+(global-set-key (kbd "<end>"    ) 'move-end-of-line)
+(global-set-key (kbd "s-<left>" ) 'move-beginning-of-line)
 (global-set-key (kbd "s-<right>") 'move-end-of-line)
-(global-set-key (kbd "s-M-<left>") 'backward-sentence)
-(global-set-key (kbd "s-M-<right>") 'forward-sentence)
-(global-set-key (kbd "s-<up>") 'beginning-of-buffer)
-(global-set-key (kbd "s-<down>") 'end-of-buffer)
-(global-set-key (kbd "s-<prior>") 'backward-page) ; s-H-up
-(global-set-key (kbd "s-<next>") 'forward-page) ; s-H-down
+(global-set-key (kbd "C-<left>" ) 'left-word)
+(global-set-key (kbd "C-<right>") 'right-word)
+(global-set-key (kbd "C-<home>" ) 'backward-sentence)
+(global-set-key (kbd "C-<end>"  ) 'forward-sentence)
+
+(global-set-key (kbd "<prior>"  ) 'scroll-down-command)
+(global-set-key (kbd "<next>"   ) 'scroll-up-command)
+(global-set-key (kbd "s-<up>"   ) 'beginning-of-buffer)
+(global-set-key (kbd "s-<down>" ) 'end-of-buffer)
+(global-set-key (kbd "C-<up>"   ) 'backward-paragraph)
+(global-set-key (kbd "C-<down>" ) 'forward-paragraph)
+(global-set-key (kbd "C-<prior>") 'backward-page)
+(global-set-key (kbd "C-<next>" ) 'forward-page)
 
 ;; alternate keys
 (global-unset-key (kbd "C-x C-z"))
@@ -386,6 +398,7 @@
 
 (global-set-key (kbd "C-z") 'undo)
 
+
 ;; Shortcuts
 (global-set-key (kbd "s-1") (kbd "C-x 1"))
 (global-set-key (kbd "s-2") (kbd "C-x o C-x 1"))
@@ -418,7 +431,8 @@
 (global-set-key (kbd "C-c t") 'olivetti-mode)
 (global-set-key (kbd "C-c w") 'eww-list-bookmarks)	; www
 
-(global-set-key (kbd "TAB") 'insert-tab-char)		; same as Ctrl+i
+;(global-set-key (kbd "TAB") 'insert-tab-char)		; same as Ctrl+i
+(global-set-key (kbd "TAB") 'self-insert-command)	; 'tab-to-tab-stop
 (global-set-key (kbd "M-Q") 'unfill-paragraph)
 (global-set-key (kbd "M-p") 'lpr-buffer)
 (global-set-key (kbd "s-p") 'ps-print-buffer)
@@ -426,8 +440,11 @@
 (global-set-key (kbd "H-a") (kbd "C-c a a"))
 (global-set-key (kbd "H-c") 'calendar)
 (global-set-key (kbd "H-d") (lambda() (interactive) (find-file "~/Documents/org/daily.org")) )
+(global-set-key (kbd "H-e") (lambda() (interactive) (find-file "~/.emacs.d/init.el")) )
+(global-set-key (kbd "H-s") (lambda() (interactive) (find-file "~/Documents/Notes/-SCRATCH-.txt")) )
 (global-set-key (kbd "H-w") (lambda() (interactive) (find-file "~/Documents/!dbin/words.org")) )
 
+
 ;; Aliases
 (defalias 'yes-or-no-p 'y-or-n-p) ; y or n is enough
 (defalias 'list-buffers 'ibuffer) ; always use ibuffer

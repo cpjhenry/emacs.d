@@ -1,21 +1,42 @@
 ;; org-mode
 
-(setq org-todo-keywords
-      '((sequence "TODO" "DONE")))
-(setq org-todo-keyword-faces
-      '(("INPROGRESS" . (:foreground "blue" :weight bold)))) ; add inprogress keyword
+(setq org-todo-keywords '(
+	(sequence "TODO" "DONE")))
+(setq org-todo-keyword-faces '(
+	("INPROGRESS" . (:foreground "blue" :weight bold)))) ; add inprogress keyword
 
-(setq org-emphasis-alist
-  '(("*" bold)
-    ("**" bold)
-    ("/" italic)
-    ("_" italic)
-    ("=" (:background "maroon" :foreground "white"))
-    ("~" (:background "deep sky blue" :foreground "MidnightBlue"))
+(setq org-emphasis-alist '(
+	("*" bold)
+	("**" bold)
+	("/" italic)
+	("_" italic)
+	("=" (:background "maroon" :foreground "white"))
+	("~" (:background "deep sky blue" :foreground "MidnightBlue"))
     ("+" (:strike-through t)) ))
 
-(require 'ol)
+(setq org-agenda-custom-commands '(
+	("P" "Project List" (
+		(tags "PROJECT") ) )
+	("O" "Office" (
+		(agenda)
+		(tags-todo "OFFICE") ) )
+	("W" "Weekly Plan" (
+		(agenda)
+		(todo "TODO")
+		(tags "PROJECT") ) )
+	("H" "Home NA Lists" (
+		(agenda)
+		(tags-todo "HOME")
+		(tags-todo "COMPUTER") ) ) ))
 
+(setq org-capture-templates '(
+		("c" "Cookbook" entry
+			(file "~/Documents/org/cookbook.org") "%(org-chef-get-recipe-from-url)" :empty-lines 1)
+        ("m" "Manual Cookbook" entry 
+			(file "~/Documents/org/cookbook.org") "* %^{Recipe title: }\n  :PROPERTIES:\n  :source-url:\n  :servings:\n  :prep-time:\n  :cook-time:\n  :ready-in:\n  :END:\n** Ingredients\n   %?\n** Directions\n\n") ))
+
+;; org links
+(require 'ol)
 (org-link-set-parameters ; link type: gemini://host/index.gmi
 	"gemini"
 	:follow (lambda (path) (elpher-go (concat "gemini:" path)))
@@ -102,10 +123,3 @@
 		(set-face-underline-p 'org-link nil)
 		(set-face-underline-p 'org-link t))
 	(iimage-mode ‘toggle))
-
-(setq org-capture-templates
-      '(("c" "Cookbook" entry (file "~/Documents/org/cookbook.org")
-         "%(org-chef-get-recipe-from-url)"
-         :empty-lines 1)
-        ("m" "Manual Cookbook" entry (file "~/Documents/org/cookbook.org")
-         "* %^{Recipe title: }\n  :PROPERTIES:\n  :source-url:\n  :servings:\n  :prep-time:\n  :cook-time:\n  :ready-in:\n  :END:\n** Ingredients\n   %?\n** Directions\n\n")))
