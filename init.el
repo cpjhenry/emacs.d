@@ -116,6 +116,7 @@
 (require 'backup-each-save)
 (add-hook 'after-save-hook 'backup-each-save)
 
+
 ;; buffers
 (use-package nswbuff) ; buffer switching
 (setq nswbuff-clear-delay 1.5)
@@ -130,8 +131,8 @@
 (eval-after-load "startup" '(fset 'display-startup-echo-area-message (lambda ())))
 
 (setq initial-scratch-message nil) 	; Makes *scratch* empty
-(setq-default message-log-max nil) 	; Removes *Messages* from the buffer
-(add-hook 'after-init-hook (kill-buffer "*Messages*"))
+;(setq-default message-log-max nil) 	; Removes *Messages* from the buffer
+;(add-hook 'after-init-hook (kill-buffer "*Messages*"))
 (add-hook 'minibuffer-exit-hook 	; Removes *Completions* buffer when done
 	'(lambda () (let ((buffer "*Completions*"))
 		(and (get-buffer buffer)
@@ -284,7 +285,7 @@
 (use-package org)
 (setq org-directory "~/Documents/org")
 (setq org-agenda-files (list org-directory))
-(setq org-agenda-diary-file (concat org-directory "/diary.org"))
+;(setq org-agenda-diary-file (concat org-directory "/diary.org"))
 (setq org-default-notes-file (concat org-directory "/notes.org"))
 
 (setq org-mobile-directory "~/Library/Mobile Documents/iCloud~com~mobileorg~mobileorg/Documents")
@@ -300,6 +301,7 @@
 (setq org-export-with-toc nil)
 (setq org-footnote-auto-adjust t)
 (setq org-log-done t)
+(setq org-log-into-drawer t)
 (setq org-special-ctrl-a/e t)
 (setq org-tags-exclude-from-inheritance '("PROJECT"))
 
@@ -382,6 +384,7 @@
 (global-set-key (kbd "C-<prior>") 'backward-page)
 (global-set-key (kbd "C-<next>" ) 'forward-page)
 
+
 ;; alternate keys
 (global-unset-key (kbd "C-x C-z"))
 
@@ -467,5 +470,5 @@
 (defalias 'ssm 'shell-script-mode)
 (defalias 'vlm 'visual-line-mode)
 
-(defalias 'sn 'simplenote2-list)
+(defalias 'sn 'simplenote2-browse)
 (defalias 'snsm 'simplenote2-set-markdown)
