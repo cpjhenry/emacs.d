@@ -392,7 +392,7 @@
 (global-set-key (kbd "C-S-k") 'kill-whole-line)
 (global-set-key (kbd "C-x C-k") 'kill-region)
 (global-set-key (kbd "C-x C-r") 'recentf-open-files)
-(global-set-key (kbd "C-X C-g") 'recentf-open-files-compl)
+(global-set-key (kbd "C-x C-g") 'recentf-open-files-compl)
 
 (global-set-key (kbd "C-s") 'isearch-forward-regexp)
 (global-set-key (kbd "C-r") 'isearch-backward-regexp)
@@ -400,6 +400,8 @@
 (global-set-key (kbd "C-M-r") 'isearch-backward)
 
 (global-set-key (kbd "C-z") 'undo)
+
+(global-set-key (kbd "A-<return>") (kbd "M-<return>"))
 
 
 ;; Shortcuts
