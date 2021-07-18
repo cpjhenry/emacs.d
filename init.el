@@ -298,6 +298,7 @@
 (setq org-ctrl-k-protect-subtree t)
 (setq org-ellipsis "…")
 (setq org-enable-priority-commands nil)
+(setq org-export-preserve-breaks t)
 (setq org-export-with-toc nil)
 (setq org-footnote-auto-adjust t)
 (setq org-log-done t)
