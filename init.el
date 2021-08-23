@@ -264,7 +264,7 @@
 (use-package smooth-scrolling :config (smooth-scrolling-mode))
 (use-package ssh)
 (use-package wc-mode)
-(use-package which-key :config (which-key-mode))
+(use-package which-key :config (which-key-mode)(which-key-setup-side-window-right-bottom))
 
 
 ;; Lisp & Help modes
@@ -283,14 +283,17 @@
 
 ;; Org-mode
 (use-package org)
-(setq org-directory "~/Documents/org")
+(setq org-directory "~/Documents/org/")
 (setq org-agenda-files (list org-directory))
-;(setq org-agenda-diary-file (concat org-directory "/diary.org"))
-(setq org-default-notes-file (concat org-directory "/notes.org"))
+(setq org-default-notes-file (concat org-directory "notes.org"))
 
 (setq org-mobile-directory "~/Library/Mobile Documents/iCloud~com~mobileorg~mobileorg/Documents")
-(setq org-mobile-inbox-for-pull "from-mobile.org")
-;(use-package org-mobile-sync :config (org-mobile-sync-mode 1))
+(setq org-mobile-inbox-for-pull (concat org-directory "from-mobile.org"))
+(use-package org-mobile-sync :config (org-mobile-sync-mode 1))
+
+;(setq org-agenda-files (list (concat org-directory "work.org")))
+;(setq org-agenda-diary-file (concat org-directory "diary.org"))
+;(setq org-mobile-directory "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org")
 
 (setq org-startup-folded 'content) ; folded children content all
 (setq org-startup-truncated nil) ; fix org-mode table wrapping
@@ -347,10 +350,11 @@
 	:mode (("README\\.md\\'" . gfm-mode)
 				 ("\\.md\\'" . markdown-mode)
 				 ("\\.markdown\\'" . markdown-mode)) )
-(add-hook 'markdown-mode-hook (lambda ()
-	(setq-local left-margin-width 15) )) ;(setq-local right-margin-width 15)
+;(add-hook 'markdown-mode-hook (lambda ()
+;	(setq-local left-margin-width 15) )) ;(setq-local right-margin-width 15)
 
 (load "init-text") ; text functions
+(load "init-pdfexport") ; pdf functions
 (create-scratch-buffer)
 
 
@@ -408,6 +412,7 @@
 ;; Shortcuts
 (global-set-key (kbd "s-1") (kbd "C-x 1"))
 (global-set-key (kbd "s-2") (kbd "C-x o C-x 1"))
+(global-set-key (kbd "s-3") (kbd "C-x 3"))
 (global-set-key (kbd "s-0") (kbd "C-x 0"))
 (global-set-key (kbd "s-=") 'text-scale-increase)
 (global-set-key (kbd "s--") 'text-scale-decrease)
@@ -457,6 +462,7 @@
 
 (defalias 'ds 'desktop-save)
 (defalias 'dsm 'desktop-save-mode)
+(defalias 'fbl 'flush-blank-lines)
 (defalias 'lcd 'list-colors-display)
 (defalias 'li 'lorem-ipsum-insert-paragraphs)
 (defalias 'ppc 'ps-print-customize)

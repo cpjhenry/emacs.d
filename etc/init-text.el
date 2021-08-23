@@ -44,3 +44,7 @@
 	(interactive)
 	(shell-command (format "open -a /Applications/Marked\\ 2.app %s"
 		(shell-quote-argument (buffer-file-name)) )) )
+
+(defun flush-blank-lines (start end)
+	(interactive "r")
+	(flush-lines "^\\s-*$" start end nil))
