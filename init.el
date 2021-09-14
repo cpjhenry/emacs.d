@@ -121,7 +121,7 @@
 (use-package nswbuff) ; buffer switching
 (setq nswbuff-clear-delay 1.5)
 (setq nswbuff-display-intermediate-buffers t)
-(setq nswbuff-exclude-buffer-regexps'("^ .*" "^\\*Messages\\*"))
+(setq nswbuff-exclude-buffer-regexps'("^ .*" "^\\*Messages\\*" "from-mobile.org"))
 
 (use-package persistent-scratch :config (persistent-scratch-setup-default) )
 
@@ -284,13 +284,14 @@
 ;; Org-mode
 (use-package org)
 (setq org-directory "~/Documents/org/")
-(setq org-agenda-files (list org-directory))
+(setq org-agenda-files (list (concat org-directory "daily.org") "~/OD/OneDrive - City of Ottawa/work.org"))
 (setq org-default-notes-file (concat org-directory "notes.org"))
 
 (setq org-mobile-directory "~/Library/Mobile Documents/iCloud~com~mobileorg~mobileorg/Documents")
 (setq org-mobile-inbox-for-pull (concat org-directory "from-mobile.org"))
 (use-package org-mobile-sync :config (org-mobile-sync-mode 1))
 
+;(setq org-agenda-files (list org-directory))
 ;(setq org-agenda-files (list (concat org-directory "work.org")))
 ;(setq org-agenda-diary-file (concat org-directory "diary.org"))
 ;(setq org-mobile-directory "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org")
