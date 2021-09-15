@@ -53,7 +53,7 @@
 	(add-to-list 'load-path (expand-file-name path user-emacs-directory))) 
 		'("etc" "var") ))
 (setq default-directory "~/")
-(use-package exec-path-from-shell :init (exec-path-from-shell-initialize) )
+(setq exec-path '(".local/" "/Users/cpjh/bin/" "/Library/TeX/texbin/" "/usr/local/opt/qt@5/bin/" "/usr/local/opt/python@3/libexec/bin/" "/usr/local/MacGPG2/bin/" "/usr/libexec/" "/usr/local/opt/gnu-sed/libexec/gnubin/" "/usr/local/opt/coreutils/libexec/gnubin/" "/usr/local/bin/" "/usr/local/sbin/" "/usr/bin/" "/usr/sbin/" "/bin/" "/sbin/" "/Applications/Emacs.app/Contents/MacOS/libexec/"))
 
 ;; settings
 (setq initial-major-mode 'text-mode)
@@ -121,7 +121,7 @@
 (use-package nswbuff) ; buffer switching
 (setq nswbuff-clear-delay 1.5)
 (setq nswbuff-display-intermediate-buffers t)
-(setq nswbuff-exclude-buffer-regexps'("^ .*" "^\\*Messages\\*" "from-mobile.org"))
+(setq nswbuff-exclude-buffer-regexps '("^ .*" "^\\*Messages\\*" "^\\*Shell Command Output\\*" "from-mobile.org"))
 
 (use-package persistent-scratch :config (persistent-scratch-setup-default) )
 
