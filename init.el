@@ -19,6 +19,7 @@
 (setq ns-function-modifier 'hyper) ; Mac function key is Hyper
 (setq ns-right-alternate-modifier 'alt) ; Mac right option key is Alt
 (define-key key-translation-map (kbd "<H-mouse-1>") (kbd "<mouse-2>"))
+(setq w32-lwindow-modifier 'super)
 
 (tool-bar-mode -1) 	; turn off tool bar
 (scroll-bar-mode -1); turn off scrollbar
@@ -53,7 +54,11 @@
 	(add-to-list 'load-path (expand-file-name path user-emacs-directory))) 
 		'("etc" "var") ))
 (setq default-directory "~/")
-(setq exec-path '(".local/" "/Users/cpjh/bin/" "/Library/TeX/texbin/" "/usr/local/opt/qt@5/bin/" "/usr/local/opt/python@3/libexec/bin/" "/usr/local/MacGPG2/bin/" "/usr/libexec/" "/usr/local/opt/gnu-sed/libexec/gnubin/" "/usr/local/opt/coreutils/libexec/gnubin/" "/usr/local/bin/" "/usr/local/sbin/" "/usr/bin/" "/usr/sbin/" "/bin/" "/sbin/" "/Applications/Emacs.app/Contents/MacOS/libexec/"))
+(setq exec-path '(	".local/" "/Users/cpjh/bin/" "/Library/TeX/texbin/" "/usr/local/opt/qt@5/bin/"
+					"/usr/local/opt/python@3/libexec/bin/" "/usr/local/MacGPG2/bin/" "/usr/libexec/" 
+					"/usr/local/opt/gnu-sed/libexec/gnubin/" "/usr/local/opt/coreutils/libexec/gnubin/" 
+					"/usr/local/bin/" "/usr/local/sbin/" "/usr/bin/" "/usr/sbin/" "/bin/" "/sbin/" 
+					"/Applications/Emacs.app/Contents/MacOS/libexec/" ))
 
 ;; settings
 (setq initial-major-mode 'text-mode)
@@ -123,7 +128,7 @@
 (setq nswbuff-display-intermediate-buffers t)
 (setq nswbuff-exclude-buffer-regexps '("^ .*" "^\\*Messages\\*" "^\\*Shell Command Output\\*" "from-mobile.org"))
 
-(use-package persistent-scratch :config (persistent-scratch-setup-default) )
+(use-package persistent-scratch :config (persistent-scratch-setup-default))
 
 ;; remove unneeded messages and buffers
 (setq inhibit-startup-message t) 	; 'About Emacs'
