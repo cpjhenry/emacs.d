@@ -1,12 +1,9 @@
 ;; Emacs configuration / pjh
 
-;; Load theme
-(add-to-list 'load-path (concat user-emacs-directory "var/nano-emacs") )
-(load "nano-faces")
-
 ;; Initialize terminal
 (set-language-environment 'utf-8)
-(set-frame-font "Inconsolata 21")
+
+(if (eq system-type 'darwin) (set-frame-font "Inconsolata 21"))
 (set-background-color "Ivory")
 
 (setq user-mail-address "cpjhenry@gmail.com")
@@ -20,6 +17,7 @@
 (setq ns-right-alternate-modifier 'alt) ; Mac right option key is Alt
 (define-key key-translation-map (kbd "<H-mouse-1>") (kbd "<mouse-2>"))
 (setq w32-lwindow-modifier 'super)
+(setq w32-pass-lwindow-to-system nil)
 
 (tool-bar-mode -1) 	; turn off tool bar
 (scroll-bar-mode -1); turn off scrollbar
@@ -42,7 +40,7 @@
 							("gnu" . "http://elpa.gnu.org/packages/")))
 	(setq package-archive-priorities '(("org" . 3)("melpa" . 2)("gnu" . 1)))
 	(package-initialize)
-	;(package-refresh-contents) ; Fetch the archive contents on startup and during compilation
+	;(package-refresh-contents) ; Fetch the archive contents on startup
 	(unless (package-installed-p 'use-package)
 		(package-install 'use-package))
 	(require 'use-package)
@@ -214,12 +212,12 @@
 
 ;; Today's cookie
 (defun todayscookie () (message (cookie "/usr/local/share/games/fortunes/fortunes")))
-(add-hook 'window-setup-hook 'todayscookie)
+(if (eq system-type 'darwin) (add-hook 'window-setup-hook 'todayscookie))
 
 
 ;; Initialize packages
 (use-package elfeed)
-(load "rc-elfeed") ; feeds config
+(load "rc-elfeed" 'noerror) ; feeds config
 (eval-after-load 'elfeed `(make-directory ,(concat user-emacs-directory "var/elfeed/") t))
 (setq elfeed-use-curl t)
 (easy-menu-add-item  nil '("tools") ["Read web feeds" elfeed t])
@@ -240,7 +238,7 @@
 	(set-window-buffer nil (current-buffer)) ))
 (easy-menu-add-item  nil '("tools") ["Gopher" elpher t])
 
-(load "rc-erc") ; irc config
+(load "rc-erc" 'noerror) ; irc config
 (easy-menu-add-item  nil '("tools")	["IRC with ERC" erc t])
 
 (setq browse-url-browser-function 'browse-url-generic ; eww
@@ -261,7 +259,7 @@
 (easy-menu-add-item  nil '("tools" "games") ["Go" gnugo t])
 
 (use-package simplenote2)
-(load "rc-sn")
+(load "rc-sn" 'noerror)
 (simplenote2-setup)
 (setq simplenote2-markdown-notes-mode 'markdown-mode)
 (add-hook 'simplenote2-create-note-hook (lambda () (simplenote2-set-markdown) ))
@@ -295,11 +293,6 @@
 (setq org-mobile-directory "~/Library/Mobile Documents/iCloud~com~mobileorg~mobileorg/Documents")
 (setq org-mobile-inbox-for-pull (concat org-directory "from-mobile.org"))
 (use-package org-mobile-sync :config (org-mobile-sync-mode 1))
-
-;(setq org-agenda-files (list org-directory))
-;(setq org-agenda-files (list (concat org-directory "work.org")))
-;(setq org-agenda-diary-file (concat org-directory "diary.org"))
-;(setq org-mobile-directory "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org")
 
 (setq org-startup-folded 'content) ; folded children content all
 (setq org-startup-truncated nil) ; fix org-mode table wrapping
