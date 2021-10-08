@@ -17,7 +17,7 @@
 
 (defun insert-date ()
 	(interactive)
-	(insert (format-time-string "%d %B %Y")))
+	(insert (format-time-string "%-d %B %Y")))
 
 (defun todo (text &optional body)
 	(interactive "sTodo: ")
@@ -48,3 +48,12 @@
 (defun flush-blank-lines (start end)
 	(interactive "r")
 	(flush-lines "^\\s-*$" start end nil))
+
+(defun replace-smart-quotes (beg end)
+	"Replace 'smart quotes' in buffer or region with ascii quotes."
+	(interactive "r")
+	(format-replace-strings '(
+		("\x201C" . "\"")
+		("\x201D" . "\"")
+		("\x2018" . "'")
+		("\x2019" . "'") ) nil beg end))
