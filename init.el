@@ -177,9 +177,10 @@
 
 ;; Mode Line
 (use-package smart-mode-line :config (sml/setup))
+(add-to-list 'sml/replacer-regexp-list '("^:Doc:Notes/" ":Notes:") t)
 (add-to-list 'sml/replacer-regexp-list '("^:Doc:org/" ":org:") t)
-(add-to-list 'sml/replacer-regexp-list '("^:Doc:Projects/" ":DocProj:") t)
-(add-to-list 'sml/replacer-regexp-list '("^:Doc:Reference/" ":DocRef:") t)
+(add-to-list 'sml/replacer-regexp-list '("^:Doc:Projects/" ":Proj:") t)
+(add-to-list 'sml/replacer-regexp-list '("^:Doc:Reference/" ":Ref:") t)
 (add-to-list 'sml/replacer-regexp-list '("^.*/gemini/" ":gem:") t)
 (add-to-list 'sml/replacer-regexp-list '("^.*City of Ottawa/" ":CoO:") t)
 (add-to-list 'sml/replacer-regexp-list '("^:CoO:Operations/" ":Ops:") t)
