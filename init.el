@@ -452,6 +452,7 @@
 (global-set-key (kbd "H-c") 'calendar)
 (global-set-key (kbd "H-d") (lambda() (interactive) (find-file "~/Documents/org/daily.org")) )
 (global-set-key (kbd "H-e") (lambda() (interactive) (find-file "~/.emacs.d/init.el")) )
+(global-set-key (kbd "H-o") (lambda() (interactive) (find-file "~/OD/OneDrive - City of Ottawa/work.org")) )
 (global-set-key (kbd "H-s") (lambda() (interactive) (find-file "~/Documents/Notes/-SCRATCH-.txt")) )
 (global-set-key (kbd "H-w") (lambda() (interactive) (find-file "~/Documents/!dbin/words.org")) )
 
