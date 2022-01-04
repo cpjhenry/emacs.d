@@ -6,12 +6,6 @@
 	(switch-to-buffer (get-buffer-create "*scratch*"))
 	(funcall (and initial-major-mode)) )
 
-(defun remove-scratch-buffer ()
-	"Kill *scratch* buffer."	
-	(interactive)
-	(if (get-buffer "*scratch*")
-	(kill-buffer "*scratch*")) )
-
 (defun new-empty-buffer ()
 	"Create new empty buffer."
 	(interactive)

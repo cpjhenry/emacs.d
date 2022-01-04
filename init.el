@@ -127,6 +127,8 @@
 (setq nswbuff-exclude-buffer-regexps '("^ .*" "^\\*Messages\\*" "^\\*Shell Command Output\\*" "from-mobile.org"))
 
 (use-package persistent-scratch :config (persistent-scratch-setup-default))
+(use-package unkillable-scratch :ensure t :config (unkillable-scratch t)
+	:init (setq unkillable-scratch-do-not-reset-scratch-buffer t))
 
 ;; remove unneeded messages and buffers
 (setq inhibit-startup-message t) 	; 'About Emacs'
@@ -288,15 +290,16 @@
 ;; Org-mode
 (use-package org)
 (setq org-directory "~/Documents/org/")
-(setq org-agenda-files (list (concat org-directory "daily.org") "~/OD/OneDrive - City of Ottawa/work.org"))
+(setq org-agenda-files (list (concat org-directory "daily.org") ;"~/OD/OneDrive - City of Ottawa/work.org"
+	))
 (setq org-default-notes-file (concat org-directory "notes.org"))
 
 (setq org-mobile-directory "~/Library/Mobile Documents/iCloud~com~mobileorg~mobileorg/Documents")
 (setq org-mobile-inbox-for-pull (concat org-directory "from-mobile.org"))
 (use-package org-mobile-sync :config (org-mobile-sync-mode 1))
 
-(setq org-startup-folded 'content) ; folded children content all
-(setq org-startup-truncated nil) ; fix org-mode table wrapping
+(setq org-startup-folded 'content)		; folded children content all
+(setq org-startup-truncated nil)		; fix org-mode table wrapping
 (setq org-catch-invisible-edits 'smart)
 (setq org-ctrl-k-protect-subtree t)
 (setq org-ellipsis "…")
@@ -304,8 +307,9 @@
 (setq org-export-preserve-breaks t)
 (setq org-export-with-toc nil)
 (setq org-footnote-auto-adjust t)
-(setq org-log-done t)
-(setq org-log-into-drawer t)
+(setq org-log-done t) 					; 'CLOSED' logging
+(setq org-log-state-notes-into-drawer nil)			
+(setq org-log-repeat nil) 				; don't log repeating
 (setq org-special-ctrl-a/e t)
 (setq org-tags-exclude-from-inheritance '("PROJECT"))
 
