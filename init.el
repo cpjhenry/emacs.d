@@ -33,18 +33,12 @@
 
 ;; Initialize package manager
 (setq gnutls-algorithm-priority "normal:-vers-tls1.3")
-(eval-and-compile
+(when (>= emacs-major-version 24)
 	(require 'package)
-	(setq package-archives '(("org" . "https://orgmode.org/elpa/")
-							("melpa" . "https://melpa.org/packages/")
-							("gnu" . "http://elpa.gnu.org/packages/")))
-	(setq package-archive-priorities '(("org" . 3)("melpa" . 2)("gnu" . 1)))
-	(package-initialize)
-	;(package-refresh-contents) ; Fetch the archive contents on startup
-	(unless (package-installed-p 'use-package)
-		(package-install 'use-package))
+	(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t) )
+	(unless (package-installed-p 'use-package) (package-install 'use-package) )
 	(require 'use-package)
-	(setf use-package-always-ensure t))
+	(setf use-package-always-ensure t)
 
 ;; Add directories to load-path
 (eval-and-compile
@@ -57,6 +51,10 @@
 					"/usr/local/opt/gnu-sed/libexec/gnubin/" "/usr/local/opt/coreutils/libexec/gnubin/" 
 					"/usr/local/bin/" "/usr/local/sbin/" "/usr/bin/" "/usr/sbin/" "/bin/" "/sbin/" 
 					"/Applications/Emacs.app/Contents/MacOS/libexec/" ))
+
+(package-initialize t) ; instead of (package-initialize)
+(setq package-enable-at-startup nil)
+;(package-refresh-contents) ; Fetch the archive contents on startup
 
 ;; settings
 (setq initial-major-mode 'text-mode)
@@ -260,6 +258,8 @@
 (use-package gnugo) ; Game of Go
 (setq gnugo-program "/usr/local/bin/gnugo")
 (easy-menu-add-item  nil '("tools" "games") ["Go" gnugo t])
+
+(use-package lorem-ipsum)
 
 (use-package simplenote2)
 (load "rc-sn" 'noerror)
