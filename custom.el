@@ -6,7 +6,7 @@
  '(custom-safe-themes
    '("a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" default))
  '(package-selected-packages
-   '(unkillable-scratch org-pretty-table org-brain org-chef org-autolist org-mobile-sync ts org-phscroll exec-path-from-shell windmove elfeed persistent-scratch frames-only-mode simplenote2 centaur-tabs gnugo org-super-agenda which-key lorem-ipsum wc-mode vterm-toggle visual-fill-column use-package ssh smooth-scrolling smart-mode-line osx-browse org-bullets org olivetti nswbuff markdown-mode form-feed elpher elfeed-web))
+   '(lorem-ipsum org markdown-mode olivetti org-chef org-autolist org-mobile-sync form-feed which-key wc-mode ssh smooth-scrolling simplenote2 gnugo elpher elfeed smart-mode-line unkillable-scratch persistent-scratch nswbuff use-package))
  '(safe-local-variable-values
    '((line-spacing . 0.75)
 	 (line-spacing . 0.5)

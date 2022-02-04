@@ -1,7 +1,7 @@
 ;; org-mode
 
-;(setq org-todo-keywords '((sequence "TODO" "DONE")))
-;(setq org-todo-keyword-faces '(("INPROGRESS" . (:foreground "blue" :weight bold)))) ; add inprogress keyword
+(setq org-todo-keywords '((sequence "TODO" "DONE")))
+(setq org-todo-keyword-faces '(("INPROGRESS" . (:foreground "blue" :weight bold)))) ; add inprogress keyword
 
 (setq org-emphasis-alist '(
 	("*" bold)
@@ -93,6 +93,7 @@
 			;y(t path)
 			)))
 
+;; org checkboxes
 ;; see https://orgmode.org/list/87r5718ytv.fsf@sputnik.localhost
 (eval-after-load 'org-list
   '(add-hook 'org-checkbox-statistics-hook (function ndk/checkbox-list-complete)))
@@ -114,6 +115,8 @@
 						(org-todo 'done)
 						(org-todo 'todo)))))))
 
+;; other org functions
+(defun org-clocking-buffer (&rest _))
 (defun org-toggle-iimage-in-org ()
 	"display images in your org file"
 	(interactive)
