@@ -1,0 +1,119 @@
+;;;; Emacs Bookmark Format Version 1 ;;;; -*- coding: utf-8-emacs -*-
+;;; This format is meant to be slightly human-readable;
+;;; nevertheless, you probably don't want to edit it.
+;;; -*- End Of Bookmark File Format Version Stamp -*-
+(("kaun diagnostics"
+ (location . "gopher://kaun.ca/1/server-diag")
+ (handler . elpher-bookmark-jump))
+("zaibatsu"
+ (location . "gopher://zaibatsu.circumlunar.space/")
+ (handler . elpher-bookmark-jump))
+("(Recent updates from all sundogs)"
+ (location . "gopher://zaibatsu.circumlunar.space:70/1/updates/")
+ (handler . elpher-bookmark-jump))
+("cpj"
+ (location . "gopher://zaibatsu.circumlunar.space:70/1/~cpj/phlog")
+ (handler . elpher-bookmark-jump))
+("kaun.ca"
+ (location . "gopher://kaun.ca/")
+ (handler . elpher-bookmark-jump))
+("kaun.ca"
+ (location . "gemini://kaun.ca/")
+ (handler . elpher-bookmark-jump))
+("Gemtext cheatsheet"
+ (location . "gemini://gemini.circumlunar.space/docs/cheatsheet.gmi")
+ (handler . elpher-bookmark-jump))
+("floodgap.com"
+ (location . "gopher://gopher.floodgap.com/")
+ (handler . elpher-bookmark-jump))
+("forthworks.com"
+ (location . "gopher://forthworks.com:70/1/iOS/gopher")
+ (handler . elpher-bookmark-jump))
+("CAPCOM Geminispace aggregator"
+ (location . "gemini://gemini.circumlunar.space/capcom/")
+ (handler . elpher-bookmark-jump))
+("GUS - Gemini Universal Search"
+ (location . "gemini://gus.guru/")
+ (handler . elpher-bookmark-jump))
+("Gemini Search Engine"
+ (location . "gemini://geminispace.info/")
+ (handler . elpher-bookmark-jump))
+("Spacewalk"
+ (location . "gemini://rawtext.club/~sloum/spacewalk.gmi")
+ (handler . elpher-bookmark-jump))
+("tilde.institute"
+ (location . "gopher://tilde.institute:70/")
+ (handler . elpher-bookmark-jump))
+("slugmax"
+ (location . "gopher://republic.circumlunar.space:70/1/~slugmax/phlog")
+ (handler . elpher-bookmark-jump))
+("sloum's plog"
+ (location . "gopher://circumlunar.space:70/1/~sloum/phlog")
+ (handler . elpher-bookmark-jump))
+("gemlog.blue member gemlogs"
+ (location . "gemini://gemlog.blue/users/")
+ (handler . elpher-bookmark-jump))
+("ew's FlightLog"
+ (location . "gemini://gemini.circumlunar.space/~ew/")
+ (handler . elpher-bookmark-jump))
+("christina"
+ (location . "gemini://gemini.circumlunar.space/users/christina/")
+ (handler . elpher-bookmark-jump))
+("WikDict"
+ (location . "gemini://gmi.wikdict.com/")
+ (handler . elpher-bookmark-jump))
+("Mentos The Freshmaker Show"
+ (location . "gemini://mcornick.com/")
+ (handler . elpher-bookmark-jump))
+("Solderpunk versus windmills"
+ (location . "gemini://gemini.circumlunar.space/users/solderpunk/gemlog/")
+ (handler . elpher-bookmark-jump))
+("Sloum's Capsule"
+ (location . "gemini://rawtext.club/~sloum/")
+ (handler . elpher-bookmark-jump))
+("Prosthetic Conscience"
+ (location . "gemini://carcosa.net/journal")
+ (handler . elpher-bookmark-jump))
+("My gemini orbit"
+ (location . "gemini://chriswere.uk/orbit.gmi")
+ (handler . elpher-bookmark-jump))
+("Mozz.US"
+ (location . "gopher://mozz.us/")
+ (handler . elpher-bookmark-jump))
+("Mozz.US"
+ (location . "gemini://mozz.us/")
+ (handler . elpher-bookmark-jump))
+("Idiomrottning"
+ (location . "gemini://idiomdrottning.org/sub")
+ (handler . elpher-bookmark-jump))
+("Hundredrabbits"
+ (location . "gemini://gemini.circumlunar.space/users/hundredrabbits/")
+ (handler . elpher-bookmark-jump))
+("Hidden Gemini Capsules"
+ (location . "gemini://tilde.pink/~shardiame/2021/hidden_gemini.gmi")
+ (handler . elpher-bookmark-jump))
+("Hacker News"
+ (location . "gopher://hngopher.com:70/1/")
+ (handler . elpher-bookmark-jump))
+("Gluon Space"
+ (location . "gemini://gluonspace.com/")
+ (handler . elpher-bookmark-jump))
+("Drift Theory"
+ (location . "gemini://gemini.circumlunar.space/~sloum/")
+ (handler . elpher-bookmark-jump))
+("Ben's Gemlog ☪"
+ (location . "gemini://kwiecien.us/logarion/date.gmi")
+ (handler . elpher-bookmark-jump))
+("Hex's GC"
+ (location . "gemini://hexdsl.co.uk/")
+ (handler . elpher-bookmark-jump))
+("gopher://home.quix.us/1/audio/otradio"
+ (location . "gopher://home.quix.us/1/audio/otradio")
+ (handler . elpher-bookmark-jump))
+("gopher://gopher.club/1/users/otr/"
+ (location . "gopher://gopher.club/1/users/otr/")
+ (handler . elpher-bookmark-jump))
+("shufei/"
+ (location . "gemini://gemini.circumlunar.space/~shufei/")
+ (handler . elpher-bookmark-jump))
+)
