@@ -97,7 +97,7 @@
 (setq url-configuration-directory	(concat user-emacs-directory "var/url/configuration/"))
 
 (setq diary-file "~/Documents/diary")
-;(calendar-set-date-style ‘iso)
+;(calendar-date-style 'iso)
 (setq diary-show-holidays-flag nil)
 (add-hook 'diary-list-entries-hook 'diary-sort-entries t)
 (setq lunar-phase-names '(
@@ -109,6 +109,20 @@
 (setq holiday-christian-holidays nil)
 (setq holiday-hebrew-holidays nil)
 (setq holiday-islamic-holidays nil)
+(setq holiday-local-holidays '( ; National / Provincial Holidays and Commemorations
+	(holiday-fixed 01 21  "Lincoln Alexander Day")
+	(holiday-float 02 1 3 "Family Day")
+	(holiday-fixed 02 15  "National Flag Day")
+	(holiday-float 03 1 2 "Commonwealth Day")
+	(holiday-fixed 04 06  "Tartan Day")
+	(holiday-fixed 04 09  "Vimy Ridge Day")
+	(holiday-fixed 06 21  "Indigenous Peoples Day")
+	(holiday-fixed 06 24  "Midsummer Day")
+	(holiday-fixed 07 01  "Canada Day")
+	(holiday-float 08 1 1 "Civic Holiday")
+	(holiday-fixed 09 30  "Day for Truth and Reconciliation")
+	(holiday-fixed 12 11  "Statute of Westminster")
+	))
 
 ;; backups
 (setq make-backup-files nil)
@@ -234,7 +248,7 @@
 	(local-set-key (kbd "A-<left>") 'elpher-back)
 	(local-set-key (kbd "A-<up>")   'scroll-down-command)
 	(local-set-key (kbd "A-<down>") 'scroll-up-command)
-	(setq-local left-margin-width 15)
+	(setq-local left-margin-width 10)
 	(setq-local gnutls-verify-error nil)
 	(set-window-buffer nil (current-buffer)) ))
 (easy-menu-add-item  nil '("tools") ["Gopher" elpher t])
@@ -452,10 +466,11 @@
 (global-set-key (kbd "M-p") 'lpr-buffer)
 (global-set-key (kbd "s-p") 'ps-print-buffer)
 
-(global-set-key (kbd "H-a") (kbd "C-c a a"))
-(global-set-key (kbd "H-c") 'calendar)
+(global-set-key (kbd "H-a") (kbd "C-c a a") )
+(global-set-key (kbd "H-c") 'calendar )
 (global-set-key (kbd "H-d") (lambda() (interactive) (find-file "~/Documents/org/daily.org")) )
 (global-set-key (kbd "H-e") (lambda() (interactive) (find-file "~/.emacs.d/init.el")) )
+(global-set-key (kbd "H-h") (lambda() (interactive) (list-holidays (string-to-number (format-time-string "%Y")))))
 (global-set-key (kbd "H-o") (lambda() (interactive) (find-file "~/OD/OneDrive - City of Ottawa/work.org")) )
 (global-set-key (kbd "H-s") (lambda() (interactive) (find-file "~/Documents/Notes/-SCRATCH-.txt")) )
 (global-set-key (kbd "H-w") (lambda() (interactive) (find-file "~/Documents/!dbin/words.org")) )
