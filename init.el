@@ -97,7 +97,7 @@
 (setq url-configuration-directory	(concat user-emacs-directory "var/url/configuration/"))
 
 (setq diary-file "~/Documents/diary")
-;(calendar-date-style 'iso)
+(add-hook 'calendar-load-hook (lambda() (calendar-set-date-style 'european)))
 (setq diary-show-holidays-flag nil)
 (add-hook 'diary-list-entries-hook 'diary-sort-entries t)
 (setq lunar-phase-names '(
@@ -105,11 +105,24 @@
 	"☽ First Quarter Moon"
 	"○ Full Moon"
 	"☾ Last Quarter Moon"))
+(setq holiday-general-holidays nil)
 (setq holiday-bahai-holidays nil)
-(setq holiday-christian-holidays nil)
 (setq holiday-hebrew-holidays nil)
 (setq holiday-islamic-holidays nil)
 (setq holiday-local-holidays '( ; National / Provincial Holidays and Commemorations
+	(holiday-fixed 01 01  "New Year's Day")
+	(holiday-fixed 02 02  "Groundhog Day")
+	(holiday-fixed 02 14  "Valentine's Day")
+	(holiday-fixed 04 01  "April Fools' Day")
+	(holiday-float 05 0 2 "Mother's Day")
+	(holiday-float 06 0 3 "Father's Day")
+	(holiday-fixed 07 01  "Canada Day")
+	(holiday-float 08 1 1 "Civic Holiday")
+	(holiday-float 09 1 1 "Labour Day")
+	(holiday-float 10 1 2 "Thanksgiving")
+	(holiday-fixed 10 31  "Halloween")
+	(holiday-fixed 11 11  "Remembrance/Memorial Day")
+
 	(holiday-fixed 01 21  "Lincoln Alexander Day")
 	(holiday-float 02 1 3 "Family Day")
 	(holiday-fixed 02 15  "National Flag Day")
@@ -118,9 +131,7 @@
 	(holiday-fixed 04 09  "Vimy Ridge Day")
 	(holiday-fixed 06 21  "Indigenous Peoples Day")
 	(holiday-fixed 06 24  "Midsummer Day")
-	(holiday-fixed 07 01  "Canada Day")
-	(holiday-float 08 1 1 "Civic Holiday")
-	(holiday-fixed 09 30  "Day for Truth and Reconciliation")
+	(holiday-fixed 09 30  "Truth and Reconciliation")
 	(holiday-fixed 12 11  "Statute of Westminster")
 	))
 
