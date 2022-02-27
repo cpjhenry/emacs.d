@@ -97,7 +97,7 @@
 (setq url-configuration-directory	(concat user-emacs-directory "var/url/configuration/"))
 
 (setq diary-file "~/Documents/diary")
-(add-hook 'calendar-load-hook (lambda() (calendar-set-date-style 'european)))
+;(add-hook 'calendar-load-hook (lambda() (calendar-set-date-style 'european)))
 (setq diary-show-holidays-flag nil)
 (add-hook 'diary-list-entries-hook 'diary-sort-entries t)
 (setq lunar-phase-names '(
@@ -132,8 +132,8 @@
 	(holiday-fixed 06 21  "Indigenous Peoples Day")
 	(holiday-fixed 06 24  "Midsummer Day")
 	(holiday-fixed 09 30  "Truth and Reconciliation")
-	(holiday-fixed 12 11  "Statute of Westminster")
-	))
+	(holiday-fixed 12 11  "Statute of Westminster")))
+(defun list-hols () (interactive) (list-holidays (string-to-number (format-time-string "%Y"))) )
 
 ;; backups
 (setq make-backup-files nil)
@@ -471,6 +471,8 @@
 (global-set-key (kbd "C-c t") 'olivetti-mode)
 (global-set-key (kbd "C-c w") 'eww-list-bookmarks)	; www
 
+(global-set-key (kbd "C-c M-m") (kbd "✓") )
+
 ;(global-set-key (kbd "TAB") 'insert-tab-char)		; same as Ctrl+i
 (global-set-key (kbd "TAB") 'self-insert-command)	; 'tab-to-tab-stop
 (global-set-key (kbd "M-Q") 'unfill-paragraph)
@@ -481,7 +483,6 @@
 (global-set-key (kbd "H-c") 'calendar )
 (global-set-key (kbd "H-d") (lambda() (interactive) (find-file "~/Documents/org/daily.org")) )
 (global-set-key (kbd "H-e") (lambda() (interactive) (find-file "~/.emacs.d/init.el")) )
-(global-set-key (kbd "H-h") (lambda() (interactive) (list-holidays (string-to-number (format-time-string "%Y")))))
 (global-set-key (kbd "H-o") (lambda() (interactive) (find-file "~/OD/OneDrive - City of Ottawa/work.org")) )
 (global-set-key (kbd "H-s") (lambda() (interactive) (find-file "~/Documents/Notes/-SCRATCH-.txt")) )
 (global-set-key (kbd "H-w") (lambda() (interactive) (find-file "~/Documents/!dbin/words.org")) )
