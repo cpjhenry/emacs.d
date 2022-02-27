@@ -12,10 +12,12 @@
 	(fill-paragraph nil)))
 
 (defun insert-iso-date ()
+	"Insert ISO-formatted date."
 	(interactive)
 	(insert (format-time-string "%Y-%m-%d")))
 
 (defun insert-date ()
+	"Insert European-formatted date."
 	(interactive)
 	(insert (format-time-string "%-d %B %Y")))
 
@@ -46,6 +48,7 @@
 		(shell-quote-argument (buffer-file-name)) )) )
 
 (defun flush-blank-lines (start end)
+	"Remove blank lines in a buffer."
 	(interactive "r")
 	(flush-lines "^\\s-*$" start end nil))
 
