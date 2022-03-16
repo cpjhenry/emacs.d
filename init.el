@@ -69,7 +69,7 @@
 (setq ispell-list-command "--list") ; correct command
 (setq ispell-program-name "aspell") ; spell checker
 (setq recentf-max-menu-items 25)
-(setq recentf-max-saved-items 25)
+(setq recentf-max-saved-items 50)
 (setq ring-bell-function 'ignore)
 (setq save-abbrevs 'silent)
 (setq sentence-end-double-space nil)
@@ -147,7 +147,8 @@
 (use-package nswbuff) ; buffer switching
 (setq nswbuff-clear-delay 1.5)
 (setq nswbuff-display-intermediate-buffers t)
-(setq nswbuff-exclude-buffer-regexps '("^ .*" "^\\*Messages\\*" "^\\*Shell Command Output\\*" "from-mobile.org"))
+(setq nswbuff-exclude-buffer-regexps '( "^ .*" "^\\*Messages\\*" "^\\*Shell Command Output\\*" "from-mobile.org"
+										"^\\*tramp/.*" ) )
 
 (use-package persistent-scratch :config (persistent-scratch-setup-default))
 (use-package unkillable-scratch :ensure t :config (unkillable-scratch t)
@@ -170,6 +171,10 @@
 (setq inhibit-startup-buffer-menu t) ; Don't show *Buffer list*
 (add-hook 'window-setup-hook 'delete-other-windows) ; Show only one active window
 
+;; don't load default init file
+(setq inhibit-default-init t)
+(message "init.el loaded.")
+
 ;; file and buffer functions
 (load "init-filesandbuffers")
 (recentf-mode t)
@@ -177,6 +182,8 @@
 (add-to-list 'recentf-exclude ".emacs.d/elpa/")
 (add-to-list 'recentf-exclude ".emacs.d/etc/")
 (add-to-list 'recentf-exclude ".emacs.d/var/")
+(add-to-list 'recentf-exclude "Applications/")
+(add-to-list 'recentf-exclude "Library/")
 
 ;; print functions
 (load "init-page-dimensions")
@@ -438,6 +445,11 @@
 (global-set-key (kbd "A-<return>") (kbd "M-<return>"))
 
 
+;; Diabled keys
+(put 'upcase-region 'disabled nil)					; C-x C-u
+(put 'downcase-region 'disabled nil)				; C-x C-l
+
+
 ;; Shortcuts
 (global-set-key (kbd "s-1") (kbd "C-x 1"))
 (global-set-key (kbd "s-2") (kbd "C-x o C-x 1"))
@@ -508,6 +520,7 @@
 (defalias 'mm 'markdown-mode)
 (defalias 'olv 'olivetti-mode)
 (defalias 'om 'org-mode)
+(defalias 'tm 'text-mode)
 (defalias 'ssm 'shell-script-mode)
 (defalias 'vlm 'visual-line-mode)
 
