@@ -28,6 +28,7 @@
 (setq mac-use-title-bar nil)
 (setq use-dialog-box nil)
 (setq use-file-dialog nil)
+(setq use-short-answers t)
 (setq pop-up-windows nil)
 (setq ns-pop-up-frames nil)
 
@@ -41,10 +42,7 @@
 	(setf use-package-always-ensure t)
 
 ;; Add directories to load-path
-(eval-and-compile
-	(mapc #'(lambda (path)
-	(add-to-list 'load-path (expand-file-name path user-emacs-directory))) 
-		'("etc" "var") ))
+(mapc (lambda (path) (add-to-list 'load-path (expand-file-name path user-emacs-directory))) '("etc" "var"))
 (setq default-directory "~/")
 (setq exec-path '(	".local/" "/Users/cpjh/bin/" "/Library/TeX/texbin/" "/usr/local/opt/qt@5/bin/"
 					"/usr/local/opt/python@3/libexec/bin/" "/usr/local/MacGPG2/bin/" "/usr/libexec/" 
@@ -147,8 +145,8 @@
 (use-package nswbuff) ; buffer switching
 (setq nswbuff-clear-delay 1.5)
 (setq nswbuff-display-intermediate-buffers t)
-(setq nswbuff-exclude-buffer-regexps '( "^ .*" "^\\*Messages\\*" "^\\*Shell Command Output\\*" "from-mobile.org"
-										"^\\*tramp/.*" ) )
+(setq nswbuff-exclude-buffer-regexps '( "^ .*" "^\\*Messages\\*" "^\\*Shell Command Output\\*"
+										"from-mobile.org" "^\\*tramp/.*" ) )
 
 (use-package persistent-scratch :config (persistent-scratch-setup-default))
 (use-package unkillable-scratch :ensure t :config (unkillable-scratch t)
@@ -157,15 +155,9 @@
 ;; remove unneeded messages and buffers
 (setq inhibit-startup-message t) 	; 'About Emacs'
 (setq inhibit-startup-echo-area-message t)
-(eval-after-load "startup" '(fset 'display-startup-echo-area-message (lambda ())))
-
 (setq initial-scratch-message nil) 	; Makes *scratch* empty
-;(setq-default message-log-max nil) 	; Removes *Messages* from the buffer
-;(add-hook 'after-init-hook (kill-buffer "*Messages*"))
 (add-hook 'minibuffer-exit-hook 	; Removes *Completions* buffer when done
-	'(lambda () (let ((buffer "*Completions*"))
-		(and (get-buffer buffer)
-		(kill-buffer buffer)))))
+	(lambda () (let ((buffer "*Completions*")) (and (get-buffer buffer) (kill-buffer buffer)))))
 
 ;; opening multiple files
 (setq inhibit-startup-buffer-menu t) ; Don't show *Buffer list*
@@ -226,16 +218,6 @@
 (display-time-mode)
 (display-battery-mode)
 
-;; Tabs
-;(load "init-tabs")
-
-;; Emacs server
-(defun server-shutdown ()
-	"Save buffers, Quit, and Shutdown (kill) server."
-	(interactive)
-	(save-some-buffers)
-	(kill-emacs))
-
 ;; Startup time
 (defun efs/display-startup-time ()
 	(message "Emacs loaded in %s with %d garbage collections."
@@ -292,13 +274,6 @@
 (easy-menu-add-item  nil '("tools" "games") ["Go" gnugo t])
 
 (use-package lorem-ipsum)
-
-(use-package simplenote2)
-(load "rc-sn" 'noerror)
-(simplenote2-setup)
-(setq simplenote2-markdown-notes-mode 'markdown-mode)
-(add-hook 'simplenote2-create-note-hook (lambda () (simplenote2-set-markdown) ))
-
 (use-package smooth-scrolling :config (smooth-scrolling-mode))
 (use-package ssh)
 (use-package wc-mode)
@@ -313,7 +288,10 @@
 
 (use-package form-feed) ; navigate using ^L
 (add-hook 'emacs-lisp-mode-hook 'form-feed-mode)
-(add-hook 'help-mode-hook 'form-feed-mode)
+(add-hook 'help-mode-hook (lambda ()
+	'form-feed-mode
+	(local-set-key (kbd "A-<left>" ) 'help-go-back)
+	(local-set-key (kbd "A-<right>") 'help-go-forward) ))
 (add-hook 'Info-mode-hook (lambda ()
 	(local-set-key (kbd "A-<left>" ) 'Info-history-back)
 	(local-set-key (kbd "A-<right>") 'Info-history-forward) ))
@@ -331,7 +309,7 @@
 (use-package org-mobile-sync :config (org-mobile-sync-mode 1))
 
 (setq org-startup-folded 'content)		; folded children content all
-(setq org-startup-truncated nil)		; fix org-mode table wrapping
+;(setq org-startup-truncated nil)		; fix org-mode table wrapping
 (setq org-catch-invisible-edits 'smart)
 (setq org-ctrl-k-protect-subtree t)
 (setq org-ellipsis "…")
@@ -469,10 +447,9 @@
 (global-set-key (kbd "C-<tab>") 'nswbuff-switch-to-next-buffer)
 (global-set-key (kbd "C-S-<tab>") 'nswbuff-switch-to-previous-buffer)
 
-(global-set-key (kbd "C-c #") 'toggle-truncate-lines)
-(global-set-key (kbd "C-c D") 'insert-iso-date)
 (global-set-key (kbd "C-c a") 'org-agenda)
 (global-set-key (kbd "C-c c") 'org-capture)
+(global-set-key (kbd "C-c D") 'insert-iso-date)
 (global-set-key (kbd "C-c d") 'insert-date)
 (global-set-key (kbd "C-c e") 'erc)					; IRC
 (global-set-key (kbd "C-c f") 'elfeed)
@@ -481,11 +458,11 @@
 (global-set-key (kbd "C-c m") 'markdown-mode)
 (global-set-key (kbd "C-c o") 'markdown-preview-file) 
 (global-set-key (kbd "C-c t") 'olivetti-mode)
+(global-set-key (kbd "C-c v") 'visual-line-mode)
 (global-set-key (kbd "C-c w") 'eww-list-bookmarks)	; www
 
 (global-set-key (kbd "C-c M-m") (kbd "✓") )
 
-;(global-set-key (kbd "TAB") 'insert-tab-char)		; same as Ctrl+i
 (global-set-key (kbd "TAB") 'self-insert-command)	; 'tab-to-tab-stop
 (global-set-key (kbd "M-Q") 'unfill-paragraph)
 (global-set-key (kbd "M-p") 'lpr-buffer)
@@ -496,7 +473,6 @@
 (global-set-key (kbd "H-d") (lambda() (interactive) (find-file "~/Documents/org/daily.org")) )
 (global-set-key (kbd "H-e") (lambda() (interactive) (find-file "~/.emacs.d/init.el")) )
 (global-set-key (kbd "H-o") (lambda() (interactive) (find-file "~/OD/OneDrive - City of Ottawa/work.org")) )
-(global-set-key (kbd "H-s") (lambda() (interactive) (find-file "~/Documents/Notes/-SCRATCH-.txt")) )
 (global-set-key (kbd "H-w") (lambda() (interactive) (find-file "~/Documents/!dbin/words.org")) )
 
 
@@ -523,6 +499,3 @@
 (defalias 'tm 'text-mode)
 (defalias 'ssm 'shell-script-mode)
 (defalias 'vlm 'visual-line-mode)
-
-(defalias 'sn 'simplenote2-browse)
-(defalias 'snsm 'simplenote2-set-markdown)
