@@ -145,13 +145,8 @@
 (use-package nswbuff) ; buffer switching
 (setq nswbuff-clear-delay 1.5)
 (setq nswbuff-display-intermediate-buffers t)
-<<<<<<< HEAD
 (setq nswbuff-exclude-buffer-regexps '( "^ .*" "^\\*Messages\\*" "^\\*Shell Command Output\\*"
 										"from-mobile.org" "^\\*tramp/.*" ) )
-=======
-(setq nswbuff-exclude-buffer-regexps '( "^ .*" "^\\*Messages\\*" "^\\*Shell Command Output\\*" "from-mobile.org"
-										"^\\*tramp/.*" ) )
->>>>>>> 42885c45e7cde8ecb685196f101030b6a7ebef0d
 
 (use-package persistent-scratch :config (persistent-scratch-setup-default))
 (use-package unkillable-scratch :ensure t :config (unkillable-scratch t)
