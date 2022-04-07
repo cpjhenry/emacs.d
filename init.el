@@ -80,6 +80,7 @@
 
 (setq abbrev-file-name				(concat user-emacs-directory "etc/abbrev_defs"))
 (setq auto-save-list-file-prefix	(concat user-emacs-directory "var/auto-save/sessions/"))
+(setq bookmark-default-file			(concat user-emacs-directory "var/bookmarks"))
 (setq elfeed-db-directory			(concat user-emacs-directory "var/elfeed/db/"))
 (setq elfeed-enclosure-default-dir	(concat user-emacs-directory "var/elfeed/enclosures/"))
 (setq elfeed-score-score-file		(concat user-emacs-directory "etc/elfeed/score/score.el"))
