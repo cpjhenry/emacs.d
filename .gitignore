@@ -11,6 +11,6 @@ var/nano-emacs/
 var/recentf
 var/simplenote2/
 var/tramp/persistency
+.org-id-locations
 .persistent-scratch
-bookmarks
 network-security.data
