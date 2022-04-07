@@ -2,9 +2,7 @@ auto-save-list/
 elpa/
 !elpa/.gitkeep
 eshell/
-etc/elfeedrc.el
-etc/ercrc.el
-etc/snrc.el
+etc/rc-*.el
 games/
 request/
 url/
@@ -14,4 +12,5 @@ var/recentf
 var/simplenote2/
 var/tramp/persistency
 .persistent-scratch
+bookmarks
 network-security.data

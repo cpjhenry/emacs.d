@@ -96,7 +96,7 @@
 	(interactive)
 	(set-window-width 80))
 
-;; Adapted following script to OSX:
+;; Adapted script to OSX:
 ;; https://genomeek.wordpress.com/2013/03/08/emarch-2-create-a-pdf-with-highlighted-code-source/
 (defun print-to-pdf ()
  (interactive)
@@ -122,6 +122,7 @@
 	(when buffer-file-name (save-buffer)))
 (defadvice windmove-right (before other-window-now activate)
 	(when buffer-file-name (save-buffer)))
+
 ;; automatically save buffers associated with files on frame (app) switch
 (add-hook 'focus-out-hook (lambda () (save-some-buffers t)))
 
