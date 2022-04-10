@@ -27,6 +27,13 @@
 	(mapc 'kill-buffer (delq (current-buffer) (buffer-list)))
 	(kill-dired-buffers))
 
+;; Always kill current buffer with "C-x k"
+(defun bjm/kill-this-buffer ()
+  "Kill the current buffer."
+  (interactive)
+  (kill-buffer (current-buffer))
+  (delete-window))
+
 (defun kill-dired-buffers ()
 	(interactive)
 	(mapc (lambda (buffer) 

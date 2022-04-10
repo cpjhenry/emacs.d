@@ -1,9 +1,12 @@
 ;; Emacs configuration / pjh
+(defconst *mac* (eq system-type 'darwin))
+(defconst *gnu* (eq system-type 'gnu/linux))
+(defconst *w32* (eq system-type 'windows-nt))
 
 ;; Initialize terminal
 (set-language-environment 'utf-8)
 
-(if (eq system-type 'darwin) (set-frame-font "Inconsolata 21"))
+(if *mac* (set-frame-font "Inconsolata 21"))
 (set-background-color "Ivory")
 
 (setq user-mail-address "cpjhenry@gmail.com")
@@ -42,13 +45,16 @@
 	(setf use-package-always-ensure t)
 
 ;; Add directories to load-path
-(mapc (lambda (path) (add-to-list 'load-path (expand-file-name path user-emacs-directory))) '("etc" "var"))
-(setq default-directory "~/")
-(setq exec-path '(	".local/" "/Users/cpjh/bin/" "/Library/TeX/texbin/" "/usr/local/opt/qt@5/bin/"
+(add-to-list 'load-path (expand-file-name "etc" user-emacs-directory))
+(add-to-list 'load-path (expand-file-name "var" user-emacs-directory))
+
+(when *mac*
+	(setq default-directory "~/")
+	(setq exec-path '(	".local/" "/Users/cpjh/bin/" "/Library/TeX/texbin/" "/usr/local/opt/qt@5/bin/"
 					"/usr/local/opt/python@3/libexec/bin/" "/usr/local/MacGPG2/bin/" "/usr/libexec/" 
 					"/usr/local/opt/gnu-sed/libexec/gnubin/" "/usr/local/opt/coreutils/libexec/gnubin/" 
 					"/usr/local/bin/" "/usr/local/sbin/" "/usr/bin/" "/usr/sbin/" "/bin/" "/sbin/" 
-					"/Applications/Emacs.app/Contents/MacOS/libexec/" ))
+					"/Applications/Emacs.app/Contents/MacOS/libexec/" )) )
 
 (package-initialize t) ; instead of (package-initialize)
 (setq package-enable-at-startup nil)
@@ -61,7 +67,6 @@
 (setq-default fill-column 52)
 (setq-default help-window-select t)
 
-(setq cookie-file "/usr/local/share/games/fortunes/fortunes")
 (setq delete-by-moving-to-trash t)
 (setq flyspell-issue-message-flag nil)
 (setq ispell-list-command "--list") ; correct command
@@ -132,6 +137,7 @@
 	(holiday-fixed 06 24  "Midsummer Day")
 	(holiday-fixed 09 30  "Truth and Reconciliation")
 	(holiday-fixed 12 11  "Statute of Westminster")))
+
 (defun list-hols () (interactive) (list-holidays (string-to-number (format-time-string "%Y"))) )
 
 ;; backups
@@ -166,15 +172,12 @@
 
 ;; don't load default init file
 (setq inhibit-default-init t)
-(message "init.el loaded.")
 
 ;; file and buffer functions
 (load "init-filesandbuffers")
 (recentf-mode t)
 (run-at-time nil (* 5 60) 'recentf-save-list)
 (add-to-list 'recentf-exclude ".emacs.d/elpa/")
-(add-to-list 'recentf-exclude ".emacs.d/etc/")
-(add-to-list 'recentf-exclude ".emacs.d/var/")
 (add-to-list 'recentf-exclude "Applications/")
 (add-to-list 'recentf-exclude "Library/")
 
@@ -227,8 +230,10 @@
 (add-hook 'emacs-startup-hook 'efs/display-startup-time)
 
 ;; Today's cookie
-(defun todayscookie () (message (cookie "/usr/local/share/games/fortunes/fortunes")))
-(if (eq system-type 'darwin) (add-hook 'window-setup-hook 'todayscookie))
+(when *mac*
+	(setq cookie-file "/usr/local/share/games/fortunes/fortunes")
+	(defun todayscookie () (message (cookie "/usr/local/share/games/fortunes/fortunes")))
+	(add-hook 'window-setup-hook 'todayscookie) )
 
 
 ;; Initialize packages
@@ -257,8 +262,9 @@
 (load "rc-erc" 'noerror) ; irc config
 (easy-menu-add-item  nil '("tools")	["IRC with ERC" erc t])
 
-(setq browse-url-browser-function 'browse-url-generic ; eww
-	browse-url-generic-program "/Applications/Firefox.app/Contents/MacOS/firefox")
+(when *mac*
+	(setq browse-url-browser-function 'browse-url-generic ; eww
+	browse-url-generic-program "/Applications/Firefox.app/Contents/MacOS/firefox"))
 
 (advice-add 'eww-browse-url :around 'elpher:eww-browse-url)
 (defun elpher:eww-browse-url (original url &optional new-window)
@@ -270,10 +276,6 @@
 (add-hook 'eww-mode-hook (lambda ()
 	(local-set-key (kbd "A-<left>") 'eww-back-url) ))
 
-(use-package gnugo) ; Game of Go
-(setq gnugo-program "/usr/local/bin/gnugo")
-(easy-menu-add-item  nil '("tools" "games") ["Go" gnugo t])
-
 (use-package lorem-ipsum)
 (use-package smooth-scrolling :config (smooth-scrolling-mode))
 (use-package ssh)
@@ -281,11 +283,17 @@
 (use-package which-key :config (which-key-mode)(which-key-setup-side-window-right-bottom))
 
 
+;; Games
+(when *mac*
+	(use-package gnugo) ; Game of Go
+	(setq gnugo-program "/usr/local/bin/gnugo")
+	(easy-menu-add-item  nil '("tools" "games") ["Go" gnugo t]) )
+
+
 ;; Lisp & Help modes
 (add-hook 'emacs-lisp-mode-hook 'prettify-symbols-mode)
 (add-hook 'emacs-lisp-mode-hook 'show-paren-mode)
 (setq show-paren-style 'mixed)
-(add-hook 'emacs-lisp-mode-hook 'electric-pair-mode)
 
 (use-package form-feed) ; navigate using ^L
 (add-hook 'emacs-lisp-mode-hook 'form-feed-mode)
@@ -414,12 +422,16 @@
 (global-set-key (kbd "C-x C-r") 'recentf-open-files)
 (global-set-key (kbd "C-x C-g") 'recentf-open-files-compl)
 
+(global-set-key (kbd "C-x k") 'bjm/kill-this-buffer)
+(global-set-key (kbd "C-x K") 'kill-buffer)
+
 (global-set-key (kbd "C-s") 'isearch-forward-regexp)
 (global-set-key (kbd "C-r") 'isearch-backward-regexp)
 (global-set-key (kbd "C-M-s") 'isearch-forward)
 (global-set-key (kbd "C-M-r") 'isearch-backward)
 
 (global-set-key (kbd "C-z") 'undo)
+(global-set-key (kbd "C-S-z") 'undo-redo)
 
 (global-set-key (kbd "A-<return>") (kbd "M-<return>"))
 
@@ -468,12 +480,14 @@
 (global-set-key (kbd "M-Q") 'unfill-paragraph)
 (global-set-key (kbd "M-p") 'lpr-buffer)
 (global-set-key (kbd "s-p") 'ps-print-buffer)
+(global-set-key (kbd "s-Z") 'undo-redo)
 
 (global-set-key (kbd "H-a") (kbd "C-c a a") )
 (global-set-key (kbd "H-c") 'calendar )
 (global-set-key (kbd "H-d") (lambda() (interactive) (find-file "~/Documents/org/daily.org")) )
 (global-set-key (kbd "H-e") (lambda() (interactive) (find-file "~/.emacs.d/init.el")) )
 (global-set-key (kbd "H-o") (lambda() (interactive) (find-file "~/OD/OneDrive - City of Ottawa/work.org")) )
+(global-set-key (kbd "H-s") (lambda() (interactive) (load "init-sn")) )
 (global-set-key (kbd "H-w") (lambda() (interactive) (find-file "~/Documents/!dbin/words.org")) )
 
 
