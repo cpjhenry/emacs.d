@@ -46,15 +46,16 @@
 
 ;; Add directories to load-path
 (add-to-list 'load-path (expand-file-name "etc" user-emacs-directory))
+(add-to-list 'load-path (expand-file-name "opt" user-emacs-directory))
 (add-to-list 'load-path (expand-file-name "var" user-emacs-directory))
 
 (when *mac*
 	(setq default-directory "~/")
-	(setq exec-path '(	".local/" "/Users/cpjh/bin/" "/Library/TeX/texbin/" "/usr/local/opt/qt@5/bin/"
+	(setq exec-path '(".local/" "/Users/cpjh/bin/" "/Library/TeX/texbin/" "/usr/local/opt/qt@5/bin/"
 					"/usr/local/opt/python@3/libexec/bin/" "/usr/local/MacGPG2/bin/" "/usr/libexec/" 
 					"/usr/local/opt/gnu-sed/libexec/gnubin/" "/usr/local/opt/coreutils/libexec/gnubin/" 
 					"/usr/local/bin/" "/usr/local/sbin/" "/usr/bin/" "/usr/sbin/" "/bin/" "/sbin/" 
-					"/Applications/Emacs.app/Contents/MacOS/libexec/" )) )
+					"/Applications/Emacs.app/Contents/MacOS/libexec/")) )
 
 (package-initialize t) ; instead of (package-initialize)
 (setq package-enable-at-startup nil)
@@ -85,13 +86,13 @@
 
 (setq abbrev-file-name				(concat user-emacs-directory "etc/abbrev_defs"))
 (setq auto-save-list-file-prefix	(concat user-emacs-directory "var/auto-save/sessions/"))
-(setq bookmark-default-file			(concat user-emacs-directory "var/bookmarks"))
+(setq bookmark-default-file			(concat user-emacs-directory "etc/bookmarks"))
 (setq elfeed-db-directory			(concat user-emacs-directory "var/elfeed/db/"))
 (setq elfeed-enclosure-default-dir	(concat user-emacs-directory "var/elfeed/enclosures/"))
 (setq elfeed-score-score-file		(concat user-emacs-directory "etc/elfeed/score/score.el"))
 (setq eshell-aliases-file			(concat user-emacs-directory "etc/eshell/aliases"))
 (setq eshell-directory-name			(concat user-emacs-directory "var/eshell/"))
-(setq eww-bookmarks-directory		(concat user-emacs-directory "var/eww") )
+(setq eww-bookmarks-directory		(concat user-emacs-directory "etc/"))
 (setq recentf-save-file				(concat user-emacs-directory "var/recentf"))
 (setq request-storage-directory		(concat user-emacs-directory "var/request/storage/"))
 (setq simplenote2-directory			(concat user-emacs-directory "var/simplenote2/"))
@@ -232,8 +233,8 @@
 ;; Today's cookie
 (when *mac*
 	(setq cookie-file "/usr/local/share/games/fortunes/fortunes")
-	(defun todayscookie () (message (cookie "/usr/local/share/games/fortunes/fortunes")))
-	(add-hook 'window-setup-hook 'todayscookie) )
+	(defun todayscookie () (message (cookie cookie-file)))
+	(add-hook 'window-setup-hook 'todayscookie))
 
 
 ;; Initialize packages
@@ -309,16 +310,10 @@
 ;; Org-mode
 (use-package org)
 (setq org-directory "~/Documents/org/")
-(setq org-agenda-files (list (concat org-directory "daily.org") ;"~/OD/OneDrive - City of Ottawa/work.org"
-	))
+(setq org-agenda-files (list (concat org-directory "daily.org"))) ;"~/OD/OneDrive - City of Ottawa/work.org"
 (setq org-default-notes-file (concat org-directory "notes.org"))
 
-(setq org-mobile-directory "~/Library/Mobile Documents/iCloud~com~mobileorg~mobileorg/Documents")
-(setq org-mobile-inbox-for-pull (concat org-directory "from-mobile.org"))
-(use-package org-mobile-sync :config (org-mobile-sync-mode 1))
-
 (setq org-startup-folded 'content)		; folded children content all
-;(setq org-startup-truncated nil)		; fix org-mode table wrapping
 (setq org-catch-invisible-edits 'smart)
 (setq org-ctrl-k-protect-subtree t)
 (setq org-ellipsis "…")
@@ -348,8 +343,8 @@
 (use-package org-chef :ensure t)
 (add-hook 'org-mode-hook 'org-indent-mode)
 
-(load "org-phscroll") ; org-table fix
-(load "init-org-mode") ; org-mode functions
+(load "init-org-mode")	; org-mode functions
+(load "org-phscroll")	; org-table fix
 
 
 ;; Emacs Text and Markdown modes
