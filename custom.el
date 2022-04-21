@@ -7,6 +7,7 @@
    '("a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" default))
  '(package-selected-packages
    '(lorem-ipsum org markdown-mode olivetti org-chef org-autolist org-mobile-sync form-feed which-key wc-mode ssh smooth-scrolling simplenote2 gnugo elpher elfeed smart-mode-line unkillable-scratch persistent-scratch nswbuff use-package))
+ '(recentf-auto-cleanup 'never)
  '(safe-local-variable-values
    '((line-spacing . 0.75)
 	 (line-spacing . 0.5)
