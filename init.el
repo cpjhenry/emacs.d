@@ -187,9 +187,11 @@
 ;; file and buffer functions
 (load "init-filesandbuffers")
 (recentf-mode t)
+(setq recentf-arrange-by-dir t)
 (setq recentf-save-file	(concat user-emacs-directory "var/recentf"))
-(run-at-time nil (* 5 60) 'recentf-save-list)
+;(run-at-time nil (* 5 60) 'recentf-save-list)
 (add-to-list 'recentf-exclude ".emacs.d/elpa/")
+(add-to-list 'recentf-exclude ".emacs.d/var/")
 (add-to-list 'recentf-exclude "Applications/")
 (add-to-list 'recentf-exclude "Library/")
 
@@ -492,14 +494,14 @@
 (global-set-key (kbd "s-Z") 'undo-redo)
 
 (global-set-key (kbd "H-a") (kbd "C-c a a"))
-(global-set-key (kbd "H-c") 'calendar )
-(global-set-key (kbd "H-d") (lambda() (interactive) (find-file "~/Documents/org/daily.org")) )
-(global-set-key (kbd "H-e") (lambda() (interactive) (find-file "~/.emacs.d/init.el")) )
+(global-set-key (kbd "H-c") 'calendar)
+(global-set-key (kbd "H-d") (lambda() (interactive) (find-file "~/Documents/org/daily.org")))
+(global-set-key (kbd "H-e") (lambda() (interactive) (find-file "~/.emacs.d/init.el")))
 (global-set-key (kbd "H-k") 'world-clock)
 (global-set-key (kbd "H-l") 'dictionary-search)
-(global-set-key (kbd "H-o") (lambda() (interactive) (find-file "~/OD/OneDrive - City of Ottawa/work.org")) )
-(global-set-key (kbd "H-s") (lambda() (interactive) (load "init-sn")) )
-(global-set-key (kbd "H-w") (lambda() (interactive) (find-file "~/Documents/!dbin/words.org")) )
+(global-set-key (kbd "H-o") (lambda() (interactive) (find-file "~/OD/OneDrive - City of Ottawa/work.org")))
+(global-set-key (kbd "H-s") (lambda() (interactive) (load "init-sn")))
+(global-set-key (kbd "H-w") (lambda() (interactive) (find-file "~/Documents/!dbin/words.org")))
 
 
 ;; Aliases
