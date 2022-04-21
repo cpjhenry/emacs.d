@@ -18,7 +18,7 @@
 ; Mac option key is Meta (by default)
 (setq ns-function-modifier 'hyper) ; Mac function key is Hyper
 (setq ns-right-alternate-modifier 'alt) ; Mac right option key is Alt
-(define-key key-translation-map (kbd "<H-mouse-1>") (kbd "<mouse-2>"))
+(define-key key-translation-map (kbd "<s-mouse-1>") (kbd "<mouse-2>"))
 (setq w32-lwindow-modifier 'super)
 (setq w32-pass-lwindow-to-system nil)
 
@@ -69,6 +69,7 @@
 (setq-default help-window-select t)
 
 (setq delete-by-moving-to-trash t)
+(setq dictionary-server "dict.org")
 (setq flyspell-issue-message-flag nil)
 (setq ispell-list-command "--list") ; correct command
 (setq ispell-program-name "aspell") ; spell checker
@@ -87,15 +88,9 @@
 (setq abbrev-file-name				(concat user-emacs-directory "etc/abbrev_defs"))
 (setq auto-save-list-file-prefix	(concat user-emacs-directory "var/auto-save/sessions/"))
 (setq bookmark-default-file			(concat user-emacs-directory "etc/bookmarks"))
-(setq elfeed-db-directory			(concat user-emacs-directory "var/elfeed/db/"))
-(setq elfeed-enclosure-default-dir	(concat user-emacs-directory "var/elfeed/enclosures/"))
-(setq elfeed-score-score-file		(concat user-emacs-directory "etc/elfeed/score/score.el"))
 (setq eshell-aliases-file			(concat user-emacs-directory "etc/eshell/aliases"))
 (setq eshell-directory-name			(concat user-emacs-directory "var/eshell/"))
-(setq eww-bookmarks-directory		(concat user-emacs-directory "etc/"))
-(setq recentf-save-file				(concat user-emacs-directory "var/recentf"))
 (setq request-storage-directory		(concat user-emacs-directory "var/request/storage/"))
-(setq simplenote2-directory			(concat user-emacs-directory "var/simplenote2/"))
 (setq tramp-auto-save-directory		(concat user-emacs-directory "var/tramp/auto-save/"))
 (setq tramp-persistency-file-name	(concat user-emacs-directory "var/tramp/persistency"))
 (setq url-cache-directory			(concat user-emacs-directory "var/url/cache/"))
@@ -139,7 +134,22 @@
 	(holiday-fixed 09 30  "Truth and Reconciliation")
 	(holiday-fixed 12 11  "Statute of Westminster")))
 
-(defun list-hols () (interactive) (list-holidays (string-to-number (format-time-string "%Y"))) )
+(defun list-hols () (interactive) (list-holidays (string-to-number (format-time-string "%Y"))))
+
+(setq zoneinfo-style-world-list '(
+	("America/Vancouver" "Vancouver")
+	("America/Edmonton" "Edmonton")
+	("America/Toronto" "Ottawa")
+	("America/Halifax" "Halifax")
+	("America/St_Johns" "St. John's")
+	("America/Marigot" "St. Martin")
+	("Europe/London" "Edinburgh")
+	("Europe/Lisbon" "Lisbon")
+	("Europe/Paris" "Paris")
+	("Europe/Istanbul" "Ankara")
+	("Asia/Calcutta" "Bangalore")
+	("Asia/Shanghai" "Beijing")
+	("Asia/Tokyo" "Tokyo")))
 
 ;; backups
 (setq make-backup-files nil)
@@ -153,8 +163,8 @@
 (use-package nswbuff) ; buffer switching
 (setq nswbuff-clear-delay 1.5)
 (setq nswbuff-display-intermediate-buffers t)
-(setq nswbuff-exclude-buffer-regexps '( "^ .*" "^\\*Messages\\*" "^\\*Shell Command Output\\*"
-										"from-mobile.org" "^\\*tramp/.*" ) )
+(setq nswbuff-exclude-buffer-regexps 
+	'("^ .*" "^\\*Messages\\*" "^\\*Shell Command Output\\*" "from-mobile.org" "^\\*tramp/.*"))
 
 (use-package persistent-scratch :config (persistent-scratch-setup-default))
 (use-package unkillable-scratch :ensure t :config (unkillable-scratch t)
@@ -177,6 +187,7 @@
 ;; file and buffer functions
 (load "init-filesandbuffers")
 (recentf-mode t)
+(setq recentf-save-file	(concat user-emacs-directory "var/recentf"))
 (run-at-time nil (* 5 60) 'recentf-save-list)
 (add-to-list 'recentf-exclude ".emacs.d/elpa/")
 (add-to-list 'recentf-exclude "Applications/")
@@ -241,6 +252,9 @@
 (use-package elfeed)
 (load "rc-elfeed" 'noerror) ; feeds config
 (eval-after-load 'elfeed `(make-directory ,(concat user-emacs-directory "var/elfeed/") t))
+(setq elfeed-db-directory (concat user-emacs-directory "var/elfeed/db/"))
+(setq elfeed-enclosure-default-dir (concat user-emacs-directory "var/elfeed/enclosures/"))
+(setq elfeed-score-score-file (concat user-emacs-directory "etc/elfeed/score/score.el"))
 (setq elfeed-use-curl t)
 (easy-menu-add-item  nil '("tools") ["Read web feeds" elfeed t])
 (defun elfeed-mark-all-as-read ()
@@ -250,7 +264,7 @@
 (define-key elfeed-search-mode-map (kbd "R") 'elfeed-mark-all-as-read)
 
 (use-package elpher)
-(setq elpher-bookmarks-file (concat user-emacs-directory "var/elpher-bookmarks") )
+(setq elpher-bookmarks-file (concat user-emacs-directory "var/elpher-bookmarks"))
 (add-hook 'elpher-mode-hook (lambda () 
 	(local-set-key (kbd "A-<left>") 'elpher-back)
 	(local-set-key (kbd "A-<up>")   'scroll-down-command)
@@ -263,8 +277,8 @@
 (load "rc-erc" 'noerror) ; irc config
 (easy-menu-add-item  nil '("tools")	["IRC with ERC" erc t])
 
-(when *mac*
-	(setq browse-url-browser-function 'browse-url-generic ; eww
+(setq eww-bookmarks-directory (concat user-emacs-directory "etc/"))
+(when *mac*	(setq browse-url-browser-function 'browse-url-generic ; eww
 	browse-url-generic-program "/Applications/Firefox.app/Contents/MacOS/firefox"))
 
 (advice-add 'eww-browse-url :around 'elpher:eww-browse-url)
@@ -477,10 +491,12 @@
 (global-set-key (kbd "s-p") 'ps-print-buffer)
 (global-set-key (kbd "s-Z") 'undo-redo)
 
-(global-set-key (kbd "H-a") (kbd "C-c a a") )
+(global-set-key (kbd "H-a") (kbd "C-c a a"))
 (global-set-key (kbd "H-c") 'calendar )
 (global-set-key (kbd "H-d") (lambda() (interactive) (find-file "~/Documents/org/daily.org")) )
 (global-set-key (kbd "H-e") (lambda() (interactive) (find-file "~/.emacs.d/init.el")) )
+(global-set-key (kbd "H-k") 'world-clock)
+(global-set-key (kbd "H-l") 'dictionary-search)
 (global-set-key (kbd "H-o") (lambda() (interactive) (find-file "~/OD/OneDrive - City of Ottawa/work.org")) )
 (global-set-key (kbd "H-s") (lambda() (interactive) (load "init-sn")) )
 (global-set-key (kbd "H-w") (lambda() (interactive) (find-file "~/Documents/!dbin/words.org")) )
@@ -492,6 +508,7 @@
 
 (defalias 'ds 'desktop-save)
 (defalias 'dsm 'desktop-save-mode)
+(defalias 'er 'eval-region)
 (defalias 'fbl 'flush-blank-lines)
 (defalias 'lcd 'list-colors-display)
 (defalias 'li 'lorem-ipsum-insert-paragraphs)
