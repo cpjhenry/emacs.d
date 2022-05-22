@@ -246,6 +246,7 @@
 ;; Today's cookie
 (when *mac*
 	(setq cookie-file "/usr/local/share/games/fortunes/fortunes")
+	(setq fortune-dir "/usr/local/share/games/fortunes/")
 	(defun todayscookie () (message (cookie cookie-file)))
 	(add-hook 'window-setup-hook 'todayscookie))
 
@@ -481,6 +482,7 @@
 (global-set-key (kbd "C-c l") 'org-store-link)
 (global-set-key (kbd "C-c m") 'markdown-mode)
 (global-set-key (kbd "C-c o") 'markdown-preview-file) 
+(global-set-key (kbd "C-c q") 'replace-smart-quotes)
 (global-set-key (kbd "C-c t") 'olivetti-mode)
 (global-set-key (kbd "C-c v") 'visual-line-mode)
 (global-set-key (kbd "C-c w") 'eww-list-bookmarks)	; www
@@ -516,6 +518,7 @@
 (defalias 'li 'lorem-ipsum-insert-paragraphs)
 (defalias 'ppc 'ps-print-customize)
 (defalias 'rs 'replace-string)
+(defalias 'rsq 'replace-smart-quotes)
 
 (defalias 'elm 'emacs-lisp-mode)
 (defalias 'flym 'flyspell-mode)
