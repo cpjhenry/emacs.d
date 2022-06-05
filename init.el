@@ -201,6 +201,8 @@
 (setq ps-paper-type 'a5)
 (setq ps-lpr-switches '("-o media=a5"))
 (setq ps-font-size 11)
+(setq ps-print-color-p 'black-white)
+(setq ps-landscape-mode nil)
 
 (setq ps-left-margin 36)
 (setq ps-right-margin 36)
@@ -492,7 +494,9 @@
 (global-set-key (kbd "TAB") 'self-insert-command)	; 'tab-to-tab-stop
 (global-set-key (kbd "M-Q") 'unfill-paragraph)
 (global-set-key (kbd "M-p") 'lpr-buffer)
+(global-set-key (kbd "M-P") 'lpr-region)
 (global-set-key (kbd "s-p") 'ps-print-buffer)
+(global-set-key (kbd "s-P") 'ps-print-region)
 (global-set-key (kbd "s-Z") 'undo-redo)
 
 (global-set-key (kbd "H-a") (kbd "C-c a a"))
