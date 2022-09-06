@@ -7,6 +7,7 @@
 (set-language-environment 'utf-8)
 
 (if *mac* (set-frame-font "Inconsolata 21"))
+(if *w32* (set-frame-font "Cascadia Mono 17"))
 (set-background-color "Ivory")
 
 (setq user-mail-address "cpjhenry@gmail.com")
@@ -508,6 +509,7 @@
 (global-set-key (kbd "H-o") (lambda() (interactive) (find-file "~/OD/OneDrive - City of Ottawa/work.org")))
 (global-set-key (kbd "H-s") (lambda() (interactive) (load "init-sn")))
 (global-set-key (kbd "H-w") (lambda() (interactive) (find-file "~/Documents/!dbin/words.org")))
+(global-set-key (kbd "H-x") (kbd "C-c C-x C-a"))	; org-archive-subtree-default
 
 
 ;; Aliases
