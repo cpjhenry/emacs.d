@@ -396,16 +396,6 @@
 (create-scratch-buffer)
 
 
-;; buffer movement
-(require 'windmove) ; use alt + arrow keys to switch between visible buffers
-(windmove-default-keybindings 'meta) ; ‘M-left’ and ‘M-right’ to switch windows
-
-;; resizing 'windows' (i.e., inside the frame)
-(global-set-key (kbd "M-S-<left>") 'shrink-window-horizontally)
-(global-set-key (kbd "M-S-<right>") 'enlarge-window-horizontally)
-(global-set-key (kbd "M-S-<down>") 'shrink-window)
-(global-set-key (kbd "M-S-<up>") 'enlarge-window)  
-
 ;; arrow keys (Darwin)
 ;; <home>  is fn-left	<end>  is fn-right
 ;; <prior> is fn-up		<next> is fn-down
@@ -500,7 +490,6 @@
 (global-set-key (kbd "s-P") 'ps-print-region)
 (global-set-key (kbd "s-Z") 'undo-redo)
 
-(global-set-key (kbd "H-a") (kbd "C-c a a"))
 (global-set-key (kbd "H-c") 'calendar)
 (global-set-key (kbd "H-d") (lambda() (interactive) (find-file "~/Documents/org/daily.org")))
 (global-set-key (kbd "H-e") (lambda() (interactive) (find-file "~/.emacs.d/init.el")))
@@ -509,6 +498,9 @@
 (global-set-key (kbd "H-o") (lambda() (interactive) (find-file "~/OD/OneDrive - City of Ottawa/work.org")))
 (global-set-key (kbd "H-s") (lambda() (interactive) (load "init-sn")))
 (global-set-key (kbd "H-w") (lambda() (interactive) (find-file "~/Documents/!dbin/words.org")))
+
+;; Org-mode keys
+(global-set-key (kbd "H-a") (kbd "C-c a a"))		; agenda
 (global-set-key (kbd "H-x") (kbd "C-c C-x C-a"))	; org-archive-subtree-default
 
 
