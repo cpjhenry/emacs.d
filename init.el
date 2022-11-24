@@ -395,24 +395,21 @@
 ;; arrow keys (Darwin)
 ;; <home>  is fn-left	<end>  is fn-right
 ;; <prior> is fn-up		<next> is fn-down
-(global-set-key (kbd "<prior>"  ) 'scroll-down-command)
-(global-set-key (kbd "<next>"   ) 'scroll-up-command)
-
-(global-set-key (kbd "S-<prior>") 'beginning-of-buffer)
-(global-set-key (kbd "S-<next>" ) 'end-of-buffer)
 
 (global-set-key (kbd "<home>"   ) 'move-beginning-of-line)
 (global-set-key (kbd "<end>"    ) 'move-end-of-line)
+(global-set-key (kbd "C-<home>" ) 'beginning-of-buffer)
+(global-set-key (kbd "C-<end>"  ) 'end-of-buffer)
 
+(global-set-key (kbd "<prior>"  ) 'scroll-down-command)
+(global-set-key (kbd "<next>"   ) 'scroll-up-command)
 (global-set-key (kbd "C-<prior>") 'backward-page)
 (global-set-key (kbd "C-<next>" ) 'forward-page)
-(global-set-key (kbd "C-<home>" ) 'backward-paragraph)
-(global-set-key (kbd "C-<end>"  ) 'forward-paragraph)
 
-(global-set-key (kbd "C-<up>"   ) 'backward-sentence)
-(global-set-key (kbd "C-<down>" ) 'forward-sentence)
-(global-set-key (kbd "C-<left>" ) 'left-word)
-(global-set-key (kbd "C-<right>") 'right-word)
+;(global-set-key (kbd "C-<up>"   ) 'backward-paragraph)
+;(global-set-key (kbd "C-<down>" ) 'forward-paragraph)
+;(global-set-key (kbd "C-<left>" ) 'left-word)
+;(global-set-key (kbd "C-<right>") 'right-word)
 
 (global-unset-key (kbd "M-<up>"   ))
 (global-unset-key (kbd "M-<down>" ))
@@ -429,71 +426,68 @@
 (global-unset-key (kbd "C-w"))
 (global-unset-key (kbd "C-x C-z"))
 
-(global-set-key (kbd "C-S-k")   'kill-whole-line)
-(global-set-key (kbd "C-x C-k") 'kill-region)
-(global-set-key (kbd "C-x k")   'kill-current-buffer)
+(global-set-key (kbd "C-S-k")     'kill-whole-line)
+(global-set-key (kbd "C-x C-k")   'kill-region)
+(global-set-key (kbd "C-x k")     'kill-current-buffer)
 
-(global-set-key (kbd "C-s") 'isearch-forward-regexp)
-(global-set-key (kbd "C-r") 'isearch-backward-regexp)
-(global-set-key (kbd "C-M-s") 'isearch-forward)
-(global-set-key (kbd "C-M-r") 'isearch-backward)
+(global-set-key (kbd "C-s")       'isearch-forward-regexp)
+(global-set-key (kbd "C-r")       'isearch-backward-regexp)
+(global-set-key (kbd "C-M-s")     'isearch-forward)
+(global-set-key (kbd "C-M-r")     'isearch-backward)
 
-(global-set-key (kbd "C-z") 'undo)
-(global-set-key (kbd "C-S-z") 'undo-redo)
+(global-set-key (kbd "C-z")       'undo)
+(global-set-key (kbd "C-S-z")     'undo-redo)
 
 (global-set-key (kbd "A-<return>") (kbd "M-<return>"))
 
 ;; Darwin overrides
-(global-set-key   (kbd "s-o") 'find-file)
-(global-set-key   (kbd "s-S") 'write-file)
+(global-set-key   (kbd "s-o")     'find-file)
+(global-set-key   (kbd "s-S")     'write-file)
 (global-unset-key (kbd "s-m"))
 (global-unset-key (kbd "s-q"))
 (global-unset-key (kbd "s-w"))
 
 
 ;; Diabled keys
-(put 'upcase-region 'disabled nil)					; C-x C-u
-(put 'downcase-region 'disabled nil)				; C-x C-l
+(put 'upcase-region 'disabled nil)						; C-x C-u
+(put 'downcase-region 'disabled nil)					; C-x C-l
 
 
 ;; Shortcuts
-(global-set-key (kbd "TAB") 'self-insert-command)	; 'tab-to-tab-stop
-(global-set-key (kbd "C-<tab>") 'nswbuff-switch-to-next-buffer)
+(global-set-key (kbd "TAB")       'self-insert-command)	; 'tab-to-tab-stop
+(global-set-key (kbd "C-<tab>")   'nswbuff-switch-to-next-buffer)
 (global-set-key (kbd "C-S-<tab>") 'nswbuff-switch-to-previous-buffer)
 
-(global-set-key (kbd "C-c a") 'org-agenda)
-(global-set-key (kbd "C-c c") 'org-capture)
-(global-set-key (kbd "C-c D") 'insert-iso-date)
-(global-set-key (kbd "C-c d") 'insert-date)
-(global-set-key (kbd "C-c e") 'erc)					; IRC
-(global-set-key (kbd "C-c f") 'elfeed)
-(global-set-key (kbd "C-c g") 'elpher)				; gopher / gemini
-(global-set-key (kbd "C-c l") 'org-store-link)
-(global-set-key (kbd "C-c m") 'markdown-mode)
-(global-set-key (kbd "C-c o") 'markdown-preview-file) 
-(global-set-key (kbd "C-c q") 'replace-smart-quotes)
-(global-set-key (kbd "C-c t") 'olivetti-mode)
-(global-set-key (kbd "C-c v") 'visual-line-mode)
-(global-set-key (kbd "C-c w") 'eww-list-bookmarks)	; www
+(global-set-key (kbd "C-c a")     'org-agenda)
+(global-set-key (kbd "C-c c")     'org-capture)
+(global-set-key (kbd "C-c D")     'insert-iso-date)
+(global-set-key (kbd "C-c d")     'insert-date)
+(global-set-key (kbd "C-c e")     'erc)					; IRC
+(global-set-key (kbd "C-c f")     'elfeed)
+(global-set-key (kbd "C-c g")     'elpher)				; gopher / gemini
+(global-set-key (kbd "C-c l")     'org-store-link)
+(global-set-key (kbd "C-c o")     'markdown-preview-file) 
+(global-set-key (kbd "C-c q")     'replace-smart-quotes)
+(global-set-key (kbd "C-c w")     'eww-list-bookmarks)	; www
 
-(global-set-key (kbd "C-c M-c") (kbd "✓") )
+(global-set-key (kbd "C-c M-c")   (kbd "✓") )
 
-(global-set-key (kbd "M-Q") 'unfill-paragraph)
-(global-set-key (kbd "M-p") 'ps-print-buffer)
-(global-set-key (kbd "M-P") 'ps-print-region)
+(global-set-key (kbd "M-Q")       'unfill-paragraph)
+(global-set-key (kbd "M-p")       'ps-print-buffer)
+(global-set-key (kbd "M-P")       'ps-print-region)
 
-(global-set-key (kbd "H-b") 'create-scratch-buffer)
-(global-set-key (kbd "H-c") 'calendar)
-(global-set-key (kbd "H-d") (lambda() (interactive) (find-file "~/Documents/org/daily.org")))
-(global-set-key (kbd "H-e") (lambda() (interactive) (find-file "~/.emacs.d/init.el")))
-(global-set-key (kbd "H-g") (lambda() (interactive) (find-file "~/Documents/org/shopping.org")))
-(global-set-key (kbd "H-k") 'world-clock)
-(global-set-key (kbd "H-l") 'dictionary-search)
-(global-set-key (kbd "H-n") 'new-empty-buffer)
-(global-set-key (kbd "H-o") (lambda() (interactive) (find-file "~/OD/OneDrive - City of Ottawa/work.org")))
-(global-set-key (kbd "H-s") (lambda() (interactive) (load "init-sn")))
-(global-set-key (kbd "H-w") (lambda() (interactive) (find-file "~/Documents/!dbin/words.org")))
-(global-set-key (kbd "H-x") (kbd "C-c C-x C-a"))	; (Org-mode) org-archive-subtree-default
+(global-set-key (kbd "H-b")       'create-scratch-buffer)
+(global-set-key (kbd "H-c")       'calendar)
+(global-set-key (kbd "H-d")       (lambda() (interactive) (find-file "~/Documents/org/daily.org")))
+(global-set-key (kbd "H-e")       (lambda() (interactive) (find-file "~/.emacs.d/init.el")))
+(global-set-key (kbd "H-g")       (lambda() (interactive) (find-file "~/Documents/org/shopping.org")))
+(global-set-key (kbd "H-k")       'world-clock)
+(global-set-key (kbd "H-l")       'dictionary-search)
+(global-set-key (kbd "H-n")       'new-empty-buffer)
+(global-set-key (kbd "H-o")       (lambda() (interactive) (find-file "~/OD/OneDrive - City of Ottawa/work.org")))
+(global-set-key (kbd "H-s")       (lambda() (interactive) (load "init-sn")))
+(global-set-key (kbd "H-w")       (lambda() (interactive) (find-file "~/Documents/!dbin/words.org")))
+(global-set-key (kbd "H-x")       (kbd "C-c C-x C-a"))	; org-archive-subtree-default
 
 
 ;; Aliases
