@@ -389,6 +389,7 @@
 
 (load "init-text") ; text functions
 (load "init-pdfexport") ; pdf functions
+(load "init-deft") ; note functions
 (create-scratch-buffer)
 
 
@@ -401,25 +402,18 @@
 (global-set-key (kbd "C-<home>" ) 'beginning-of-buffer)
 (global-set-key (kbd "C-<end>"  ) 'end-of-buffer)
 
-(global-set-key (kbd "<prior>"  ) 'scroll-down-command)
-(global-set-key (kbd "<next>"   ) 'scroll-up-command)
-(global-set-key (kbd "C-<prior>") 'backward-page)
-(global-set-key (kbd "C-<next>" ) 'forward-page)
+(global-unset-key (kbd "C-<prior>"))
+(global-unset-key (kbd "C-<next>" ))
 
-;(global-set-key (kbd "C-<up>"   ) 'backward-paragraph)
-;(global-set-key (kbd "C-<down>" ) 'forward-paragraph)
-;(global-set-key (kbd "C-<left>" ) 'left-word)
-;(global-set-key (kbd "C-<right>") 'right-word)
-
-(global-unset-key (kbd "M-<up>"   ))
-(global-unset-key (kbd "M-<down>" ))
 (global-unset-key (kbd "M-<left>" ))
 (global-unset-key (kbd "M-<right>"))
+(global-unset-key (kbd "M-<up>"   ))
+(global-unset-key (kbd "M-<down>" ))
 
-(global-unset-key (kbd "s-<up>"   ))
-(global-unset-key (kbd "s-<down>" ))
 (global-unset-key (kbd "s-<left>" ))
 (global-unset-key (kbd "s-<right>"))
+(global-unset-key (kbd "s-<up>"   ))
+(global-unset-key (kbd "s-<down>" ))
 
 
 ;; alternate keys
@@ -427,7 +421,6 @@
 (global-unset-key (kbd "C-x C-z"))
 
 (global-set-key (kbd "C-S-k")     'kill-whole-line)
-(global-set-key (kbd "C-x C-k")   'kill-region)
 (global-set-key (kbd "C-x k")     'kill-current-buffer)
 
 (global-set-key (kbd "C-s")       'isearch-forward-regexp)
@@ -476,24 +469,24 @@
 (global-set-key (kbd "M-p")       'ps-print-buffer)
 (global-set-key (kbd "M-P")       'ps-print-region)
 
-(global-set-key (kbd "H-b")       'create-scratch-buffer)
-(global-set-key (kbd "H-c")       'calendar)
-(global-set-key (kbd "H-d")       (lambda() (interactive) (find-file "~/Documents/org/daily.org")))
-(global-set-key (kbd "H-e")       (lambda() (interactive) (find-file "~/.emacs.d/init.el")))
-(global-set-key (kbd "H-g")       (lambda() (interactive) (find-file "~/Documents/org/shopping.org")))
-(global-set-key (kbd "H-k")       'world-clock)
+(global-set-key (kbd "H-b n")     'new-empty-buffer)
+(global-set-key (kbd "H-b s")     'create-scratch-buffer)
+(global-set-key (kbd "H-x a")     (kbd "C-c C-x C-a"))	; org-archive-subtree-default
+(global-set-key (kbd "H-x d")     (lambda() (interactive) (find-file "~/Documents/org/daily.org")))
+(global-set-key (kbd "H-x e")     (lambda() (interactive) (find-file "~/.emacs.d/init.el")))
+(global-set-key (kbd "H-x o")     (lambda() (interactive) (find-file "~/OD/OneDrive - City of Ottawa/work.org")))
+(global-set-key (kbd "H-x s")     (lambda() (interactive) (find-file "~/Documents/org/shopping.org")))
+(global-set-key (kbd "H-x w")     (lambda() (interactive) (find-file "~/Documents/!dbin/words.org")))
 (global-set-key (kbd "H-l")       'dictionary-search)
-(global-set-key (kbd "H-n")       'new-empty-buffer)
-(global-set-key (kbd "H-o")       (lambda() (interactive) (find-file "~/OD/OneDrive - City of Ottawa/work.org")))
 (global-set-key (kbd "H-s")       (lambda() (interactive) (load "init-sn")))
-(global-set-key (kbd "H-w")       (lambda() (interactive) (find-file "~/Documents/!dbin/words.org")))
-(global-set-key (kbd "H-x")       (kbd "C-c C-x C-a"))	; org-archive-subtree-default
 
 
 ;; Aliases
 (defalias 'yes-or-no-p 'y-or-n-p) ; y or n is enough
 (defalias 'list-buffers 'ibuffer) ; always use ibuffer
 
+(defalias 'cal 'calendar)
+(defalias 'clock 'world-clock)
 (defalias 'ds 'desktop-save)
 (defalias 'dsm 'desktop-save-mode)
 (defalias 'er 'eval-region)

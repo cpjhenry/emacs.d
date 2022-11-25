@@ -11,12 +11,12 @@
 	:bind (("<f8>" . deft))
 	:commands (deft deft-open-file deft-new-file-named)
 	:config
-	(setq deft-directory "~/notes/"
+	(setq deft-directory "~/Documents/Notes/"
 		  deft-recursive t
-		  deft-extensions '("md" "txt" "org" "tex")
+		  deft-extensions '("md" "markdown" "txt" "text" "org" "tex")
 		  deft-use-filter-string-for-filename nil
-		  deft-use-filename-as-title nil
+		  deft-use-filename-as-title t
 		  deft-markdown-mode-title-level 1
 		  deft-file-naming-rules '((noslash . "-")
 							       (nospace . "-")
-								   (case-fn . downcase)))
+								   (case-fn . downcase))) )
