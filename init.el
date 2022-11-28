@@ -485,7 +485,6 @@
 (defalias 'yes-or-no-p 'y-or-n-p) ; y or n is enough
 (defalias 'list-buffers 'ibuffer) ; always use ibuffer
 
-(defalias 'cal 'calendar)
 (defalias 'clock 'world-clock)
 (defalias 'ds 'desktop-save)
 (defalias 'dsm 'desktop-save-mode)
