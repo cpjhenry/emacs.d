@@ -1,4 +1,5 @@
 !**/.gitkeep
+.git/
 auto-save-list/
 elpa/
 eshell/
@@ -7,6 +8,7 @@ games/
 request/
 url/
 var/
+.DS_Store
 .org-id-locations
 .persistent-scratch
 network-security.data
