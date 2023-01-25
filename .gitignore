@@ -9,6 +9,7 @@ request/
 url/
 var/
 .DS_Store
+.gitignore
 .org-id-locations
 .persistent-scratch
 network-security.data
