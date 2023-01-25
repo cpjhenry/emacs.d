@@ -10,6 +10,7 @@
 (set-language-environment 'utf-8)
 
 (if *mac* (set-frame-font "Inconsolata 21"))
+(if *gnu* (set-frame-font "Monospace 17"))
 (if *w32* (set-frame-font "Cascadia Mono 17"))
 (set-background-color "Ivory")
 
@@ -72,6 +73,8 @@
 (setq-default fill-column 31)
 (setq-default help-window-select t)
 
+(setq bookmark-save-flag 1)
+(setq bookmark-set-fringe-mark nil)
 (setq delete-by-moving-to-trash t)
 (setq dictionary-server "dict.org")
 (setq flyspell-issue-message-flag nil)
@@ -81,7 +84,7 @@
 (setq save-abbrevs 'silent)
 (setq sentence-end-double-space nil)
 (setq tramp-default-method "ssh")
-(setq tramp-syntax 'simplified)
+(setq tramp-syntax 'simplified)		; C-x C-f /remotehost:filename
 (setq trash-directory "~/.Trash")
 (setq visual-line-fringe-indicators '(nil right-curly-arrow))
 
@@ -209,7 +212,6 @@
 (setq ps-font-size 10)
 (setq ps-print-color-p nil)
 (setq ps-print-header nil)
-(setq ps-print-header-frame nil)
 
 ;; Custom variables
 (setq custom-file (concat user-emacs-directory "custom.el"))
@@ -279,7 +281,7 @@
 (easy-menu-add-item  nil '("tools")	["IRC with ERC" erc t])
 
 (setq eww-bookmarks-directory (concat user-emacs-directory "etc/"))
-(when *mac*	(setq browse-url-browser-function 'browse-url-generic ; eww
+(when *natasha*	(setq browse-url-browser-function 'browse-url-generic ; eww
 	browse-url-generic-program "/Applications/Firefox.app/Contents/MacOS/firefox"))
 
 (advice-add 'eww-browse-url :around 'elpher:eww-browse-url)
@@ -390,6 +392,7 @@
 (load "init-text") ; text functions
 (load "init-pdfexport") ; pdf functions
 (load "init-deft") ; note functions
+(load "init-sn") ; simplenote
 (create-scratch-buffer)
 
 
@@ -417,11 +420,11 @@
 
 
 ;; alternate keys
-(global-unset-key (kbd "C-w"))
 (global-unset-key (kbd "C-x C-z"))
 
 (global-set-key (kbd "C-S-k")     'kill-whole-line)
 (global-set-key (kbd "C-x k")     'kill-current-buffer)
+(global-set-key (kbd "C-x M-k")	  'nuke-all-buffers)
 
 (global-set-key (kbd "C-s")       'isearch-forward-regexp)
 (global-set-key (kbd "C-r")       'isearch-backward-regexp)
@@ -437,6 +440,7 @@
 (global-set-key   (kbd "s-o")     'find-file)
 (global-set-key   (kbd "s-S")     'write-file)
 (global-unset-key (kbd "s-m"))
+(global-unset-key (kbd "s-n"))
 (global-unset-key (kbd "s-q"))
 (global-unset-key (kbd "s-w"))
 
@@ -469,16 +473,16 @@
 (global-set-key (kbd "M-p")       'ps-print-buffer)
 (global-set-key (kbd "M-P")       'ps-print-region)
 
+(global-set-key (kbd "H-b m")     'new-markdown-buffer)
 (global-set-key (kbd "H-b n")     'new-empty-buffer)
 (global-set-key (kbd "H-b s")     'create-scratch-buffer)
-(global-set-key (kbd "H-x a")     (kbd "C-c C-x C-a"))	; org-archive-subtree-default
+
+(global-set-key (kbd "H-l")       'dictionary-search)
+
+(global-set-key (kbd "H-x a")     'org-archive-subtree-default)
 (global-set-key (kbd "H-x d")     (lambda() (interactive) (find-file "~/Documents/org/daily.org")))
 (global-set-key (kbd "H-x e")     (lambda() (interactive) (find-file "~/.emacs.d/init.el")))
 (global-set-key (kbd "H-x o")     (lambda() (interactive) (find-file "~/OD/OneDrive - City of Ottawa/work.org")))
-(global-set-key (kbd "H-x s")     (lambda() (interactive) (find-file "~/Documents/org/shopping.org")))
-(global-set-key (kbd "H-x w")     (lambda() (interactive) (find-file "~/Documents/!dbin/words.org")))
-(global-set-key (kbd "H-l")       'dictionary-search)
-(global-set-key (kbd "H-s")       (lambda() (interactive) (load "init-sn")))
 
 
 ;; Aliases

@@ -14,6 +14,15 @@
 		(funcall (and initial-major-mode))
 		(setq buffer-offer-save t) ))
 
+(defun new-markdown-buffer ()
+	"Create new empty markdown buffer."
+	(interactive)
+	(let ((buf (generate-new-buffer "untitled\.md")))
+		(switch-to-buffer buf)
+		(funcall (and initial-major-mode))
+		(markdown-mode)
+		(setq buffer-offer-save t) ))
+
 (defun nuke-all-buffers ()
 	"Kill all buffers, leaving *scratch* only."
 	(interactive)
