@@ -4,7 +4,7 @@
 auto-save-list/
 elpa/
 eshell/
-etc/rc-*.el
+etc/rc/*.el
 games/
 request/
 url/
