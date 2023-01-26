@@ -2,7 +2,11 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("shopping.org"
+(("(2023-01-11) Orphans of Netscape"
+ (position . 5366)
+ (location . "gopher://zaibatsu.circumlunar.space/0/~solderpunk/phlog/orphans-of-netscape.txt")
+ (handler . elpher-bookmark-jump))
+("shopping.org"
  (filename . "~/Documents/org/shopping.org")
  (front-context-string . "* Groceries\n- [ ")
  (rear-context-string)

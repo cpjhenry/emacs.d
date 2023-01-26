@@ -253,7 +253,7 @@
 
 ;; Initialize packages
 (use-package elfeed)
-(load "rc-elfeed" 'noerror) ; feeds config
+(load "rc/elfeed" 'noerror) ; feeds config
 (eval-after-load 'elfeed `(make-directory ,(concat user-emacs-directory "var/elfeed/") t))
 (setq elfeed-db-directory (concat user-emacs-directory "var/elfeed/db/"))
 (setq elfeed-enclosure-default-dir (concat user-emacs-directory "var/elfeed/enclosures/"))
@@ -277,7 +277,7 @@
 	(set-window-buffer nil (current-buffer)) ))
 (easy-menu-add-item  nil '("tools") ["Gopher" elpher t])
 
-(load "rc-erc" 'noerror) ; irc config
+(load "rc/erc" 'noerror) ; irc config
 (easy-menu-add-item  nil '("tools")	["IRC with ERC" erc t])
 
 (setq eww-bookmarks-directory (concat user-emacs-directory "etc/"))

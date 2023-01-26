@@ -1,5 +1,5 @@
 (use-package simplenote2)
-(load "rc-sn" 'noerror)
+(load "rc/sn" 'noerror)
 (simplenote2-setup)
 (setq simplenote2-directory	(concat user-emacs-directory "var/simplenote2/"))
 (setq simplenote2-markdown-notes-mode 'markdown-mode)
