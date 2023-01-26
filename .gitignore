@@ -1,0 +1,16 @@
+!**/.gitkeep
+.git/
+.local/
+auto-save-list/
+elpa/
+eshell/
+etc/rc-*.el
+games/
+request/
+url/
+var/
+.DS_Store
+.gitignore
+.org-id-locations
+.persistent-scratch
+network-security.data
