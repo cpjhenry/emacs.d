@@ -1,5 +1,6 @@
 !**/.gitkeep
 .git/
+.local/
 auto-save-list/
 elpa/
 eshell/
