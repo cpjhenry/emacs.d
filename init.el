@@ -14,18 +14,20 @@
 (if *w32* (set-frame-font "Cascadia Mono 17"))
 (set-background-color "Ivory")
 
+; Mac command key is Super (by default)
+; Mac option key is Meta (by default)
+(if *mac*
+	(setq ns-function-modifier 'hyper) ; Mac function key is Hyper
+	(setq ns-right-alternate-modifier 'alt) ; Mac right option key is Alt
+	(define-key key-translation-map (kbd "<s-mouse-1>") (kbd "<mouse-2>")))
+(if *w32*
+	(setq w32-lwindow-modifier 'super)
+	(setq w32-pass-lwindow-to-system nil))
+
 (setq user-mail-address "cpjhenry@gmail.com")
 (setq calendar-latitude 45.3)
 (setq calendar-longitude -75.8)
 (setq calendar-location-name "Ottawa")
-
-; Mac command key is Super (by default)
-; Mac option key is Meta (by default)
-(setq ns-function-modifier 'hyper) ; Mac function key is Hyper
-(setq ns-right-alternate-modifier 'alt) ; Mac right option key is Alt
-(define-key key-translation-map (kbd "<s-mouse-1>") (kbd "<mouse-2>"))
-(setq w32-lwindow-modifier 'super)
-(setq w32-pass-lwindow-to-system nil)
 
 (tool-bar-mode -1) 	; turn off tool bar
 (scroll-bar-mode -1); turn off scrollbar
@@ -110,10 +112,13 @@
 	"☽ First Quarter Moon"
 	"○ Full Moon"
 	"☾ Last Quarter Moon"))
+
+(setq calendar-christian-all-holidays-flag t)
+(setq calendar-chinese-all-holidays-flag t)
 (setq holiday-general-holidays nil)
 (setq holiday-bahai-holidays nil)
-(setq holiday-hebrew-holidays nil)
-(setq holiday-islamic-holidays nil)
+;(setq holiday-hebrew-holidays nil)
+;(setq holiday-islamic-holidays nil)
 (setq holiday-local-holidays '( ; National / Provincial Holidays and Commemorations
 	(holiday-fixed 01 01  "New Year's Day")
 	(holiday-fixed 02 02  "Groundhog Day")
@@ -139,6 +144,8 @@
 	(holiday-fixed 09 30  "Truth and Reconciliation")
 	(holiday-fixed 12 11  "Statute of Westminster")))
 
+(setq calendar-mark-holidays-flag t)
+(setq calendar-view-holidays-initially-flag t)
 (defun list-hols () (interactive) (list-holidays (string-to-number (format-time-string "%Y"))))
 
 (setq zoneinfo-style-world-list '(
@@ -489,6 +496,7 @@
 (defalias 'yes-or-no-p 'y-or-n-p) ; y or n is enough
 (defalias 'list-buffers 'ibuffer) ; always use ibuffer
 
+(defalias 'cal 'calendar)
 (defalias 'clock 'world-clock)
 (defalias 'ds 'desktop-save)
 (defalias 'dsm 'desktop-save-mode)
