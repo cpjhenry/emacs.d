@@ -97,6 +97,7 @@
 (setq bookmark-default-file			(concat user-emacs-directory "etc/bookmarks"))
 (setq eshell-aliases-file			(concat user-emacs-directory "etc/eshell/aliases"))
 (setq eshell-directory-name			(concat user-emacs-directory "var/eshell/"))
+(setq eww-bookmarks-directory 		(concat user-emacs-directory "etc/"))
 (setq request-storage-directory		(concat user-emacs-directory "var/request/storage/"))
 (setq tramp-auto-save-directory		(concat user-emacs-directory "var/tramp/auto-save/"))
 (setq tramp-persistency-file-name	(concat user-emacs-directory "var/tramp/persistency"))
@@ -200,10 +201,10 @@
 (setq inhibit-default-init t)
 
 ;; file and buffer functions
-(load "init-filesandbuffers")
+(load "init/filesandbuffers")
 
 ;; print functions
-(load "init-page-dimensions")
+(load "init/page-dimensions")
 (when *bullwinkle*
 	(setq printer-name "Munbyn_ITPP047")
 	(setq ps-paper-type 'pos80)
@@ -259,20 +260,6 @@
 
 
 ;; Initialize packages
-(use-package elfeed)
-(load "rc/elfeed" 'noerror) ; feeds config
-(eval-after-load 'elfeed `(make-directory ,(concat user-emacs-directory "var/elfeed/") t))
-(setq elfeed-db-directory (concat user-emacs-directory "var/elfeed/db/"))
-(setq elfeed-enclosure-default-dir (concat user-emacs-directory "var/elfeed/enclosures/"))
-(setq elfeed-score-score-file (concat user-emacs-directory "etc/elfeed/score/score.el"))
-(setq elfeed-use-curl t)
-(easy-menu-add-item  nil '("tools") ["Read web feeds" elfeed t])
-(defun elfeed-mark-all-as-read ()
-	(interactive)
-	(mark-whole-buffer)
-	(elfeed-search-untag-all-unread) )
-(define-key elfeed-search-mode-map (kbd "R") 'elfeed-mark-all-as-read)
-
 (use-package elpher)
 (setq elpher-bookmarks-file (concat user-emacs-directory "var/elpher-bookmarks"))
 (add-hook 'elpher-mode-hook (lambda () 
@@ -283,13 +270,6 @@
 	(setq-local gnutls-verify-error nil)
 	(set-window-buffer nil (current-buffer)) ))
 (easy-menu-add-item  nil '("tools") ["Gopher" elpher t])
-
-(load "rc/erc" 'noerror) ; irc config
-(easy-menu-add-item  nil '("tools")	["IRC with ERC" erc t])
-
-(setq eww-bookmarks-directory (concat user-emacs-directory "etc/"))
-(when *natasha*	(setq browse-url-browser-function 'browse-url-generic ; eww
-	browse-url-generic-program "/Applications/Firefox.app/Contents/MacOS/firefox"))
 
 (advice-add 'eww-browse-url :around 'elpher:eww-browse-url)
 (defun elpher:eww-browse-url (original url &optional new-window)
@@ -368,7 +348,7 @@
 (use-package org-chef :ensure t)
 (add-hook 'org-mode-hook 'org-indent-mode)
 
-(load "init-org-mode")	; org-mode functions
+(load "init/org-mode")	; org-mode functions
 (load "org-phscroll")	; org-table fix
 
 
@@ -396,11 +376,38 @@
 ;(add-hook 'markdown-mode-hook (lambda ()
 ;	(setq-local left-margin-width 15) )) ;(setq-local right-margin-width 15)
 
-(load "init-text") ; text functions
-(load "init-pdfexport") ; pdf functions
-(load "init-deft") ; note functions
-(load "init-sn") ; simplenote
+(load "init/text") ; text functions
+(load "init/pdfexport") ; pdf functions
 (create-scratch-buffer)
+
+
+;; natasha
+(when *natasha* 
+	(setq browse-url-browser-function 'browse-url-generic ; eww
+	browse-url-generic-program "/Applications/Firefox.app/Contents/MacOS/firefox")
+
+	(use-package elfeed)
+	(load "rc/elfeed" 'noerror) ; feeds config
+	(eval-after-load 'elfeed `(make-directory ,(concat user-emacs-directory "var/elfeed/") t))
+	(setq elfeed-db-directory (concat user-emacs-directory "var/elfeed/db/"))
+	(setq elfeed-enclosure-default-dir (concat user-emacs-directory "var/elfeed/enclosures/"))
+	(setq elfeed-score-score-file (concat user-emacs-directory "etc/elfeed/score/score.el"))
+	(setq elfeed-use-curl t)
+	(easy-menu-add-item  nil '("tools") ["Read web feeds" elfeed t])
+	(defun elfeed-mark-all-as-read ()
+		(interactive)
+		(mark-whole-buffer)
+		(elfeed-search-untag-all-unread) )
+	(define-key elfeed-search-mode-map (kbd "R") 'elfeed-mark-all-as-read)
+	(global-set-key (kbd "C-c f") 'elfeed)
+
+	(load "rc/erc" 'noerror) ; irc config
+	(easy-menu-add-item  nil '("tools")	["IRC with ERC" erc t])
+	(global-set-key (kbd "C-c e") 'erc)
+
+	(load "init/deft") ; note functions
+	(load "init/sn") ; simplenote
+	)
 
 
 ;; arrow keys (Darwin)
@@ -466,8 +473,6 @@
 (global-set-key (kbd "C-c c")     'org-capture)
 (global-set-key (kbd "C-c D")     'insert-iso-date)
 (global-set-key (kbd "C-c d")     'insert-date)
-(global-set-key (kbd "C-c e")     'erc)					; IRC
-(global-set-key (kbd "C-c f")     'elfeed)
 (global-set-key (kbd "C-c g")     'elpher)				; gopher / gemini
 (global-set-key (kbd "C-c l")     'org-store-link)
 (global-set-key (kbd "C-c o")     'markdown-preview-file) 
