@@ -202,6 +202,7 @@
 
 ;; file and buffer functions
 (load "init/filesandbuffers")
+(remove-hook 'file-name-at-point-functions 'ffap-guess-file-name-at-point)
 
 ;; print functions
 (load "init/page-dimensions")
@@ -232,9 +233,9 @@
 (add-to-list 'sml/replacer-regexp-list '("^:Doc:Projects/" ":Proj:") t)
 (add-to-list 'sml/replacer-regexp-list '("^:Doc:Reference/" ":Ref:") t)
 (add-to-list 'sml/replacer-regexp-list '("^.*/gemini/" ":gem:") t)
-(add-to-list 'sml/replacer-regexp-list '("^.*City of Ottawa/" ":CoO:") t)
-(add-to-list 'sml/replacer-regexp-list '("^:CoO:Operations/" ":Ops:") t)
-(add-to-list 'sml/replacer-regexp-list '("^:CoO:PDG/" ":PDG:") t)
+(add-to-list 'sml/replacer-regexp-list '("^.*Work/" ":Work:") t)
+(add-to-list 'sml/replacer-regexp-list '("^:Work:Operations/" ":Ops:") t)
+(add-to-list 'sml/replacer-regexp-list '("^:Work:PDG/" ":PDG:") t)
 (add-to-list 'sml/replacer-regexp-list '("^:PDG:1-.*/" ":PDG-1:") t)
 (add-to-list 'sml/replacer-regexp-list '("^:PDG:2-.*/" ":PDG-2:") t)
 (add-to-list 'sml/replacer-regexp-list '("^:PDG:3-.*/" ":PDG-3:") t)
@@ -281,18 +282,12 @@
 (add-hook 'eww-mode-hook (lambda ()
 	(local-set-key (kbd "A-<left>") 'eww-back-url) ))
 
+(use-package google-this :config (google-this-mode))
 (use-package lorem-ipsum)
 (use-package smooth-scrolling :config (smooth-scrolling-mode))
 (use-package ssh)
 (use-package wc-mode)
 (use-package which-key :config (which-key-mode));(which-key-setup-side-window-right-bottom)
-
-
-;; Games
-(when *mac*
-	(use-package gnugo) ; Game of Go
-	(setq gnugo-program "/usr/local/bin/gnugo")
-	(easy-menu-add-item  nil '("tools" "games") ["Go" gnugo t]) )
 
 
 ;; Lisp & Help modes
@@ -314,7 +309,7 @@
 ;; Org-mode
 (use-package org)
 (setq org-directory "~/Documents/org/")
-(setq org-agenda-files (list (concat org-directory "daily.org"))) ;"~/OD/OneDrive - City of Ottawa/work.org"
+(setq org-agenda-files (list (concat org-directory "daily.org"))) ;"~/OD/Work/work.org"
 (setq org-default-notes-file (concat org-directory "notes.org"))
 
 (setq org-startup-folded 'content)		; folded children content all
@@ -381,8 +376,8 @@
 (create-scratch-buffer)
 
 
-;; natasha
-(when *natasha* 
+;; Select Load
+(when *natasha*
 	(setq browse-url-browser-function 'browse-url-generic ; eww
 	browse-url-generic-program "/Applications/Firefox.app/Contents/MacOS/firefox")
 
@@ -405,8 +400,15 @@
 	(easy-menu-add-item  nil '("tools")	["IRC with ERC" erc t])
 	(global-set-key (kbd "C-c e") 'erc)
 
+;	(load "init/sn") ; simplenote
+	)
+
+(when *mac*
 	(load "init/deft") ; note functions
-	(load "init/sn") ; simplenote
+
+	(use-package gnugo) ; Game of Go
+	(setq gnugo-program "/usr/local/bin/gnugo")
+	(easy-menu-add-item  nil '("tools" "games") ["Go" gnugo t])
 	)
 
 
@@ -419,8 +421,8 @@
 (global-set-key (kbd "C-<home>" ) 'beginning-of-buffer)
 (global-set-key (kbd "C-<end>"  ) 'end-of-buffer)
 
-(global-unset-key (kbd "C-<prior>"))
-(global-unset-key (kbd "C-<next>" ))
+(global-unset-key (kbd "C-<prior>")) ; backward-page
+(global-unset-key (kbd "C-<next>" )) ; forward-page
 
 (global-unset-key (kbd "M-<left>" ))
 (global-unset-key (kbd "M-<right>"))
@@ -469,6 +471,10 @@
 (global-set-key (kbd "C-<tab>")   'nswbuff-switch-to-next-buffer)
 (global-set-key (kbd "C-S-<tab>") 'nswbuff-switch-to-previous-buffer)
 
+(global-set-key (kbd "M-Q")       'unfill-paragraph)
+(global-set-key (kbd "M-p")       'ps-print-buffer)
+(global-set-key (kbd "M-P")       'ps-print-region)
+
 (global-set-key (kbd "C-c a")     'org-agenda)
 (global-set-key (kbd "C-c c")     'org-capture)
 (global-set-key (kbd "C-c D")     'insert-iso-date)
@@ -479,22 +485,16 @@
 (global-set-key (kbd "C-c q")     'replace-smart-quotes)
 (global-set-key (kbd "C-c w")     'eww-list-bookmarks)	; www
 
-(global-set-key (kbd "C-c M-c")   (kbd "✓") )
+(global-set-key (kbd "C-c b m")   'new-markdown-buffer)
+(global-set-key (kbd "C-c b n")   'new-empty-buffer)
+(global-set-key (kbd "C-c b s")   'create-scratch-buffer)
 
-(global-set-key (kbd "M-Q")       'unfill-paragraph)
-(global-set-key (kbd "M-p")       'ps-print-buffer)
-(global-set-key (kbd "M-P")       'ps-print-region)
-
-(global-set-key (kbd "H-b m")     'new-markdown-buffer)
-(global-set-key (kbd "H-b n")     'new-empty-buffer)
-(global-set-key (kbd "H-b s")     'create-scratch-buffer)
-
-(global-set-key (kbd "H-l")       'dictionary-search)
-
-(global-set-key (kbd "H-x a")     'org-archive-subtree-default)
-(global-set-key (kbd "H-x d")     (lambda() (interactive) (find-file "~/Documents/org/daily.org")))
-(global-set-key (kbd "H-x e")     (lambda() (interactive) (find-file "~/.emacs.d/init.el")))
-(global-set-key (kbd "H-x o")     (lambda() (interactive) (find-file "~/OD/OneDrive - City of Ottawa/work.org")))
+(global-set-key (kbd "C-c x a")   'org-archive-subtree-default)
+(global-set-key (kbd "C-c x c")   (kbd "✓"))
+(global-set-key (kbd "C-c x d")   '("daily"  . (lambda()(interactive)(find-file "~/Documents/org/daily.org"))))
+(global-set-key (kbd "C-c x e")   '("init"   . (lambda()(interactive)(find-file "~/.emacs.d/init.el"))))
+(global-set-key (kbd "C-c x l")   'dictionary-search)
+(global-set-key (kbd "C-c x o")   '("office" . (lambda()(interactive)(find-file "~/OD/Work/work.org"))))
 
 
 ;; Aliases
