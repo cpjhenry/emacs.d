@@ -212,7 +212,7 @@
 	(setq ps-left-margin 7)(setq ps-right-margin 7)
 	(setq ps-top-margin 7) (setq ps-bottom-margin 7))
 (when *natasha*
-	(setq printer-name "Brother_HL_L2370DW_series")
+	(setq printer-name "Brother_HL_L2370DW")
 	(setq ps-paper-type 'a5)
 	(setq ps-lpr-switches '("-o media=a5"))
 	(setq ps-left-margin 28)(setq ps-right-margin 28)
@@ -233,12 +233,14 @@
 (add-to-list 'sml/replacer-regexp-list '("^:Doc:Projects/" ":Proj:") t)
 (add-to-list 'sml/replacer-regexp-list '("^:Doc:Reference/" ":Ref:") t)
 (add-to-list 'sml/replacer-regexp-list '("^.*/gemini/" ":gem:") t)
-(add-to-list 'sml/replacer-regexp-list '("^.*Work/" ":Work:") t)
+
+(when *natasha*
+(add-to-list 'sml/replacer-regexp-list '("^.*/Work/" ":Work:") t)
 (add-to-list 'sml/replacer-regexp-list '("^:Work:Operations/" ":Ops:") t)
 (add-to-list 'sml/replacer-regexp-list '("^:Work:PDG/" ":PDG:") t)
 (add-to-list 'sml/replacer-regexp-list '("^:PDG:1-.*/" ":PDG-1:") t)
 (add-to-list 'sml/replacer-regexp-list '("^:PDG:2-.*/" ":PDG-2:") t)
-(add-to-list 'sml/replacer-regexp-list '("^:PDG:3-.*/" ":PDG-3:") t)
+(add-to-list 'sml/replacer-regexp-list '("^:PDG:3-.*/" ":PDG-3:") t) )
 
 (setq display-time-24hr-format t)
 (setq display-time-default-load-average nil)
@@ -309,7 +311,7 @@
 ;; Org-mode
 (use-package org)
 (setq org-directory "~/Documents/org/")
-(setq org-agenda-files (list (concat org-directory "daily.org"))) ;"~/OD/Work/work.org"
+(setq org-agenda-files (list (concat org-directory "daily.org")))
 (setq org-default-notes-file (concat org-directory "notes.org"))
 
 (setq org-startup-folded 'content)		; folded children content all
@@ -489,12 +491,14 @@
 (global-set-key (kbd "C-c b n")   'new-empty-buffer)
 (global-set-key (kbd "C-c b s")   'create-scratch-buffer)
 
-(global-set-key (kbd "C-c x a")   'org-archive-subtree-default)
+(global-set-key (kbd "C-c x a")   '("archive-subtree" . org-archive-subtree-default))
 (global-set-key (kbd "C-c x c")   (kbd "✓"))
 (global-set-key (kbd "C-c x d")   '("daily"  . (lambda()(interactive)(find-file "~/Documents/org/daily.org"))))
 (global-set-key (kbd "C-c x e")   '("init"   . (lambda()(interactive)(find-file "~/.emacs.d/init.el"))))
 (global-set-key (kbd "C-c x l")   'dictionary-search)
-(global-set-key (kbd "C-c x o")   '("office" . (lambda()(interactive)(find-file "~/OD/Work/work.org"))))
+
+(when *natasha*
+(global-set-key (kbd "C-c x o")   '("office" . (lambda()(interactive)(find-file "~/OD/Work/work.org")))) )
 
 
 ;; Aliases
