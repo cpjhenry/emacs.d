@@ -9,20 +9,23 @@
 ;; Initialize terminal
 (set-language-environment 'utf-8)
 
-(if *mac* (set-frame-font "Inconsolata 21"))
-(if *gnu* (set-frame-font "Monospace 17"))
-(if *w32* (set-frame-font "Cascadia Mono 17"))
-(set-background-color "Ivory")
-
-; Mac command key is Super (by default)
-; Mac option key is Meta (by default)
-(if *mac*
-	(setq ns-function-modifier 'hyper) ; Mac function key is Hyper
-	(setq ns-right-alternate-modifier 'alt) ; Mac right option key is Alt
-	(define-key key-translation-map (kbd "<s-mouse-1>") (kbd "<mouse-2>")))
-(if *w32*
+(when *mac*
+	; Mac command key is Super (by default)
+	; Mac option key is Meta (by default)
+	(set-frame-font "Inconsolata 21")
+	(setq mac-function-modifier 'hyper) 	; Mac function key is Hyper
+	(setq mac-right-option-modifier 'alt)	; Mac right option key is Alt
+	(define-key key-translation-map (kbd "<s-mouse-1>") (kbd "<mouse-2>"))
+	(message "[Darwin]"))
+(when *gnu*
+	(set-frame-font "Monospace 17")
+	(message "[gnu]"))
+(when *w32*
+	(set-frame-font "Cascadia Mono 17")
 	(setq w32-lwindow-modifier 'super)
-	(setq w32-pass-lwindow-to-system nil))
+	(setq w32-pass-lwindow-to-system nil)
+	(message "[w32]"))
+(set-background-color "Ivory")
 
 (setq user-mail-address "cpjhenry@gmail.com")
 (setq calendar-latitude 45.3)
