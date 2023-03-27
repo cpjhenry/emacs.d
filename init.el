@@ -14,7 +14,7 @@
 	; Mac option key is Meta (by default)
 	(set-frame-font "Inconsolata 21")
 	(setq mac-function-modifier 'hyper) 	; Mac function key is Hyper
-	(setq mac-right-option-modifier 'alt)	; Mac right option key is Alt
+	(setq mac-right-option-modifier nil)	; Mac right option key is Alt
 	(define-key key-translation-map (kbd "<s-mouse-1>") (kbd "<mouse-2>"))
 	(message "[Darwin]"))
 (when *gnu*
