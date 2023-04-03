@@ -10,11 +10,13 @@
 (set-language-environment 'utf-8)
 
 (when *mac*
-	; Mac command key is Super (by default)
-	; Mac option key is Meta (by default)
 	(set-frame-font "Inconsolata 21")
-	(setq mac-function-modifier 'hyper) 	; Mac function key is Hyper
-	(setq mac-right-option-modifier nil)	; Mac right option key is Alt
+	; Mac command key is Super
+	; Mac option  key is Meta
+	; Mac control key is Control
+	(setq mac-function-modifier 'hyper) 	; Hyper
+	(setq mac-right-command-modifier 'alt)	; Alt
+	(setq mac-right-option-modifier nil)
 	(define-key key-translation-map (kbd "<s-mouse-1>") (kbd "<mouse-2>"))
 	(message "[Darwin]"))
 (when *gnu*
@@ -92,7 +94,6 @@
 (setq tramp-syntax 'simplified)		; C-x C-f /remotehost:filename
 (setq trash-directory "~/.Trash")
 (setq visual-line-fringe-indicators '(nil right-curly-arrow))
-
 (electric-indent-mode -1)
 
 (setq abbrev-file-name				(concat user-emacs-directory "etc/abbrev_defs"))
@@ -206,24 +207,24 @@
 ;; file and buffer functions
 (load "init/filesandbuffers")
 (remove-hook 'file-name-at-point-functions 'ffap-guess-file-name-at-point)
+(easy-menu-add-item  nil '("file" "print") ["Enscript" spool-to-enscript t])
+(define-key menu-bar-print-menu [print-buffer] nil)
+(define-key menu-bar-print-menu [print-region] nil)
 
 ;; print functions
 (load "init/page-dimensions")
-(when *bullwinkle*
-	(setq printer-name "Munbyn_ITPP047")
-	(setq ps-paper-type 'pos80)
-	(setq ps-left-margin 7)(setq ps-right-margin 7)
-	(setq ps-top-margin 7) (setq ps-bottom-margin 7))
-(when *natasha*
+(when *mac*
 	(setq printer-name "Brother_HL_L2370DW")
 	(setq ps-paper-type 'a5)
 	(setq ps-lpr-switches '("-o media=a5"))
-	(setq ps-left-margin 28)(setq ps-right-margin 28)
-	(setq ps-top-margin 28)	(setq ps-bottom-margin 28))
-
-(setq ps-font-size 10)
-(setq ps-print-color-p nil)
-(setq ps-print-header nil)
+	(setq ps-left-margin 28)
+	(setq ps-right-margin 28)
+	(setq ps-top-margin 28)
+	(setq ps-bottom-margin 28)
+	(setq ps-font-size 10)
+	(setq ps-print-color-p nil)
+	(setq ps-print-header nil)
+	(setq ps-print-footer nil) )
 
 ;; Custom variables
 (setq custom-file (concat user-emacs-directory "custom.el"))
@@ -245,10 +246,12 @@
 (add-to-list 'sml/replacer-regexp-list '("^:PDG:2-.*/" ":PDG-2:") t)
 (add-to-list 'sml/replacer-regexp-list '("^:PDG:3-.*/" ":PDG-3:") t) )
 
+(setq sml/col-number-format "%2C")
 (setq display-time-24hr-format t)
 (setq display-time-default-load-average nil)
-(display-time-mode)
+(column-number-mode)
 (display-battery-mode)
+(display-time-mode)
 
 ;; Startup time
 (defun efs/display-startup-time ()
@@ -264,6 +267,8 @@
 	(defun todayscookie () (message (cookie cookie-file)))
 	(add-hook 'window-setup-hook 'todayscookie))
 
+;; Disable ISO-Translat
+;(load "init/iso-transl")
 
 ;; Initialize packages
 (use-package elpher)
@@ -303,12 +308,14 @@
 (use-package form-feed) ; navigate using ^L
 (add-hook 'emacs-lisp-mode-hook 'form-feed-mode)
 (add-hook 'help-mode-hook (lambda ()
-	'form-feed-mode
+	(form-feed-mode)
 	(local-set-key (kbd "A-<left>" ) 'help-go-back)
-	(local-set-key (kbd "A-<right>") 'help-go-forward) ))
+	(local-set-key (kbd "A-<right>") 'help-go-forward)
+	))
 (add-hook 'Info-mode-hook (lambda ()
 	(local-set-key (kbd "A-<left>" ) 'Info-history-back)
-	(local-set-key (kbd "A-<right>") 'Info-history-forward) ))
+	(local-set-key (kbd "A-<right>") 'Info-history-forward)
+	))
 
 
 ;; Org-mode
@@ -404,8 +411,6 @@
 	(load "rc/erc" 'noerror) ; irc config
 	(easy-menu-add-item  nil '("tools")	["IRC with ERC" erc t])
 	(global-set-key (kbd "C-c e") 'erc)
-
-;	(load "init/sn") ; simplenote
 	)
 
 (when *mac*
@@ -426,8 +431,8 @@
 (global-set-key (kbd "C-<home>" ) 'beginning-of-buffer)
 (global-set-key (kbd "C-<end>"  ) 'end-of-buffer)
 
-(global-unset-key (kbd "C-<prior>")) ; backward-page
-(global-unset-key (kbd "C-<next>" )) ; forward-page
+(global-unset-key (kbd "C-<prior>"))
+(global-unset-key (kbd "C-<next>" ))
 
 (global-unset-key (kbd "M-<left>" ))
 (global-unset-key (kbd "M-<right>"))
@@ -439,6 +444,10 @@
 (global-unset-key (kbd "s-<up>"   ))
 (global-unset-key (kbd "s-<down>" ))
 
+;; buffer movement (option + arrows to switch between visible buffers)
+(require 'windmove)
+(windmove-default-keybindings 'meta)
+
 
 ;; alternate keys
 (global-unset-key (kbd "C-x C-z"))
@@ -446,6 +455,7 @@
 (global-set-key (kbd "C-S-k")     'kill-whole-line)
 (global-set-key (kbd "C-x k")     'kill-current-buffer)
 (global-set-key (kbd "C-x M-k")	  'nuke-all-buffers)
+(global-set-key (kbd "C-x x r")   'rename-file-and-buffer)
 
 (global-set-key (kbd "C-s")       'isearch-forward-regexp)
 (global-set-key (kbd "C-r")       'isearch-backward-regexp)
@@ -462,6 +472,7 @@
 (global-set-key   (kbd "s-S")     'write-file)
 (global-unset-key (kbd "s-m"))
 (global-unset-key (kbd "s-n"))
+(global-unset-key (kbd "s-p"))
 (global-unset-key (kbd "s-q"))
 (global-unset-key (kbd "s-w"))
 
@@ -472,13 +483,14 @@
 
 
 ;; Shortcuts
+
+(bind-key "<f7>" 'list-bookmarks)
 (global-set-key (kbd "TAB")       'self-insert-command)	; 'tab-to-tab-stop
 (global-set-key (kbd "C-<tab>")   'nswbuff-switch-to-next-buffer)
 (global-set-key (kbd "C-S-<tab>") 'nswbuff-switch-to-previous-buffer)
 
 (global-set-key (kbd "M-Q")       'unfill-paragraph)
-(global-set-key (kbd "M-p")       'ps-print-buffer)
-(global-set-key (kbd "M-P")       'ps-print-region)
+(global-set-key (kbd "M-p")       'spool-to-enscript)
 
 (global-set-key (kbd "C-c a")     'org-agenda)
 (global-set-key (kbd "C-c c")     'org-capture)
@@ -496,12 +508,16 @@
 
 (global-set-key (kbd "C-c x a")   '("archive-subtree" . org-archive-subtree-default))
 (global-set-key (kbd "C-c x c")   (kbd "✓"))
-(global-set-key (kbd "C-c x d")   '("daily"  . (lambda()(interactive)(find-file "~/Documents/org/daily.org"))))
-(global-set-key (kbd "C-c x e")   '("init"   . (lambda()(interactive)(find-file "~/.emacs.d/init.el"))))
 (global-set-key (kbd "C-c x l")   'dictionary-search)
 
+(when *mac*
+(global-set-key (kbd "C-c x d")   '("daily"  . (lambda()(interactive)(find-file "~/Documents/org/daily.org"))))
+(global-set-key (kbd "C-c x e")   '("init"   . (lambda()(interactive)(find-file "~/.emacs.d/init.el"))))
+)
 (when *natasha*
-(global-set-key (kbd "C-c x o")   '("office" . (lambda()(interactive)(find-file "~/OD/Work/work.org")))) )
+(global-set-key (kbd "C-c x o")   '("office" . (lambda()(interactive)(find-file "~/OD/Work/work.org"))))
+(global-set-key (kbd "<f9>")      '("sn"     . (lambda()(interactive)(load "init/sn")))) 
+)
 
 
 ;; Aliases
@@ -511,6 +527,7 @@
 (defalias 'cal 'calendar)
 (defalias 'clock 'world-clock)
 (defalias 'ds 'desktop-save)
+(defalias 'dpk 'describe-personal-keybindings)
 (defalias 'dsm 'desktop-save-mode)
 (defalias 'er 'eval-region)
 (defalias 'fbl 'flush-blank-lines)
