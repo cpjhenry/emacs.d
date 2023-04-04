@@ -17,7 +17,7 @@
 	(setq mac-function-modifier 'hyper) 	; Hyper
 	(setq mac-right-command-modifier 'alt)	; Alt
 	(setq mac-right-option-modifier nil)
-	(define-key key-translation-map (kbd "<s-mouse-1>") (kbd "<mouse-2>"))
+	(define-key key-translation-map (kbd "<C-mouse-1>") (kbd "<mouse-2>"))
 	(message "[Darwin]"))
 (when *gnu*
 	(set-frame-font "Monospace 17")
@@ -77,7 +77,7 @@
 (setq initial-major-mode 'text-mode)
 (setq default-major-mode 'text-mode)
 (setq-default tab-width 4)
-(setq-default fill-column 31)
+(setq-default fill-column 32)
 (setq-default help-window-select t)
 
 (setq bookmark-save-flag 1)
@@ -247,6 +247,7 @@
 (add-to-list 'sml/replacer-regexp-list '("^:PDG:3-.*/" ":PDG-3:") t) )
 
 (setq sml/col-number-format "%2C")
+(setq battery-mode-line-format " %p ")
 (setq display-time-24hr-format t)
 (setq display-time-default-load-average nil)
 (column-number-mode)
@@ -444,7 +445,7 @@
 (global-unset-key (kbd "s-<up>"   ))
 (global-unset-key (kbd "s-<down>" ))
 
-;; buffer movement (option + arrows to switch between visible buffers)
+;; buffer movement (option + arrows switches between visible buffers)
 (require 'windmove)
 (windmove-default-keybindings 'meta)
 
@@ -529,6 +530,7 @@
 (defalias 'ds 'desktop-save)
 (defalias 'dpk 'describe-personal-keybindings)
 (defalias 'dsm 'desktop-save-mode)
+(defalias 'dfc 'display-fill-column-indicator-mode)
 (defalias 'er 'eval-region)
 (defalias 'fbl 'flush-blank-lines)
 (defalias 'lcd 'list-colors-display)
