@@ -134,10 +134,14 @@
 ;; automatically save buffers associated with files on frame (app) switch
 (add-hook 'focus-out-hook (lambda () (save-some-buffers t)))
 
-;; https://stackoverflow.com/questions/15869131/emacs-shell-command-on-buffer
+;; https://stackoverflow.com/questions/15869131/emacs-shell-command-on-buffer (adapted)
 (defun spool-to-enscript ()
-  "Sends current buffer to 'enscript'."
-  (interactive)
-  (shell-command-on-region
-   (point-min) (point-max)
-   "enscript -B"))
+	"Sends current buffer to 'enscript'."
+	(interactive)
+	(shell-command-on-region (point-min) (point-max) "enscript -qB"))
+
+;; https://stackoverflow.com/questions/1548605/emacs-lisp-shell-command-on-region (adapted)
+(defun spool-to-enscript-region (&optional b e)
+	"Sends current region to 'enscript'."
+	(interactive "r")
+	(shell-command-on-region b e "enscript -qB"))

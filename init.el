@@ -34,21 +34,9 @@
 (setq calendar-longitude -75.8)
 (setq calendar-location-name "Ottawa")
 
-(tool-bar-mode -1) 	; turn off tool bar
-(scroll-bar-mode -1); turn off scrollbar
-;(menu-bar-mode -1)
-(toggle-frame-maximized)
-(setq frame-title-format nil)
-(setq ns-use-native-fullscreen t)
-(setq mac-use-title-bar nil)
-(setq use-dialog-box nil)
-(setq use-file-dialog nil)
-(setq use-short-answers t)
-(setq pop-up-windows nil)
-(setq ns-pop-up-frames nil)
-
 ;; Initialize package manager
 (setq gnutls-algorithm-priority "normal:-vers-tls1.3")
+(setq package-enable-at-startup nil)
 (when (>= emacs-major-version 24)
 	(require 'package)
 	(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t) )
@@ -70,16 +58,16 @@
 					"/Applications/Emacs.app/Contents/MacOS/libexec/")) )
 
 (package-initialize t) ; instead of (package-initialize)
-(setq package-enable-at-startup nil)
 ;(package-refresh-contents) ; Fetch the archive contents on startup
 
 ;; settings
 (setq initial-major-mode 'text-mode)
 (setq default-major-mode 'text-mode)
 (setq-default tab-width 4)
-(setq-default fill-column 32)
+(setq-default fill-column 55)
 (setq-default help-window-select t)
 
+(setq backup-by-copying t)
 (setq bookmark-save-flag 1)
 (setq bookmark-set-fringe-mark nil)
 (setq delete-by-moving-to-trash t)
@@ -90,12 +78,28 @@
 (setq ring-bell-function 'ignore)
 (setq save-abbrevs 'silent)
 (setq sentence-end-double-space nil)
+(setq show-paren-style 'mixed)
 (setq tramp-default-method "ssh")
 (setq tramp-syntax 'simplified)		; C-x C-f /remotehost:filename
 (setq trash-directory "~/.Trash")
 (setq visual-line-fringe-indicators '(nil right-curly-arrow))
+
+;; frames
+(setq frame-title-format nil)
+(setq ns-use-native-fullscreen t)
+(setq use-dialog-box nil)
+(setq use-file-dialog nil)
+(setq use-short-answers t)
+(setq pop-up-windows nil)
+(setq ns-pop-up-frames nil)
+
+(when *mac* (setq mac-use-title-bar nil))
+(when (display-graphic-p)(tool-bar-mode -1))
+(scroll-bar-mode -1)
+(toggle-frame-maximized)
 (electric-indent-mode -1)
 
+;; files
 (setq abbrev-file-name				(concat user-emacs-directory "etc/abbrev_defs"))
 (setq auto-save-list-file-prefix	(concat user-emacs-directory "var/auto-save/sessions/"))
 (setq bookmark-default-file			(concat user-emacs-directory "etc/bookmarks"))
@@ -108,8 +112,8 @@
 (setq url-cache-directory			(concat user-emacs-directory "var/url/cache/"))
 (setq url-configuration-directory	(concat user-emacs-directory "var/url/configuration/"))
 
+;; calendar
 (setq diary-file "~/Documents/diary")
-;(add-hook 'calendar-load-hook (lambda() (calendar-set-date-style 'european)))
 (setq diary-show-holidays-flag nil)
 (add-hook 'diary-list-entries-hook 'diary-sort-entries t)
 (setq lunar-phase-names '(
@@ -180,8 +184,13 @@
 (use-package nswbuff) ; buffer switching
 (setq nswbuff-clear-delay 1.5)
 (setq nswbuff-display-intermediate-buffers t)
-(setq nswbuff-exclude-buffer-regexps 
-	'("^ .*" "^\\*Messages\\*" "^\\*Shell Command Output\\*" "from-mobile.org" "^\\*tramp/.*"))
+(setq nswbuff-exclude-buffer-regexps '(
+	"^ .*"
+	"^\\*Help\\*"
+	"^\\*Messages\\*"
+	"^\\*Shell Command Output\\*"
+	"from-mobile.org"
+	"^\\*tramp/.*"))
 
 (use-package persistent-scratch :config (persistent-scratch-setup-default))
 (use-package unkillable-scratch :ensure t :config (unkillable-scratch t)
@@ -208,23 +217,33 @@
 (load "init/filesandbuffers")
 (remove-hook 'file-name-at-point-functions 'ffap-guess-file-name-at-point)
 (easy-menu-add-item  nil '("file" "print") ["Enscript" spool-to-enscript t])
+(easy-menu-add-item  nil '("file" "print") ["Enscript (region)" spool-to-enscript-region t])
 (define-key menu-bar-print-menu [print-buffer] nil)
 (define-key menu-bar-print-menu [print-region] nil)
+(define-key menu-bar-print-menu [ps-print-buffer] nil)
+(define-key menu-bar-print-menu [ps-print-region] nil)
 
 ;; print functions
 (load "init/page-dimensions")
+(defun toggle-fill-column ()
+    "Toggle fill-column values between 32 and 55"
+    (interactive)
+    (setq fill-column (if (= fill-column 55) 32 55))
+	(message "fill-column set to: %s" fill-column))
+
 (when *mac*
 	(setq printer-name "Brother_HL_L2370DW")
 	(setq ps-paper-type 'a5)
 	(setq ps-lpr-switches '("-o media=a5"))
+	(setq ps-font-size 11)
+	(setq ps-print-color-p nil)
+	(setq ps-print-header nil)
+	(setq ps-print-footer nil) 
 	(setq ps-left-margin 28)
 	(setq ps-right-margin 28)
 	(setq ps-top-margin 28)
 	(setq ps-bottom-margin 28)
-	(setq ps-font-size 10)
-	(setq ps-print-color-p nil)
-	(setq ps-print-header nil)
-	(setq ps-print-footer nil) )
+	)
 
 ;; Custom variables
 (setq custom-file (concat user-emacs-directory "custom.el"))
@@ -270,6 +289,7 @@
 
 ;; Disable ISO-Translat
 ;(load "init/iso-transl")
+
 
 ;; Initialize packages
 (use-package elpher)
@@ -293,23 +313,26 @@
 (add-hook 'eww-mode-hook (lambda ()
 	(local-set-key (kbd "A-<left>") 'eww-back-url) ))
 
-(use-package google-this :config (google-this-mode))
+(use-package google-this
+	:config (google-this-mode))
 (use-package lorem-ipsum)
-(use-package smooth-scrolling :config (smooth-scrolling-mode))
+(use-package page-break-lines
+	:init	(setq page-break-lines-max-width 80)
+	:config	(global-page-break-lines-mode))
+(use-package smooth-scrolling
+	:config (smooth-scrolling-mode))
 (use-package ssh)
 (use-package wc-mode)
-(use-package which-key :config (which-key-mode));(which-key-setup-side-window-right-bottom)
+(use-package which-key
+	:config (which-key-mode));(which-key-setup-side-window-right-bottom)
 
 
 ;; Lisp & Help modes
-(add-hook 'emacs-lisp-mode-hook 'prettify-symbols-mode)
-(add-hook 'emacs-lisp-mode-hook 'show-paren-mode)
-(setq show-paren-style 'mixed)
-
-(use-package form-feed) ; navigate using ^L
-(add-hook 'emacs-lisp-mode-hook 'form-feed-mode)
+(add-hook 'emacs-lisp-mode-hook (lambda ()
+	(prettify-symbols-mode)
+	(show-paren-mode)
+	))
 (add-hook 'help-mode-hook (lambda ()
-	(form-feed-mode)
 	(local-set-key (kbd "A-<left>" ) 'help-go-back)
 	(local-set-key (kbd "A-<right>") 'help-go-forward)
 	))
@@ -370,17 +393,17 @@
 	(define-key flyspell-mouse-map [down-mouse-3] #'flyspell-correct-word)))
 
 (use-package olivetti
-	:init (setq olivetti-body-width 80) )
+	:init	(setq olivetti-body-width 80) )
 
 (use-package markdown-mode
 	:commands (markdown-mode gfm-mode)
-	:init (setq markdown-command "multimarkdown")
-		(setq markdown-enable-prefix-prompts nil)
-		(setq markdown-hide-urls t)
+	:init	(setq markdown-command "multimarkdown")
+			(setq markdown-enable-prefix-prompts nil)
+			(setq markdown-hide-urls t)
 	:config	(add-to-list 'markdown-uri-types "gemini")		
-	:mode (("README\\.md\\'" . gfm-mode)
-				 ("\\.md\\'" . markdown-mode)
-				 ("\\.markdown\\'" . markdown-mode)) )
+	:mode	(("README\\.md\\'" . gfm-mode)
+			 ("\\.md\\'" . markdown-mode)
+			 ("\\.markdown\\'" . markdown-mode)) )
 ;(add-hook 'markdown-mode-hook (lambda ()
 ;	(setq-local left-margin-width 15) )) ;(setq-local right-margin-width 15)
 
@@ -415,7 +438,7 @@
 	)
 
 (when *mac*
-	(load "init/deft") ; note functions
+	(load "init/deft") ; note functions (bound to <f8>
 
 	(use-package gnugo) ; Game of Go
 	(setq gnugo-program "/usr/local/bin/gnugo")
@@ -431,6 +454,9 @@
 (global-set-key (kbd "<end>"    ) 'move-end-of-line)
 (global-set-key (kbd "C-<home>" ) 'beginning-of-buffer)
 (global-set-key (kbd "C-<end>"  ) 'end-of-buffer)
+
+(global-set-key (kbd "<C-M-prior>") 'backward-page)
+(global-set-key (kbd "<C-M-next>") 'forward-page)
 
 (global-unset-key (kbd "C-<prior>"))
 (global-unset-key (kbd "C-<next>" ))
@@ -485,13 +511,14 @@
 
 ;; Shortcuts
 
-(bind-key "<f7>" 'list-bookmarks)
 (global-set-key (kbd "TAB")       'self-insert-command)	; 'tab-to-tab-stop
 (global-set-key (kbd "C-<tab>")   'nswbuff-switch-to-next-buffer)
 (global-set-key (kbd "C-S-<tab>") 'nswbuff-switch-to-previous-buffer)
+(bind-key "<f7>" 'list-bookmarks)
 
 (global-set-key (kbd "M-Q")       'unfill-paragraph)
 (global-set-key (kbd "M-p")       'spool-to-enscript)
+(global-set-key (kbd "M-P")       'spool-to-enscript-region)
 
 (global-set-key (kbd "C-c a")     'org-agenda)
 (global-set-key (kbd "C-c c")     'org-capture)
@@ -502,6 +529,7 @@
 (global-set-key (kbd "C-c o")     'markdown-preview-file) 
 (global-set-key (kbd "C-c q")     'replace-smart-quotes)
 (global-set-key (kbd "C-c w")     'eww-list-bookmarks)	; www
+(bind-key "C-c ?" 'describe-personal-keybindings)
 
 (global-set-key (kbd "C-c b m")   'new-markdown-buffer)
 (global-set-key (kbd "C-c b n")   'new-empty-buffer)
@@ -514,10 +542,12 @@
 (when *mac*
 (global-set-key (kbd "C-c x d")   '("daily"  . (lambda()(interactive)(find-file "~/Documents/org/daily.org"))))
 (global-set-key (kbd "C-c x e")   '("init"   . (lambda()(interactive)(find-file "~/.emacs.d/init.el"))))
+(bind-key "C-c i" 'display-fill-column-indicator-mode)
+(bind-key "<f6>"  'toggle-fill-column)
 )
 (when *natasha*
 (global-set-key (kbd "C-c x o")   '("office" . (lambda()(interactive)(find-file "~/OD/Work/work.org"))))
-(global-set-key (kbd "<f9>")      '("sn"     . (lambda()(interactive)(load "init/sn")))) 
+(bind-key "<f9>" 'load-simplenote)(defun load-simplenote()(interactive)(load "init/sn"))
 )
 
 
@@ -528,7 +558,6 @@
 (defalias 'cal 'calendar)
 (defalias 'clock 'world-clock)
 (defalias 'ds 'desktop-save)
-(defalias 'dpk 'describe-personal-keybindings)
 (defalias 'dsm 'desktop-save-mode)
 (defalias 'dfc 'display-fill-column-indicator-mode)
 (defalias 'er 'eval-region)
