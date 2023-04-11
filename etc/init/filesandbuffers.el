@@ -1,4 +1,4 @@
-;; file, buffer, dired routines
+;; FILE/BUFFER functions
 
 (defun create-scratch-buffer ()
 	"Create new *scratch* buffer."
@@ -36,12 +36,40 @@
 	(mapc 'kill-buffer (delq (current-buffer) (buffer-list)))
 	(kill-dired-buffers))
 
-;; Always kill current buffer with "C-x k"
-(defun bjm/kill-this-buffer ()
-  "Kill the current buffer."
-  (interactive)
-  (kill-buffer (current-buffer))
-  (delete-window))
+(defun set-window-width (n)
+	"Set the selected window's width."
+	(adjust-window-trailing-edge (selected-window) (- n (window-width)) t))
+
+(defun set-80-columns ()
+	"Set the selected window to 80 columns."
+	(interactive)
+	(set-window-width 80))
+
+(defun toggle-fill-column ()
+    "Toggle fill-column values between 32 and 55"
+    (interactive)
+    (setq fill-column (if (= fill-column 55) 32 55))
+	(message "fill-column set to: %s" fill-column))
+
+;; automatically save buffers associated with files on buffer or window switch
+(defadvice switch-to-buffer (before save-buffer-now activate)
+	(when buffer-file-name (save-buffer)))
+(defadvice other-window (before other-window-now activate)
+	(when buffer-file-name (save-buffer)))
+(defadvice windmove-up (before other-window-now activate)
+	(when buffer-file-name (save-buffer)))
+(defadvice windmove-down (before other-window-now activate)
+	(when buffer-file-name (save-buffer)))
+(defadvice windmove-left (before other-window-now activate)
+	(when buffer-file-name (save-buffer)))
+(defadvice windmove-right (before other-window-now activate)
+	(when buffer-file-name (save-buffer)))
+
+;; automatically save buffers associated with files on frame (app) switch
+(add-hook 'focus-out-hook (lambda () (save-some-buffers t)))
+
+
+;; DIRED functions
 
 (defun kill-dired-buffers ()
 	(interactive)
@@ -95,44 +123,8 @@
 	"Sort dired listings with directories first before adding marks."
 	(mydired-sort))
 
-(defun set-window-width (n)
-	"Set the selected window's width."
-	(adjust-window-trailing-edge (selected-window) (- n (window-width)) t))
-
-(defun set-80-columns ()
-	"Set the selected window to 80 columns."
-	(interactive)
-	(set-window-width 80))
-
-;; Adapted script to OSX:
-;; https://genomeek.wordpress.com/2013/03/08/emarch-2-create-a-pdf-with-highlighted-code-source/
-(defun print-to-pdf ()
- (interactive)
- (ps-spool-buffer-with-faces)
- (switch-to-buffer "*PostScript*")
- (write-file "tmp.ps")
- (kill-buffer "tmp.ps")
- (setq cmd (concat "pstopdf tmp.ps -o " (buffer-name) ".pdf"))
- (shell-command cmd)
- (shell-command "rm tmp.ps")
- (message (concat "File printed in : "(buffer-name) ".pdf")) )
-
-;; automatically save buffers associated with files on buffer or window switch
-(defadvice switch-to-buffer (before save-buffer-now activate)
-	(when buffer-file-name (save-buffer)))
-(defadvice other-window (before other-window-now activate)
-	(when buffer-file-name (save-buffer)))
-(defadvice windmove-up (before other-window-now activate)
-	(when buffer-file-name (save-buffer)))
-(defadvice windmove-down (before other-window-now activate)
-	(when buffer-file-name (save-buffer)))
-(defadvice windmove-left (before other-window-now activate)
-	(when buffer-file-name (save-buffer)))
-(defadvice windmove-right (before other-window-now activate)
-	(when buffer-file-name (save-buffer)))
-
-;; automatically save buffers associated with files on frame (app) switch
-(add-hook 'focus-out-hook (lambda () (save-some-buffers t)))
+
+;; PRINT functions
 
 ;; https://stackoverflow.com/questions/15869131/emacs-shell-command-on-buffer (adapted)
 (defun spool-to-enscript ()
@@ -145,3 +137,16 @@
 	"Sends current region to 'enscript'."
 	(interactive "r")
 	(shell-command-on-region b e "enscript -qB"))
+
+;; https://genomeek.wordpress.com/2013/03/08/emarch-2-create-a-pdf-with-highlighted-code-source/
+(defun print-to-pdf ()
+ (interactive)
+ (ps-spool-buffer-with-faces)
+ (switch-to-buffer "*PostScript*")
+ (write-file "tmp.ps")
+ (kill-buffer "tmp.ps")
+ (setq cmd (concat "pstopdf tmp.ps -o " (buffer-name) ".pdf"))
+ (shell-command cmd)
+ (shell-command "rm tmp.ps")
+ (message (concat "File printed in : "(buffer-name) ".pdf")) )
+

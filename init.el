@@ -8,8 +8,8 @@
 
 ;; Initialize terminal
 (set-language-environment 'utf-8)
-(toggle-frame-maximized)
 (when (display-graphic-p)(tool-bar-mode -1))
+(toggle-frame-maximized)
 (scroll-bar-mode -1)
 (electric-indent-mode -1)
 
@@ -55,9 +55,9 @@
 (when *mac*
 	(setq default-directory "~/")
 	(setq exec-path '(".local/" "/Users/cpjh/bin/" "/Library/TeX/texbin/" "/usr/local/opt/qt@5/bin/"
-					"/usr/local/opt/python@3/libexec/bin/" "/usr/local/MacGPG2/bin/" "/usr/libexec/" 
-					"/usr/local/opt/gnu-sed/libexec/gnubin/" "/usr/local/opt/coreutils/libexec/gnubin/" 
-					"/usr/local/bin/" "/usr/local/sbin/" "/usr/bin/" "/usr/sbin/" "/bin/" "/sbin/" 
+					"/usr/local/opt/python@3/libexec/bin/" "/usr/local/MacGPG2/bin/" "/usr/libexec/"
+					"/usr/local/opt/gnu-sed/libexec/gnubin/" "/usr/local/opt/coreutils/libexec/gnubin/"
+					"/usr/local/bin/" "/usr/local/sbin/" "/usr/bin/" "/usr/sbin/" "/bin/" "/sbin/"
 					"/Applications/Emacs.app/Contents/MacOS/libexec/")) )
 
 ;; settings
@@ -220,6 +220,19 @@
 
 ;; file and buffer functions
 (load "init/filesandbuffers")
+(add-hook 'dired-mode-hook (lambda()
+	(local-set-key (kbd "RET")	'dired-find-alternate-file)
+	(local-set-key (kbd "q")	'kill-dired-buffers) ))
+(add-hook 'ibuffer-mode-hook (lambda()
+	(local-set-key (kbd "q")	'kill-current-buffer) ))
+(add-hook 'help-mode-hook (lambda()
+	(local-set-key (kbd "q")	'kill-current-buffer) ))
+(add-hook 'Info-mode-hook (lambda()
+	(local-set-key (kbd "q")	'kill-current-buffer) ))
+(add-hook 'emacs-lisp-mode-hook (lambda()
+	(prettify-symbols-mode)
+	(show-paren-mode) ))
+
 (remove-hook 'file-name-at-point-functions 'ffap-guess-file-name-at-point)
 (easy-menu-add-item  nil '("file" "print") ["Enscript" spool-to-enscript t])
 (easy-menu-add-item  nil '("file" "print") ["Enscript (region)" spool-to-enscript-region t])
@@ -230,12 +243,6 @@
 
 ;; print functions
 (load "init/page-dimensions")
-(defun toggle-fill-column ()
-    "Toggle fill-column values between 32 and 55"
-    (interactive)
-    (setq fill-column (if (= fill-column 55) 32 55))
-	(message "fill-column set to: %s" fill-column))
-
 (when *mac*
 	(setq printer-name "Brother_HL_L2370DW")
 	(setq ps-paper-type 'a5)
@@ -248,7 +255,7 @@
 	(setq ps-font-size 11)
 	(setq ps-print-color-p nil)
 	(setq ps-print-header nil)
-	(setq ps-print-footer nil) 
+	(setq ps-print-footer nil)
 	)
 
 ;; Mode Line
@@ -295,9 +302,6 @@
 	:init	(setq elpher-bookmarks-file (concat user-emacs-directory "var/elpher-bookmarks"))
 	:config	(easy-menu-add-item  nil '("tools") ["Gopher" elpher t]))
 	(add-hook 'elpher-mode-hook (lambda ()
-		(local-set-key (kbd "A-<left>") 'elpher-back)
-		(local-set-key (kbd "A-<up>")   'scroll-down-command)
-		(local-set-key (kbd "A-<down>") 'scroll-up-command)
 		(setq-local left-margin-width 10)
 		(setq-local gnutls-verify-error nil)
 		(set-window-buffer nil (current-buffer))) )
@@ -309,8 +313,6 @@
 	(elpher-go url))
 	(t (funcall original url new-window))) )
 	(advice-add 'eww-browse-url :around 'elpher:eww-browse-url)
-	(add-hook 'eww-mode-hook (lambda ()
-		(local-set-key (kbd "A-<left>") 'eww-back-url) ))
 
 (use-package google-this
 	:config (google-this-mode))
@@ -324,70 +326,6 @@
 (use-package wc-mode)
 (use-package which-key
 	:config (which-key-mode));(which-key-setup-side-window-right-bottom)
-
-
-;; Lisp & Help modes
-(add-hook 'emacs-lisp-mode-hook (lambda ()
-	(prettify-symbols-mode)
-	(show-paren-mode) ))
-(add-hook 'help-mode-hook (lambda ()
-	(local-set-key (kbd "A-<left>" ) 'help-go-back)
-	(local-set-key (kbd "A-<right>") 'help-go-forward) ))
-(add-hook 'Info-mode-hook (lambda ()
-	(local-set-key (kbd "A-<left>" ) 'Info-history-back)
-	(local-set-key (kbd "A-<right>") 'Info-history-forward) ))
-
-
-;; Select Load
-(when *natasha*
-	(setq browse-url-browser-function 'browse-url-generic
-		browse-url-generic-program "/Applications/Firefox.app/Contents/MacOS/firefox")
-
-	(use-package elfeed
-		:init	(setq elfeed-db-directory (concat user-emacs-directory "var/elfeed/db/"))
-				(setq elfeed-enclosure-default-dir (concat user-emacs-directory "var/elfeed/enclosures/"))
-				(setq elfeed-score-score-file (concat user-emacs-directory "etc/elfeed/score/score.el"))
-				(setq elfeed-use-curl t)
-		:config	(load "rc/elfeed" 'noerror)
-				(easy-menu-add-item  nil '("tools") ["Read web feeds" elfeed t])
-				(global-set-key (kbd "C-c f") 'elfeed)
-				(eval-after-load 'elfeed `(make-directory ,(concat user-emacs-directory "var/elfeed/") t)))
-		(defun elfeed-mark-all-as-read () (interactive)
-			(mark-whole-buffer)
-			(elfeed-search-untag-all-unread))
-			(define-key elfeed-search-mode-map (kbd "R") 'elfeed-mark-all-as-read)
-
-	(load "rc/erc" 'noerror) ; irc config
-	(easy-menu-add-item  nil '("tools")	["IRC with ERC" erc t])
-	(global-set-key (kbd "C-c e") 'erc)
-	)
-
-(when *mac*
-	(load "init/deft") ; note functions (bound to <f8>
-	(bind-key "<f9>" 'load-simplenote)
-	(defun load-simplenote()(interactive)(load "init/sn"))
-
-	(use-package gnugo ; Game of Go
-		:init	(setq gnugo-program "/usr/local/bin/gnugo")
-		:config	(easy-menu-add-item  nil '("tools" "games") ["Go" gnugo t]))
-	)
-
-(when *gnu*
-	(setq browse-url-browser-function 'browse-url-generic
-		browse-url-generic-program "firefox-esr")
-	(add-hook 'elpher-mode-hook (lambda ()
-		(local-set-key (kbd "M-<left>") 'elpher-back)
-		(local-set-key (kbd "M-<up>")   'scroll-down-command)
-		(local-set-key (kbd "M-<down>") 'scroll-up-command) ))
-	(add-hook 'eww-mode-hook (lambda ()
-		(local-set-key (kbd "M-<left>") 'eww-back-url) ))
-	(add-hook 'help-mode-hook (lambda ()
-		(local-set-key (kbd "M-<left>" ) 'help-go-back)
-		(local-set-key (kbd "M-<right>") 'help-go-forward) ))
-	(add-hook 'Info-mode-hook (lambda ()
-		(local-set-key (kbd "M-<left>" ) 'Info-history-back)
-		(local-set-key (kbd "M-<right>") 'Info-history-forward) ))
-	)
 
 
 ;; Org-mode
@@ -405,7 +343,7 @@
 (setq org-export-with-toc nil)
 (setq org-footnote-auto-adjust t)
 (setq org-log-done t) 					; 'CLOSED' logging
-(setq org-log-state-notes-into-drawer nil)			
+(setq org-log-state-notes-into-drawer nil)
 (setq org-log-repeat nil)
 (setq org-special-ctrl-a/e t)
 (setq org-support-shift-select t)
@@ -437,7 +375,7 @@
 	(flyspell-mode)
 	(visual-line-mode)
 	(wc-mode) ))
-(eval-after-load "flyspell" '(progn 
+(eval-after-load "flyspell" '(progn
 	(define-key flyspell-mouse-map [down-mouse-3] #'flyspell-correct-word)))
 
 (use-package olivetti
@@ -448,7 +386,7 @@
 	:init	(setq markdown-command "multimarkdown")
 			(setq markdown-enable-prefix-prompts nil)
 			(setq markdown-hide-urls t)
-	:config	(add-to-list 'markdown-uri-types "gemini")		
+	:config	(add-to-list 'markdown-uri-types "gemini")
 	:mode	(("README\\.md\\'" . gfm-mode)
 			 ("\\.md\\'" . markdown-mode)
 			 ("\\.markdown\\'" . markdown-mode)) )
@@ -458,6 +396,72 @@
 
 (create-scratch-buffer)
 (message "Emacs %s." emacs-version)
+
+
+;; Configure specific machines
+(when *natasha*
+	(setq browse-url-browser-function 'browse-url-generic
+		browse-url-generic-program "/Applications/Firefox.app/Contents/MacOS/firefox")
+
+	(use-package elfeed
+		:init	(setq elfeed-db-directory (concat user-emacs-directory "var/elfeed/db/"))
+				(setq elfeed-enclosure-default-dir (concat user-emacs-directory "var/elfeed/enclosures/"))
+				(setq elfeed-score-score-file (concat user-emacs-directory "etc/elfeed/score/score.el"))
+				(setq elfeed-use-curl t)
+		:config	(load "rc/elfeed" 'noerror)
+				(easy-menu-add-item  nil '("tools") ["Read web feeds" elfeed t])
+				(bind-key "C-c f" 'elfeed)
+				(eval-after-load 'elfeed `(make-directory ,(concat user-emacs-directory "var/elfeed/") t)))
+		(defun elfeed-mark-all-as-read () (interactive)
+			(mark-whole-buffer)
+			(elfeed-search-untag-all-unread))
+			(define-key elfeed-search-mode-map (kbd "R") 'elfeed-mark-all-as-read)
+
+	(load "rc/erc" 'noerror) ; irc config
+	(easy-menu-add-item  nil '("tools")	["IRC with ERC" erc t])
+	(bind-key "C-c e" 'erc)
+	)
+
+(when *mac*
+	(load "init/deft") ; note functions (bound to <f8>)
+	(bind-key "<f9>" 'load-simplenote)
+	(defun load-simplenote()(interactive)(load "init/sn"))
+
+	(use-package gnugo ; Game of Go
+		:init	(setq gnugo-program "/usr/local/bin/gnugo")
+		:config	(easy-menu-add-item  nil '("tools" "games") ["Go" gnugo t]))
+
+	(add-hook 'elpher-mode-hook (lambda ()
+		(local-set-key (kbd "A-<left>") 'elpher-back)
+		(local-set-key (kbd "A-<up>")   'scroll-down-command)
+		(local-set-key (kbd "A-<down>") 'scroll-up-command) ))
+	(add-hook 'eww-mode-hook (lambda ()
+		(local-set-key (kbd "A-<left>") 'eww-back-url) ))
+	(add-hook 'help-mode-hook (lambda()
+		(local-set-key (kbd "A-<left>" ) 'help-go-back)
+		(local-set-key (kbd "A-<right>") 'help-go-forward) ))
+	(add-hook 'Info-mode-hook (lambda()
+		(local-set-key (kbd "A-<left>" ) 'Info-history-back)
+		(local-set-key (kbd "A-<right>") 'Info-history-forward) ))
+	)
+
+(when *gnu*
+	(setq browse-url-browser-function 'browse-url-generic
+		browse-url-generic-program "firefox-esr")
+
+	(add-hook 'elpher-mode-hook (lambda ()
+		(local-set-key (kbd "M-<left>") 'elpher-back)
+		(local-set-key (kbd "M-<up>")   'scroll-down-command)
+		(local-set-key (kbd "M-<down>") 'scroll-up-command) ))
+	(add-hook 'eww-mode-hook (lambda ()
+		(local-set-key (kbd "M-<left>") 'eww-back-url) ))
+	(add-hook 'help-mode-hook (lambda ()
+		(local-set-key (kbd "M-<left>" ) 'help-go-back)
+		(local-set-key (kbd "M-<right>") 'help-go-forward) ))
+	(add-hook 'Info-mode-hook (lambda ()
+		(local-set-key (kbd "M-<left>" ) 'Info-history-back)
+		(local-set-key (kbd "M-<right>") 'Info-history-forward) ))
+	)
 
 
 ;; arrow keys (Darwin)
@@ -492,6 +496,8 @@
 (global-set-key (kbd "C-S-k")	'kill-whole-line)
 (global-set-key (kbd "C-x k")	'kill-current-buffer)
 (global-set-key (kbd "C-x M-k")	'nuke-all-buffers)
+
+(global-set-key (kbd "C-x x k")	'kill-other-buffers)
 (global-set-key (kbd "C-x x r")	'rename-file-and-buffer)
 
 (global-set-key (kbd "C-s")		'isearch-forward-regexp)
@@ -506,18 +512,20 @@
 (global-set-key (kbd "A-<return>")(kbd "M-<return>"))
 
 ;; Darwin overrides
-(global-set-key   (kbd "s-o")     'find-file)
-(global-set-key   (kbd "s-S")     'write-file)
+(when *mac*
+(global-set-key   (kbd "s-o")	'find-file)
+(global-set-key   (kbd "s-S")	'write-file)
 (global-unset-key (kbd "s-m"))
 (global-unset-key (kbd "s-n"))
 (global-unset-key (kbd "s-p"))
 (global-unset-key (kbd "s-q"))
-(global-unset-key (kbd "s-w"))
+(global-unset-key (kbd "s-w")) )
 
 
 ;; Diabled keys
-(put 'upcase-region 'disabled nil)						; C-x C-u
-(put 'downcase-region 'disabled nil)					; C-x C-l
+(put 'dired-find-alternate-file 'disabled nil)
+(put 'upcase-region 'disabled nil)	; C-x C-u
+(put 'downcase-region 'disabled nil); C-x C-l
 
 
 ;; Shortcuts
@@ -529,30 +537,34 @@
 (bind-key "M-p"		'spool-to-enscript)
 (bind-key "M-P"		'spool-to-enscript-region)
 
-(bind-key "C-c a"	'org-agenda)
-(bind-key "C-c c"	'org-capture)
-(bind-key "C-c D"	'insert-iso-date)
-(bind-key "C-c d"	'insert-date)
-(bind-key "C-c g"	'elpher) ; gopher / gemini
-(bind-key "C-c i"	'display-fill-column-indicator-mode)
-(bind-key "C-c l"	'org-store-link)
-(bind-key "C-c o"	'markdown-preview-file) 
-(bind-key "C-c q"	'replace-smart-quotes)
-(bind-key "C-c s"	'dictionary-search)
-(bind-key "C-c w"	'eww-list-bookmarks) ; www
 (bind-key "C-c ?"	'describe-personal-keybindings)
+(bind-key "C-c a"	'org-agenda)
 
 (bind-key "C-c b m" 'new-markdown-buffer)
 (bind-key "C-c b n" 'new-empty-buffer)
 (bind-key "C-c b s" 'create-scratch-buffer)
 
-(bind-key "C-c x a" 'archive-subtree) (defalias 'archive-subtree 'org-archive-subtree-default)
+(bind-key "C-c d c"	'insert-date)
+(bind-key "C-c d i"	'insert-iso-date)
 
-(when *mac*
-(bind-key "C-c x d"	'daily.org) (defun daily.org()(interactive)(find-file "~/Documents/org/daily.org")))
+(bind-key "C-c g"	'elpher) ; gopher / gemini
+(bind-key "C-c i"	'display-fill-column-indicator-mode)
 
-(when *natasha*
-(bind-key "C-c x o"	'office.org) (defun office.org()(interactive)(find-file "~/OD/Work/work.org")))
+(bind-key "C-c o a" 'org-archive-subtree-default)
+(bind-key "C-c o c"	'org-capture)
+(bind-key "C-c o l"	'org-store-link)
+
+(bind-key "C-c m"	'markdown-preview-file)
+(bind-key "C-c s"	'dictionary-search)
+(bind-key "C-c w"	'eww-list-bookmarks) ; www
+
+(bind-key "C-c x q"	'replace-smart-quotes)
+(bind-key "C-c x w" 'delete-whitespace-rectangle)
+(when *mac* 	(bind-key "C-c x d"	'daily.org))
+(when *natasha* (bind-key "C-c x o"	'office.org))
+
+(defun daily.org () (interactive)(find-file "~/Documents/org/daily.org"))
+(defun office.org ()(interactive)(find-file "~/OD/Work/work.org"))
 
 
 ;; Aliases
@@ -562,6 +574,7 @@
 (defalias 'cal 'calendar)
 (defalias 'clock 'world-clock)
 (defalias 'cm (kbd "✓"))
+(defalias 'dtw 'delete-trailing-whitespace)
 (defalias 'ds 'desktop-save)
 (defalias 'dsm 'desktop-save-mode)
 (defalias 'er 'eval-region)
@@ -571,7 +584,6 @@
 (defalias 'li 'lorem-ipsum-insert-paragraphs)
 (defalias 'ppc 'ps-print-customize)
 (defalias 'rs 'replace-string)
-(defalias 'rsq 'replace-smart-quotes)
 
 (defalias 'elm 'emacs-lisp-mode)
 (defalias 'flym 'flyspell-mode)
