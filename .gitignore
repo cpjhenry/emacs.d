@@ -12,4 +12,5 @@ var/
 .DS_Store
 .org-id-locations
 .persistent-scratch
+custom.el
 network-security.data
