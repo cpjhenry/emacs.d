@@ -8,6 +8,10 @@
 
 ;; Initialize terminal
 (set-language-environment 'utf-8)
+(toggle-frame-maximized)
+(when (display-graphic-p)(tool-bar-mode -1))
+(scroll-bar-mode -1)
+(electric-indent-mode -1)
 
 (when *mac*
 	(set-frame-font "Inconsolata 21")
@@ -17,16 +21,14 @@
 	(setq mac-function-modifier 'hyper) 	; Hyper
 	(setq mac-right-command-modifier 'alt)	; Alt
 	(setq mac-right-option-modifier nil)
-	(define-key key-translation-map (kbd "<C-mouse-1>") (kbd "<mouse-2>"))
-	(message "[Darwin]"))
+	(define-key key-translation-map (kbd "<C-mouse-1>") (kbd "<mouse-2>")))
 (when *gnu*
-	(set-frame-font "Monospace 17")
-	(message "[gnu]"))
+	(set-frame-font "Monospace 17"))
 (when *w32*
 	(set-frame-font "Cascadia Mono 17")
 	(setq w32-lwindow-modifier 'super)
 	(setq w32-pass-lwindow-to-system nil)
-	(message "[w32]"))
+	(message "Running on Windows."))
 (set-background-color "Ivory")
 
 (setq user-mail-address "cpjhenry@gmail.com")
@@ -36,13 +38,14 @@
 
 ;; Initialize package manager
 (setq gnutls-algorithm-priority "normal:-vers-tls1.3")
-(setq package-enable-at-startup nil)
 (when (>= emacs-major-version 24)
 	(require 'package)
-	(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t) )
-	(unless (package-installed-p 'use-package) (package-install 'use-package) )
+	(package-initialize t)
+	(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+	(unless package-archive-contents (package-refresh-contents))
+	(unless (package-installed-p 'use-package) (package-install 'use-package))
 	(require 'use-package)
-	(setf use-package-always-ensure t)
+	(setf use-package-always-ensure t))
 
 ;; Add directories to load-path
 (add-to-list 'load-path (expand-file-name "etc" user-emacs-directory))
@@ -57,9 +60,6 @@
 					"/usr/local/bin/" "/usr/local/sbin/" "/usr/bin/" "/usr/sbin/" "/bin/" "/sbin/" 
 					"/Applications/Emacs.app/Contents/MacOS/libexec/")) )
 
-(package-initialize t) ; instead of (package-initialize)
-;(package-refresh-contents) ; Fetch the archive contents on startup
-
 ;; settings
 (setq initial-major-mode 'text-mode)
 (setq default-major-mode 'text-mode)
@@ -73,6 +73,7 @@
 (setq delete-by-moving-to-trash t)
 (setq dictionary-server "dict.org")
 (setq flyspell-issue-message-flag nil)
+(setq inhibit-default-init t)
 (setq ispell-list-command "--list") ; correct command
 (setq ispell-program-name "aspell") ; spell checker
 (setq ring-bell-function 'ignore)
@@ -84,20 +85,14 @@
 (setq trash-directory "~/.Trash")
 (setq visual-line-fringe-indicators '(nil right-curly-arrow))
 
-;; frames
+;; layout
 (setq frame-title-format nil)
+(setq ns-pop-up-frames nil)
 (setq ns-use-native-fullscreen t)
 (setq use-dialog-box nil)
 (setq use-file-dialog nil)
 (setq use-short-answers t)
 (setq pop-up-windows nil)
-(setq ns-pop-up-frames nil)
-
-(when *mac* (setq mac-use-title-bar nil))
-(when (display-graphic-p)(tool-bar-mode -1))
-(scroll-bar-mode -1)
-(toggle-frame-maximized)
-(electric-indent-mode -1)
 
 ;; files
 (setq abbrev-file-name				(concat user-emacs-directory "etc/abbrev_defs"))
@@ -112,6 +107,18 @@
 (setq url-cache-directory			(concat user-emacs-directory "var/url/cache/"))
 (setq url-configuration-directory	(concat user-emacs-directory "var/url/configuration/"))
 
+;; custom variables
+(setq custom-file (concat user-emacs-directory "custom.el"))
+(load custom-file 'noerror)
+
+;; backups
+(setq make-backup-files nil)
+(setq auto-save-default nil)
+
+(require 'backup-each-save)
+(add-hook 'after-save-hook 'backup-each-save)
+
+
 ;; calendar
 (setq diary-file "~/Documents/diary")
 (setq diary-show-holidays-flag nil)
@@ -172,29 +179,29 @@
 	("Asia/Shanghai" "Beijing")
 	("Asia/Tokyo" "Tokyo")))
 
-;; backups
-(setq make-backup-files nil)
-(setq auto-save-default nil)
-
-(require 'backup-each-save)
-(add-hook 'after-save-hook 'backup-each-save)
-
 
 ;; buffers
-(use-package nswbuff) ; buffer switching
-(setq nswbuff-clear-delay 1.5)
-(setq nswbuff-display-intermediate-buffers t)
-(setq nswbuff-exclude-buffer-regexps '(
-	"^ .*"
-	"^\\*Help\\*"
-	"^\\*Messages\\*"
-	"^\\*Shell Command Output\\*"
-	"from-mobile.org"
-	"^\\*tramp/.*"))
+(use-package nswbuff ; buffer switching
+	:init	(setq nswbuff-clear-delay 1.5)
+			(setq nswbuff-display-intermediate-buffers t)
+			(setq nswbuff-exclude-buffer-regexps '(
+				"^ .*"
+				"^\\*Help\\*"
+				"^\\*Messages\\*"
+				"^\\*Shell Command Output\\*"
+				"from-mobile.org"
+				"^\\*tramp/.*"))
+	:config	(global-set-key (kbd "C-<tab>")   'nswbuff-switch-to-next-buffer)
+			(global-set-key (kbd "C-S-<tab>") 'nswbuff-switch-to-previous-buffer))
 
-(use-package persistent-scratch :config (persistent-scratch-setup-default))
-(use-package unkillable-scratch :ensure t :config (unkillable-scratch t)
-	:init (setq unkillable-scratch-do-not-reset-scratch-buffer t))
+(use-package persistent-scratch
+	:config	(persistent-scratch-setup-default))
+(use-package unkillable-scratch :ensure t
+	:init	(setq unkillable-scratch-do-not-reset-scratch-buffer t))
+	:config	(unkillable-scratch t)
+
+(require 'windmove) ; buffer movement (option + arrows)
+(windmove-default-keybindings 'meta)
 
 (easy-menu-add-item  nil '("Buffers") ["Increase text size" text-scale-increase])
 (easy-menu-add-item  nil '("Buffers") ["Decrease text size" text-scale-decrease])
@@ -208,10 +215,8 @@
 
 ;; opening multiple files
 (setq inhibit-startup-buffer-menu t) ; Don't show *Buffer list*
-(add-hook 'window-setup-hook 'delete-other-windows) ; Show only one active window
-
-;; don't load default init file
-(setq inhibit-default-init t)
+(add-hook 'window-setup-hook		 ; Show only one active window
+	'delete-other-windows)
 
 ;; file and buffer functions
 (load "init/filesandbuffers")
@@ -235,19 +240,16 @@
 	(setq printer-name "Brother_HL_L2370DW")
 	(setq ps-paper-type 'a5)
 	(setq ps-lpr-switches '("-o media=a5"))
-	(setq ps-font-size 11)
-	(setq ps-print-color-p nil)
-	(setq ps-print-header nil)
-	(setq ps-print-footer nil) 
 	(setq ps-left-margin 28)
 	(setq ps-right-margin 28)
 	(setq ps-top-margin 28)
 	(setq ps-bottom-margin 28)
-	)
 
-;; Custom variables
-(setq custom-file (concat user-emacs-directory "custom.el"))
-(load custom-file 'noerror)
+	(setq ps-font-size 11)
+	(setq ps-print-color-p nil)
+	(setq ps-print-header nil)
+	(setq ps-print-footer nil) 
+	)
 
 ;; Mode Line
 (use-package smart-mode-line :config (sml/setup))
@@ -266,7 +268,7 @@
 (add-to-list 'sml/replacer-regexp-list '("^:PDG:3-.*/" ":PDG-3:") t) )
 
 (setq sml/col-number-format "%2C")
-(setq battery-mode-line-format " %p ")
+(setq battery-mode-line-format "%p%% ")
 (setq display-time-24hr-format t)
 (setq display-time-default-load-average nil)
 (column-number-mode)
@@ -277,7 +279,7 @@
 (defun efs/display-startup-time ()
 	(message "Emacs loaded in %s with %d garbage collections."
 	(format "%.2f seconds" (float-time (time-subtract after-init-time before-init-time)))
-	gcs-done))
+		gcs-done))
 (add-hook 'emacs-startup-hook 'efs/display-startup-time)
 
 ;; Today's cookie
@@ -287,31 +289,28 @@
 	(defun todayscookie () (message (cookie cookie-file)))
 	(add-hook 'window-setup-hook 'todayscookie))
 
-;; Disable ISO-Translat
-;(load "init/iso-transl")
-
 
 ;; Initialize packages
-(use-package elpher)
-(setq elpher-bookmarks-file (concat user-emacs-directory "var/elpher-bookmarks"))
-(add-hook 'elpher-mode-hook (lambda () 
-	(local-set-key (kbd "A-<left>") 'elpher-back)
-	(local-set-key (kbd "A-<up>")   'scroll-down-command)
-	(local-set-key (kbd "A-<down>") 'scroll-up-command)
-	(setq-local left-margin-width 10)
-	(setq-local gnutls-verify-error nil)
-	(set-window-buffer nil (current-buffer)) ))
-(easy-menu-add-item  nil '("tools") ["Gopher" elpher t])
+(use-package elpher
+	:init	(setq elpher-bookmarks-file (concat user-emacs-directory "var/elpher-bookmarks"))
+	:config	(easy-menu-add-item  nil '("tools") ["Gopher" elpher t]))
+	(add-hook 'elpher-mode-hook (lambda ()
+		(local-set-key (kbd "A-<left>") 'elpher-back)
+		(local-set-key (kbd "A-<up>")   'scroll-down-command)
+		(local-set-key (kbd "A-<down>") 'scroll-up-command)
+		(setq-local left-margin-width 10)
+		(setq-local gnutls-verify-error nil)
+		(set-window-buffer nil (current-buffer))) )
 
-(advice-add 'eww-browse-url :around 'elpher:eww-browse-url)
-(defun elpher:eww-browse-url (original url &optional new-window)
+(defun elpher:eww-browse-url (original url &optional new-window) ; eww
 	"Handle gemini links."
 	(cond ((string-match-p "\\`\\(gemini\\|gopher\\)://" url)
 	(use-package elpher) ; r
 	(elpher-go url))
-	(t (funcall original url new-window))))
-(add-hook 'eww-mode-hook (lambda ()
-	(local-set-key (kbd "A-<left>") 'eww-back-url) ))
+	(t (funcall original url new-window))) )
+	(advice-add 'eww-browse-url :around 'elpher:eww-browse-url)
+	(add-hook 'eww-mode-hook (lambda ()
+		(local-set-key (kbd "A-<left>") 'eww-back-url) ))
 
 (use-package google-this
 	:config (google-this-mode))
@@ -330,16 +329,65 @@
 ;; Lisp & Help modes
 (add-hook 'emacs-lisp-mode-hook (lambda ()
 	(prettify-symbols-mode)
-	(show-paren-mode)
-	))
+	(show-paren-mode) ))
 (add-hook 'help-mode-hook (lambda ()
 	(local-set-key (kbd "A-<left>" ) 'help-go-back)
-	(local-set-key (kbd "A-<right>") 'help-go-forward)
-	))
+	(local-set-key (kbd "A-<right>") 'help-go-forward) ))
 (add-hook 'Info-mode-hook (lambda ()
 	(local-set-key (kbd "A-<left>" ) 'Info-history-back)
-	(local-set-key (kbd "A-<right>") 'Info-history-forward)
-	))
+	(local-set-key (kbd "A-<right>") 'Info-history-forward) ))
+
+
+;; Select Load
+(when *natasha*
+	(setq browse-url-browser-function 'browse-url-generic
+		browse-url-generic-program "/Applications/Firefox.app/Contents/MacOS/firefox")
+
+	(use-package elfeed
+		:init	(setq elfeed-db-directory (concat user-emacs-directory "var/elfeed/db/"))
+				(setq elfeed-enclosure-default-dir (concat user-emacs-directory "var/elfeed/enclosures/"))
+				(setq elfeed-score-score-file (concat user-emacs-directory "etc/elfeed/score/score.el"))
+				(setq elfeed-use-curl t)
+		:config	(load "rc/elfeed" 'noerror)
+				(easy-menu-add-item  nil '("tools") ["Read web feeds" elfeed t])
+				(global-set-key (kbd "C-c f") 'elfeed)
+				(eval-after-load 'elfeed `(make-directory ,(concat user-emacs-directory "var/elfeed/") t)))
+		(defun elfeed-mark-all-as-read () (interactive)
+			(mark-whole-buffer)
+			(elfeed-search-untag-all-unread))
+			(define-key elfeed-search-mode-map (kbd "R") 'elfeed-mark-all-as-read)
+
+	(load "rc/erc" 'noerror) ; irc config
+	(easy-menu-add-item  nil '("tools")	["IRC with ERC" erc t])
+	(global-set-key (kbd "C-c e") 'erc)
+	)
+
+(when *mac*
+	(load "init/deft") ; note functions (bound to <f8>
+	(bind-key "<f9>" 'load-simplenote)
+	(defun load-simplenote()(interactive)(load "init/sn"))
+
+	(use-package gnugo ; Game of Go
+		:init	(setq gnugo-program "/usr/local/bin/gnugo")
+		:config	(easy-menu-add-item  nil '("tools" "games") ["Go" gnugo t]))
+	)
+
+(when *gnu*
+	(setq browse-url-browser-function 'browse-url-generic
+		browse-url-generic-program "firefox-esr")
+	(add-hook 'elpher-mode-hook (lambda ()
+		(local-set-key (kbd "M-<left>") 'elpher-back)
+		(local-set-key (kbd "M-<up>")   'scroll-down-command)
+		(local-set-key (kbd "M-<down>") 'scroll-up-command) ))
+	(add-hook 'eww-mode-hook (lambda ()
+		(local-set-key (kbd "M-<left>") 'eww-back-url) ))
+	(add-hook 'help-mode-hook (lambda ()
+		(local-set-key (kbd "M-<left>" ) 'help-go-back)
+		(local-set-key (kbd "M-<right>") 'help-go-forward) ))
+	(add-hook 'Info-mode-hook (lambda ()
+		(local-set-key (kbd "M-<left>" ) 'Info-history-back)
+		(local-set-key (kbd "M-<right>") 'Info-history-forward) ))
+	)
 
 
 ;; Org-mode
@@ -358,7 +406,7 @@
 (setq org-footnote-auto-adjust t)
 (setq org-log-done t) 					; 'CLOSED' logging
 (setq org-log-state-notes-into-drawer nil)			
-(setq org-log-repeat nil) 				; don't log repeating
+(setq org-log-repeat nil)
 (setq org-special-ctrl-a/e t)
 (setq org-support-shift-select t)
 (setq org-tags-exclude-from-inheritance '("PROJECT"))
@@ -404,46 +452,12 @@
 	:mode	(("README\\.md\\'" . gfm-mode)
 			 ("\\.md\\'" . markdown-mode)
 			 ("\\.markdown\\'" . markdown-mode)) )
-;(add-hook 'markdown-mode-hook (lambda ()
-;	(setq-local left-margin-width 15) )) ;(setq-local right-margin-width 15)
 
 (load "init/text") ; text functions
 (load "init/pdfexport") ; pdf functions
+
 (create-scratch-buffer)
-
-
-;; Select Load
-(when *natasha*
-	(setq browse-url-browser-function 'browse-url-generic ; eww
-	browse-url-generic-program "/Applications/Firefox.app/Contents/MacOS/firefox")
-
-	(use-package elfeed)
-	(load "rc/elfeed" 'noerror) ; feeds config
-	(eval-after-load 'elfeed `(make-directory ,(concat user-emacs-directory "var/elfeed/") t))
-	(setq elfeed-db-directory (concat user-emacs-directory "var/elfeed/db/"))
-	(setq elfeed-enclosure-default-dir (concat user-emacs-directory "var/elfeed/enclosures/"))
-	(setq elfeed-score-score-file (concat user-emacs-directory "etc/elfeed/score/score.el"))
-	(setq elfeed-use-curl t)
-	(easy-menu-add-item  nil '("tools") ["Read web feeds" elfeed t])
-	(defun elfeed-mark-all-as-read ()
-		(interactive)
-		(mark-whole-buffer)
-		(elfeed-search-untag-all-unread) )
-	(define-key elfeed-search-mode-map (kbd "R") 'elfeed-mark-all-as-read)
-	(global-set-key (kbd "C-c f") 'elfeed)
-
-	(load "rc/erc" 'noerror) ; irc config
-	(easy-menu-add-item  nil '("tools")	["IRC with ERC" erc t])
-	(global-set-key (kbd "C-c e") 'erc)
-	)
-
-(when *mac*
-	(load "init/deft") ; note functions (bound to <f8>
-
-	(use-package gnugo) ; Game of Go
-	(setq gnugo-program "/usr/local/bin/gnugo")
-	(easy-menu-add-item  nil '("tools" "games") ["Go" gnugo t])
-	)
+(message "Emacs %s." emacs-version)
 
 
 ;; arrow keys (Darwin)
@@ -471,28 +485,25 @@
 (global-unset-key (kbd "s-<up>"   ))
 (global-unset-key (kbd "s-<down>" ))
 
-;; buffer movement (option + arrows switches between visible buffers)
-(require 'windmove)
-(windmove-default-keybindings 'meta)
-
 
 ;; alternate keys
 (global-unset-key (kbd "C-x C-z"))
 
-(global-set-key (kbd "C-S-k")     'kill-whole-line)
-(global-set-key (kbd "C-x k")     'kill-current-buffer)
-(global-set-key (kbd "C-x M-k")	  'nuke-all-buffers)
-(global-set-key (kbd "C-x x r")   'rename-file-and-buffer)
+(global-set-key (kbd "C-S-k")	'kill-whole-line)
+(global-set-key (kbd "C-x k")	'kill-current-buffer)
+(global-set-key (kbd "C-x M-k")	'nuke-all-buffers)
+(global-set-key (kbd "C-x x r")	'rename-file-and-buffer)
 
-(global-set-key (kbd "C-s")       'isearch-forward-regexp)
-(global-set-key (kbd "C-r")       'isearch-backward-regexp)
-(global-set-key (kbd "C-M-s")     'isearch-forward)
-(global-set-key (kbd "C-M-r")     'isearch-backward)
+(global-set-key (kbd "C-s")		'isearch-forward-regexp)
+(global-set-key (kbd "C-r")		'isearch-backward-regexp)
+(global-set-key (kbd "C-M-s")	'isearch-forward)
+(global-set-key (kbd "C-M-r")	'isearch-backward)
 
-(global-set-key (kbd "C-z")       'undo)
-(global-set-key (kbd "C-S-z")     'undo-redo)
+(global-set-key (kbd "TAB")		'self-insert-command)
+(global-set-key (kbd "C-z")		'undo)
+(global-set-key (kbd "C-S-z")	'undo-redo)
 
-(global-set-key (kbd "A-<return>") (kbd "M-<return>"))
+(global-set-key (kbd "A-<return>")(kbd "M-<return>"))
 
 ;; Darwin overrides
 (global-set-key   (kbd "s-o")     'find-file)
@@ -511,44 +522,37 @@
 
 ;; Shortcuts
 
-(global-set-key (kbd "TAB")       'self-insert-command)	; 'tab-to-tab-stop
-(global-set-key (kbd "C-<tab>")   'nswbuff-switch-to-next-buffer)
-(global-set-key (kbd "C-S-<tab>") 'nswbuff-switch-to-previous-buffer)
-(bind-key "<f7>" 'list-bookmarks)
+(bind-key "<f6>"	'toggle-fill-column)
+(bind-key "<f7>"	'list-bookmarks)
 
-(global-set-key (kbd "M-Q")       'unfill-paragraph)
-(global-set-key (kbd "M-p")       'spool-to-enscript)
-(global-set-key (kbd "M-P")       'spool-to-enscript-region)
+(bind-key "M-Q"		'unfill-paragraph)
+(bind-key "M-p"		'spool-to-enscript)
+(bind-key "M-P"		'spool-to-enscript-region)
 
-(global-set-key (kbd "C-c a")     'org-agenda)
-(global-set-key (kbd "C-c c")     'org-capture)
-(global-set-key (kbd "C-c D")     'insert-iso-date)
-(global-set-key (kbd "C-c d")     'insert-date)
-(global-set-key (kbd "C-c g")     'elpher)				; gopher / gemini
-(global-set-key (kbd "C-c l")     'org-store-link)
-(global-set-key (kbd "C-c o")     'markdown-preview-file) 
-(global-set-key (kbd "C-c q")     'replace-smart-quotes)
-(global-set-key (kbd "C-c w")     'eww-list-bookmarks)	; www
-(bind-key "C-c ?" 'describe-personal-keybindings)
+(bind-key "C-c a"	'org-agenda)
+(bind-key "C-c c"	'org-capture)
+(bind-key "C-c D"	'insert-iso-date)
+(bind-key "C-c d"	'insert-date)
+(bind-key "C-c g"	'elpher) ; gopher / gemini
+(bind-key "C-c i"	'display-fill-column-indicator-mode)
+(bind-key "C-c l"	'org-store-link)
+(bind-key "C-c o"	'markdown-preview-file) 
+(bind-key "C-c q"	'replace-smart-quotes)
+(bind-key "C-c s"	'dictionary-search)
+(bind-key "C-c w"	'eww-list-bookmarks) ; www
+(bind-key "C-c ?"	'describe-personal-keybindings)
 
-(global-set-key (kbd "C-c b m")   'new-markdown-buffer)
-(global-set-key (kbd "C-c b n")   'new-empty-buffer)
-(global-set-key (kbd "C-c b s")   'create-scratch-buffer)
+(bind-key "C-c b m" 'new-markdown-buffer)
+(bind-key "C-c b n" 'new-empty-buffer)
+(bind-key "C-c b s" 'create-scratch-buffer)
 
-(global-set-key (kbd "C-c x a")   '("archive-subtree" . org-archive-subtree-default))
-(global-set-key (kbd "C-c x c")   (kbd "✓"))
-(global-set-key (kbd "C-c x l")   'dictionary-search)
+(bind-key "C-c x a" 'archive-subtree) (defalias 'archive-subtree 'org-archive-subtree-default)
 
 (when *mac*
-(global-set-key (kbd "C-c x d")   '("daily"  . (lambda()(interactive)(find-file "~/Documents/org/daily.org"))))
-(global-set-key (kbd "C-c x e")   '("init"   . (lambda()(interactive)(find-file "~/.emacs.d/init.el"))))
-(bind-key "C-c i" 'display-fill-column-indicator-mode)
-(bind-key "<f6>"  'toggle-fill-column)
-)
+(bind-key "C-c x d"	'daily.org) (defun daily.org()(interactive)(find-file "~/Documents/org/daily.org")))
+
 (when *natasha*
-(global-set-key (kbd "C-c x o")   '("office" . (lambda()(interactive)(find-file "~/OD/Work/work.org"))))
-(bind-key "<f9>" 'load-simplenote)(defun load-simplenote()(interactive)(load "init/sn"))
-)
+(bind-key "C-c x o"	'office.org) (defun office.org()(interactive)(find-file "~/OD/Work/work.org")))
 
 
 ;; Aliases
@@ -557,9 +561,9 @@
 
 (defalias 'cal 'calendar)
 (defalias 'clock 'world-clock)
+(defalias 'cm (kbd "✓"))
 (defalias 'ds 'desktop-save)
 (defalias 'dsm 'desktop-save-mode)
-(defalias 'dfc 'display-fill-column-indicator-mode)
 (defalias 'er 'eval-region)
 (defalias 'fbl 'flush-blank-lines)
 (defalias 'lcd 'list-colors-display)
