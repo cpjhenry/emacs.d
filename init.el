@@ -7,7 +7,6 @@
 (defconst *natasha* (string-equal (system-name) "natasha.local"))
 
 ;; Initialize terminal
-(set-language-environment 'utf-8)
 (when (display-graphic-p)(tool-bar-mode -1))
 (toggle-frame-maximized)
 (scroll-bar-mode -1)
@@ -38,14 +37,13 @@
 
 ;; Initialize package manager
 (setq gnutls-algorithm-priority "normal:-vers-tls1.3")
-(when (>= emacs-major-version 24)
-	(require 'package)
-	(package-initialize t)
-	(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
-	(unless package-archive-contents (package-refresh-contents))
-	(unless (package-installed-p 'use-package) (package-install 'use-package))
-	(require 'use-package)
-	(setf use-package-always-ensure t))
+(require 'package)
+(package-initialize t)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+(unless package-archive-contents (package-refresh-contents))
+(unless (package-installed-p 'use-package) (package-install 'use-package))
+(require 'use-package)
+(setf use-package-always-ensure t)
 
 ;; Add directories to load-path
 (add-to-list 'load-path (expand-file-name "etc" user-emacs-directory))
@@ -61,6 +59,7 @@
 					"/Applications/Emacs.app/Contents/MacOS/libexec/")) )
 
 ;; settings
+(set-language-environment 'utf-8)
 (setq initial-major-mode 'text-mode)
 (setq default-major-mode 'text-mode)
 (setq-default tab-width 4)
@@ -232,8 +231,10 @@
 (add-hook 'emacs-lisp-mode-hook (lambda()
 	(prettify-symbols-mode)
 	(show-paren-mode) ))
-
 (remove-hook 'file-name-at-point-functions 'ffap-guess-file-name-at-point)
+
+;; print functions
+(load "init/page-dimensions")
 (easy-menu-add-item  nil '("file" "print") ["Enscript" spool-to-enscript t])
 (easy-menu-add-item  nil '("file" "print") ["Enscript (region)" spool-to-enscript-region t])
 (define-key menu-bar-print-menu [print-buffer] nil)
@@ -241,8 +242,6 @@
 (define-key menu-bar-print-menu [ps-print-buffer] nil)
 (define-key menu-bar-print-menu [ps-print-region] nil)
 
-;; print functions
-(load "init/page-dimensions")
 (when *mac*
 	(setq printer-name "Brother_HL_L2370DW")
 	(setq ps-paper-type 'a5)
@@ -564,7 +563,7 @@
 (when *natasha* (bind-key "C-c x o"	'office.org))
 
 (defun daily.org () (interactive)(find-file "~/Documents/org/daily.org"))
-(defun office.org ()(interactive)(find-file "~/OD/Work/work.org"))
+(defun office.org ()(interactive)(find-file "~/OD/Work/!.org"))
 
 
 ;; Aliases
