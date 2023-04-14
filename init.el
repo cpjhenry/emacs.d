@@ -504,7 +504,7 @@
 (global-set-key (kbd "C-M-s")	'isearch-forward)
 (global-set-key (kbd "C-M-r")	'isearch-backward)
 
-(global-set-key (kbd "TAB")		'self-insert-command)
+(global-set-key (kbd "<tab>")  	'self-insert-command)
 (global-set-key (kbd "C-z")		'undo)
 (global-set-key (kbd "C-S-z")	'undo-redo)
 
