@@ -180,18 +180,42 @@
 
 
 ;; buffers
-(use-package nswbuff ; buffer switching
-	:init	(setq nswbuff-clear-delay 1.5)
-			(setq nswbuff-display-intermediate-buffers t)
-			(setq nswbuff-exclude-buffer-regexps '(
-				"^ .*"
-				"^\\*Help\\*"
-				"^\\*Messages\\*"
-				"^\\*Shell Command Output\\*"
-				"from-mobile.org"
-				"^\\*tramp/.*"))
-	:config	(global-set-key (kbd "C-<tab>")   'nswbuff-switch-to-next-buffer)
-			(global-set-key (kbd "C-S-<tab>") 'nswbuff-switch-to-previous-buffer))
+(load "init/filesandbuffers")
+(add-hook 'help-mode-hook (lambda()
+	(local-set-key (kbd "q")	'kill-current-buffer) ))
+(add-hook 'Info-mode-hook (lambda()
+	(local-set-key (kbd "q")	'kill-current-buffer) ))
+(add-hook 'emacs-lisp-mode-hook (lambda()
+	(prettify-symbols-mode)
+	(show-paren-mode) ))
+(remove-hook
+	'file-name-at-point-functions
+	'ffap-guess-file-name-at-point)
+
+(add-hook 'dired-mode-hook (lambda()
+	(local-set-key (kbd "RET")	'dired-find-alternate-file)
+	(local-set-key (kbd "^")	'dired-find-alternate-file)
+	(local-set-key (kbd "q")	'kill-dired-buffers) ))
+
+(add-hook 'ibuffer-mode-hook (lambda()
+	(local-set-key (kbd "q")	'kill-current-buffer)
+
+	(local-set-key (kbd "<up>") 'ibuffer-previous-line)
+	(local-set-key (kbd "<down>") 'ibuffer-next-line)
+	(local-set-key (kbd "<right>") 'ibuffer-previous-header)
+	(local-set-key (kbd "<left>") 'ibuffer-next-header)
+
+	(ibuffer-switch-to-saved-filter-groups "default")
+	(setq ibuffer-hidden-filter-groups (list 
+		"Helm"
+		"*Internal*"
+		"*Shell Command Output*"
+		"from-mobile.org"
+		"*tramp/" ))
+	(ibuffer-update nil t) ))
+
+(defalias 'list-buffers 'ibuffer) ; always use ibuffer
+(defalias 'yes-or-no-p 'y-or-n-p) ; y or n is enough
 
 (use-package persistent-scratch
 	:config	(persistent-scratch-setup-default))
@@ -216,22 +240,6 @@
 (setq inhibit-startup-buffer-menu t) ; Don't show *Buffer list*
 (add-hook 'window-setup-hook		 ; Show only one active window
 	'delete-other-windows)
-
-;; file and buffer functions
-(load "init/filesandbuffers")
-(add-hook 'dired-mode-hook (lambda()
-	(local-set-key (kbd "RET")	'dired-find-alternate-file)
-	(local-set-key (kbd "q")	'kill-dired-buffers) ))
-(add-hook 'ibuffer-mode-hook (lambda()
-	(local-set-key (kbd "q")	'kill-current-buffer) ))
-(add-hook 'help-mode-hook (lambda()
-	(local-set-key (kbd "q")	'kill-current-buffer) ))
-(add-hook 'Info-mode-hook (lambda()
-	(local-set-key (kbd "q")	'kill-current-buffer) ))
-(add-hook 'emacs-lisp-mode-hook (lambda()
-	(prettify-symbols-mode)
-	(show-paren-mode) ))
-(remove-hook 'file-name-at-point-functions 'ffap-guess-file-name-at-point)
 
 ;; print functions
 (load "init/page-dimensions")
@@ -422,8 +430,8 @@
 	)
 
 (when *mac*
-	(load "init/deft") ; note functions (bound to <f8>)
-	(bind-key "<f9>" 'load-simplenote)
+	(load "init/deft") ; note functions (bound to <f7>)
+	(bind-key "<f8>" 'load-simplenote)
 	(defun load-simplenote()(interactive)(load "init/sn"))
 
 	(use-package gnugo ; Game of Go
@@ -504,7 +512,8 @@
 (global-set-key (kbd "C-M-s")	'isearch-forward)
 (global-set-key (kbd "C-M-r")	'isearch-backward)
 
-(global-set-key (kbd "<tab>")  	'self-insert-command)
+(global-set-key (kbd "<f12>")	'list-buffers)
+(global-set-key (kbd "TAB")  	'self-insert-command)
 (global-set-key (kbd "C-z")		'undo)
 (global-set-key (kbd "C-S-z")	'undo-redo)
 
@@ -529,9 +538,8 @@
 
 ;; Shortcuts
 
-(bind-key "<f6>"	'toggle-fill-column)
-(bind-key "<f7>"	'list-bookmarks)
-
+(bind-key "<f5>"	'toggle-fill-column)
+(bind-key "<f6>"	'list-bookmarks)
 (bind-key "M-Q"		'unfill-paragraph)
 (bind-key "M-p"		'spool-to-enscript)
 (bind-key "M-P"		'spool-to-enscript-region)
@@ -567,9 +575,6 @@
 
 
 ;; Aliases
-(defalias 'yes-or-no-p 'y-or-n-p) ; y or n is enough
-(defalias 'list-buffers 'ibuffer) ; always use ibuffer
-
 (defalias 'cal 'calendar)
 (defalias 'clock 'world-clock)
 (defalias 'cm (kbd "✓"))

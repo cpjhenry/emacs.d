@@ -8,7 +8,7 @@
 ; many of the usual tasks such as creating new files and saving files.
 
 (use-package deft
-	:bind (("<f8>" . deft))
+	:bind (("<f7>" . deft))
 	:commands (deft deft-open-file deft-new-file-named)
 	:config
 	(setq deft-directory "~/Documents/Notes/"
