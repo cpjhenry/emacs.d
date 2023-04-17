@@ -223,9 +223,6 @@
 	:init	(setq unkillable-scratch-do-not-reset-scratch-buffer t))
 	:config	(unkillable-scratch t)
 
-(require 'windmove) ; buffer movement (option + arrows)
-(windmove-default-keybindings 'meta)
-
 (easy-menu-add-item  nil '("Buffers") ["Increase text size" text-scale-increase])
 (easy-menu-add-item  nil '("Buffers") ["Decrease text size" text-scale-decrease])
 
@@ -527,7 +524,12 @@
 (global-unset-key (kbd "s-n"))
 (global-unset-key (kbd "s-p"))
 (global-unset-key (kbd "s-q"))
-(global-unset-key (kbd "s-w")) )
+(global-unset-key (kbd "s-w"))
+
+(when (display-graphic-p)
+(global-unset-key (kbd "<f10>"))
+(global-unset-key (kbd "C-<f10>"))
+(global-unset-key (kbd "S-<f10>")) ))
 
 
 ;; Diabled keys
