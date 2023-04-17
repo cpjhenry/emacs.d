@@ -11,6 +11,7 @@ url/
 var/
 .DS_Store
 .org-id-locations
+.gitignore
 .persistent-scratch
 custom.el
 network-security.data
