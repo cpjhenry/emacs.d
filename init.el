@@ -1,16 +1,17 @@
 ;; Emacs configuration / pjh
-(defconst *mac* (eq system-type 'darwin))
-(defconst *gnu* (eq system-type 'gnu/linux))
-(defconst *w32* (eq system-type 'windows-nt))
-
-(defconst *bullwinkle* (string-equal (system-name) "bullwinkle.local"))
-(defconst *natasha* (string-equal (system-name) "natasha.local"))
 
 ;; Initialize terminal
 (when (display-graphic-p)(tool-bar-mode -1))
 (toggle-frame-maximized)
 (scroll-bar-mode -1)
 (electric-indent-mode -1)
+
+(defconst *mac* (eq system-type 'darwin))
+(defconst *gnu* (eq system-type 'gnu/linux))
+(defconst *w32* (eq system-type 'windows-nt))
+
+(defconst *bullwinkle* (string-equal (system-name) "bullwinkle.local"))
+(defconst *natasha* (string-equal (system-name) "natasha.local"))
 
 (when *mac*
 	(set-frame-font "Inconsolata 21")
@@ -398,9 +399,6 @@
 (load "init/text") ; text functions
 (load "init/pdfexport") ; pdf functions
 
-(create-scratch-buffer)
-(message "Emacs %s." emacs-version)
-
 
 ;; Configure specific machines
 (when *natasha*
@@ -466,6 +464,9 @@
 		(local-set-key (kbd "M-<left>" ) 'Info-history-back)
 		(local-set-key (kbd "M-<right>") 'Info-history-forward) ))
 	)
+
+(create-scratch-buffer)
+(message "Emacs %s." emacs-version)
 
 
 ;; arrow keys (Darwin)
