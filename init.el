@@ -1,4 +1,4 @@
-;; Emacs configuration / pjh
+ ;; Emacs configuration / pjh
 
 ;; Initialize terminal
 (when (display-graphic-p)(tool-bar-mode -1))
@@ -121,13 +121,29 @@
 
 ;; calendar
 (setq diary-file "~/Documents/diary")
+(setq diary-list-includes-blanks t)
 (setq diary-show-holidays-flag nil)
 (add-hook 'diary-list-entries-hook 'diary-sort-entries t)
-(setq lunar-phase-names '(
-	"● New Moon"
-	"☽ First Quarter Moon"
-	"○ Full Moon"
-	"☾ Last Quarter Moon"))
+(add-hook 'diary-mode-hook (lambda()
+	(local-set-key (kbd "C-c C-q") 'kill-current-buffer) ))
+(add-hook 'diary-fancy-display-mode-hook (lambda()
+	(local-set-key (kbd "q")	'kill-current-buffer) ))
+(add-hook 'special-mode-hook (lambda()
+	(local-set-key (kbd "q")	'kill-current-buffer) ))
+
+(defun my/save-diary-before-calendar-exit (_)
+	(let ((diary-buffer (get-file-buffer diary-file)))
+    	(or (not diary-buffer)
+			(not (buffer-modified-p diary-buffer))
+			(with-current-buffer diary-buffer (save-buffer)))))
+(advice-add 'calendar-exit :before #'my/save-diary-before-calendar-exit)
+(add-hook 'calendar-mode-hook (lambda()
+	(local-set-key (kbd "q")	(lambda()(interactive)(calendar-exit 'kill))) ))
+
+(setq calendar-date-style 'iso)
+(setq calendar-mark-holidays-flag t)
+(setq calendar-view-holidays-initially-flag t)
+(setq calendar-mark-diary-entries-flag t)
 
 (setq calendar-christian-all-holidays-flag t)
 (setq calendar-chinese-all-holidays-flag t)
@@ -159,11 +175,11 @@
 	(holiday-fixed 06 24  "Midsummer Day")
 	(holiday-fixed 09 30  "Truth and Reconciliation")
 	(holiday-fixed 12 11  "Statute of Westminster")))
-
-(setq calendar-mark-holidays-flag t)
-(setq calendar-view-holidays-initially-flag t)
-(defun list-hols () (interactive) (list-holidays (string-to-number (format-time-string "%Y"))))
-
+(setq lunar-phase-names '(
+	"● New Moon"
+	"☽ First Quarter Moon"
+	"○ Full Moon"
+	"☾ Last Quarter Moon"))
 (setq zoneinfo-style-world-list '(
 	("America/Vancouver" "Vancouver")
 	("America/Edmonton" "Edmonton")
@@ -178,6 +194,8 @@
 	("Asia/Calcutta" "Bangalore")
 	("Asia/Shanghai" "Beijing")
 	("Asia/Tokyo" "Tokyo")))
+
+(defun list-hols () (interactive) (list-holidays (string-to-number (format-time-string "%Y"))))
 
 
 ;; buffers
