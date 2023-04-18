@@ -126,7 +126,10 @@
 
 ;; iBuffer
 ;; https://www.emacswiki.org/emacs/IbufferMode
-(setq ibuffer-saved-filter-groups (quote (("default"
+
+(defalias 'list-buffers 'ibuffer) ; always use ibuffer
+
+(setq ibuffer-saved-filter-groups (quote (("home"
    	("dired" (mode . dired-mode))
 	("emacs" (or
 		(name . "^\\*scratch\\*$")
@@ -148,6 +151,13 @@
 ;		(name . "^\\.bbdb$")
 ;		(name . "^\\.newsrc-dribble")))
 	))))
+
+(setq ibuffer-hidden-filter-groups (list 
+	"Helm"
+	"*Internal*"
+	"*Shell Command Output*"
+	"from-mobile.org"
+	"*tramp/" ))
 
 (defun ibuffer-advance-motion (direction)
 	(forward-line direction)

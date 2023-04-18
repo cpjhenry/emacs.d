@@ -206,18 +206,10 @@
 	(local-set-key (kbd "<right>") 'ibuffer-previous-header)
 	(local-set-key (kbd "<left>") 'ibuffer-next-header)
 
-	(ibuffer-switch-to-saved-filter-groups "default")
-	(setq ibuffer-hidden-filter-groups (list 
-		"Helm"
-		"*Internal*"
-		"*Shell Command Output*"
-		"from-mobile.org"
-		"*tramp/" ))
+	(ibuffer-switch-to-saved-filter-groups "home")
 	(ibuffer-update nil t) ))
 
-(defalias 'list-buffers 'ibuffer) ; always use ibuffer
 (defalias 'yes-or-no-p 'y-or-n-p) ; y or n is enough
-
 (use-package persistent-scratch
 	:config	(persistent-scratch-setup-default))
 (use-package unkillable-scratch :ensure t
@@ -564,7 +556,7 @@
 (bind-key "C-c o c"	'org-capture)
 (bind-key "C-c o l"	'org-store-link)
 
-(bind-key "C-c m"	'markdown-preview-file)
+(bind-key "C-c p"	'markdown-preview-file)
 (bind-key "C-c s"	'dictionary-search)
 (bind-key "C-c w"	'eww-list-bookmarks) ; www
 
