@@ -130,15 +130,9 @@
 	(local-set-key (kbd "q")	'kill-current-buffer) ))
 (add-hook 'special-mode-hook (lambda()
 	(local-set-key (kbd "q")	'kill-current-buffer) ))
-
-(defun my/save-diary-before-calendar-exit (_)
-	(let ((diary-buffer (get-file-buffer diary-file)))
-    	(or (not diary-buffer)
-			(not (buffer-modified-p diary-buffer))
-			(with-current-buffer diary-buffer (save-buffer)))))
-(advice-add 'calendar-exit :before #'my/save-diary-before-calendar-exit)
 (add-hook 'calendar-mode-hook (lambda()
 	(local-set-key (kbd "q")	(lambda()(interactive)(calendar-exit 'kill))) ))
+(advice-add 'calendar-exit :before #'my/save-diary-before-calendar-exit)
 
 (setq calendar-date-style 'iso)
 (setq calendar-mark-holidays-flag t)
@@ -196,6 +190,11 @@
 	("Asia/Tokyo" "Tokyo")))
 
 (defun list-hols () (interactive) (list-holidays (string-to-number (format-time-string "%Y"))))
+(defun my/save-diary-before-calendar-exit (_)
+	(let ((diary-buffer (get-file-buffer diary-file)))
+    	(or (not diary-buffer)
+			(not (buffer-modified-p diary-buffer))
+			(with-current-buffer diary-buffer (save-buffer)))))
 
 
 ;; buffers
@@ -281,14 +280,6 @@
 (add-to-list 'sml/replacer-regexp-list '("^:Doc:Reference/" ":Ref:") t)
 (add-to-list 'sml/replacer-regexp-list '("^.*/gemini/" ":gem:") t)
 
-(when *natasha*
-(add-to-list 'sml/replacer-regexp-list '("^.*/Work/" ":Work:") t)
-(add-to-list 'sml/replacer-regexp-list '("^:Work:Operations/" ":Ops:") t)
-(add-to-list 'sml/replacer-regexp-list '("^:Work:PDG/" ":PDG:") t)
-(add-to-list 'sml/replacer-regexp-list '("^:PDG:1-.*/" ":PDG-1:") t)
-(add-to-list 'sml/replacer-regexp-list '("^:PDG:2-.*/" ":PDG-2:") t)
-(add-to-list 'sml/replacer-regexp-list '("^:PDG:3-.*/" ":PDG-3:") t) )
-
 (setq sml/col-number-format "%2C")
 (setq battery-mode-line-format "%p%% ")
 (setq display-time-24hr-format t)
@@ -371,9 +362,6 @@
 (setq org-agenda-todo-ignore-deadlines t)
 (setq org-agenda-start-on-weekday nil)
 (add-hook 'org-agenda-finalize-hook 'delete-other-windows)
-
-;(setq org-odt-convert-process "unoconv")
-;(setq org-odt-preferred-output-format "docx")
 
 (use-package org-autolist)
 (add-hook 'org-mode-hook (lambda () (org-autolist-mode)) )
@@ -551,7 +539,6 @@
 
 ;; Shortcuts
 
-(bind-key "<f5>"	'toggle-fill-column)
 (bind-key "<f6>"	'list-bookmarks)
 (bind-key "M-Q"		'unfill-paragraph)
 (bind-key "M-p"		'spool-to-enscript)
@@ -568,7 +555,6 @@
 (bind-key "C-c d i"	'insert-iso-date)
 
 (bind-key "C-c g"	'elpher) ; gopher / gemini
-(bind-key "C-c i"	'display-fill-column-indicator-mode)
 
 (bind-key "C-c o a" 'org-archive-subtree-default)
 (bind-key "C-c o c"	'org-capture)
@@ -578,13 +564,13 @@
 (bind-key "C-c s"	'dictionary-search)
 (bind-key "C-c w"	'eww-list-bookmarks) ; www
 
+(bind-key "C-c x f"	'toggle-fill-column)
+(bind-key "C-c x i"	'display-fill-column-indicator-mode)
 (bind-key "C-c x q"	'replace-smart-quotes)
 (bind-key "C-c x w" 'delete-whitespace-rectangle)
-(when *mac* 	(bind-key "C-c x d"	'daily.org))
-(when *natasha* (bind-key "C-c x o"	'office.org))
 
-(defun daily.org () (interactive)(find-file "~/Documents/org/daily.org"))
-(defun office.org ()(interactive)(find-file "~/OD/Work/!.org"))
+(when *mac*	(bind-key "C-c x d"	'daily.org)
+			(defun daily.org () (interactive)(find-file "~/Documents/org/daily.org")) )
 
 
 ;; Aliases
@@ -613,3 +599,15 @@
 (defalias 'tm 'text-mode)
 (defalias 'ssm 'shell-script-mode)
 (defalias 'vlm 'visual-line-mode)
+
+;; Work-specific
+(when *natasha*
+	(add-to-list 'sml/replacer-regexp-list '("^.*/Work/" ":Work:") t)
+	(add-to-list 'sml/replacer-regexp-list '("^:Work:Operations/" ":Ops:") t)
+	(add-to-list 'sml/replacer-regexp-list '("^:Work:PDG/" ":PDG:") t)
+	(add-to-list 'sml/replacer-regexp-list '("^:PDG:1-.*/" ":PDG-1:") t)
+	(add-to-list 'sml/replacer-regexp-list '("^:PDG:2-.*/" ":PDG-2:") t)
+	(add-to-list 'sml/replacer-regexp-list '("^:PDG:3-.*/" ":PDG-3:") t)
+
+	(bind-key "C-c x o"	'office.org)
+	(defun office.org ()(interactive)(find-file "~/OD/Work/!.org")) )
