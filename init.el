@@ -566,6 +566,7 @@
 
 (bind-key "C-c x f"	'toggle-fill-column)
 (bind-key "C-c x i"	'display-fill-column-indicator-mode)
+(bind-key "C-c x n" 'number-paragraphs)
 (bind-key "C-c x q"	'replace-smart-quotes)
 (bind-key "C-c x w" 'delete-whitespace-rectangle)
 
