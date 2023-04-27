@@ -120,9 +120,6 @@
 ("Drift Theory"
  (location . "gemini://gemini.circumlunar.space/~sloum/")
  (handler . elpher-bookmark-jump))
-("Ben's Gemlog ☪"
- (location . "gemini://kwiecien.us/logarion/date.gmi")
- (handler . elpher-bookmark-jump))
 ("Hex's GC"
  (location . "gemini://hexdsl.co.uk/")
  (handler . elpher-bookmark-jump))

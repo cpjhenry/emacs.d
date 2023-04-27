@@ -1,4 +1,4 @@
- ;; Emacs configuration / pjh
+;; Emacs configuration / pjh
 
 ;; Initialize terminal
 (when (display-graphic-p)(tool-bar-mode -1))
@@ -424,6 +424,9 @@
 
 (when *mac*
 	(load "init/deft") ; note functions (bound to <f7>)
+	(add-hook 'deft-mode-hook (lambda()
+		(local-set-key (kbd "C-c C-q") 'kill-current-buffer) ))
+
 	(bind-key "<f8>" 'load-simplenote)
 	(defun load-simplenote()(interactive)(load "init/sn"))
 
@@ -443,6 +446,8 @@
 	(add-hook 'Info-mode-hook (lambda()
 		(local-set-key (kbd "A-<left>" ) 'Info-history-back)
 		(local-set-key (kbd "A-<right>") 'Info-history-forward) ))
+
+	(when (display-graphic-p)(load "init/windmove"))
 	)
 
 (when *gnu*

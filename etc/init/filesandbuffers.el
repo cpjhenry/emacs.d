@@ -237,18 +237,19 @@
 
 
 ;; PRINT functions
+(setq enscript "enscript -cqB")
 
 ;; https://stackoverflow.com/questions/15869131/emacs-shell-command-on-buffer (adapted)
 (defun spool-to-enscript ()
 	"Sends current buffer to 'enscript'."
 	(interactive)
-	(shell-command-on-region (point-min) (point-max) "enscript -qB"))
+	(shell-command-on-region (point-min) (point-max) enscript))
 
 ;; https://stackoverflow.com/questions/1548605/emacs-lisp-shell-command-on-region (adapted)
 (defun spool-to-enscript-region (&optional b e)
 	"Sends current region to 'enscript'."
 	(interactive "r")
-	(shell-command-on-region b e "enscript -qB"))
+	(shell-command-on-region b e enscript))
 
 ;; https://genomeek.wordpress.com/2013/03/08/emarch-2-create-a-pdf-with-highlighted-code-source/
 (defun print-to-pdf ()
@@ -261,4 +262,3 @@
  (shell-command cmd)
  (shell-command "rm tmp.ps")
  (message (concat "File printed in : "(buffer-name) ".pdf")) )
-
