@@ -93,6 +93,8 @@
 (setq use-file-dialog nil)
 (setq use-short-answers t)
 (setq pop-up-windows nil)
+(when (display-graphic-p)
+	(require 'windmove)	(windmove-default-keybindings 'meta) )
 
 ;; files
 (setq abbrev-file-name				(concat user-emacs-directory "etc/abbrev_defs"))
@@ -446,8 +448,6 @@
 	(add-hook 'Info-mode-hook (lambda()
 		(local-set-key (kbd "A-<left>" ) 'Info-history-back)
 		(local-set-key (kbd "A-<right>") 'Info-history-forward) ))
-
-	(when (display-graphic-p)(load "init/windmove"))
 	)
 
 (when *gnu*
