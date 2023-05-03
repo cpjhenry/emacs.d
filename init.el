@@ -73,6 +73,7 @@
 (setq delete-by-moving-to-trash t)
 (setq dictionary-server "dict.org")
 (setq flyspell-issue-message-flag nil)
+(setq ibuffer-expert t)
 (setq inhibit-default-init t)
 (setq ispell-list-command "--list") ; correct command
 (setq ispell-program-name "aspell") ; spell checker
@@ -500,6 +501,7 @@
 
 ;; alternate keys
 (global-unset-key (kbd "C-x C-z"))
+(global-unset-key (kbd "C-z"))
 
 (global-set-key (kbd "C-S-k")	'kill-whole-line)
 (global-set-key (kbd "C-x k")	'kill-current-buffer)
@@ -515,8 +517,6 @@
 
 (global-set-key (kbd "<f12>")	'list-buffers)
 (global-set-key (kbd "TAB")  	'self-insert-command)
-(global-set-key (kbd "C-z")		'undo)
-(global-set-key (kbd "C-S-z")	'undo-redo)
 
 (global-set-key (kbd "A-<return>")(kbd "M-<return>"))
 
