@@ -157,12 +157,12 @@
 		(name . "^\\*scratch\\*$")
 		(name . "^\\*Messages\\*$")
 		(name . "\\.el")))
+	("planner" (or
+		(name . "^\\*Calendar\\*$")
+		(name . "^diary$")
+		(name . "^\\*Org Agenda\\*")))
 ;  	("perl" (mode . cperl-mode))
 ;  	("erc" (mode . erc-mode))
-;	("planner" (or
-;		(name . "^\\*Calendar\\*$")
-;		(name . "^diary$")
-;		(mode . muse-mode)))
 ;	("gnus" (or
 ;		(mode . message-mode)
 ;		(mode . bbdb-mode)
