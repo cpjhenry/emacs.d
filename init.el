@@ -524,13 +524,15 @@
 (when *mac*
 (global-set-key   (kbd "s-o")	'find-file)
 (global-set-key   (kbd "s-S")	'write-file)
+
 (global-unset-key (kbd "s-m"))
 (global-unset-key (kbd "s-n"))
-(global-unset-key (kbd "s-p"))
 (global-unset-key (kbd "s-q"))
 (global-unset-key (kbd "s-w"))
 
 (when (display-graphic-p)
+(global-set-key	  (kbd "s-p")	'ps-print-buffer-with-faces)
+
 (global-unset-key (kbd "<f10>"))
 (global-unset-key (kbd "C-<f10>"))
 (global-unset-key (kbd "S-<f10>")) ))
@@ -569,6 +571,7 @@
 (bind-key "C-c s"	'dictionary-search)
 (bind-key "C-c w"	'eww-list-bookmarks) ; www
 
+(bind-key "C-c x b"	'flush-blank-lines)
 (bind-key "C-c x f"	'toggle-fill-column)
 (bind-key "C-c x i"	'display-fill-column-indicator-mode)
 (bind-key "C-c x n" 'number-paragraphs)
@@ -587,7 +590,6 @@
 (defalias 'ds 'desktop-save)
 (defalias 'dsm 'desktop-save-mode)
 (defalias 'er 'eval-region)
-(defalias 'fbl 'flush-blank-lines)
 (defalias 'lcd 'list-colors-display)
 (defalias 'lh 'list-hols)
 (defalias 'li 'lorem-ipsum-insert-paragraphs)
