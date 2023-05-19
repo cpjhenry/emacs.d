@@ -26,7 +26,7 @@
 (when *gnu*
 	(set-frame-font "Monospace 17"))
 (when *w32*
-	(set-frame-font "Cascadia Mono 17")
+	(set-frame-font "Consolas 12")
 	(setq w32-lwindow-modifier 'super)
 	(setq w32-pass-lwindow-to-system nil)
 	(message "Running on Windows."))
@@ -119,8 +119,8 @@
 (setq make-backup-files nil)
 (setq auto-save-default nil)
 
-(require 'backup-each-save)
-(add-hook 'after-save-hook 'backup-each-save)
+(unless *w32* (require 'backup-each-save)
+(add-hook 'after-save-hook 'backup-each-save))
 
 
 ;; calendar
@@ -322,7 +322,7 @@
 ;; Emacs Text and Markdown modes
 (add-hook 'text-mode-hook (lambda ()
 	(abbrev-mode)
-	(flyspell-mode)
+	(unless *w32* (flyspell-mode))
 	(visual-line-mode)
 	(wc-mode) ))
 (eval-after-load "flyspell" '(progn
@@ -563,3 +563,13 @@
 
 	(bind-key "C-c x o"	'office.org)
 	(defun office.org ()(interactive)(find-file "~/OD/Work/!.org")) )
+(when *w32*
+	(add-to-list 'sml/replacer-regexp-list '("^.*City of Ottawa/" ":Work:") t)
+	(add-to-list 'sml/replacer-regexp-list '("^:Work:Operations/" ":Ops:") t)
+	(add-to-list 'sml/replacer-regexp-list '("^:Work:PDG/" ":PDG:") t)
+	(add-to-list 'sml/replacer-regexp-list '("^:PDG:1-.*/" ":PDG-1:") t)
+	(add-to-list 'sml/replacer-regexp-list '("^:PDG:2-.*/" ":PDG-2:") t)
+	(add-to-list 'sml/replacer-regexp-list '("^:PDG:3-.*/" ":PDG-3:") t)
+
+	(bind-key "C-c x o"	'office.org)
+	(defun office.org ()(interactive)(find-file "c:/Users/henrypa/OneDrive - City of Ottawa/!.org")) )
