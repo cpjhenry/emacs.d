@@ -34,8 +34,9 @@
 
 (setq user-mail-address "cpjhenry@gmail.com")
 (setq calendar-latitude 45.3)
-(setq calendar-longitude -75.8)
+(setq calendar-longitude -75.7)
 (setq calendar-location-name "Ottawa")
+(setq maidenhead "FN25dg")
 
 ;; Initialize package manager
 (setq gnutls-algorithm-priority "normal:-vers-tls1.3")
