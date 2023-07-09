@@ -538,6 +538,7 @@
 (defalias 'lcd 'list-colors-display)
 (defalias 'lh 'list-hols)
 (defalias 'li 'lorem-ipsum-insert-paragraphs)
+(defalias 'pm (kbd "¶"))
 (defalias 'ppc 'ps-print-customize)
 (defalias 'rs 'replace-string)
 
