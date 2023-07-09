@@ -18,7 +18,7 @@
 	(holiday-float 09 1 1 "Labour Day")
 	(holiday-float 10 1 2 "Thanksgiving")
 	(holiday-fixed 10 31  "Halloween")
-	(holiday-fixed 11 11  "Remembrance/Memorial Day")
+	(holiday-fixed 11 11  "Remembrance Day")
 
 	(holiday-fixed 01 21  "Lincoln Alexander Day")
 	(holiday-float 02 1 3 "Family Day")
