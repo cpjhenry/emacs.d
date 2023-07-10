@@ -197,6 +197,7 @@
 (add-hook 'window-setup-hook		 ; Show only one active window
 	'delete-other-windows)
 
+
 ;; print functions
 (load "init/page-dimensions")
 (easy-menu-add-item  nil '("file" "print") ["Enscript" spool-to-enscript t])
