@@ -446,15 +446,12 @@
 
 
 ;; alternate keys
-(global-unset-key (kbd "C-x C-z"))
-(global-unset-key (kbd "C-z"))
+(bind-key "C-S-k"	'kill-whole-line)
+(bind-key "C-x k"	'kill-current-buffer)
+(bind-key "C-x M-k"	'nuke-all-buffers)
 
-(global-set-key (kbd "C-S-k")	'kill-whole-line)
-(global-set-key (kbd "C-x k")	'kill-current-buffer)
-(global-set-key (kbd "C-x M-k")	'nuke-all-buffers)
-
-(global-set-key (kbd "C-x x k")	'kill-other-buffers)
-(global-set-key (kbd "C-x x r")	'rename-file-and-buffer)
+(bind-key "C-x x k"	'kill-other-buffers)
+(bind-key "C-x x r"	'rename-file-and-buffer)
 
 (global-set-key (kbd "C-s")		'isearch-forward-regexp)
 (global-set-key (kbd "C-r")		'isearch-backward-regexp)
@@ -465,6 +462,9 @@
 (global-set-key (kbd "TAB")  	'self-insert-command)
 
 (global-set-key (kbd "A-<return>")(kbd "M-<return>"))
+
+(global-unset-key (kbd "C-x C-z"))
+(global-unset-key (kbd "C-z"))
 
 ;; Darwin overrides
 (when *mac*
