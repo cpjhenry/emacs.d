@@ -79,6 +79,7 @@
 (setq inhibit-default-init t)
 (setq ispell-list-command "--list") ; correct command
 (setq ispell-program-name "aspell") ; spell checker
+(setq recenter-positions '(top)) ; (top middle bottom)
 (setq ring-bell-function 'ignore)
 (setq save-abbrevs 'silent)
 (setq sentence-end-double-space nil)
@@ -98,6 +99,11 @@
 (setq pop-up-windows nil)
 (when (display-graphic-p)
 	(require 'windmove)	(windmove-default-keybindings 'meta) )
+
+;; tooltips
+(tooltip-mode nil)
+(setq tooltip-use-echo-area t)
+(setq x-gtk-use-system-tooltips nil)
 
 ;; files
 (setq abbrev-file-name				(concat user-emacs-directory "etc/abbrev_defs"))
@@ -163,6 +169,20 @@
 	(local-set-key (kbd "RET")	'dired-find-alternate-file)
 	(local-set-key (kbd "^")	'dired-find-alternate-file)
 	(local-set-key (kbd "q")	'kill-dired-buffers) ))
+
+(add-hook 'emacs-news-view-mode-hook (lambda()
+	(local-set-key (kbd "C-<right>") 'outline-forward-same-level)
+	(local-set-key (kbd "C-<left>")  'outline-backward-same-level)
+	(local-set-key (kbd "<right>") 'viewnext)
+	(local-set-key (kbd "<left>" ) 'viewprev)
+	(page-break-lines-mode) ))
+
+(defun viewnext ()(interactive)
+	(outline-next-heading)
+	(recenter-top-bottom))
+(defun viewprev ()(interactive)
+	(outline-previous-heading)
+	(recenter-top-bottom))
 
 (add-hook 'ibuffer-mode-hook (lambda()
 	(local-set-key (kbd "q")	'kill-current-buffer)
@@ -272,7 +292,7 @@
 (use-package google-this
 	:config (google-this-mode))
 (use-package lorem-ipsum)
-(use-package page-break-lines
+(use-package page-break-lines ; ^L
 	:init	(setq page-break-lines-max-width 80)
 	:config	(global-page-break-lines-mode))
 (use-package smooth-scrolling
