@@ -127,7 +127,7 @@
 (setq auto-save-default nil)
 
 (unless *w32* (require 'backup-each-save)
-(add-hook 'after-save-hook 'backup-each-save))
+	(add-hook 'after-save-hook 'backup-each-save))
 
 
 ;; calendar
@@ -171,13 +171,13 @@
 	(local-set-key (kbd "q")	'kill-dired-buffers) ))
 
 (add-hook 'emacs-news-view-mode-hook (lambda()
-	(local-set-key (kbd "<right>") 'viewnext)
-	(local-set-key (kbd "<left>" ) 'viewprev)
+	(local-set-key (kbd "<right>") 'viewmodenext)
+	(local-set-key (kbd "<left>" ) 'viewmodeprev)
 	(page-break-lines-mode) ))
-(defun viewnext ()(interactive)
+(defun viewmodenext ()(interactive)
 	(outline-next-heading)
 	(recenter-top-bottom))
-(defun viewprev ()(interactive)
+(defun viewmodeprev ()(interactive)
 	(outline-previous-heading)
 	(recenter-top-bottom))
 
@@ -238,16 +238,8 @@
 	(setq ps-print-header nil)
 	(setq ps-print-footer nil) )
 
+
 ;; Mode Line
-;(use-package smart-mode-line
-;:init	(setq sml/col-number-format "%2C")
-;:config (sml/setup)
-;		(add-to-list 'sml/replacer-regexp-list '("^:Doc:Notes/" ":Notes:") t)
-;		(add-to-list 'sml/replacer-regexp-list '("^:Doc:org/" ":org:") t)
-;		(add-to-list 'sml/replacer-regexp-list '("^:Doc:Projects/" ":Proj:") t)
-;		(add-to-list 'sml/replacer-regexp-list '("^:Doc:Reference/" ":Ref:") t)
-;		(add-to-list 'sml/replacer-regexp-list '("^.*/gemini/" ":gem:") t))
-
 (setq battery-mode-line-format "%p%% ")
 (setq display-time-24hr-format t)
 (setq display-time-default-load-average nil)
@@ -390,21 +382,19 @@
 	)
 
 (when *mac*
-	(load "init/deft") ; note functions (bound to <f7>)
-	(add-hook 'deft-mode-hook (lambda()
-		(local-set-key (kbd "C-c C-q") 'kill-current-buffer) ))
+;	(load "init/deft") ; note functions (bound to <f7>)
+;	(add-hook 'deft-mode-hook (lambda()
+;		(local-set-key (kbd "C-c C-q") 'kill-current-buffer) ))
 
-	(bind-key "<f8>" 'load-simplenote)
-	(defun load-simplenote()(interactive)(load "init/sn"))
+;	(bind-key "<f8>" 'load-simplenote)
+;	(defun load-simplenote()(interactive)(load "init/sn"))
 
 	(use-package gnugo ; Game of Go
 		:init	(setq gnugo-program "/usr/local/bin/gnugo")
 		:config	(easy-menu-add-item  nil '("tools" "games") ["Go" gnugo t]))
 
 	(add-hook 'elpher-mode-hook (lambda ()
-		(local-set-key (kbd "A-<left>") 'elpher-back)
-		(local-set-key (kbd "A-<up>")   'scroll-down-command)
-		(local-set-key (kbd "A-<down>") 'scroll-up-command) ))
+		(local-set-key (kbd "<left>") 'elpher-back) ))
 	(add-hook 'eww-mode-hook (lambda ()
 		(local-set-key (kbd "<left>") 'eww-back-url) ))
 	(add-hook 'help-mode-hook (lambda()
@@ -575,22 +565,8 @@
 
 ;; Work-specific
 (when *natasha*
-	(add-to-list 'sml/replacer-regexp-list '("^.*/Work/" ":Work:") t)
-	(add-to-list 'sml/replacer-regexp-list '("^:Work:Operations/" ":Ops:") t)
-	(add-to-list 'sml/replacer-regexp-list '("^:Work:PDG/" ":PDG:") t)
-	(add-to-list 'sml/replacer-regexp-list '("^:PDG:1-.*/" ":PDG-1:") t)
-	(add-to-list 'sml/replacer-regexp-list '("^:PDG:2-.*/" ":PDG-2:") t)
-	(add-to-list 'sml/replacer-regexp-list '("^:PDG:3-.*/" ":PDG-3:") t)
-
 	(bind-key "C-c x o"	'office.org)
 	(defun office.org ()(interactive)(find-file "~/OD/Work/!.org")) )
 (when *w32*
-	(add-to-list 'sml/replacer-regexp-list '("^.*City of Ottawa/" ":Work:") t)
-	(add-to-list 'sml/replacer-regexp-list '("^:Work:Operations/" ":Ops:") t)
-	(add-to-list 'sml/replacer-regexp-list '("^:Work:PDG/" ":PDG:") t)
-	(add-to-list 'sml/replacer-regexp-list '("^:PDG:1-.*/" ":PDG-1:") t)
-	(add-to-list 'sml/replacer-regexp-list '("^:PDG:2-.*/" ":PDG-2:") t)
-	(add-to-list 'sml/replacer-regexp-list '("^:PDG:3-.*/" ":PDG-3:") t)
-
 	(bind-key "C-c x o"	'office.org)
 	(defun office.org ()(interactive)(find-file "c:/Users/henrypa/OneDrive - City of Ottawa/!.org")) )
