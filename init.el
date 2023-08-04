@@ -171,12 +171,9 @@
 	(local-set-key (kbd "q")	'kill-dired-buffers) ))
 
 (add-hook 'emacs-news-view-mode-hook (lambda()
-	(local-set-key (kbd "C-<right>") 'outline-forward-same-level)
-	(local-set-key (kbd "C-<left>")  'outline-backward-same-level)
 	(local-set-key (kbd "<right>") 'viewnext)
 	(local-set-key (kbd "<left>" ) 'viewprev)
 	(page-break-lines-mode) ))
-
 (defun viewnext ()(interactive)
 	(outline-next-heading)
 	(recenter-top-bottom))
@@ -242,14 +239,15 @@
 	(setq ps-print-footer nil) )
 
 ;; Mode Line
-(use-package smart-mode-line :config (sml/setup))
-(add-to-list 'sml/replacer-regexp-list '("^:Doc:Notes/" ":Notes:") t)
-(add-to-list 'sml/replacer-regexp-list '("^:Doc:org/" ":org:") t)
-(add-to-list 'sml/replacer-regexp-list '("^:Doc:Projects/" ":Proj:") t)
-(add-to-list 'sml/replacer-regexp-list '("^:Doc:Reference/" ":Ref:") t)
-(add-to-list 'sml/replacer-regexp-list '("^.*/gemini/" ":gem:") t)
+;(use-package smart-mode-line
+;:init	(setq sml/col-number-format "%2C")
+;:config (sml/setup)
+;		(add-to-list 'sml/replacer-regexp-list '("^:Doc:Notes/" ":Notes:") t)
+;		(add-to-list 'sml/replacer-regexp-list '("^:Doc:org/" ":org:") t)
+;		(add-to-list 'sml/replacer-regexp-list '("^:Doc:Projects/" ":Proj:") t)
+;		(add-to-list 'sml/replacer-regexp-list '("^:Doc:Reference/" ":Ref:") t)
+;		(add-to-list 'sml/replacer-regexp-list '("^.*/gemini/" ":gem:") t))
 
-(setq sml/col-number-format "%2C")
 (setq battery-mode-line-format "%p%% ")
 (setq display-time-24hr-format t)
 (setq display-time-default-load-average nil)
@@ -354,14 +352,14 @@
 	:init	(setq olivetti-body-width 80) )
 
 (use-package markdown-mode
-	:commands (markdown-mode gfm-mode)
 	:init	(setq markdown-command "multimarkdown")
 			(setq markdown-enable-prefix-prompts nil)
 			(setq markdown-hide-urls t)
 	:config	(add-to-list 'markdown-uri-types "gemini")
-	:mode	(("README\\.md\\'" . gfm-mode)
-			 ("\\.md\\'" . markdown-mode)
-			 ("\\.markdown\\'" . markdown-mode)) )
+	:mode	  (("README\\.md\\'" . gfm-mode)
+			  ("\\.md\\'" . markdown-mode)
+			  ("\\.markdown\\'" . markdown-mode))
+	:commands (markdown-mode gfm-mode) )
 
 (load "init/text") ; text functions
 (load "init/pdfexport") ; pdf functions
@@ -408,13 +406,13 @@
 		(local-set-key (kbd "A-<up>")   'scroll-down-command)
 		(local-set-key (kbd "A-<down>") 'scroll-up-command) ))
 	(add-hook 'eww-mode-hook (lambda ()
-		(local-set-key (kbd "A-<left>") 'eww-back-url) ))
+		(local-set-key (kbd "<left>") 'eww-back-url) ))
 	(add-hook 'help-mode-hook (lambda()
-		(local-set-key (kbd "A-<left>" ) 'help-go-back)
-		(local-set-key (kbd "A-<right>") 'help-go-forward) ))
+		(local-set-key (kbd "<left>" ) 'help-go-back)
+		(local-set-key (kbd "<right>") 'help-go-forward) ))
 	(add-hook 'Info-mode-hook (lambda()
-		(local-set-key (kbd "A-<left>" ) 'Info-history-back)
-		(local-set-key (kbd "A-<right>") 'Info-history-forward) ))
+		(local-set-key (kbd "<left>" ) 'Info-history-back)
+		(local-set-key (kbd "<right>") 'Info-history-forward) ))
 	)
 
 (when *gnu*
