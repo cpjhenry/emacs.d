@@ -2,7 +2,11 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("Daintyeco"
+(("2023-05-10 - Six years of gopher"
+ (position . 684)
+ (location . "gemini://zaibatsu.circumlunar.space/users/solderpunk/gemlog/six-years-of-gopher.gmi")
+ (handler . elpher-bookmark-jump))
+("Daintyeco"
  (position . 1)
  (location . "gemini://daintyeco.smol.pub/")
  (handler . elpher-bookmark-jump))
