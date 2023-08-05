@@ -71,6 +71,7 @@
 
 (setq backup-by-copying t)
 (setq bookmark-save-flag 1)
+(setq bookmark-sort-flag nil)
 (setq bookmark-set-fringe-mark nil)
 (setq delete-by-moving-to-trash t)
 (setq dictionary-server "dict.org")
@@ -99,11 +100,7 @@
 (setq pop-up-windows nil)
 (when (display-graphic-p)
 	(require 'windmove)	(windmove-default-keybindings 'meta) )
-
-;; tooltips
-(tooltip-mode nil)
-(setq tooltip-use-echo-area t)
-(setq x-gtk-use-system-tooltips nil)
+(tooltip-mode -1)
 
 ;; files
 (setq abbrev-file-name				(concat user-emacs-directory "etc/abbrev_defs"))
