@@ -18,3 +18,5 @@
 		  deft-use-filename-as-title t
 		  deft-markdown-mode-title-level 1
 		  ) )
+	(add-hook 'deft-mode-hook (lambda()
+		(local-set-key (kbd "C-c C-q") 'kill-current-buffer) ))

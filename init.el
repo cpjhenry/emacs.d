@@ -154,32 +154,35 @@
 
 ;; buffers
 (load "init/filesandbuffers")
-(add-hook 'help-mode-hook (lambda()
-	(local-set-key (kbd "q")	'kill-current-buffer) ))
-(add-hook 'Info-mode-hook (lambda()
-	(local-set-key (kbd "q")	'kill-current-buffer) ))
 (add-hook 'emacs-lisp-mode-hook (lambda()
 	(prettify-symbols-mode)
 	(show-paren-mode) ))
-(remove-hook
-	'file-name-at-point-functions
-	'ffap-guess-file-name-at-point)
+(add-hook 'emacs-news-view-mode-hook (lambda()
+	(local-set-key (kbd "<right>") 'viewmodenext)
+	(local-set-key (kbd "<left>" ) 'viewmodeprev)
+	(page-break-lines-mode) ))
+	(defun viewmodenext ()(interactive)
+		(outline-next-heading)
+		(recenter-top-bottom))
+	(defun viewmodeprev ()(interactive)
+		(outline-previous-heading)
+		(recenter-top-bottom))
+(add-hook 'eww-mode-hook (lambda ()
+	(local-set-key (kbd "q")	   'kill-current-buffer)
+	(local-set-key (kbd "<left>")  'eww-back-url) ))
+(add-hook 'help-mode-hook (lambda()
+	(local-set-key (kbd "q")	   'kill-current-buffer)
+	(local-set-key (kbd "<left>" ) 'help-go-back)
+	(local-set-key (kbd "<right>") 'help-go-forward) ))
+(add-hook 'Info-mode-hook (lambda()
+	(local-set-key (kbd "q")	   'kill-current-buffer)
+	(local-set-key (kbd "<left>" ) 'Info-history-back)
+	(local-set-key (kbd "<right>") 'Info-history-forward) ))
 
 (add-hook 'dired-mode-hook (lambda()
 	(local-set-key (kbd "RET")	'dired-find-alternate-file)
 	(local-set-key (kbd "^")	'dired-find-alternate-file)
 	(local-set-key (kbd "q")	'kill-dired-buffers) ))
-
-(add-hook 'emacs-news-view-mode-hook (lambda()
-	(local-set-key (kbd "<right>") 'viewmodenext)
-	(local-set-key (kbd "<left>" ) 'viewmodeprev)
-	(page-break-lines-mode) ))
-(defun viewmodenext ()(interactive)
-	(outline-next-heading)
-	(recenter-top-bottom))
-(defun viewmodeprev ()(interactive)
-	(outline-previous-heading)
-	(recenter-top-bottom))
 
 (add-hook 'ibuffer-mode-hook (lambda()
 	(local-set-key (kbd "q")	'kill-current-buffer)
@@ -191,6 +194,10 @@
 
 	(ibuffer-switch-to-saved-filter-groups "home")
 	(ibuffer-update nil t) ))
+
+(remove-hook
+	'file-name-at-point-functions
+	'ffap-guess-file-name-at-point)
 
 (defalias 'yes-or-no-p 'y-or-n-p) ; y or n is enough
 (use-package persistent-scratch
@@ -266,18 +273,18 @@
 (use-package elpher
 	:init	(setq elpher-bookmarks-file (concat user-emacs-directory "var/elpher-bookmarks"))
 	:config	(easy-menu-add-item  nil '("tools") ["Gopher" elpher t]))
+	(defun elpher:eww-browse-url (original url &optional new-window) ; eww
+		"Handle gemini links."
+		(cond ((string-match-p "\\`\\(gemini\\|gopher\\)://" url)
+		(use-package elpher) ; r
+		(elpher-go url))
+		(t (funcall original url new-window))) )
+		(advice-add 'eww-browse-url :around 'elpher:eww-browse-url)
 	(add-hook 'elpher-mode-hook (lambda ()
 		(setq-local left-margin-width 10)
 		(setq-local gnutls-verify-error nil)
-		(set-window-buffer nil (current-buffer))) )
-
-(defun elpher:eww-browse-url (original url &optional new-window) ; eww
-	"Handle gemini links."
-	(cond ((string-match-p "\\`\\(gemini\\|gopher\\)://" url)
-	(use-package elpher) ; r
-	(elpher-go url))
-	(t (funcall original url new-window))) )
-	(advice-add 'eww-browse-url :around 'elpher:eww-browse-url)
+		(set-window-buffer nil (current-buffer))
+		(local-set-key (kbd "<left>") 'elpher-back) ))
 
 (use-package google-this
 	:config (google-this-mode))
@@ -291,6 +298,32 @@
 (use-package wc-mode)
 (use-package which-key
 	:config (which-key-mode));(which-key-setup-side-window-right-bottom)
+
+
+;; Emacs Text and Markdown modes
+(add-hook 'text-mode-hook (lambda ()
+	(abbrev-mode)
+	(unless *w32* (flyspell-mode))
+	(visual-line-mode)
+	(wc-mode) ))
+(eval-after-load "flyspell" '(progn
+	(define-key flyspell-mouse-map [down-mouse-3] #'flyspell-correct-word)))
+
+(use-package olivetti
+	:init	(setq olivetti-body-width 80) )
+
+(use-package markdown-mode
+	:init	(setq markdown-command "multimarkdown")
+			(setq markdown-enable-prefix-prompts nil)
+			(setq markdown-hide-urls t)
+	:config	(add-to-list 'markdown-uri-types "gemini")
+	:mode	  (("README\\.md\\'" . gfm-mode)
+			  ("\\.md\\'" . markdown-mode)
+			  ("\\.markdown\\'" . markdown-mode))
+	:commands (markdown-mode gfm-mode) )
+
+(load "init/text") ; text functions
+(load "init/pdfexport") ; pdf functions
 
 
 ;; Org-mode
@@ -331,32 +364,6 @@
 (load "org-phscroll")	; org-table fix
 
 
-;; Emacs Text and Markdown modes
-(add-hook 'text-mode-hook (lambda ()
-	(abbrev-mode)
-	(unless *w32* (flyspell-mode))
-	(visual-line-mode)
-	(wc-mode) ))
-(eval-after-load "flyspell" '(progn
-	(define-key flyspell-mouse-map [down-mouse-3] #'flyspell-correct-word)))
-
-(use-package olivetti
-	:init	(setq olivetti-body-width 80) )
-
-(use-package markdown-mode
-	:init	(setq markdown-command "multimarkdown")
-			(setq markdown-enable-prefix-prompts nil)
-			(setq markdown-hide-urls t)
-	:config	(add-to-list 'markdown-uri-types "gemini")
-	:mode	  (("README\\.md\\'" . gfm-mode)
-			  ("\\.md\\'" . markdown-mode)
-			  ("\\.markdown\\'" . markdown-mode))
-	:commands (markdown-mode gfm-mode) )
-
-(load "init/text") ; text functions
-(load "init/pdfexport") ; pdf functions
-
-
 ;; Configure specific machines
 (when *natasha*
 	(setq browse-url-browser-function 'browse-url-generic
@@ -378,50 +385,19 @@
 
 	(load "rc/erc" 'noerror) ; irc config
 	(easy-menu-add-item  nil '("tools")	["IRC with ERC" erc t])
-	(bind-key "C-c e" 'erc)
-	)
+	(bind-key "C-c e" 'erc) )
 
 (when *mac*
-;	(load "init/deft") ; note functions (bound to <f7>)
-;	(add-hook 'deft-mode-hook (lambda()
-;		(local-set-key (kbd "C-c C-q") 'kill-current-buffer) ))
-
-;	(bind-key "<f8>" 'load-simplenote)
-;	(defun load-simplenote()(interactive)(load "init/sn"))
+;	(load "init/deft")	; note functions (bound to <f7>)
+;	(load "init/sn")	; simplenote	 (bound to <f8>)
 
 	(use-package gnugo ; Game of Go
 		:init	(setq gnugo-program "/usr/local/bin/gnugo")
-		:config	(easy-menu-add-item  nil '("tools" "games") ["Go" gnugo t]))
-
-	(add-hook 'elpher-mode-hook (lambda ()
-		(local-set-key (kbd "<left>") 'elpher-back) ))
-	(add-hook 'eww-mode-hook (lambda ()
-		(local-set-key (kbd "<left>") 'eww-back-url) ))
-	(add-hook 'help-mode-hook (lambda()
-		(local-set-key (kbd "<left>" ) 'help-go-back)
-		(local-set-key (kbd "<right>") 'help-go-forward) ))
-	(add-hook 'Info-mode-hook (lambda()
-		(local-set-key (kbd "<left>" ) 'Info-history-back)
-		(local-set-key (kbd "<right>") 'Info-history-forward) ))
-	)
+		:config	(easy-menu-add-item  nil '("tools" "games") ["Go" gnugo t])) )
 
 (when *gnu*
 	(setq browse-url-browser-function 'browse-url-generic
-		browse-url-generic-program "firefox-esr")
-
-	(add-hook 'elpher-mode-hook (lambda ()
-		(local-set-key (kbd "M-<left>") 'elpher-back)
-		(local-set-key (kbd "M-<up>")   'scroll-down-command)
-		(local-set-key (kbd "M-<down>") 'scroll-up-command) ))
-	(add-hook 'eww-mode-hook (lambda ()
-		(local-set-key (kbd "M-<left>") 'eww-back-url) ))
-	(add-hook 'help-mode-hook (lambda ()
-		(local-set-key (kbd "M-<left>" ) 'help-go-back)
-		(local-set-key (kbd "M-<right>") 'help-go-forward) ))
-	(add-hook 'Info-mode-hook (lambda ()
-		(local-set-key (kbd "M-<left>" ) 'Info-history-back)
-		(local-set-key (kbd "M-<right>") 'Info-history-forward) ))
-	)
+		browse-url-generic-program "firefox-esr") )
 
 (create-scratch-buffer)
 (message "Emacs %s." emacs-version)
