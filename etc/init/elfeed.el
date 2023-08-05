@@ -1,0 +1,11 @@
+(use-package elfeed
+	:init	(setq elfeed-db-directory (concat user-emacs-directory "var/elfeed/db/"))
+			(setq elfeed-enclosure-default-dir (concat user-emacs-directory "var/elfeed/enclosures/"))
+			(setq elfeed-score-score-file (concat user-emacs-directory "etc/elfeed/score/score.el"))
+			(setq elfeed-use-curl t)
+	:config	(load "rc/elfeed" 'noerror)
+			(eval-after-load 'elfeed `(make-directory ,(concat user-emacs-directory "var/elfeed/") t)))
+	(defun elfeed-mark-all-as-read () (interactive)
+		(mark-whole-buffer)
+		(elfeed-search-untag-all-unread))
+		(define-key elfeed-search-mode-map (kbd "R") 'elfeed-mark-all-as-read)

@@ -180,18 +180,15 @@
 	(local-set-key (kbd "<right>") 'Info-history-forward) ))
 
 (add-hook 'dired-mode-hook (lambda()
-	(local-set-key (kbd "RET")	'dired-find-alternate-file)
-	(local-set-key (kbd "^")	'dired-find-alternate-file)
-	(local-set-key (kbd "q")	'kill-dired-buffers) ))
-
+	(local-set-key (kbd "RET")	   'dired-find-alternate-file)
+	(local-set-key (kbd "^")	   'dired-find-alternate-file)
+	(local-set-key (kbd "q")	   'kill-dired-buffers) ))
 (add-hook 'ibuffer-mode-hook (lambda()
-	(local-set-key (kbd "q")	'kill-current-buffer)
-
-	(local-set-key (kbd "<up>") 'ibuffer-previous-line)
-	(local-set-key (kbd "<down>") 'ibuffer-next-line)
+	(local-set-key (kbd "q")	   'kill-current-buffer)
+	(local-set-key (kbd "<up>")    'ibuffer-previous-line)
+	(local-set-key (kbd "<down>")  'ibuffer-next-line)
 	(local-set-key (kbd "<right>") 'ibuffer-previous-header)
-	(local-set-key (kbd "<left>") 'ibuffer-next-header)
-
+	(local-set-key (kbd "<left>")  'ibuffer-next-header)
 	(ibuffer-switch-to-saved-filter-groups "home")
 	(ibuffer-update nil t) ))
 
@@ -323,7 +320,6 @@
 	:commands (markdown-mode gfm-mode) )
 
 (load "init/text") ; text functions
-(load "init/pdfexport") ; pdf functions
 
 
 ;; Org-mode
@@ -362,6 +358,7 @@
 
 (load "init/org-mode")	; org-mode functions
 (load "org-phscroll")	; org-table fix
+(load "init/pdfexport") ; pdf functions
 
 
 ;; Configure specific machines
@@ -369,19 +366,9 @@
 	(setq browse-url-browser-function 'browse-url-generic
 		browse-url-generic-program "/Applications/Firefox.app/Contents/MacOS/firefox")
 
-	(use-package elfeed
-		:init	(setq elfeed-db-directory (concat user-emacs-directory "var/elfeed/db/"))
-				(setq elfeed-enclosure-default-dir (concat user-emacs-directory "var/elfeed/enclosures/"))
-				(setq elfeed-score-score-file (concat user-emacs-directory "etc/elfeed/score/score.el"))
-				(setq elfeed-use-curl t)
-		:config	(load "rc/elfeed" 'noerror)
-				(easy-menu-add-item  nil '("tools") ["Read web feeds" elfeed t])
-				(bind-key "C-c f" 'elfeed)
-				(eval-after-load 'elfeed `(make-directory ,(concat user-emacs-directory "var/elfeed/") t)))
-		(defun elfeed-mark-all-as-read () (interactive)
-			(mark-whole-buffer)
-			(elfeed-search-untag-all-unread))
-			(define-key elfeed-search-mode-map (kbd "R") 'elfeed-mark-all-as-read)
+	(load "init/elfeed")
+	(easy-menu-add-item  nil '("tools") ["Read web feeds" elfeed t])
+	(bind-key "C-c f" 'elfeed)
 
 	(load "rc/erc" 'noerror) ; irc config
 	(easy-menu-add-item  nil '("tools")	["IRC with ERC" erc t])
