@@ -91,6 +91,35 @@
 			(goto-char last))))
 
 
+;; https://svn.red-bean.com/repos/kfogel/trunk/.emacs
+;; VC is great, unless you're trying to do version control.
+(remove-hook 'find-file-hooks 'vc-find-file-hook)
+
+;; Sometimes I have to tweak dired. ;;
+;; (setq dired-listing-switches "-laF")
+
+;; There is absolutely no reason to use a power of two here.
+(setq kill-ring-max 512)
+
+;;; Setting modes based on filenames:
+(add-to-list 'auto-mode-alist '("\\.mnu$" . food-menu-mode))
+(add-to-list 'auto-mode-alist '("\\.pl$" . perl-mode))
+(add-to-list 'auto-mode-alist '("\\.py$" . python-mode))
+(add-to-list 'auto-mode-alist '("\\.pm$" . perl-mode))
+(add-to-list 'auto-mode-alist '("\\.cgi$" . perl-mode))
+(add-to-list 'auto-mode-alist '("\\.sgml$" . text-mode))
+(add-to-list 'auto-mode-alist '("\\.ss$" . scheme-mode))
+(add-to-list 'auto-mode-alist '("\\.s?html?\\'" . text-mode))
+(add-to-list 'auto-mode-alist '("\\.scm$" . scheme-mode))
+(add-to-list 'auto-mode-alist '("logv\\.out$" . kf-changelog-mode))
+
+;; Diff mode gives me the willies.  Yes, all of them!
+(add-to-list 'auto-mode-alist '("\\.patch$" . text-mode))
+
+;; I don't find HTML mode any more convenient than text mode
+(add-to-list 'auto-mode-alist '("\\.html$" . text-mode))
+
+
 ;; DIRED functions
 
 (defun kill-dired-buffers ()
@@ -149,7 +178,15 @@
 ;; iBuffer
 ;; https://www.emacswiki.org/emacs/IbufferMode
 
+(require 'ibuffer)
 (defalias 'list-buffers 'ibuffer) ; always use ibuffer
+(setq ibuffer-hidden-filter-groups (list "Helm" "*Internal*"))
+
+(require 'ibuf-ext)
+(add-to-list 'ibuffer-never-show-predicates "^\\*Shell Command Output\\*")
+(add-to-list 'ibuffer-never-show-predicates "^\\*tramp/")
+
+(use-package ibuffer-tramp)
 
 (setq ibuffer-saved-filter-groups (quote (("home"
    	("dired" (mode . dired-mode))
@@ -161,6 +198,7 @@
 		(name . "^\\*Calendar\\*$")
 		(name . "^diary$")
 		(name . "^\\*Org Agenda\\*")))
+;	( "tramp" (ibuffer-tramp-generate-filter-groups-by-tramp-connection))
 ;  	("perl" (mode . cperl-mode))
 ;  	("erc" (mode . erc-mode))
 ;	("gnus" (or
@@ -174,20 +212,11 @@
 ;		(name . "^\\.newsrc-dribble")))
 	))))
 
-(setq ibuffer-hidden-filter-groups (list 
-	"Helm"
-	"*Internal*"
-	"*Shell Command Output*"
-	"from-mobile.org"
-	"*tramp/" ))
-
 (defun ibuffer-advance-motion (direction)
 	(forward-line direction)
 	(beginning-of-line)
-	(if (not (get-text-property (point) 'ibuffer-filter-group-name))
-		t
-		(ibuffer-skip-properties '(ibuffer-filter-group-name)
-		direction)
+	(if (not (get-text-property (point) 'ibuffer-filter-group-name)) t
+		(ibuffer-skip-properties '(ibuffer-filter-group-name) direction)
 		nil))
 
 (defun ibuffer-previous-line (&optional arg)
@@ -198,13 +227,10 @@
 		(while (> arg 0)
 			(cl-decf arg)
 			(setq err1 (ibuffer-advance-motion -1)
-				  err2 (if (not (get-text-property (point) 'ibuffer-title)) 
-			t
+				  err2 (if (not (get-text-property (point) 'ibuffer-title)) t
 			(goto-char (point-max))
 			(beginning-of-line)
-			(ibuffer-skip-properties '(ibuffer-summary 
-			ibuffer-filter-group-name) 
-			-1)
+			(ibuffer-skip-properties '(ibuffer-summary ibuffer-filter-group-name) -1)
 			nil)))
 	(and err1 err2)))
 
@@ -216,14 +242,10 @@
 		(while (> arg 0)
 			(cl-decf arg)
 			(setq err1 (ibuffer-advance-motion 1)
-				  err2 (if (not (get-text-property (point) 'ibuffer-summary)) 
-			t
+				  err2 (if (not (get-text-property (point) 'ibuffer-summary)) t
 			(goto-char (point-min))
 			(beginning-of-line)
-			(ibuffer-skip-properties '(ibuffer-summary 
-			ibuffer-filter-group-name
-			ibuffer-title)
-			1)
+			(ibuffer-skip-properties '(ibuffer-summary ibuffer-filter-group-name ibuffer-title) 1)
 			nil)))
 	(and err1 err2)))
 
@@ -234,6 +256,23 @@
 (defun ibuffer-previous-header ()
 	(interactive)
 	(while (ibuffer-previous-line)))
+
+(defun ibuffer-ido-find-file (file &optional wildcards)
+	"Like `ido-find-file', but default to the directory of the buffer at point."
+	(interactive
+	(let ((default-directory
+		(let ((buf (ibuffer-current-buffer)))
+		(if (buffer-live-p buf)
+			(with-current-buffer buf default-directory)
+			default-directory))))
+		(list (ido-read-file-name "Find file: " default-directory) t)))
+	(find-file file wildcards))
+	(add-hook 'ibuffer-mode-hook (lambda ()
+		(define-key ibuffer-mode-map (kbd "C-x C-f") 'ibuffer-ido-find-file)) )
+
+;(add-hook 'ibuffer-hook (lambda ()
+;	(ibuffer-tramp-set-filter-groups-by-tramp-connection)
+;	(ibuffer-do-sort-by-alphabetic) ))
 
 
 ;; PRINT functions

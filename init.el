@@ -68,6 +68,7 @@
 (setq-default tab-width 4)
 (setq-default fill-column 55)
 (setq-default help-window-select t)
+(setq-default show-trailing-whitespace t)
 
 (setq backup-by-copying t)
 (setq bookmark-save-flag 1)
@@ -80,7 +81,11 @@
 (setq inhibit-default-init t)
 (setq ispell-list-command "--list") ; correct command
 (setq ispell-program-name "aspell") ; spell checker
-(setq recenter-positions '(top)) ; (top middle bottom)
+(setq ispell-silently-savep t)		; save personal list automatically
+(setq mark-ring-max most-positive-fixnum)
+(setq max-lisp-eval-depth 65536)
+(setq max-specpdl-size 65536)
+(setq recenter-positions '(top))	; (top middle bottom)
 (setq ring-bell-function 'ignore)
 (setq save-abbrevs 'silent)
 (setq sentence-end-double-space nil)
@@ -215,6 +220,14 @@
 (add-hook 'window-setup-hook		 ; Show only one active window
 	'delete-other-windows)
 
+;; IDO
+;; https://www.emacswiki.org/emacs/InteractivelyDoThings
+(require 'ido)
+(ido-mode t)
+(setq ido-enable-flex-matching t)
+(define-key (cdr ido-minor-mode-map-entry) [remap write-file] nil); turn off C-x C-w remapping
+(bind-key (kbd "C-<tab>") 'ido-switch-buffer)
+
 
 ;; print functions
 (load "init/page-dimensions")
@@ -296,6 +309,8 @@
 
 ;; Emacs Text and Markdown modes
 (add-hook 'text-mode-hook (lambda ()
+	(setq case-fold-search t)
+	(setq require-final-newline nil)
 	(abbrev-mode)
 	(unless *w32* (flyspell-mode))
 	(visual-line-mode)
@@ -311,9 +326,10 @@
 			(setq markdown-enable-prefix-prompts nil)
 			(setq markdown-hide-urls t)
 	:config	(add-to-list 'markdown-uri-types "gemini")
-	:mode	  (("README\\.md\\'" . gfm-mode)
-			  ("\\.md\\'" . markdown-mode)
-			  ("\\.markdown\\'" . markdown-mode))
+	:mode	(("README\\.md\\'" . gfm-mode)
+			("\\.md\\'" . markdown-mode)
+			("\\.markdown\\'" . markdown-mode)
+			("\\.gmi\\'" . markdown-mode))
 	:commands (markdown-mode gfm-mode) )
 
 (load "init/text") ; text functions
@@ -356,6 +372,8 @@
 (load "init/org-mode")	; org-mode functions
 (load "org-phscroll")	; org-table fix
 (load "init/pdfexport") ; pdf functions
+
+(load "init/misc" 'noerror) ; misc. functions
 
 
 ;; Configure specific machines
