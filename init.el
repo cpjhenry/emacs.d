@@ -21,8 +21,7 @@
 	(setq mac-function-modifier 'hyper) 	; Hyper
 	(setq mac-right-command-modifier 'alt)	; Alt
 	(setq mac-right-option-modifier nil)
-	(define-key key-translation-map 
-		(kbd "<C-mouse-1>") (kbd "<mouse-2>")))
+	(define-key key-translation-map (kbd "<C-mouse-1>") (kbd "<mouse-2>")))
 (when *gnu*
 	(set-frame-font "Monospace 17"))
 (when *w32*
@@ -373,7 +372,7 @@
 (load "org-phscroll")	; org-table fix
 (load "init/pdfexport") ; pdf functions
 
-(load "init/misc" 'noerror) ; misc. functions
+;(load "init/misc" 'noerror) ; misc. functions
 
 
 ;; Configure specific machines

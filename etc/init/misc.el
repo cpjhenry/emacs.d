@@ -1,21 +1,3 @@
-;; Thanks, Noah Friedman
-(defun valbits (&optional n)
-"Returns the number of binary bits required to represent n.
-If n is not specified, this is effectively the number of valbits emacs uses
-to represent ints---including the sign bit.
-
-Negative values of n will always require VALBITS bits, the number of bits
-emacs actually uses for its integer values, since the highest bit is used
-for the sign; use (abs n) to ignore the sign."
-	(interactive)
-	(or n (setq n -1))
-	(let ((b 0))
-	(while (not (zerop n))
-		(setq n (lsh n -1))
-		(setq b (1+ b)))
-	b))
-
-
 ;;; On-demand help panels for obscure topics. ;;;
 
 (defun kf-display-something-maybe-big (contents &optional title)
@@ -2990,6 +2972,7 @@ With two prefix args, insert an x'ed checkbox."
   "Maybe I should just learn Emacs input systems better?"
   (interactive)
   (insert ?ß)) ; 223
+
 (defun kf-ẞ ()
   "Maybe I should just learn Emacs input systems ẞetter?"
   (interactive)
