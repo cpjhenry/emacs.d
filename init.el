@@ -210,7 +210,8 @@
 
 ;; remove unneeded messages and buffers
 (setq inhibit-startup-message t) 	; 'About Emacs'
-(setq inhibit-startup-echo-area-message (user-login-name))
+(put 'inhibit-startup-echo-area-message 'saved-value
+     (setq inhibit-startup-echo-area-message (user-login-name)))
 (setq initial-scratch-message nil) 	; Makes *scratch* empty
 (add-hook 'minibuffer-exit-hook 	; Removes *Completions* buffer when done
 	(lambda () (let ((buffer "*Completions*")) (and (get-buffer buffer) (kill-buffer buffer)))))
