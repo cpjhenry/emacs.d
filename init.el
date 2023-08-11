@@ -10,8 +10,8 @@
 (defconst *gnu* (eq system-type 'gnu/linux))
 (defconst *w32* (eq system-type 'windows-nt))
 
-(defconst *bullwinkle* (string-equal (system-name) "bullwinkle.local"))
-(defconst *natasha* (string-equal (system-name) "natasha.local"))
+(defconst *bullwinkle* (string-equal (system-name) "bullwinkle"))
+(defconst *natasha* (string-equal (system-name) "natasha"))
 
 (when *mac*
 	(set-frame-font "Inconsolata 21")
@@ -73,9 +73,11 @@
 (setq bookmark-save-flag 1)
 (setq bookmark-sort-flag nil)
 (setq bookmark-set-fringe-mark nil)
+(setq comp-async-report-warnings-errors 'silent)
 (setq delete-by-moving-to-trash t)
 (setq dictionary-server "dict.org")
 (setq flyspell-issue-message-flag nil)
+(setq help-clean-buttons t)
 (setq ibuffer-expert t)
 (setq inhibit-default-init t)
 (setq ispell-list-command "--list") ; correct command
@@ -83,7 +85,6 @@
 (setq ispell-silently-savep t)		; save personal list automatically
 (setq mark-ring-max most-positive-fixnum)
 (setq max-lisp-eval-depth 65536)
-(setq max-specpdl-size 65536)
 (setq recenter-positions '(top))	; (top middle bottom)
 (setq ring-bell-function 'ignore)
 (setq save-abbrevs 'silent)
@@ -209,7 +210,7 @@
 
 ;; remove unneeded messages and buffers
 (setq inhibit-startup-message t) 	; 'About Emacs'
-(setq inhibit-startup-echo-area-message t)
+(setq inhibit-startup-echo-area-message (user-login-name))
 (setq initial-scratch-message nil) 	; Makes *scratch* empty
 (add-hook 'minibuffer-exit-hook 	; Removes *Completions* buffer when done
 	(lambda () (let ((buffer "*Completions*")) (and (get-buffer buffer) (kill-buffer buffer)))))
@@ -256,6 +257,7 @@
 (setq battery-mode-line-format "%p%% ")
 (setq display-time-24hr-format t)
 (setq display-time-default-load-average nil)
+(setq mode-line-compact t)
 (column-number-mode)
 (display-battery-mode)
 (display-time-mode)
