@@ -98,9 +98,6 @@
 ;; Sometimes I have to tweak dired. ;;
 ;; (setq dired-listing-switches "-laF")
 
-;; There is absolutely no reason to use a power of two here.
-(setq kill-ring-max 512)
-
 ;;; Setting modes based on filenames:
 (add-to-list 'auto-mode-alist '("\\.mnu$" . food-menu-mode))
 (add-to-list 'auto-mode-alist '("\\.pl$" . perl-mode))

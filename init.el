@@ -69,7 +69,6 @@
 (setq-default help-window-select t)
 (setq-default show-trailing-whitespace t)
 
-(setq backup-by-copying t)
 (setq bookmark-save-flag 1)
 (setq bookmark-sort-flag nil)
 (setq bookmark-set-fringe-mark nil)
@@ -83,6 +82,7 @@
 (setq ispell-list-command "--list") ; correct command
 (setq ispell-program-name "aspell") ; spell checker
 (setq ispell-silently-savep t)		; save personal list automatically
+(setq kill-ring-max 512)
 (setq mark-ring-max most-positive-fixnum)
 (setq max-lisp-eval-depth 65536)
 (setq recenter-positions '(top))	; (top middle bottom)
@@ -103,8 +103,7 @@
 (setq use-file-dialog nil)
 (setq use-short-answers t)
 (setq pop-up-windows nil)
-(when (display-graphic-p)
-	(require 'windmove)	(windmove-default-keybindings 'meta) )
+(when (display-graphic-p) (require 'windmove)(windmove-default-keybindings 'meta) )
 (tooltip-mode -1)
 
 ;; files
@@ -125,8 +124,9 @@
 (load custom-file 'noerror)
 
 ;; backups
-(setq make-backup-files nil)
 (setq auto-save-default nil)
+(setq backup-by-copying t)
+(setq make-backup-files nil)
 
 (unless *w32* (require 'backup-each-save)
 	(add-hook 'after-save-hook 'backup-each-save))
@@ -265,17 +265,10 @@
 
 ;; Startup time
 (defun efs/display-startup-time ()
-	(message "Emacs loaded in %s with %d garbage collections."
+	(message "Emacs %s loaded in %s with %d garbage collections." emacs-version
 	(format "%.2f seconds" (float-time (time-subtract after-init-time before-init-time)))
 		gcs-done))
 (add-hook 'emacs-startup-hook 'efs/display-startup-time)
-
-;; Today's cookie
-(when *mac*
-	(setq cookie-file "/usr/local/share/games/fortunes/fortunes")
-	(setq fortune-dir "/usr/local/share/games/fortunes/")
-	(defun todayscookie () (message (cookie cookie-file)))
-	(add-hook 'window-setup-hook 'todayscookie))
 
 
 ;; Initialize packages
@@ -383,13 +376,7 @@
 	(setq browse-url-browser-function 'browse-url-generic
 		browse-url-generic-program "/Applications/Firefox.app/Contents/MacOS/firefox")
 
-	(load "init/elfeed")
-	(easy-menu-add-item  nil '("tools") ["Read web feeds" elfeed t])
-	(bind-key "C-c f" 'elfeed)
-
-	(load "rc/erc" 'noerror) ; irc config
-	(easy-menu-add-item  nil '("tools")	["IRC with ERC" erc t])
-	(bind-key "C-c e" 'erc) )
+	(load "init/elfeed") )
 
 (when *mac*
 ;	(load "init/deft")	; note functions (bound to <f7>)
@@ -404,7 +391,6 @@
 		browse-url-generic-program "firefox-esr") )
 
 (create-scratch-buffer)
-(message "Emacs %s." emacs-version)
 
 
 ;; arrow keys (Darwin)

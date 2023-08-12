@@ -10,3 +10,5 @@
 		(mark-whole-buffer)
 		(elfeed-search-untag-all-unread))
 		(define-key elfeed-search-mode-map (kbd "R") 'elfeed-mark-all-as-read)
+	(easy-menu-add-item  nil '("tools") ["Read web feeds" elfeed t])
+	(bind-key "C-c f" 'elfeed)
