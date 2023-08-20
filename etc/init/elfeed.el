@@ -4,7 +4,7 @@
 			(setq elfeed-score-score-file (concat user-emacs-directory "etc/elfeed/score/score.el"))
 			(setq elfeed-sort-order 'ascending)
 			(setq elfeed-use-curl t)
-	:config	(load "rc/elfeed" 'noerror)
+	:config	(load "rc/elfeed" 'noerror 'nomessage)
 			(eval-after-load 'elfeed `(make-directory ,(concat user-emacs-directory "var/elfeed/") t)) )
 	(defun elfeed-mark-all-as-read () (interactive)
 		(mark-whole-buffer)

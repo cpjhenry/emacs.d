@@ -180,6 +180,7 @@
 (setq ibuffer-hidden-filter-groups (list "Helm" "*Internal*"))
 
 (require 'ibuf-ext)
+(add-to-list 'ibuffer-never-show-predicates "^\\*Messages\\*")
 (add-to-list 'ibuffer-never-show-predicates "^\\*Shell Command Output\\*")
 (add-to-list 'ibuffer-never-show-predicates "^\\*tramp/")
 

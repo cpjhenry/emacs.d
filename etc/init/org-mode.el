@@ -1,4 +1,5 @@
 ;; org-mode
+(load "org-phscroll" 'noerror 'nomessage) ; org-table fix
 
 (setq org-todo-keywords '((sequence "TODO" "DONE")))
 (setq org-todo-keyword-faces '(("INPROGRESS" . (:foreground "blue" :weight bold)))) ; add inprogress keyword

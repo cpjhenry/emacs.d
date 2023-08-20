@@ -364,10 +364,8 @@
 (use-package org-chef :ensure t)
 (add-hook 'org-mode-hook 'org-indent-mode)
 
-(load "init/org-mode")	; org-mode functions
-(load "org-phscroll")	; org-table fix
-(load "init/pdfexport") ; pdf functions
-
+(load "init/org-mode")		; org-mode functions
+(load "init/pdfexport") 	; pdf functions
 ;(load "init/misc" 'noerror) ; misc. functions
 
 
@@ -375,13 +373,11 @@
 (when *natasha*
 	(setq browse-url-browser-function 'browse-url-generic
 		browse-url-generic-program "/Applications/Firefox.app/Contents/MacOS/firefox")
-
 	(load "init/elfeed") )
 
 (when *mac*
 ;	(load "init/deft")	; note functions (bound to <f7>)
 ;	(load "init/sn")	; simplenote	 (bound to <f8>)
-
 	(use-package gnugo ; Game of Go
 		:init	(setq gnugo-program "/usr/local/bin/gnugo")
 		:config	(easy-menu-add-item  nil '("tools" "games") ["Go" gnugo t])) )
@@ -389,8 +385,6 @@
 (when *gnu*
 	(setq browse-url-browser-function 'browse-url-generic
 		browse-url-generic-program "firefox-esr") )
-
-(create-scratch-buffer)
 
 
 ;; arrow keys (Darwin)
@@ -536,3 +530,6 @@
 (when *w32*
 	(bind-key "C-c x o"	'office.org)
 	(defun office.org ()(interactive)(find-file "c:/Users/henrypa/OneDrive - City of Ottawa/!.org")) )
+
+;; launch
+(create-scratch-buffer)
