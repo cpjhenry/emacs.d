@@ -1,7 +1,7 @@
 ;;-*-coding: utf-8;-*-
 (define-abbrev-table 'global-abbrev-table
   '(
-    ("spd" "Salutem plurimam dicit." nil :count 1)
-    ("svbeev" "Si vales, bene est; ego valeo." nil :count 2)
+    ("spd" "Salutem plurimam dicit." nil :count 2)
+    ("svb" "Si vales, bene est; ego valeo." nil :count 5)
    ))
 

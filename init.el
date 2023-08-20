@@ -1,10 +1,11 @@
-;; Emacs configuration / pjh
+;; Emacs configuration / cpjh
 
 ;; Initialize terminal
-(when (display-graphic-p)(tool-bar-mode -1))
-(toggle-frame-maximized)
-(scroll-bar-mode -1)
 (electric-indent-mode -1)
+(scroll-bar-mode -1)
+(when (display-graphic-p)(tool-bar-mode -1))
+(tooltip-mode -1)
+(toggle-frame-maximized)
 
 (defconst *mac* (eq system-type 'darwin))
 (defconst *gnu* (eq system-type 'gnu/linux))
@@ -26,6 +27,7 @@
 	(set-frame-font "Monospace 17"))
 (when *w32*
 	(set-frame-font "Consolas 12")
+	(setq w32-apps-modifier 'hyper)
 	(setq w32-lwindow-modifier 'super)
 	(setq w32-pass-lwindow-to-system nil)
 	(message "Running on Windows."))
@@ -69,6 +71,14 @@
 (setq-default help-window-select t)
 (setq-default show-trailing-whitespace t)
 
+(setq frame-title-format nil)
+(setq ns-pop-up-frames nil)
+(setq ns-use-native-fullscreen t)
+(setq use-dialog-box nil)
+(setq use-file-dialog nil)
+(setq pop-up-windows nil)
+
+(setq ad-redefinition-action 'accept)
 (setq bookmark-save-flag 1)
 (setq bookmark-sort-flag nil)
 (setq bookmark-set-fringe-mark nil)
@@ -93,18 +103,8 @@
 (setq tramp-default-method "ssh")
 (setq tramp-syntax 'simplified)		; C-x C-f /remotehost:filename
 (setq trash-directory "~/.Trash")
-(setq visual-line-fringe-indicators '(nil right-curly-arrow))
-
-;; layout
-(setq frame-title-format nil)
-(setq ns-pop-up-frames nil)
-(setq ns-use-native-fullscreen t)
-(setq use-dialog-box nil)
-(setq use-file-dialog nil)
 (setq use-short-answers t)
-(setq pop-up-windows nil)
-(when (display-graphic-p) (require 'windmove)(windmove-default-keybindings 'meta) )
-(tooltip-mode -1)
+(setq visual-line-fringe-indicators '(nil right-curly-arrow))
 
 ;; files
 (setq abbrev-file-name				(concat user-emacs-directory "etc/abbrev_defs"))
@@ -272,6 +272,7 @@
 
 
 ;; Initialize packages
+(use-package diminish)
 (use-package elpher
 	:init	(setq elpher-bookmarks-file (concat user-emacs-directory "var/elpher-bookmarks"))
 	:config	(easy-menu-add-item  nil '("tools") ["Gopher" elpher t]))
@@ -289,17 +290,20 @@
 		(local-set-key (kbd "<left>") 'elpher-back) ))
 
 (use-package google-this
-	:config (google-this-mode))
+	:config (google-this-mode)
+	:diminish)
 (use-package lorem-ipsum)
 (use-package page-break-lines ; ^L
 	:init	(setq page-break-lines-max-width 80)
-	:config	(global-page-break-lines-mode))
+	:config	(global-page-break-lines-mode)
+	:diminish)
 (use-package smooth-scrolling
 	:config (smooth-scrolling-mode))
 (use-package ssh)
 (use-package wc-mode)
 (use-package which-key
-	:config (which-key-mode));(which-key-setup-side-window-right-bottom)
+	:config (which-key-mode)
+	:diminish);(which-key-setup-side-window-right-bottom)
 
 
 ;; Emacs Text and Markdown modes
@@ -320,6 +324,7 @@
 	:init	(setq markdown-command "multimarkdown")
 			(setq markdown-enable-prefix-prompts nil)
 			(setq markdown-hide-urls t)
+			(setq markdown-unordered-list-item-prefix "* ")
 	:config	(add-to-list 'markdown-uri-types "gemini")
 	:mode	(("README\\.md\\'" . gfm-mode)
 			("\\.md\\'" . markdown-mode)
@@ -451,6 +456,13 @@
 (global-unset-key (kbd "C-<f10>"))
 (global-unset-key (kbd "S-<f10>")) ))
 
+;; window navigation
+(when (fboundp 'windmove-default-keybindings)
+	(global-set-key (kbd "ESC <up>")	'windmove-up)
+	(global-set-key (kbd "ESC <down>")	'windmove-down)
+	(global-set-key (kbd "ESC <right>")	'windmove-right)
+	(global-set-key (kbd "ESC <left>")	'windmove-left) )
+
 
 ;; Diabled keys
 (put 'dired-find-alternate-file 'disabled nil)
@@ -504,6 +516,7 @@
 (defalias 'ds 'desktop-save)
 (defalias 'dsm 'desktop-save-mode)
 (defalias 'er 'eval-region)
+(defalias 'la 'list-abbrevs)
 (defalias 'lcd 'list-colors-display)
 (defalias 'lh 'list-hols)
 (defalias 'li 'lorem-ipsum-insert-paragraphs)
@@ -532,4 +545,7 @@
 	(defun office.org ()(interactive)(find-file "c:/Users/henrypa/OneDrive - City of Ottawa/!.org")) )
 
 ;; launch
+(diminish 'abbrev-mode)
+(diminish 'eldoc-mode)
+(diminish 'visual-line-mode "VLM")
 (create-scratch-buffer)
