@@ -31,6 +31,7 @@
 	(setq w32-lwindow-modifier 'super)
 	(setq w32-pass-lwindow-to-system nil)
 	(message "Running on Windows."))
+
 (set-background-color "Ivory")
 
 (setq user-mail-address "cpjhenry@gmail.com")
@@ -69,7 +70,7 @@
 (setq-default tab-width 4)
 (setq-default fill-column 55)
 (setq-default help-window-select t)
-(setq-default show-trailing-whitespace t)
+(setq-default indicate-empty-lines t)
 
 (setq frame-title-format nil)
 (setq ns-pop-up-frames nil)
@@ -132,30 +133,13 @@
 	(add-hook 'after-save-hook 'backup-each-save))
 
 
-;; calendar
-(load "init/calendar")
-(setq diary-file "~/Documents/diary")
-(setq diary-list-includes-blanks t)
-(setq diary-show-holidays-flag nil)
-(add-hook 'diary-list-entries-hook 'diary-sort-entries t)
-(add-hook 'diary-mode-hook (lambda()
-	(local-set-key (kbd "C-c C-q") 'kill-current-buffer) ))
-(add-hook 'diary-fancy-display-mode-hook (lambda()
-	(local-set-key (kbd "q")	'kill-current-buffer) ))
-(add-hook 'special-mode-hook (lambda()
-	(local-set-key (kbd "q")	'kill-current-buffer) ))
-(add-hook 'calendar-mode-hook (lambda()
-	(local-set-key (kbd "q")	(lambda()(interactive)(calendar-exit 'kill))) ))
-(advice-add 'calendar-exit :before #'my/save-diary-before-calendar-exit)
-
-(setq calendar-date-style 'iso)
-(setq calendar-mark-holidays-flag t)
-(setq calendar-view-holidays-initially-flag t)
-(setq calendar-mark-diary-entries-flag t)
-
-
 ;; buffers
 (load "init/filesandbuffers")
+(add-hook 'before-save-hook 'time-stamp)
+(add-hook 'dired-mode-hook (lambda()
+	(local-set-key (kbd "q")	   'kill-dired-buffers)
+	(local-set-key (kbd "RET")	   'dired-find-alternate-file)
+	(local-set-key (kbd "^")	   'dired-find-alternate-file) ))
 (add-hook 'emacs-lisp-mode-hook (lambda()
 	(prettify-symbols-mode)
 	(show-paren-mode) ))
@@ -176,15 +160,6 @@
 	(local-set-key (kbd "q")	   'kill-current-buffer)
 	(local-set-key (kbd "<left>" ) 'help-go-back)
 	(local-set-key (kbd "<right>") 'help-go-forward) ))
-(add-hook 'Info-mode-hook (lambda()
-	(local-set-key (kbd "q")	   'kill-current-buffer)
-	(local-set-key (kbd "<left>" ) 'Info-history-back)
-	(local-set-key (kbd "<right>") 'Info-history-forward) ))
-
-(add-hook 'dired-mode-hook (lambda()
-	(local-set-key (kbd "RET")	   'dired-find-alternate-file)
-	(local-set-key (kbd "^")	   'dired-find-alternate-file)
-	(local-set-key (kbd "q")	   'kill-dired-buffers) ))
 (add-hook 'ibuffer-mode-hook (lambda()
 	(local-set-key (kbd "q")	   'kill-current-buffer)
 	(local-set-key (kbd "<up>")    'ibuffer-previous-line)
@@ -193,6 +168,10 @@
 	(local-set-key (kbd "<left>")  'ibuffer-next-header)
 	(ibuffer-switch-to-saved-filter-groups "home")
 	(ibuffer-update nil t) ))
+(add-hook 'Info-mode-hook (lambda()
+	(local-set-key (kbd "q")	   'kill-current-buffer)
+	(local-set-key (kbd "<left>" ) 'Info-history-back)
+	(local-set-key (kbd "<right>") 'Info-history-forward) ))
 
 (remove-hook
 	'file-name-at-point-functions
@@ -230,6 +209,28 @@
 (bind-key (kbd "C-<tab>") 'ido-switch-buffer)
 
 
+;; calendar
+(load "init/calendar")
+(setq diary-file "~/Documents/diary")
+(setq diary-list-includes-blanks t)
+(setq diary-show-holidays-flag nil)
+(add-hook 'diary-list-entries-hook 'diary-sort-entries t)
+(add-hook 'diary-mode-hook (lambda()
+	(local-set-key (kbd "C-c C-q") 'kill-current-buffer) ))
+(add-hook 'diary-fancy-display-mode-hook (lambda()
+	(local-set-key (kbd "q")	'kill-current-buffer) ))
+(add-hook 'special-mode-hook (lambda()
+	(local-set-key (kbd "q")	'kill-current-buffer) ))
+(add-hook 'calendar-mode-hook (lambda()
+	(local-set-key (kbd "q")	(lambda()(interactive)(calendar-exit 'kill))) ))
+(advice-add 'calendar-exit :before #'my/save-diary-before-calendar-exit)
+
+(setq calendar-date-style 'iso)
+(setq calendar-mark-holidays-flag t)
+(setq calendar-view-holidays-initially-flag t)
+(setq calendar-mark-diary-entries-flag t)
+
+
 ;; print functions
 (load "init/page-dimensions")
 (easy-menu-add-item  nil '("file" "print") ["Enscript" spool-to-enscript t])
@@ -261,11 +262,11 @@
 (setq mode-line-compact t)
 (column-number-mode)
 (display-battery-mode)
-(display-time-mode)
+(display-time-mode -1)
 
 ;; Startup time
 (defun efs/display-startup-time ()
-	(message "Emacs %s loaded in %s with %d garbage collections." emacs-version
+	(message "GNU Emacs %s loaded in %s with %d garbage collections." emacs-version
 	(format "%.2f seconds" (float-time (time-subtract after-init-time before-init-time)))
 		gcs-done))
 (add-hook 'emacs-startup-hook 'efs/display-startup-time)
@@ -303,13 +304,14 @@
 (use-package wc-mode)
 (use-package which-key
 	:config (which-key-mode)
-	:diminish);(which-key-setup-side-window-right-bottom)
+	:diminish)
 
 
 ;; Emacs Text and Markdown modes
 (add-hook 'text-mode-hook (lambda ()
 	(setq case-fold-search t)
 	(setq require-final-newline nil)
+	(setq show-trailing-whitespace t)
 	(abbrev-mode)
 	(unless *w32* (flyspell-mode))
 	(visual-line-mode)
@@ -484,6 +486,7 @@
 (bind-key "C-c b n" 'new-empty-buffer)
 (bind-key "C-c b s" 'create-scratch-buffer)
 
+(bind-key "C-c d SPC" 'display-current-time)
 (bind-key "C-c d c"	'insert-date)
 (bind-key "C-c d i"	'insert-iso-date)
 
@@ -535,6 +538,7 @@
 (defalias 'tm 'text-mode)
 (defalias 'ssm 'shell-script-mode)
 (defalias 'vlm 'visual-line-mode)
+(defalias 'wm 'whitespace-mode)
 
 ;; Work-specific
 (when *natasha*

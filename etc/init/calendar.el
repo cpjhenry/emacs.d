@@ -58,3 +58,5 @@
     	(or (not diary-buffer)
 			(not (buffer-modified-p diary-buffer))
 			(with-current-buffer diary-buffer (save-buffer)))))
+
+(defun display-current-time () (interactive) (message (format-time-string "%Y-%m-%d %H:%M:%S")))
