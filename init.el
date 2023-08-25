@@ -302,6 +302,7 @@
 (use-package smooth-scrolling
 	:config (smooth-scrolling-mode))
 (use-package ssh)
+(use-package visible-mark)
 (use-package wc-mode)
 (use-package which-key
 	:config (which-key-mode)
