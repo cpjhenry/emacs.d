@@ -19,7 +19,7 @@
 	; Mac command key is Super
 	; Mac option  key is Meta
 	; Mac control key is Control
-	(setq mac-function-modifier 'hyper) 	; Hyper
+	(setq mac-function-modifier 'hyper)		; Hyper
 	(setq mac-right-command-modifier 'alt)	; Alt
 	(setq mac-right-option-modifier nil)
 	(define-key key-translation-map (kbd "<C-mouse-1>") (kbd "<mouse-2>")))
@@ -113,7 +113,7 @@
 (setq bookmark-default-file			(concat user-emacs-directory "etc/bookmarks"))
 (setq eshell-aliases-file			(concat user-emacs-directory "etc/eshell/aliases"))
 (setq eshell-directory-name			(concat user-emacs-directory "var/eshell/"))
-(setq eww-bookmarks-directory 		(concat user-emacs-directory "etc/"))
+(setq eww-bookmarks-directory		(concat user-emacs-directory "etc/"))
 (setq request-storage-directory		(concat user-emacs-directory "var/request/storage/"))
 (setq tramp-auto-save-directory		(concat user-emacs-directory "var/tramp/auto-save/"))
 (setq tramp-persistency-file-name	(concat user-emacs-directory "var/tramp/persistency"))
@@ -188,11 +188,11 @@
 (easy-menu-add-item  nil '("Buffers") ["Decrease text size" text-scale-decrease])
 
 ;; remove unneeded messages and buffers
-(setq inhibit-startup-message t) 	; 'About Emacs'
+(setq inhibit-startup-message t)	; 'About Emacs'
 (put 'inhibit-startup-echo-area-message 'saved-value
-     (setq inhibit-startup-echo-area-message (user-login-name)))
-(setq initial-scratch-message nil) 	; Makes *scratch* empty
-(add-hook 'minibuffer-exit-hook 	; Removes *Completions* buffer when done
+	(setq inhibit-startup-echo-area-message (user-login-name)))
+(setq initial-scratch-message nil)	; Makes *scratch* empty
+(add-hook 'minibuffer-exit-hook		; Removes *Completions* buffer when done
 	(lambda () (let ((buffer "*Completions*")) (and (get-buffer buffer) (kill-buffer buffer)))))
 
 ;; opening multiple files
@@ -233,8 +233,8 @@
 
 ;; print functions
 (load "init/page-dimensions")
-(easy-menu-add-item  nil '("file" "print") ["Enscript" spool-to-enscript t])
-(easy-menu-add-item  nil '("file" "print") ["Enscript (region)" spool-to-enscript-region t])
+(easy-menu-add-item nil '("file" "print") ["Enscript" spool-to-enscript t])
+(easy-menu-add-item nil '("file" "print") ["Enscript (region)" spool-to-enscript-region t])
 (define-key menu-bar-print-menu [print-buffer] nil)
 (define-key menu-bar-print-menu [print-region] nil)
 (define-key menu-bar-print-menu [ps-print-buffer] nil)
@@ -274,6 +274,7 @@
 
 ;; Initialize packages
 (use-package diminish)
+
 (use-package elpher
 	:init	(setq elpher-bookmarks-file (concat user-emacs-directory "var/elpher-bookmarks"))
 	:config	(easy-menu-add-item  nil '("tools") ["Gopher" elpher t]))
@@ -343,7 +344,7 @@
 (setq org-agenda-files (list (concat org-directory "daily.org")))
 (setq org-default-notes-file (concat org-directory "notes.org"))
 
-(setq org-startup-folded 'content)		; folded children content all
+(setq org-startup-folded 'content)			; folded children content all
 (setq org-catch-invisible-edits 'smart)
 (setq org-ctrl-k-protect-subtree t)
 (setq org-ellipsis "…")
@@ -351,7 +352,7 @@
 (setq org-export-preserve-breaks t)
 (setq org-export-with-toc nil)
 (setq org-footnote-auto-adjust t)
-(setq org-log-done t) 					; 'CLOSED' logging
+(setq org-log-done t)						; 'CLOSED' logging
 (setq org-log-state-notes-into-drawer nil)
 (setq org-log-repeat nil)
 (setq org-special-ctrl-a/e t)
@@ -371,9 +372,9 @@
 (use-package org-chef :ensure t)
 (add-hook 'org-mode-hook 'org-indent-mode)
 
-(load "init/org-mode")		; org-mode functions
-(load "init/pdfexport") 	; pdf functions
-;(load "init/misc" 'noerror) ; misc. functions
+(load "init/org-mode")			; org-mode functions
+(load "init/pdfexport")			; pdf functions
+;(load "init/misc" 'noerror)	; misc. functions
 
 
 ;; Configure specific machines
@@ -392,6 +393,12 @@
 (when *gnu*
 	(setq browse-url-browser-function 'browse-url-generic
 		browse-url-generic-program "firefox-esr") )
+
+
+;; Diminish modes
+(diminish 'abbrev-mode)
+(diminish 'eldoc-mode)
+(diminish 'visual-line-mode "VLM")
 
 
 ;; arrow keys (Darwin)
@@ -434,7 +441,7 @@
 (global-set-key (kbd "C-M-r")	'isearch-backward)
 
 (global-set-key (kbd "<f12>")	'list-buffers)
-(global-set-key (kbd "TAB")  	'self-insert-command)
+(global-set-key (kbd "TAB")		'self-insert-command)
 
 (global-set-key (kbd "A-<return>")(kbd "M-<return>"))
 
@@ -503,12 +510,12 @@
 (bind-key "C-c x b"	'flush-blank-lines)
 (bind-key "C-c x f"	'toggle-fill-column)
 (bind-key "C-c x i"	'display-fill-column-indicator-mode)
-(bind-key "C-c x n" 'number-paragraphs)
+(bind-key "C-c x n"	'number-paragraphs)
 (bind-key "C-c x q"	'replace-smart-quotes)
-(bind-key "C-c x w" 'delete-whitespace-rectangle)
+(bind-key "C-c x w"	'delete-whitespace-rectangle)
 
 (when *mac*	(bind-key "C-c x d"	'daily.org)
-			(defun daily.org () (interactive)(find-file "~/Documents/org/daily.org")) )
+			(defun daily.org () (interactive)(find-file "~/Documents/org/daily.org")))
 
 
 ;; Aliases
@@ -549,7 +556,4 @@
 	(defun office.org ()(interactive)(find-file "c:/Users/henrypa/OneDrive - City of Ottawa/!.org")) )
 
 ;; launch
-(diminish 'abbrev-mode)
-(diminish 'eldoc-mode)
-(diminish 'visual-line-mode "VLM")
 (create-scratch-buffer)
