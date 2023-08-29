@@ -28,6 +28,7 @@ in a buffer named BUF-NAME using `display-buffer'."
      (when (or (not (boundp ',fn-alias)) (not (eq nil ,fn-alias)))
        (defalias ',fn-alias ',txt-sym))))
 
+
 (defconst kf-ascii
   "
        Decimal - Character
@@ -88,7 +89,11 @@ in a buffer named BUF-NAME using `display-buffer'."
        |170  x |171  y |172  z |173  { |174  | |175  } |176  ~ |177 DEL|
        "
   "The ASCII character tables.")
+(kf-gen-displayer kf-ascii
+                  "Display the ASCII character table in its own buffer."
+                  "*ASCII*")
 
+
 (defconst kf-datetime-formats
   "See:
 
@@ -173,7 +178,11 @@ in a buffer named BUF-NAME using `display-buffer'."
    %%     a '%' character, of course
 "
   "Date and time formats for various programming languages.")
+(kf-gen-displayer kf-datetime-formats
+                  "Display date/time format codes in their own buffer"
+                  "*Date / Time Formats*")
 
+
 (defconst kf-radio-alphabet
    "                A - Alpha                  N - November
                 B - Bravo                  O - Oscar
@@ -189,7 +198,11 @@ in a buffer named BUF-NAME using `display-buffer'."
                 L - Lima                   Y - Yankee
                 M - Mike                   Z - Zulu"
    "Wear aviator goggles when confirming airline reservation numbers.")
+(kf-gen-displayer kf-radio-alphabet
+                  "Display the radio alphabet in its own buffer."
+                  "*RADIO ALPHABET*")
 
+
 (defconst kf-stellar-statistics
   "
    The Sun:
@@ -241,169 +254,11 @@ in a buffer named BUF-NAME using `display-buffer'."
    ---------------------------------------------------------------------
 "
   "Stats on the Sun, planets and selected asteroids.")
+(kf-gen-displayer kf-stellar-statistics
+                  "Display some statistics about the solar system."
+                  "*Solar System*")
 
-(defconst kf-irc-suckitude
-  "
-Do this to steal yourself back:
--------------------------------
-
-Some combination of these might work, depending on phase of moon:
-
-  /msg nickserv release kfogel ********
-  /msg nickserv identify kfogel ********
-  /msg nickserv regain kfogel
-
-You probably don't need these next two, but just in case:
-
-  /msg nickserv ghost kfogel_ ********
-  /nick kfogel
-
-# To change your password (while logged in)
-
-  /msg nickserv set password NEWPASSWORD
-
-# Before talking to ChanServ, do this so its responses show up in the
-# right window (XChat bug).
-
-  /query ChanServ
-
-# To get channel operator status:
-
-  /msg ChanServ op #questioncopyright jrandom
-
-# To permanently auto-op someone for a channel:
-
-  /msg ChanServ flags #openitp jrandom +O
-"
-  "IRC is the easiest interface ever.")
-
-(defconst kf-mariadb-help
-  "
-MariaDB (MySQL) tips:
----------------------
-
-grant select on dbname.* to dbuser@localhost identified by 'RO_PASSWORD';
-grant all on dbname.* to dbuser@localhost identified by 'RW_PASSWORD';
-
-DUMP:
-  mysqldump -u dbuser --default-character-set=utf8 dbname > dbname-dump.sql
-  flush privileges
-
-SQL SYNTAX I CAN NEVER REMEMBER OFF THE TOP OF MY HEAD:
-  update henryrec set title = 'Nabucco de Verdi: Va, pensiero' \
-    where title like '%Nabucco de Verdi%';
-  select COUNT(*) from henryrec where foo = 'bar';
-  select COUNT(DISTINCT) from henryrec where foo = 'bar';
-  select COUNT(DISTINCT live_studio) from henryrec;
-  select DISTINCT live_studio from henryrec;
-
-LOAD:
-  mysql -u dbuser -p dbname < dbname-dump.sql
-
-FANCY:
-  update wp_options set option_value = replace(option_value, 'http://stage.civiccommons.org', 'http://civiccommons.org') where option_name = 'home' or option_name = 'siteurl';
-  update wp_posts set guid = replace(guid, 'http://stage.civiccommons.org','http://civiccommons.org');
-  update wp_posts set post_content = replace(post_content, 'http://stage.civiccommons.org', 'http://civiccommons.org');
-
-RESET ROOT PASSWORD:
-
-  root# systemctl stop mariadb
-  root# mysqld_safe --skip-grant-tables &
-  root# mysql -u root
-  MariaDB [(none)]> use mysql;
-  MariaDB [(mysql)]> update user SET PASSWORD=PASSWORD(\"*********\") WHERE USER='root';
-  MariaDB [(mysql)]> flush privileges;
-  MariaDB [(mysql)]> exit
-  root# systemctl stop mariadb
-  root# systemctl start mariadb
-
-  (Note: If the stop or start step at the end hangs, you might
-  have to do 'killall mysqld' and possibly clean out some lock
-  files in /var/run/mysqld/.  See also /var/log/mysql/error.log
-  if that doesn't work.)
-"
-  "Why can't I remember these syntaces?  And why do I write \"syntaces\"?")
-
-(defconst kf-wireshark-help
-  "
-Wireshark:
----------
-
-Pull down the Capture menu, choose Start.
-Type \"port 80\" for filter, and turn off promiscuous mode.
-
-  ...now run your program...
-
-Hit Stop in the little box.  Now you have a capture.
-It looks like a huge list of lines.
-
-Click on the Protocol column to sort.
-Then click on the first relevant line to select it.
-Right click, choose \"follow TCP stream\"."
-  "Wireshark help.")
-
-(defconst kf-gimp-help
-  "Turning single-color areas transparent in the Gimp:
-
-   1. Select -> Select by Color
-      (Or use \"Magic Wand\" from the toolbox -- stick with a light on
-      the end -- to select only a *contiguous* area of the same color.)
-   2. Click on the color you want to make transparent.
-   3. Layer -> Transparency -> Color to Alpha.
-   4. Edit -> Clear.
-
-   (When saving as PNG, check 'Save colour values from transparent pixels'.)
-
-Paint transparency over parts of the image:
-
-   1. Open Layers control window (C-l)
-   2. Right click on the layer in question ==> \"Add Layer Mask\"
-   3. Choose \"Layer's Alpha Channel\"
-   4. Now just paint (in that layer) with whatever tool you want
-
-Paint rectangular foreground-color areas (e.g., redacting text):
-
-   Select them with the selection tool, then use \"B\" to
-   get the Bucket Fill tool and click in the selection.
-   (You may want to set foreground color to black first.)
-
-Draw an ellipse:
-
-   Use the Ellipse Selection tool.  Once the ellipsoid selection is in
-   place, set the Foreground Color to whatever color you want the final
-   ellipse to be, choose Edit -> Stroke Selection, set the thickness
-   (3 is usually good) and do the stroke.
-
-Changing a background color around anti-aliased text (e.g., black to blue):
-
-   1. Right-click on background color, choose Color->Color to Alpha
-   2. Confirm, thus making the background transparent
-   3. Set foreground color to desired new background color
-   4. New Layer (create it with \"foreground\" checked)
-   5. In the Layers tool, move the new background layer to the bottom
-
-Launch the toolbox (if it's not already open):
-
-  C-b
-
-Fading to/from black-and-white across a color image:
-
-  http://brainsongimp.blogspot.com/2012/08/color-to-black-and-white-fade-tutorial.html
-
-To tile an image:
-
-  Filters -> Map -> Tile  
-
-  (You may want to unchain X units from Y units, as I did
-   for ~/x/abstract-tiled-kluge.png for example.)
-
-Random stuff:
-
-  Circular text: http://registry.gimp.org/node/641
-  Pie charts: http://www.armino.ro/2010/06/08/gimp-tutorial-how-to-use-paths-and-selections-to-create-a-nice-pie-chart/
-
-")
-
+
 (defconst kf-gnupg-help
   "In Emacs, use `C-c RET C-e' to encrypt+sign from Message Mode
 (or use `C-c RET C-s' to just sign without encrypting).
@@ -589,36 +444,12 @@ Various advice from http://ben.reser.org/key-transition.txt.asc:
 
   gpg --keyserver KEYSERVER --send-key 16A0DE01
 ")
+(kf-gen-displayer kf-gnupg-help
+                  "You never know when the WWW might be down.  Or Google."
+                  "*Because command-line arcana == more security.  Really*"
+                  kf-gpg-help)
 
-(defconst kf-37-help
-  "Whew, 37 Signals has a lot of products.
-
-  Basecamp:
-    * Starting discussions or other things via email:
-      https://basecamp.com/help/guides/projects/email-in
-
-      Basecamp Discussions can sort of be like a mailing list.
-      To start a new thread, you use a personalized destination
-      address such that sending email to it, with a subject line
-      starting with \"Discussion:\", has the same effect as if
-      you'd started a new Discussion in that project) via the web
-      interface.  Similar with \"Todo list:\", etc.  To find that
-      personalized address, see \"Email content to this project.\"
-      link at the bottom right of the Project home page.
-
-    * Bringing non-users into a discussion:
-      https://basecamp.com/help/guides/projects/loop-in
-
-    * General support:
-      https://basecamp.com/support
-
-  FAQs, etc:
-    http://help.37signals.com/
-    http://help.37signals.com/highrise/questions/
-
-  Customer community:
-    http://answers.37signals.com/")
-
+
 (defconst kf-principl-help
   "
 * Principle
@@ -640,47 +471,11 @@ Various advice from http://ben.reser.org/key-transition.txt.asc:
   (n) The base investment or sum of money on which interest is paid.
   \"In principle, mortgage borrowers pay more in interest than in principal.\"
   ")
+(kf-gen-displayer kf-principl-help
+                  "Tired of Googling this one all the time."
+                  "*English, the failure-friendly language.*")
 
-(defconst kf-pdf-help
-  "Editing PDFs used to be such a pain.  Then I discovered xournal.
-
-   (See http://xournal.sourceforge.net/.  There's also Xournal++ at
-   https://github.com/xournalpp/xournalpp, which is apparently a
-   successor and is probably worth looking into some time.  But as of
-   2020-01-31 I've found the original xournal works just fine.)
-
-   Here are the steps
-
-     $ sudo apt-get update && sudo apt-get install xournal
-     $ xournal
-       1) Choose \"File -> Annotate\" from menu
-       2) Open the PDF you want to edit or insert an image into
-       3) Use \"T\" to choose text, or person-in-box icon for image
-       4) Click in the PDF where you want to insert the text or image
-       5) When done, \"File -> Export to PDF\".
-
-   Other possibilities, if xournal isn't available: there's
-   pdfescape.com.  Or do what you can with evince, then load the
-   doc into gimp for signing and any other images, Then save as
-   EPS, and use epstopdf (or pdf2ps) to convert *back* to PDF.
-   Or try one of scribus, pdfedit, flpsed, pdftk, inkscape,
-   pdf-shuffler, okular.  Or: convert PDF to RTF w/ calibre, open
-   RTF file in LibreOffice, then save as PDF.
-
-   To save a range of pages as a new PDF:
-
-     $ pdftk inputfile.pdf cat 22-36 output outfile_p22-p36.pdf
-
-   To join a bunch of PDFs into one PDF:
-
-     $ pdfunite file-1.pdf file-2.pdf file-N.pdf combined.pdf
-
-   To split pages 2 and 5 (or to extract 2-5) into a new PDF:
-
-     $ pdftk orig.pdf cat 2 5 output new.pdf
-     $ pdftk orig.pdf cat 2-5 output new.pdf
-")
-
+
 (defconst kf-git-help
   "Git trivia that I often need and equally often forget.
 
@@ -1074,7 +869,13 @@ Useful online references:
   \"On undoing, fixing, or removing commits in git\"
   http://sethrobertson.github.io/GitFixUm/fixup.html
 ")
+(kf-gen-displayer kf-git-help
+                  (concat
+                   "Git is like a BMW: "
+                   "a terrific engine surrounded by a cloud of bad decisions.")
+                  "*Because command-line arcana == productivity.*")
 
+
 (defconst kf-latin-abbreviation-help
   "         http://en.wikipedia.org/wiki/List_of_Latin_abbreviations
 
@@ -1318,7 +1119,13 @@ Useful online references:
   Sometimes is not abbreviated.  Example: The next football game will
   be the Knights vs. the Sea Eagles.
 ")
+(kf-gen-displayer kf-latin-abbreviation-help
+                  (concat
+                   "No other language is so rich in expressions "
+                   "for clarifying what has been previously said.")
+                  "*It's what they speak in Latin America.*")
 
+
 (defconst kf-ssh-help
   "How to change a host key:
 
@@ -1344,35 +1151,11 @@ Useful online references:
   How to get all the SSH fingerprints on a server:
     $ for SSH_KEY_FILE in /etc/ssh/ssh_host_*.pub; do if [ -f ${SSH_KEY_FILE} ]; then ssh-keygen -l -f ${SSH_KEY_FILE}; echo \"\"; fi; done
 ")
+(kf-gen-displayer kf-ssh-help
+                   "SSH: I'm hunting wabbits."
+                  "*Admit it, you've always wanted to say that.*")
 
-(defconst kf-vagrant-help
-  "Basic stuff that Google would say too:
-
-   Grab a box from, say, http://vagrantbox.es/ or somewhere.
-   They'll have names like this:
-
-      debsqueeze64.box
-      lxc-precise-amd64-2013-07-12.box
-      squeeze32-vanilla.box
-
-   Then:
-
-     $ vagrant init squeeze32-vanilla-1 squeeze32-vanilla.box
-     $ vagrant up
-
-   W00t.  You can ssh in now.  'vagrant ssh' would work, but it just
-   does this:
-
-     $ ssh -p 2222 vagrant@127.0.0.1
-     Password: vagrant
-
-   User 'vagrant' is already in sudoers, so 'sudo su' will just work.
-
-   Meanwhile, on your \"host\" (real) machine, vagrant dropped a file
-   named \"Vagrantfile\" in the current working directory.  That file
-   probably has some stuff worth looking at.
-")
-
+
 (defconst kf-gnus-help
   "
 Incorporate and respool mail from an mbox file:
@@ -1443,53 +1226,11 @@ Marks in the Summary Buffer:
 
   https://www.gnu.org/software/emacs/manual/html_node/gnus/Summary-Buffer-Lines.html
 ")
+(kf-gen-displayer kf-gnus-help
+                 "Gnus: the mailreader that read your mail for you."
+                 "*This feature set is larger than my head.*")
 
-
-(defconst kf-css-help
-  "
-  ELT1, ELT2 {...}             Body applies to those elements.
-  ELT1>ELT2 {...}              Only ELT2 immediate children of ELT1
-  ELT+ADJACENT_SIBLING {...}   <ELT><ADJACENT_SIBLING>...</></>
-  .CLASS1 {...}                Elements whose class attr val contains CLASS1.
-  #ID1 {...}                   Elements whose id attr matches ID1.
-  ELT#ID1 {...}                Only ELT whose id attr matches ID1.
-  ELT.CLASS1 {...}             Only ELT whose class attr val contains CLASS1.
-  ELT.CLASS1.CLASS2 {...}      Only ELT whose class attr val matches both.
-  ELT[ATTR] {...}              Only ELTs that have ATTR.
-  #ID1 ELT1, ELT2 {...}        ELT1 w/ id ID1, and all ELT2 (, == weak OR)
-
-  @import url(base.css);       Import another CSS file.
-  @media print, FOO {...}      Body applies to print and FOO media only.
-
-  Pseudo classes:              :visited, :link, :target, :checked, :hover
-
-  http://reference.sitepoint.com/css
-  http://code.tutsplus.com/tutorials/the-30-css-selectors-you-must-memorize--net-16048
-
-  For float style for an image with text to its right, try this:
-
-    style=\"float: left; margin-right: 1em; margin-bottom: 1em;\"
-
-")
-
-
-(defconst kf-redmine-help
-  "When updating an existing ticket, put #NUMBER in Subject line:
-
-  Subject: Re: [AnythingGoesHere #NUMBER] Rest Is Ignored too
-
-When creating a ticket by email, put headers at the top:
-
-  Project: hiring
-  Tracker: Honorarium
-  Priority: Normal
-  Status: New
-  Assignee: Karl Fogel
-
-  This is the body of the initial description for this test ticket.
-")
-
-
+
 (defconst kf-latex-help
   "(http://faculty.cbu.ca/srodney/CompSymbInd.pdf has more.)
 
@@ -1674,53 +1415,11 @@ Pre-defined color names that should be available everywhere:
   - blue
   - black
 ")
+(kf-gen-displayer kf-latex-help
+                 "If you have 100 years to invest, LaTeX is for you."
+                 "*LaTeX: The answer to the NSF funding surplus.*")
 
-(defconst kf-libreoffice-help
-  "LibreOffice has options on its options.
-
-* LibreOffice Writer:
-
-  Three ways to unlock a read-only mode document for editing:
-  
-    Tools -> Options -> LibreOffice Writer -> Compatibility -> Protect Form
-  
-    Select the sections in a table, then 'Format' -> 'Sections',
-    then deactivate 'Write Protection'.
-  
-    Turn 'Design mode' on: View -> Toolbars -> Form Design
-  
-  To display formulas instead of their results:
-  
-    Tools -> Options -> LibreOffice Calc -> View
-    Then under Display, check (or uncheck) the Formulas box.
-
-* LibreOffice Impress (presentations):
-
-  Making slide templates / Master slides.
-
-    View -> Master Slide (this gets you into Master mode)
-    Slide -> New Master (create another master slide; rarely needed)
-
-  To set background gradient (especially from Master slide view):
-
-    Slide -> Slide Properties -> Background -> Gradient
-
-      I like upper left dark blue (RGB 285680, or 295780 for even
-      darker) to lower right light blue (RGB 6FAEE7).
-
-  To change the text color for some specific text:
-
-    Right Click -> Character -> Font Effects -> Font Color
-
-      I like F5F5F5 for text if using above gradient background.
-
-  To change the defaut text color (also works on Master slides)
-
-    Tools -> Options -> LibreOffice -> Application Colors -> Font Color
-
-      Again, F5F5F5 is good if using above gradient background.
-")
-
+
 (defconst kf-debian-help
   "I will never remember this stuff.
 
@@ -1768,178 +1467,11 @@ To connect to a remote database:
   $ psql -h <host> -p <port> -U <username> -W <database>
     Password: <password>
 ")
+(kf-gen-displayer kf-debian-help
+                 "Because sysadmin is the new user."
+                 "*Debian: An OS for the long term... in every sense.*")
 
-(defconst kf-python-help
-  "\
-=========================
-Virtual Env with setup.py
-=========================
-
-  $ cd jrandom-project  # random thing cloned from Mos Eisley
-  $ ls
-  CHANGELOG.md  LICENSE  README.md  requirements.txt  setup.py  src/  tests/
-  $ python -m venv venv
-  $ source ./venv/bin/activate
-  (venv) @jrandom-project>pip install -e .
-  [...]
-  (venv) @jrandom-project> 
-
-Now you can run 'python' here and it'll be the right Python, etc.
-Or you can run a command defined by the package and it will exist
-locally.  For example, I cloned https://collaborating.tuhh.de/hos/\
-modernes-publizieren/offen/software/middleware/gitlab-exporter.git
-and did the above, and then ran this:
-
-  (venv) @gitlab-exporter>gitlab-exporter -h
-  usage: gitlab-exporter [-h] [--version] gitlab_instance private_token ...
-
-  Export various data sets from GitLab issues, projects and groups
-
-  [... etc, etc; see https://pypi.org/project/gitlab-exporter/ ...]
-
-  (venv) @gitlab-exporter>
-
-===============================
-Strings in Python 2 vs Python 3
-===============================
-
-Python 2:
----------
-
-  Two different string data types:
-
-    - normal string literal is a \"str\" object, storing bytes
-    - \"u\" prefix means \"unicode\" object, storing code points
-
-  To convert between them (e.g., to/from UTF-8):
-
-    unicode_string.encode('utf-8')  ==>  byte string, containing UTF-8
-    normal_string.decode('utf-8')   ==>  unicode, coming from UTF-8
-
-  You'll get a UnicodeEncodeError if you try to convert to a
-  representation that can't represent some of the data, assuming
-  you've passed no flags saying to replace or drop such characters.
-
-    unicode_string.encode('ascii')  ==>  possible classic fail
-
-  You can fail in the other direction too.  Remember, a stock
-  Python string is just bytes.  It doesn't \"know\" that those
-  bytes are arranged in the UTF-8 encoding.  This is why when you
-  decode it, you have to tell it what encoding it is in so it can
-  convert to Unicode.  But if you tell it an encoding that can't
-  \"contain\" the bytes found in the string, hilarity will ensue:
-
-    normal_string.decode('ascii')   ==>  likewise classic fail
-
-  There is implicit conversion:
-
-    some_normal_str + some_unicode  ==>  combined_unicode
-
-  Or, for example, a dictionary lookup will succeed with either type,
-  as long as the underlying sequence of (ASCII) bytes is the same.
-
-Python 3:
----------
-
-  Two types again, but the naming is more sensible now:
-
-    - str:   natively Unicode:  \"I am made of Unicode code points\"
-    - bytes: just raw bytes:   b\"I made of raw bytes\"
-
-  There is no implicit conversion.  Combining is always an error now,
-  dictionary lookups cannot be done with the \"same\" data but in the
-  other type, etc.  There is no more deferred handling of encoding
-  issues.  In Python 3, you have to be clear about what's what at
-  every point in your code.  If you're calling something that takes
-  bytes, you have to pass it bytes, and you (not the callee) must do
-  the conversion because the callee does not have all the information
-  it would need to make encoding decisions.  For example:
-
-    >>> import quopri
-    >>> quopri.encodestring(\"Sofía\")
-    Traceback (most recent call last):
-      File \"<stdin>\", line 1, in <module>
-      File \"/usr/lib/python3.8/quopri.py\", line 108, in encodestring
-        return b2a_qp(s, quotetabs=quotetabs, header=header)
-    TypeError: a bytes-like object is required, not 'str'
-    >>> quopri.encodestring(\"Sofía\".encode('utf-8'))
-    b'Sof=C3=ADa'
-    >>>  
-
-  See also https://docs.python.org/3/library/functions.html#func-bytearray.
-
-  All this affects reading data from files:
-
-  In Python 2, using 'b' could only affect line endings, and sometimes
-  (e.g., on Unix) not even those.  But in Python 3, opening a file
-  in binary mode produces byte objects, and opening in text mode
-  produces str (i.e., Unicode) objects (therefore, the open() function
-  now takes an encoding parameter).
-
-In https://nedbatchelder.com/text/unipain.html, Ned Batchelder
-recommends that the best thing to do if you're working with
-strings is convert to Unicode as soon as you get your hands on
-the data, work exclusively with Unicode internally, and convert
-to a chosen encoding on the way out.
-
-ESR's http://www.catb.org/esr/faqs/practical-python-porting/ is good too,
-especially about when/why to want the \"b\" (binary) flag on file opens.
-See also http://lucumr.pocoo.org/2014/5/12/everything-about-unicode/.
-")
-
-(defconst kf-plantronics-headset-test-help
-  "+1 (866) 210-2157.  (Also, random echo-back line at +1 (909) 390-0003.)")
-
-(defconst kf-firefox-help
-  "Magic search-constraint prefixes in address bar:
-
-  URLs                  --  $
-  browsing history      --  ^
-  currently open tabs   --  %
-  titles                --  #
-  bookmarks             --  *
-  pages you've tagged   --  +
-  suggestions           --  ?
-  
-  (via https://wiki.tilde.institute/w/firefox-address-bar-tips)
-
-List all open tabs:
-
-     ThreeBarMenu
-      -> Settings
-        -> Home
-          -> New Windows and Tabs
-            -> Homepage and new windows
-              -> [Custom URLs]
-                -> [Use Current Pages]
-
-   Switch to tab:
-
-     Ctrl-Tab:        Switch to tab on right (cycles around)
-     Ctrl-Shift-Tab:  Switch to tab on left  (cycles around)
-
-   Move a tab:
-
-     Ctrl-Shift-PageUp:    Move tab to left
-     Ctrl-Shift-PageDown:  Move tab to right
-
-   (https://support.mozilla.org/en-US/kb/keyboard-shortcuts-perform-firefox-tasks-quickly
-   has more keyboard shortcuts.)
-
-   View source *without* reloading the page:
-
-     Select all, then right-click and View Selection Source.
-     (viz.: https://bugzilla.mozilla.org/show_bug.cgi?id=307089)
-
-   Change UserAgent header:
-
-     - Browse to \"about:config\"
-     - Right-click anywhere in the preferences, then New->String.
-     - Add a new \"general.useragent.override\" string.  A typical
-       Firefox UserAgent header looks something like this:
-       \"Mozilla/5.0 (X11; Linux x86_64; rv:61.0) Gecko/20100101 Firefox/61.0\"
-")
-
+
 (defconst kf-grep-help
   "To avoid long lines and show just context around match, do this:
 
@@ -1950,252 +1482,11 @@ Lose the -n if you don't want line numbers.  For an even better solution:
 https://www.topbug.net/blog/2016/08/18/\\
 truncate-long-matching-lines-of-grep-a-solution-that-preserves-color/
 ")
+(kf-gen-displayer kf-grep-help
+                 "You could figure this out from the man page..."
+                 "*If you had a million years.*")
 
-
-(defconst kf-sqlite-help
-  "See https://www.sqlite.org/cli.html for details.  Quick ref:
-
-    $ ls
-    DATASET.csv
-    $ sqlite3
-    sqlite> .import DATASET.csv TABLE_NAME
-    sqlite> ### Do whatever you want; writes will go to the CSV.  ###
-    sqlite> ### If you want to write it out as a native DB, then: ###
-    sqlite> .save DATASET.db  ### (or \"DATASET.sqlite3\" or whatever)
-    sqlite> .mode OUTPUT_MODE  ### (see \".help\" below)
-    sqlite> .help
-    ### See a ton of help output here. ###
-    sqlite> .tables
-    sqlite> .tables
-    sqlite> .quit
-
-    $ ls
-    DATASET.csv  DATASET.db
-
-    $ sqlite3 DATASET.db
-    sqlite> select * from TABLE_NAME;
-    sqlite> .quit
-    $ 
-
-Or to open a locked (perhaps because currently being written)
-database in read-only mode, try this:
-
-    $ sqlite3 'file:DATASET.db?mode=ro&nolock=1'
-")
-
-
-(defconst kf-cyrillic-help
-  "See https://en.wikipedia.org/wiki/Cyrillic_alphabets.
-
-  А а     A                       /a/
-  Б б     Be                      /b/
-  В в     Ve                      /v/
-  Г г     Ge                      /ɡ/
-  Д д     De                      /d/
-  Е е     Ye                      /je/, /ʲe/
-  Ж ж     Zhe                     /ʒ/
-  З з     Ze                      /z/
-  И и     I                       /i/, /ʲi/
-  Й й     Short I[a]              /j/
-  К к     Ka                      /k/
-  Л л     El                      /l/
-  М м     Em                      /m/
-  Н н     En                      /n/
-  О о     O                       /o/
-  П п     Pe                      /p/
-  Р р     Er                      /r/
-  С с     Es                      /s/
-  Т т     Te                      /t/
-  У у     U                       /u/
-  Ф ф     Ef                      /f/
-  Х х     Kha                     /x/
-  Ц ц     Tse                     /ts/ (t͡s)
-  Ч ч     Che                     /tʃ/ (t͡ʃ)
-  Ш ш     Sha                     /ʃ/
-  Щ щ     Shcha, Shta             /ʃtʃ/, /ɕː/, /ʃt/[b]
-  Ь ь     Soft sign / small yer   /ʲ/[e]
-  Ю ю     Yu                      /ju/, /ʲu/
-  Я я     Ya                      /ja/, /ʲa/
-")
-
-
-(defconst kf-google-groups-help
-  "I wish I didn't need to remember all these things.  I also
-wish I were less often in the position of configuring Google
-Groups.  I keep wanting the Free Software solutions to get this 
-right, but we haven't quite done so yet.  So for now:
-
-First, the two most important things:
-
-  * Enable people outside your organization to send to the group:
-
-    (Note that this may only be a \"Google Groups in G-Suite\" thing.)
-    
-    Go to your group's Settings page.  The easiest way to get there is
-    via the UI, and once you're there the URL will look something like
-    \"https://admin.google.com/u/1/ac/groups/685a8ft8vt0qz1u/settings\"
-    (where \"685a8ft8vt0qz1u\" is Google's internal unique identifier
-    for your group).
-
-    Then for \"Publish Posts\", turn on the \"External\" option.
-    Now senders who are not members of your group, and perhaps
-    not even members of your organization, can send email to the
-    group.  This is useful when you use a group's address as,
-    e.g., the contact address for some external service.
-
-  * To enable posting by email (which may be off by default!):
-
-    (This and everything else below was written for regular
-    Google Groups.  Much of it may still apply to Google Groups
-    in G-Suite, of course, but with different navigation paths to
-    the configuration knobs.)
-
-    Information->General information->Posting options->Allow posting by email
-
-    (Yes, you'd think it would be under Settings->Email Options,
-    or maybe Permissions->Posting Permissions, or any of a number
-    of other more obviously appropriate places.  But no, it's under
-    Information->General Information.  Go figure.)
-
-Then everything else, by interface location rather than by task:
-
-  * Settings->Email Options:
-    - Can set a Subject Prefix here
-    - Can set Reply-to behavior
-    - Can set footer text
-  
-  * Settings->Moderation:
-    If you need moderation at all, here is where to handle it.
-  
-  * Permissions->Basic Permissions:
-    Control who can view and who can post here.
-  
-  * Permissions->Posting Permissions:
-    Here you can *also* control who can post.
-    
-    Yes, this is redundant with Permissions->Basic Permissions above.
-    I don't fully grok what the UX designers were aiming for.  You
-    can also go directly to the URL for controlling these, e.g.:
-  
-    https://groups.google.com/a/MY_ORGANIZATION.COM/forum/#!groupsettings/GROUP_NAME/postingpermissions
-
-  * Permissions->Moderation Permissions:
-    Who can add/approve members, who can moderate/delete posts.
-")
-
-
-(defconst kf-google-docs-help
-  "To change multiple heading levels at once:
-
-   To make them deeper:
-
-   Select one heading of the deepest level you want to change.
-   Then right-click -> Format Options -> Select All Matching Text,
-   then Ctrl+Alt+F<N>, where \"<N>\" is the new heading level (i.e.,
-   presumably usually one greater than the heading current's depth.
-   Walk up the stack to the higher levels and do the same.
-
-   To make them higher, adjust the above recipe accordingly.
-")
-
-
-(defconst kf-google-spreadsheets-help
-  "To merge cells vertically:
-
-  *First* select all the cells (click for the first one, then
-  shift+click for the ones after that).  
-
-  Then: Format -> Merge Cells -> Merge Vertically
-
-  (A \"Merge Cells\" icon is sometimes available directly in the
-  toolbar too.)
-")
-
-
-(defconst kf-sql-help
-  "https://blog.jooq.org/2016/07/05/say-no-to-venn-diagrams-when-explaining-joins/
-
-  These three operate on tuples, that is, on columns of the same type
-  albeit from different tables.  E.g.: \"SELECT first_name, last_name
-  FROM customer UNION|INTERSECT|EXCEPT SELECT first_name, last_name
-  FROM staff;\"
-
-    UNION
-    INTERSECT
-    EXCEPT
-
-  These create a new virtual table whose column types are assembled
-  from the types involved in the various parts of the query:
-
-    CROSS JOIN  (conceptual base operation)
-    INNER JOIN
-    OUTER JOIN
-
-  INNER JOIN retains rows based on fulfillment of one or more
-  predicates:
-
-    -- \"Classic\" ANSI JOIN
-    SELECT *
-    FROM author a
-    JOIN book b ON a.author_id = b.author_id
-     
-    -- \"Nice\" ANSI JOIN
-    SELECT *
-    FROM author a
-    JOIN book b USING (author_id)
-     
-    -- \"Old\" syntax using a \"CROSS JOIN\"
-    SELECT *
-    FROM author a, book b
-    WHERE a.author_id = b.author_id
-
-  OUTER JOIN does the opposite (and fills with NULLs where necessary)
-  -- it produces any row where either the LEFT side or the RIGHT or
-  both (FULL) sides did not meet the predicate(s):
-
-    SELECT * FROM author a LEFT JOIN book b USING (author_id)
-
-  This produces all authors and their books, but if an author
-  doesn't have any book, we still get the author with NULL as
-  their only book value.  Equivalently:
-
-    SELECT *
-    FROM author a
-    JOIN book b USING (author_id)
-     
-    UNION
-     
-    SELECT a.*, NULL, NULL, NULL, ..., NULL
-    FROM (
-      SELECT a.*
-      FROM author a
-       
-      EXCEPT
-       
-      SELECT a.*
-      FROM author a
-      JOIN book b USING (author_id)
-    ) a
-
-  LEFT JOIN: like INNER JOIN but retain non-matches from LEFT
-  RIGHT JOIN: like INNER JOIN but retain non-matches from RIGHT
-  FULL JOIN: retain all
-")
-
-
-(defconst kf-dia-help
-  "Layers:
-
-  Do View -> Show Layers.  After that, everything makes sense.
-
-Making the diagram fit in a page:
-
-  Export to Encapsulated Postscript (.eps).
-  Then do 'epstopdf foo.eps foo.pdf'.
-  (superuser.com/questions/515302/how-can-i-make-fit-the-diagram-in-the-page)
-")
-
-
+
 (defconst kf-markdown-help
   "Headers:
 
@@ -2383,21 +1674,11 @@ Images:
   Some options: \"border\", \"frame\", \"thumb\", \"50px\", etc.
   There can be many options, each separated by pipe.
 ")
+(kf-gen-displayer kf-markdown-help
+                 "Did the dealer give you good trade-in value for your LaTeX?"
+                 "*Markdown: so many different ways to be portable!*")
 
-(defconst kf-pandoc-help
-  "Everything you need to know:
-
-     $ pandoc -s -o foo.pdf foo.md
-")
-
-
-(defconst kf-diff-help
-  "Diff by word instead of line:
-
-     $ wdiff -n foo bar | colordiff 
-")
-
-
+
 (defconst kf-org-mode-help
   "Stuff I always have to look up, gathered in one place:
 
@@ -2427,293 +1708,9 @@ Images:
   #+SETUPFILE: ../../blah/blah/blah/foo.org
   #+CATEGORY: SomeNameHere
 ")
-
-
-(defconst kf-dns-help
-  "To look up a TXT record, do something like this:
-
-  $ host -t txt _acme-challenge.bikeshed.com
-
-Or use 'dig' and specify a nameserver:
-
-  $ dig @ns.red-bean.com -t txt _acme-challenge.bikeshed.com
-
-To set up a default /etc/resolv.conf in a network-challenged café:
-
-  namserver 9.9.9.9
-  nameserver 2620:fe::fe
-  namserver 8.8.8.8
-
-From https://www.quad9.net/service/service-addresses-and-features/:
-
-  > Recursive DNS Server Addresses and Features - Service based
-  > configuration:
-  > 
-  > Recommended: Malware Blocking, DNSSEC Validation (this is the most
-  > typical configuration):
-  > 
-  > IPv4: 9.9.9.9, 149.112.112.112
-  > IPv6: 2620:fe::fe, 2620:fe::9
-  > HTTPS: https://dns.quad9.net/dns-query
-  > TLS: tls://dns.quad9.net
-  > 
-  > Secured w/ECS: Malware blocking, DNSSEC Validation, ECS enabled:
-  > IPv4: 9.9.9.11, 149.112.112.11
-  > IPv6: 2620:fe::11, 2620:fe::fe:11
-  > HTTPS: https://dns11.quad9.net/dns-query
-  > TLS: tls://dns11.quad9.net
-  > 
-  > Unsecured: No Malware blocking, no DNSSEC validation (for experts
-  > only!)
-  > 
-  > IPv4: 9.9.9.10, 149.112.112.10
-  > IPv6: 2620:fe::10, 2620:fe::fe:10
-  > HTTPS: https://dns10.quad9.net/dns-query
-  > TLS: tls://dns10.quad9.net
-  > 
-  > Hints: If you have devices that need to be configured by IP
-  > address, make sure to put ALL the IP addresses listed for your
-  > selected service into any configuration areas. Putting in just one
-  > of the three will leave you vulnerable to single-path failures if
-  > they should occur. Even if you do not yet have IPv6, please add
-  > those addresses from the list so you don’t have to remember later
-  > – most systems will ignore IPv6 addresses if they cannot be used.
-")
-
-
-(defconst kf-adduser-help
-  "Use adduser, not useradd; former is high-level, latter low-level.")
-
-
-(defconst kf-video-editing-help
-  "* Use ffmpeg to extract clips on the command line:
-
-    $ ffmpeg -f input.mp4 -ss 00:00:00 -to 01:53:52 -c copy output.mp4 
-
-  This preserves the video and audio codecs of the original.  See
-  https://www.baeldung.com/linux/ffmpeg-cutting-videos for more.
-
-  ffmpeg is shockingly fast.  You almost always want to do this, rather
-  than trim in OpenShot and then export.
-
-  If you want to re-encode, a list of codecs is available from:
-
-    $ ffmpeg -formats -E
-
-  Also, apparently 'mencoder' would work too, though I haven't tried it:
-
-    $ mencoder -ss 00:00:00 -endpos 00:00:05 -oac pcm -ovc copy input.mp4 -o output.mp4
-
-  (As per https://askubuntu.com/questions/59383/\
-extract-part-of-a-video-with-a-one-line-command.)  
-
-  If you want to re-encode, a list of audio codecs can be had with
-  'mencoder -oac help' and video codecs with 'mencoder -ovc help'.
-
-* Trimming / cutting in OpenShot:
-
-  * To trim from the beginning or end:
-
-    Get the play-head to the spot you want.  Right click on the track.
-    Choose Slice, and keep whichever side (left or right) you want.
-
-  * To cut a section from the middle: 
-
-    I dunno, but this web page might help:
-
-    https://www.openshot.org/\
-static/files/user-guide/clips.html#trimming-slicing
-
-* To get information about a video file:
-
-    $ mediainfo foo.mp4
-")
-
-(kf-gen-displayer kf-ascii
-                  "Display the ASCII character table in its own buffer."
-                  "*ASCII*")
-
-(kf-gen-displayer kf-datetime-formats
-                  "Display date/time format codes in their own buffer"
-                  "*Date / Time Formats*")
-
-(kf-gen-displayer kf-radio-alphabet
-                  "Display the radio alphabet in its own buffer."
-                  "*RADIO ALPHABET*")
-
-(kf-gen-displayer kf-stellar-statistics
-                  "Display some statistics about the solar system."
-                  "*Solar System*")
-
-(kf-gen-displayer kf-irc-suckitude
-                  "A Twelve Step process for stealing your own identity."
-                  "*Never Apologize, Never Explain*"
-                  kf-remind-irc-suckitude)
-
-(kf-gen-displayer kf-mariadb-help
-                  "That stuff you can never remember.  Uh, s/you/I/, yeah."
-                  "*Never Apologize, Never Explain*")
-(defalias 'kf-mysql-help 'kf-mariadb-help)
-
-(kf-gen-displayer kf-wireshark-help
-                  "I don't use wireshark enough to remember how to use it."
-                  "*Never Apologize, Never Explain*"
-                  kf-ethereal-help)
-
-(kf-gen-displayer kf-gimp-help
-                  "You never know when the WWW might be down.  Or Google."
-                  "*Easy as pie.  Blueberry neutronium pie.*")
-
-(kf-gen-displayer kf-gnupg-help
-                  "You never know when the WWW might be down.  Or Google."
-                  "*Because command-line arcana == more security.  Really*"
-                  kf-gpg-help)
-
-(kf-gen-displayer kf-37-help
-                  "37 Signals * 31 Flavors == 1147 Products."
-                  "*Are we really supposed to remember all this stuff?*"
-                  kf-basecamp-help)
-
-(kf-gen-displayer kf-principl-help
-                  "Tired of Googling this one all the time."
-                  "*English, the failure-friendly language.*")
-
-(kf-gen-displayer kf-pdf-help
-                  "Never mind jet packs.  Where are our editable page formats?"
-                  "*Because who wants to edit documents with computers?*")
-
-(kf-gen-displayer kf-git-help
-                  (concat
-                   "Git is like a BMW: "
-                   "a terrific engine surrounded by a cloud of bad decisions.")
-                  "*Because command-line arcana == productivity.*")
-
-(kf-gen-displayer kf-latin-abbreviation-help
-                  (concat
-                   "No other language is so rich in expressions "
-                   "for clarifying what has been previously said.")
-                  "*It's what they speak in Latin America.*")
-
-(kf-gen-displayer kf-ssh-help
-                   "SSH: I'm hunting wabbits."
-                  "*Admit it, you've always wanted to say that.*")
-
-(kf-gen-displayer kf-vagrant-help
-                 "Vagrant: wandering VMs in your machine."
-                 "*Is \"virtual machine\" redundant?*")
-
-(kf-gen-displayer kf-gnus-help
-                 "Gnus: the mailreader that read your mail for you."
-                 "*This feature set is larger than my head.*")
-
-(kf-gen-displayer kf-css-help
-                 "My memory for syntaxes peaked sometime in the late 1990s."
-                 "*My memory for docs peaked sometime in the late 1990s.*")
-
-(kf-gen-displayer kf-redmine-help
-                 "Email manipulation of ticket trackers is such a win."
-                 "*Too bad it requires memorizing lots of finicky syntaces.*")
-
-(kf-gen-displayer kf-latex-help
-                 "If you have 100 years to invest, LaTeX is for you."
-                 "*LaTeX: The answer to the NSF funding surplus.*")
-
-(kf-gen-displayer kf-libreoffice-help
-                 (concat "If we can't bring 1980s wordprocessing back, "
-                         "Libreoffice is the next best thing.")
-                 "*LibreOffice: As easy to compile as it is to use.*")
-
-(kf-gen-displayer kf-debian-help
-                 "Because sysadmin is the new user."
-                 "*Debian: An OS for the long term... in every sense.*")
-
-(kf-gen-displayer kf-postgres-help
-                 "Backslash is the new empty string."
-                 "*PostgreSQL: With a name like that, it's _got_ to be good.*"
-                 kf-psql-help)
-
-(kf-gen-displayer kf-python-help
-                 "Sanity was all the sweeter for being so long in coming."
-                 "*Python: Why'd it have to be snakes?*")
-
-(kf-gen-displayer kf-plantronics-headset-test-help
-                 "Thank you, thank you, thank you Plantronics."
-                 "*And again, thank you.*")
-(defalias 'kf-cell-phone-headset-test 'kf-plantronics-headset-test-help)
-
-(kf-gen-displayer kf-firefox-help
-                 "Yes, even with Firefox we sometimes need help."
-                 "*It is always darkest just before the event horizon.*")
-
-(kf-gen-displayer kf-grep-help
-                 "You could figure this out from the man page..."
-                 "*If you had a million years.*")
-
-(kf-gen-displayer kf-sqlite-help
-                 "Isomorphism is to isomorphism as isomorphism is to..."
-                 "*The above sentence.*")
-
-(kf-gen-displayer kf-cyrillic-help
-                 "Я know Я like it."
-                 "*Yes, I know Emacs has an input mode for this.*")
-
-(kf-gen-displayer kf-google-groups-help
-                 "Being this entangled in a proprietary system bugs me."
-                 "*Even one line later, it _still_ bugs me.*")
-
-(kf-gen-displayer kf-google-docs-help
-                 "I keep trying to talk clients into using Etherpad."
-                 "*See also `kf-google-spreadsheets-help'.*")
-
-(kf-gen-displayer kf-google-spreadsheets-help
-                 "I only use it because everyone else does."
-                 "*See also `kf-google-docs-help'.*")
-(defalias 'kf-google-sheets-help 'kf-google-spreadsheets-help)
-
-(kf-gen-displayer kf-sql-help
-                 "I will always need to look these up."
-                 "*And it's better that way.*")
-
-(kf-gen-displayer kf-dia-help
-                 "Hard-won knowledge."
-                 "*Coming soon to a theater near you.*")
-
-(kf-gen-displayer kf-markdown-help
-                 "Did the dealer give you good trade-in value for your LaTeX?"
-                 "*Markdown: so many different ways to be portable!*")
-
-(kf-gen-displayer kf-mediawiki-help
-                 "The lingua franca of wiki markups."
-                 "*MediaWiki: Just like every other syntax, but different.*")
-
-(kf-gen-displayer kf-pandoc-help
-                 "Pandoc.  I have nothing clever to say.  It just wins."
-                 "*Pandoc: Doing The Right Thing in Haskell since 2006.*")
-
-(kf-gen-displayer kf-diff-help
-                 "When the world went full autowrap, some of us wept."
-                 "*Diff: It's like 'biff', but with a 'd'!*")
-
 (kf-gen-displayer kf-org-mode-help
                  "I know there's a manual, but I've only got this week."
                  "*Org Mode: Like Lisp, but with asterisks not parentheses.*")
-
-(kf-gen-displayer kf-dns-help
-                 "The tools keep changing; I can't keep up."
-                 "*DNS: It's kind of like blockchain, but without blocks or chains.*")
-(defalias 'kf-nameserver-help 'kf-dns-help)
-(defalias 'kf-resolv.conf-help 'kf-dns-help)
-
-(kf-gen-displayer kf-adduser-help
-                 "Is it 'adduser' or 'useradd'?  C.f. Folger's crystals, `kf-dns-help'."
-                 "*adduser: like useradd, only different*")
-(defalias 'kf-useradd-help 'kf-adduser-help)
-
-(kf-gen-displayer kf-video-editing-help
-                 "There are actually good FOSS video editing tools."
-                 "*But I only use them once every couple of years.*")
-(defalias 'kf-ffmpeg-help 'kf-video-editing-help)
-(defalias 'kf-openshot-help 'kf-video-editing-help)
 
 
 (defun kf-htmlegalize-region (b e)
@@ -2815,118 +1812,6 @@ Example text:
 
 
 ;;; Insertion helpers for characters not in my usual input methods.
-;;;
-;;; There's probably some more Emacs-y way to do these, and when I
-;;; learn that way, these definitions can be removed.
-
-(defun kf-set-theory-symbol ()
-  "You'd be surprised how often this comes up."
-  (interactive)
-  (let* ((map '((?0 . ?∅)
-                (?e . ?∈)
-                (?u . ?∪)
-                (?i . ?∩)
-                (?a . ?∧)
-                (?o . ?∨)
-                (?p . ?×)))
-         (ch (read-char 
-              (format "Choose a set theory symbol: %s"
-                      (string-join
-                       (mapcar (lambda (cell)
-                                 (concat 
-                                  (char-to-string (car cell))
-                                  "->"
-                                  (char-to-string (cdr cell))))
-                               map)
-                       ", ")))))
-    (insert (cdr (assoc ch map)))))
-
-(defun kf-© (parg)
-  "Insert copyright symbol, or phonogram copyright symbol iff prefix arg.
-This is stupid.  Emacs surely offers a better way to do this, right?"
-  (interactive "*P")
-  (if parg (insert "℗") (insert "©")))
-(defalias 'kf-copyright 'kf-©)
-
-(defun kf-€ ()
-  "This is insane.  I should really learn The Right Way to do this in Emacs."
-  (interactive)
-  ;; Noah points out that (insert (decode-char 'ucs #x20ac))
-  ;; would be future-proofer.
-  (insert ?€)) ; 8364
-(defalias 'kf-euro 'kf-€)
-
-(defun kf-£ ()
-  "The insanity is on both sides of the Channel."
-  (interactive)
-  (insert ?£)) ; 163
-(defalias 'kf-pound 'kf-£)
-
-(defun kf-顿号 ()
-  "And you thought `kf-euro' was insane!"
-  (interactive)
-  (insert ?、)) ; 12289
-(defalias 'kf-dun-hao 'kf-顿号)
-(defalias 'kf-listing-comma 'kf-顿号)
-
-(defun kf-μ ()
-  "μ never know when μ're going to need this."
-  (interactive)
-  (insert "μ"))
-(defalias 'kf-micro 'kf-μ)
-
-(defun kf-句号 ()
-  "Or I could just learn the input methods better... nah."
-  (interactive)
-  (insert ?。)) ; 12290
-(defalias 'kf-ju-hao 'kf-句号)
-(defalias 'kf-chinese-period 'kf-句号)
-
-(defun kf-¥ ()
-  "For some reason, prefix is this instead of 元."
-  (interactive)
-  (insert ?¥)) ; 165
-(defalias 'kf-rmb 'kf-¥)
-
-(defun kf-│ ()
-  "What is this in HTML code anyway?  And what's horizontal bar?"
-  (interactive)
-  (insert ?│)) ; 9474
-(defalias 'kf-vertical-bar 'kf-│)
-
-(defun kf-· ()
-  "What is this in Unicode (UTF-8) or HTML code anyway?  It's in upper ascii."
-  (interactive)
-  (insert ?·)) ; 183
-(defalias 'kf-middle-dot 'kf-·)
-(defun kf-• ()
-  "If I cared enough, I could find out the official name of this character."
-  (interactive)
-  (insert ?•)) ; 8226
-(defalias 'kf-middle-round-dot 'kf-•)
-(defun kf-● ()
-  "What I said about `kf-•' is true here too."
-  (interactive)
-  (insert ?●)) ; 9679
-(defalias 'kf-large-round-dot 'kf-●)
-(defun kf-dot (parg)
-  "Insert large round middle dot or, with prefix arg PARG, small middle dot."
-  (interactive "P")
-  (if parg (kf-·) (kf-•)))
-
-(defun kf-∗ ()
-  "Insert ∗.  What the heck is that thing, anyway?  It's not *."
-  ;; See r9118 in private repository.
-  (interactive)
-  (insert "∗"))
-(defalias 'kf-big-asterisk 'kf-∗)
-
-(defun kf-🧵 ()
-  "Insert a thread (spool of thread) emoji.  See also
-https://twitter.com/jenny8lee/status/1189751069913411589."
-  (interactive)
-  (insert ?🧵)) ; 129525
-(defalias 'kf-thread 'kf-🧵)
 
 (defun kf-✓ ()
   "Insert a checkmark."
@@ -2946,150 +1831,6 @@ With two prefix args, insert an x'ed checkbox."
      ((= prefix 16) (insert ?☒)) ; 9746
      (t (error "What do you want me to put in that checkbox?")))))
 
-(defun kf-fractions ()
-  "I could just learn Emacs' input system better, but... life is short."
-  (interactive)
-  (insert "½ ⅓ ⅔ ¼ ¾"))
-
-(defun kf-double-quotes ()
-  (interactive)
-  (insert ?“ ?”)
-  (forward-char -1))
-
-(defun kf-Π ()
-  "Just as insane as `kf-euro', yet somehow more defensible."
-  (interactive)
-  (insert (decode-char 'ucs #x03A0)))
-(defalias 'kf-pi 'kf-Π)
-
-(defun kf-° ()
-  "I'm sure Emacs has a way to do this, and I'm sure I don't know what it is."
-  (interactive)
-  (insert "°"))
-(defalias 'kf-degree 'kf-°)
-
-(defun kf-ß ()
-  "Maybe I should just learn Emacs input systems better?"
-  (interactive)
-  (insert ?ß)) ; 223
-
-(defun kf-ẞ ()
-  "Maybe I should just learn Emacs input systems ẞetter?"
-  (interactive)
-  (insert ?ẞ)) ; 7838
-(defalias 'kf-scharfes-s-lower 'kf-ß)
-(defalias 'kf-scharfes-s-upper 'kf-ẞ)
-
-(defun kf-ε ()
-  "By this point, the εxcuses are wearing thin."
-  (interactive)
-  (insert ?ε)) ; 949
-(defalias 'kf-epsilon 'kf-ε)
-
-(defun kf-¿ ()
-  "I've been looking forward to this one."
-  (interactive)
-  (insert ?¿)) ; 191, and hah
-(defalias 'kf-inverted-question-mark 'kf-¿)
-(defalias 'kf-upside-down-question-mark 'kf-¿)
-
-(defun kf-¡ ()
-  "¡| Ce n'est pas une |!"
-  (interactive)
-  (insert ?¡)) ; 161
-(defalias 'kf-inverted-exclamation-point 'kf-¡)
-(defalias 'kf-upside-down-exclamation-point 'kf-¡)
-
-(defun kf-♥ ()
-  "The people who made the Unicode standard had their priorities straight."
-  (interactive)
-  (insert ?♥)) ; 9829
-(defalias 'kf-heart 'kf-♥)
-
-(defun kf-∞ ()
-  "It seems appropriate to put this one at the end."
-  (interactive)
-  (insert ?∞)) ; 8734
-(defalias 'kf-infinity 'kf-∞)
-
-(defun kf-⚛ ()
-  "When the glyph is small enough, it looks like a bug."
-  (interactive)
-  (insert ?⚛)) ; 9883
-(defalias 'kf-atom 'kf-⚛)
-
-(defun kf-shruggy-thing ()
-  "You know, that thing everyone uses?  For that feeling?  Yeah.  That one."
-  (interactive)
-  (insert "¯\\_(ツ)_/¯"))
-
-(defun kf-  ()
-  "Insert a line separator."
-  (interactive)
-  (insert ? )) ; 8232
-(defalias 'kf-line-separator 'kf- )
-
-(defun kf-👍🏽 ()
-  "Insert a thumbs-up emoji (medium skin tone)."
-  (interactive)
-  (insert "👍🏽")) ; 128077 (U+1F44D) 127997 (U+1F3FD)
-(defalias 'kf-thumbs-up 'kf-👍🏽)
-
-(defun kf-🧵 ()
-  "Insert a thumbs-up emoji."
-  (interactive)
-  (insert "?🧵")) ; 129525
-(defalias 'kf-thread 'kf-🧵)
-
-(defun kf-¢ ()
-  "Insert a cents sign."
-  (interactive)
-  (insert "¢"))
-(defalias 'kf-cents 'kf-¢)
-
-;; http://unicodefractions.com/
-(defun kf-½ ()
-  "Best official Unicode name ever: 'VULGAR FRACTION ONE HALF' (U+00BD)."
-  (interactive)
-  (insert "½"))
-(defalias 'kf-1/2 'kf-½)
-(defun kf-⅓ ()
-  "See kf-½ and multiply by ⅔."
-  (interactive)
-  (insert "⅓"))
-(defalias 'kf-1/3 'kf-⅓)
-(defun kf-⅔ ()
-  "George Cantor, please come to the red courtesy phone."
-  (interactive)
-  (insert "⅔"))
-(defalias 'kf-2/3 'kf-⅔)
-
-;; https://en.wikiversity.org/wiki/Template:Music_symbols
-(defun kf-♭ ()
-  (interactive)
-  (insert "♭")) ; &#x266d
-(defalias 'kf-flat 'kf-♭)
-(defun kf-♮ ()
-  (interactive)
-  (insert "♮")) ; &#x266e
-(defalias 'kf-natural 'kf-♮)
-(defun kf-♯ ()
-  (interactive)
-  (insert "♯")) ; &#x266f
-(defalias 'kf-sharp 'kf-♯)
-(defun kf-𝄫 ()
-  (interactive)
-  (insert "𝄫")) ; &#x1D12B
-(defalias 'kf-double-flat 'kf-𝄫)
-(defun kf-𝄪 ()
-  (interactive)
-  (insert "𝄪")) ; &#x1D12A
-(defalias 'kf-double-sharp 'kf-𝄪)
-(defun kf-dvořák ()
-  (interactive)
-  (insert "Dvořák")) ; it is so hard to do this any other way
-(defalias 'kf-dvorak 'kf-dvořák)
-
 (defun kf-arrow (type)
   "Insert an arrow of TYPE, where type is a single letter:
     - \"[u]p\"
@@ -3107,56 +1848,6 @@ With two prefix args, insert an x'ed checkbox."
                                (?h . ?↔)
                                (?v . ?↕)
                                )))))
-
-(defun kf-zero-width-space (&optional joiner)
-  (interactive "P")
-  "Insert \"​\" or, if prefix argument JOINER is non-nil, \"‌\".
-That is, Zero-Width Space (ZWSP) a.k.a. Zero-Width Non-Joiner (ZWNJ)
-in the first case (Unicode 8203) or Zero-Width Joiner (ZWJ) in the
-second case (Unicode 8204).  For more information about these
-characters, see https://en.wikipedia.org/wiki/Zero-width_non-joiner
-and https://en.wikipedia.org/wiki/Zero-width_space.  See also
-https://github.com/redcross/arcdata/issues/232)."
-  (interactive)
-  (insert (if joiner ?‌ ?​)))
-
-(defun kf-earth-globes ()
-  "Insert some Earth globes.  Namely:
-    🌍  -  127757 (#o371415, #x1f30d)
-    🌏  -  127759 (#o371417, #x1f30f)
-    🌎  -  127758 (#o371416, #x1f30e)
-    🌑  -  127761 (#o371421, #x1f311)"
-  (interactive)
-  (insert "🌍🌏🌎🌑"))
-
-(defun kf-mountain-sun ()
-  "Insert \"🌄\" (Unicode 127748)."
-  (interactive)
-  (insert ?🌄))
-
-(defun kf-™ (&optional parg)
-  "Insert \"™\" (Unicode U+2122).  With prefix arg, insert ® (U+00AE) too.
-But do not insert \"℠\" (U+2120); nobody wants that."
-  (interactive "P")
-  (insert ?™)
-  (when parg (insert ?®)))
-(defalias 'kf-trademark 'kf-™)
-
-(defun kf-‏ ()
-  (interactive)
-  "Insert \"‏\" (RIGHT-TO-LEFT MARK / RLM).
-This is equivalent to `C-x 8 RIGHT-TO-LEFT MARK'.
-See also \"Bidirectional Editing\" in the Emacs manual."
-  (insert ?‏))
-(defalias 'kf-rlm 'kf-‏)
-
-(defun kf-‎ ()
-  (interactive)
-  "Insert \"‎\" (LEFT-TO-RIGHT MARK / LRM).
-This is equivalent to `C-x 8 LEFT-TO-RIGHT MARK'.
-See also \"Bidirectional Editing\" in the Emacs manual."
-  (insert ?‎))
-(defalias 'kf-lrm 'kf-‎)
 
 
 (defun kf-reverse-lines-region (b e)
@@ -3242,425 +1933,3 @@ column, then prepend asterisk + space and postpend colon + space."
       ;; that's what's most likely to need editing right now.
       (re-search-backward "([0-9]")
       (forward-char 1))))
-
-
-;;; It's Business Time.
-
-;; Thanks to Brian Fitzpatrick for pointing out
-;; https://www.atrixnet.com/bs-generator.html.
-
-(defconst kf-ibt-adverbs (list
-                          "appropriately"
-                          "assertively"
-                          "authoritatively"
-                          "collaboratively"
-                          "compellingly"
-                          "competently"
-                          "completely"
-                          "continually"
-                          "conveniently"
-                          "credibly"
-                          "distinctively"
-                          "dramatically"
-                          "dynamically"
-                          "efficiently"
-                          "energistically"
-                          "enthusiastically"
-                          "fungibly"
-                          "globally"
-                          "holistically"
-                          "interactively"
-                          "intrinsically"
-                          "monotonectally"
-                          "objectively"
-                          "phosfluorescently"
-                          "proactively"
-                          "professionally"
-                          "progressively"
-                          "quickly"
-                          "rapidiously"
-                          "seamlessly"
-                          "synergistically"
-                          "uniquely"
-                          ))
-
-(defconst kf-ibt-verbs (list
-                        "actualize"
-                        "administrate"
-                        "aggregate"
-                        "architect"
-                        "benchmark"
-                        "brand"
-                        "build"
-                        "cloudify"
-                        "communicate"
-                        "conceptualize"
-                        "coordinate"
-                        "create"
-                        "cultivate"
-                        "customize"
-                        "deliver"
-                        "deploy"
-                        "develop"
-                        "dinintermediate"
-                        "disseminate"
-                        "drive"
-                        "embrace"
-                        "e-enable"
-                        "empower"
-                        "enable"
-                        "engage"
-                        "engineer"
-                        "enhance"
-                        "envisioneer"
-                        "evisculate"
-                        "evolve"
-                        "expedite"
-                        "exploit"
-                        "extend"
-                        "fabricate"
-                        "facilitate"
-                        "fashion"
-                        "formulate"
-                        "foster"
-                        "generate"
-                        "grow"
-                        "harness"
-                        "impact"
-                        "implement"
-                        "incentivize"
-                        "incept"
-                        "incubate"
-                        "initiate"
-                        "innovate"
-                        "integrate"
-                        "iterate"
-                        "leverage existing"
-                        "leverage others'"
-                        "maintain"
-                        "matrix"
-                        "maximize"
-                        "mesh"
-                        "monetize"
-                        "morph"
-                        "myocardinate"
-                        "negotiate"
-                        "network"
-                        "optimize"
-                        "onboard"
-                        "orchestrate"
-                        "parallel task"
-                        "plagiarize"
-                        "pontificate"
-                        "predominate"
-                        "procrastinate"
-                        "productivate"
-                        "productize"
-                        "promote"
-                        "provide access to"
-                        "pursue"
-                        "recaptiualize"
-                        "reconceptualize"
-                        "redefine"
-                        "re-engineer"
-                        "reintermediate"
-                        "reinvent"
-                        "repurpose"
-                        "restore"
-                        "revolutionize"
-                        "right-shore"
-                        "scale"
-                        "seize"
-                        "simplify"
-                        "strategize"
-                        "streamline"
-                        "supply"
-                        "syndicate"
-                        "synergize"
-                        "synthesize"
-                        "target"
-                        "transform"
-                        "transition"
-                        "underwhelm"
-                        "unleash"
-                        "utilize"
-                        "visualize"
-                        "whiteboard"
-                        ))
-
-(defconst kf-ibt-adjectives (list
-                             "24/7"
-                             "24/365"
-                             "accurate"
-                             "adaptive"
-                             "agile"
-                             "alternative"
-                             "an expanded array of"
-                             "B2B"
-                             "B2C"
-                             "backend"
-                             "backward-compatible"
-                             "best-of-breed"
-                             "bleeding-edge"
-                             "bricks-and-clicks"
-                             "business"
-                             "clicks-and-mortar"
-                             "client-based"
-                             "client-centered"
-                             "client-centric"
-                             "client-focused"
-                             "cloud-based"
-                             "cloud-centric"
-                             "cloudified"
-                             "collaborative"
-                             "compelling"
-                             "competitive"
-                             "cooperative"
-                             "corporate"
-                             "cost effective"
-                             "covalent"
-                             "cross functional"
-                             "cross-media"
-                             "cross-platform"
-                             "cross-unit"
-                             "customer directed"
-                             "customized"
-                             "cutting-edge"
-                             "distinctive"
-                             "distributed"
-                             "diverse"
-                             "dynamic"
-                             "e-business"
-                             "economically sound"
-                             "effective"
-                             "efficient"
-                             "elastic"
-                             "emerging"
-                             "empowered"
-                             "enabled"
-                             "end-to-end"
-                             "enterprise"
-                             "enterprise-wide"
-                             "equity invested"
-                             "error-free"
-                             "ethical"
-                             "excellent"
-                             "exceptional"
-                             "extensible"
-                             "extensive"
-                             "flexible"
-                             "focused"
-                             "frictionless"
-                             "front-end"
-                             "fully researched"
-                             "fully tested"
-                             "functional"
-                             "functionalized"
-                             "fungible"
-                             "future-proof"
-                             "global"
-                             "go forward"
-                             "goal-oriented"
-                             "granular"
-                             "high standards in"
-                             "high-payoff"
-                             "hyperscale"
-                             "high-quality"
-                             "highly efficient"
-                             "holistic"
-                             "impactful"
-                             "inexpensive"
-                             "innovative"
-                             "installed base"
-                             "integrated"
-                             "interactive"
-                             "interdependent"
-                             "intermandated"
-                             "interoperable"
-                             "intuitive"
-                             "just in time"
-                             "leading-edge"
-                             "leveraged"
-                             "long-term high-impact"
-                             "low-risk high-yield"
-                             "magnetic"
-                             "maintainable"
-                             "market positioning"
-                             "market-driven"
-                             "mission-critical"
-                             "multidisciplinary"
-                             "multifunctional"
-                             "multimedia based"
-                             "next-generation"
-                             "on-demand"
-                             "one-to-one"
-                             "open-source"
-                             "optimal"
-                             "orthogonal"
-                             "out-of-the-box"
-                             "pandemic"
-                             "parallel"
-                             "performance based"
-                             "plug-and-play"
-                             "premier"
-                             "premium"
-                             "principle-centered"
-                             "proactive"
-                             "process-centric"
-                             "professional"
-                             "progressive"
-                             "prospective"
-                             "quality"
-                             "real-time"
-                             "reliable"
-                             "resource-sucking"
-                             "resource-maximizing"
-                             "resource-leveling"
-                             "revolutionary"
-                             "robust"
-                             "scalable"
-                             "seamless"
-                             "stand-alone"
-                             "standardized"
-                             "standards compliant"
-                             "state of the art"
-                             "sticky"
-                             "strategic"
-                             "superior"
-                             "sustainable"
-                             "synergistic"
-                             "tactical"
-                             "team building"
-                             "team driven"
-                             "technically sound"
-                             "timely"
-                             "top-line"
-                             "transparent"
-                             "turnkey"
-                             "ubiquitous"
-                             "unique"
-                             "user-centric"
-                             "user friendly"
-                             "value-added"
-                             "vertical"
-                             "viral"
-                             "virtual"
-                             "visionary"
-                             "web-enabled"
-                             "wireless"
-                             "world-class"
-                             "worldwide"
-                             ))
-
-(defconst kf-ibt-nouns (list
-                        "action items"
-                        "adoption"
-                        "alignments"
-                        "applications"
-                        "architectures"
-                        "bandwidth"
-                        "benefits"
-                        "best practices"
-                        "catalysts for change"
-                        "channels"
-                        "clouds"
-                        "collaboration and idea-sharing"
-                        "communities"
-                        "content"
-                        "convergence"
-                        "core competencies"
-                        "customer service"
-                        "data"
-                        "deliverables"
-                        "e-business"
-                        "e-commerce"
-                        "e-markets"
-                        "e-tailers"
-                        "e-services"
-                        "experiences"
-                        "expertise"
-                        "functionalities"
-                        "fungibility"
-                        "growth strategies"
-                        "human capital"
-                        "ideas"
-                        "imperatives"
-                        "infomediaries"
-                        "information"
-                        "infrastructures"
-                        "initiatives"
-                        "innovation"
-                        "intellectual capital"
-                        "interfaces"
-                        "internal or \"organic\" sources"
-                        "leadership"
-                        "leadership skills"
-                        "manufactured products"
-                        "markets"
-                        "materials"
-                        "meta-services"
-                        "methodologies"
-                        "methods of empowerment"
-                        "metrics"
-                        "mindshare"
-                        "models"
-                        "networks"
-                        "niches"
-                        "niche markets"
-                        "nosql"
-                        "opportunities"
-                        "\"outside the box\" thinking"
-                        "outsourcing"
-                        "paradigms"
-                        "partnerships"
-                        "platforms"
-                        "portals"
-                        "potentialities"
-                        "rocess improvements"
-                        "processes"
-                        "products"
-                        "quality vectors"
-                        "relationships"
-                        "resources"
-                        "results"
-                        "ROI"
-                        "scenarios"
-                        "schemas"
-                        "scrums"
-                        "services"
-                        "solutions"
-                        "sources"
-                        "sprints"
-                        "strategic theme areas"
-                        "storage"
-                        "supply chains"
-                        "synergy"
-                        "systems"
-                        "technologies"
-                        "technology"
-                        "testing procedures"
-                        "total linkage"
-                        "users"
-                        "value"
-                        "vortals"
-                        "web-readiness"
-                        "web services"
-                        "wins"
-                        "virtualization"
-                        ))
-
-(defun kf-ibt-phrase (&optional insert)
-  "Generate a business time phrase.
-If interactive, message it unless optional argument INSERT is
-non-nil, in which case insert it, and in any case return it.
-If non-interactive, just return it."
-  (interactive "P")
-  (let ((bt (concat (seq-random-elt kf-ibt-adverbs)    " "
-                    (seq-random-elt kf-ibt-verbs)      " "
-                    (seq-random-elt kf-ibt-adjectives) " "
-                    (seq-random-elt kf-ibt-nouns))))
-    (if (called-interactively-p)
-        (if insert
-            (insert bt)
-          (message "%s" bt))
-      bt)))

@@ -1,11 +1,11 @@
 ;; Emacs configuration / cpjh
 
 ;; Initialize terminal
+(when (display-graphic-p)(tool-bar-mode -1))
+(toggle-frame-maximized)
 (electric-indent-mode -1)
 (scroll-bar-mode -1)
-(when (display-graphic-p)(tool-bar-mode -1))
 (tooltip-mode -1)
-(toggle-frame-maximized)
 
 (defconst *mac* (eq system-type 'darwin))
 (defconst *gnu* (eq system-type 'gnu/linux))
@@ -15,24 +15,26 @@
 (defconst *natasha* (string-equal (system-name) "natasha"))
 
 (when *mac*
-	(set-frame-font "Inconsolata 21")
+	(set-frame-font "Inconsolata 21" nil t)
 	; Mac command key is Super
 	; Mac option  key is Meta
 	; Mac control key is Control
 	(setq mac-function-modifier 'hyper)		; Hyper
 	(setq mac-right-command-modifier 'alt)	; Alt
 	(setq mac-right-option-modifier nil)
-	(define-key key-translation-map (kbd "<C-mouse-1>") (kbd "<mouse-2>")))
+	(define-key key-translation-map
+		(kbd "<C-mouse-1>") (kbd "<mouse-2>")))
 (when *gnu*
-	(set-frame-font "Monospace 17"))
+	(set-frame-font "Monospace 17" nil t))
 (when *w32*
-	(set-frame-font "Consolas 12")
+	(set-frame-font "Consolas 12" nil t)
 	(setq w32-apps-modifier 'hyper)
 	(setq w32-lwindow-modifier 'super)
 	(setq w32-pass-lwindow-to-system nil)
 	(message "Running on Windows."))
 
 (set-background-color "Ivory")
+(add-to-list 'default-frame-alist '(fullscreen . maximized))
 
 (setq user-mail-address "cpjhenry@gmail.com")
 (setq calendar-latitude 45.3)
@@ -57,7 +59,7 @@
 
 (when *mac*
 	(setq default-directory "~/")
-	(setq exec-path '(".local/" "/Users/cpjh/bin/" "/Library/TeX/texbin/" "/usr/local/opt/qt@5/bin/"
+	(setq exec-path '("/Users/cpjh/bin/" "/Library/TeX/texbin/" "/usr/local/opt/qt@5/bin/"
 					"/usr/local/opt/python@3/libexec/bin/" "/usr/local/MacGPG2/bin/" "/usr/libexec/"
 					"/usr/local/opt/gnu-sed/libexec/gnubin/" "/usr/local/opt/coreutils/libexec/gnubin/"
 					"/usr/local/bin/" "/usr/local/sbin/" "/usr/bin/" "/usr/sbin/" "/bin/" "/sbin/"
@@ -73,11 +75,11 @@
 (setq-default indicate-empty-lines t)
 
 (setq frame-title-format nil)
-(setq ns-pop-up-frames nil)
 (setq ns-use-native-fullscreen t)
+(setq pop-up-windows nil)
+(setq pop-up-frames 'graphic-only)
 (setq use-dialog-box nil)
 (setq use-file-dialog nil)
-(setq pop-up-windows nil)
 
 (setq ad-redefinition-action 'accept)
 (setq bookmark-save-flag 1)
@@ -135,17 +137,39 @@
 
 ;; buffers
 (load "init/filesandbuffers")
+;(eval-after-load "window" '(require 'window+))
+;(require 'frame-bufs)
+;(frame-bufs-mode t)
+;(use-package frame-mode
+;  :demand t
+;  :config 	(progn
+;			(frame-mode +1)
+;			(frame-keys-mode +1)))
+
+;(use-package frames-only-mode :config (frames-only-mode) )
+
 (add-hook 'before-save-hook 'time-stamp)
+
+(with-eval-after-load 'dired
+	(require 'dired-x)
+	(unless *w32* (setq dired-kill-when-opening-new-dired-buffer t))
+	(setq dired-omit-files (concat dired-omit-files
+		"\\|^INDEX$\\|-t\\.tex$\\|\\.DS_Store$\\|\\.localized$"))
+	(require 'ls-lisp)
+	(setq ls-lisp-use-string-collate nil)
+	(setq ls-lisp-use-insert-directory-program nil)
+	(setq ls-lisp-ignore-case 't) )
 (add-hook 'dired-mode-hook (lambda()
-	(local-set-key (kbd "q")	   'kill-dired-buffers)
-	(local-set-key (kbd "RET")	   'dired-find-alternate-file)
-	(local-set-key (kbd "^")	   'dired-find-alternate-file) ))
+	(local-set-key (kbd "q")		'kill-dired-buffers)
+	(defalias 'dired-find-file		'dired-find-alternate-file)
+	(dired-omit-mode 1) ))
+
 (add-hook 'emacs-lisp-mode-hook (lambda()
 	(prettify-symbols-mode)
 	(show-paren-mode) ))
 (add-hook 'emacs-news-view-mode-hook (lambda()
-	(local-set-key (kbd "<right>") 'viewmodenext)
-	(local-set-key (kbd "<left>" ) 'viewmodeprev)
+	(local-set-key (kbd "<right>")	'viewmodenext)
+	(local-set-key (kbd "<left>" )	'viewmodeprev)
 	(page-break-lines-mode) ))
 	(defun viewmodenext ()(interactive)
 		(outline-next-heading)
@@ -154,24 +178,24 @@
 		(outline-previous-heading)
 		(recenter-top-bottom))
 (add-hook 'eww-mode-hook (lambda ()
-	(local-set-key (kbd "q")	   'kill-current-buffer)
-	(local-set-key (kbd "<left>")  'eww-back-url) ))
+	(local-set-key (kbd "q")		'kill-current-buffer)
+	(local-set-key (kbd "<left>")	'eww-back-url) ))
 (add-hook 'help-mode-hook (lambda()
-	(local-set-key (kbd "q")	   'kill-current-buffer)
-	(local-set-key (kbd "<left>" ) 'help-go-back)
-	(local-set-key (kbd "<right>") 'help-go-forward) ))
+	(local-set-key (kbd "q")		'kill-current-buffer)
+	(local-set-key (kbd "<left>" )	'help-go-back)
+	(local-set-key (kbd "<right>")	'help-go-forward) ))
 (add-hook 'ibuffer-mode-hook (lambda()
-	(local-set-key (kbd "q")	   'kill-current-buffer)
-	(local-set-key (kbd "<up>")    'ibuffer-previous-line)
-	(local-set-key (kbd "<down>")  'ibuffer-next-line)
-	(local-set-key (kbd "<right>") 'ibuffer-previous-header)
-	(local-set-key (kbd "<left>")  'ibuffer-next-header)
+	(local-set-key (kbd "q")		'kill-current-buffer)
+	(local-set-key (kbd "<up>")		'ibuffer-previous-line)
+	(local-set-key (kbd "<down>")	'ibuffer-next-line)
+	(local-set-key (kbd "<right>")	'ibuffer-previous-header)
+	(local-set-key (kbd "<left>")	'ibuffer-next-header)
 	(ibuffer-switch-to-saved-filter-groups "home")
 	(ibuffer-update nil t) ))
 (add-hook 'Info-mode-hook (lambda()
-	(local-set-key (kbd "q")	   'kill-current-buffer)
-	(local-set-key (kbd "<left>" ) 'Info-history-back)
-	(local-set-key (kbd "<right>") 'Info-history-forward) ))
+	(local-set-key (kbd "q")		'kill-current-buffer)
+	(local-set-key (kbd "<left>" )	'Info-history-back)
+	(local-set-key (kbd "<right>")	'Info-history-forward) ))
 
 (remove-hook
 	'file-name-at-point-functions
@@ -207,6 +231,7 @@
 (setq ido-enable-flex-matching t)
 (define-key (cdr ido-minor-mode-map-entry) [remap write-file] nil); turn off C-x C-w remapping
 (bind-key (kbd "C-<tab>") 'ido-switch-buffer)
+(global-set-key (kbd "C-x C-d")	'ido-dired)
 
 
 ;; calendar
