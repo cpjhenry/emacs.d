@@ -2,9 +2,9 @@
 
 ;; Initialize terminal
 (when (display-graphic-p)(tool-bar-mode -1))
+(when (display-graphic-p)(scroll-bar-mode -1))
 (toggle-frame-maximized)
 (electric-indent-mode -1)
-(scroll-bar-mode -1)
 (tooltip-mode -1)
 
 (defconst *mac* (eq system-type 'darwin))
@@ -67,7 +67,6 @@
 
 ;; settings
 (set-language-environment 'utf-8)
-(setq initial-major-mode 'text-mode)
 (setq default-major-mode 'text-mode)
 (setq-default tab-width 4)
 (setq-default fill-column 55)
@@ -123,8 +122,7 @@
 (setq url-configuration-directory	(concat user-emacs-directory "var/url/configuration/"))
 
 ;; custom variables
-(setq custom-file (concat user-emacs-directory "custom.el"))
-(load custom-file 'noerror)
+(setq custom-file (make-temp-file "emacs-custom"))
 
 ;; backups
 (setq auto-save-default nil)
@@ -147,7 +145,7 @@
 		"\\|^INDEX$\\|-t\\.tex$\\|\\.DS_Store$\\|\\.localized$"))
 	(require 'ls-lisp)
 	(setq ls-lisp-use-string-collate nil)
-	(setq ls-lisp-use-insert-directory-program nil)
+;	(setq ls-lisp-use-insert-directory-program nil)
 	(setq ls-lisp-ignore-case 't) )
 (add-hook 'dired-mode-hook (lambda()
 	(local-set-key (kbd "q")		'kill-dired-buffers)
@@ -192,12 +190,6 @@
 	'ffap-guess-file-name-at-point)
 
 (defalias 'yes-or-no-p 'y-or-n-p) ; y or n is enough
-(use-package persistent-scratch
-	:config	(persistent-scratch-setup-default))
-(use-package unkillable-scratch :ensure t
-	:init	(setq unkillable-scratch-do-not-reset-scratch-buffer t))
-	:config	(unkillable-scratch t)
-
 (easy-menu-add-item  nil '("Buffers") ["Increase text size" text-scale-increase])
 (easy-menu-add-item  nil '("Buffers") ["Decrease text size" text-scale-decrease])
 
@@ -209,6 +201,13 @@
 (add-hook 'minibuffer-exit-hook		; Removes *Completions* buffer when done
 	(lambda () (let ((buffer "*Completions*")) (and (get-buffer buffer) (kill-buffer buffer)))))
 
+;(kill-buffer "*scratch*")
+;(use-package persistent-scratch
+;	:config	(persistent-scratch-setup-default))
+;(use-package unkillable-scratch :ensure t
+;	:init	(setq unkillable-scratch-do-not-reset-scratch-buffer t))
+;	:config	(unkillable-scratch t)
+
 ;; opening multiple files
 (setq inhibit-startup-buffer-menu t) ; Don't show *Buffer list*
 (add-hook 'window-setup-hook		 ; Show only one active window
@@ -218,12 +217,36 @@
 ;; https://www.emacswiki.org/emacs/InteractivelyDoThings
 (require 'ido)
 (ido-mode t)
-(setq	ido-enable-flex-matching t
-;		ido-separator "\n"
-		)
+(setq ido-enable-flex-matching t)
 (define-key (cdr ido-minor-mode-map-entry) [remap write-file] nil); turn off C-x C-w remapping
 (bind-key (kbd "C-<tab>") 'ido-switch-buffer)
 (global-set-key (kbd "C-x C-d")	'ido-dired)
+
+;(unless *w32* (setq initial-buffer-choice "~/"))
+
+;; make using frames easier
+(set 'gdb-use-separate-io-buffer nil)
+(set 'gdb-many-windows nil)
+(set 'org-agenda-window-setup 'other-frame)
+(set 'org-src-window-setup 'other-frame)
+(set 'mouse-autoselect-window nil)
+(set 'focus-follows-mouse nil)
+
+;; kill frames when a buffer is buried, makes most things play nice with
+;; frames
+(set 'frame-auto-hide-function 'delete-frame)
+
+(defvar kill-frame-when-buffer-killed-buffer-list
+  '("*RefTeX Select*" "*Help*" "*Popup Help*")
+  "Buffer names for which the containing frame should be
+  killed when the buffer is killed.")
+(defun kill-frame-if-current-buffer-matches ()
+  "Kill frames as well when certain buffers are closed, helps stop some
+  packages spamming frames."
+ (interactive)
+ (if (member (buffer-name) kill-frame-when-buffer-killed-buffer-list)
+     (delete-frame)))
+(add-hook 'kill-buffer-hook 'kill-frame-if-current-buffer-matches)
 
 
 ;; calendar

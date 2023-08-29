@@ -9,9 +9,9 @@
 (defun new-empty-buffer ()
 	"Create new empty buffer."
 	(interactive)
-	(let ((buf (generate-new-buffer "untitled\.txt")))
+	(let ((buf (generate-new-buffer "untitled")))
 		(switch-to-buffer buf)
-		(funcall (and initial-major-mode))
+		(funcall (and default-major-mode))
 		(setq buffer-offer-save t) ))
 
 (defun new-markdown-buffer ()
@@ -19,7 +19,7 @@
 	(interactive)
 	(let ((buf (generate-new-buffer "untitled\.md")))
 		(switch-to-buffer buf)
-		(funcall (and initial-major-mode))
+		(funcall (and default-major-mode))
 		(markdown-mode)
 		(setq buffer-offer-save t) ))
 
