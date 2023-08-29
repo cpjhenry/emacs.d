@@ -137,16 +137,6 @@
 
 ;; buffers
 (load "init/filesandbuffers")
-;(eval-after-load "window" '(require 'window+))
-;(require 'frame-bufs)
-;(frame-bufs-mode t)
-;(use-package frame-mode
-;  :demand t
-;  :config 	(progn
-;			(frame-mode +1)
-;			(frame-keys-mode +1)))
-
-;(use-package frames-only-mode :config (frames-only-mode) )
 
 (add-hook 'before-save-hook 'time-stamp)
 
@@ -228,7 +218,9 @@
 ;; https://www.emacswiki.org/emacs/InteractivelyDoThings
 (require 'ido)
 (ido-mode t)
-(setq ido-enable-flex-matching t)
+(setq	ido-enable-flex-matching t
+;		ido-separator "\n"
+		)
 (define-key (cdr ido-minor-mode-map-entry) [remap write-file] nil); turn off C-x C-w remapping
 (bind-key (kbd "C-<tab>") 'ido-switch-buffer)
 (global-set-key (kbd "C-x C-d")	'ido-dired)
@@ -578,8 +570,6 @@
 	(bind-key "C-c x o"	'office.org)
 	(defun office.org ()(interactive)(find-file "~/OD/Work/!.org")) )
 (when *w32*
+	(setq default-directory "c:/Users/henrypa/OneDrive - City of Ottawa/")
 	(bind-key "C-c x o"	'office.org)
-	(defun office.org ()(interactive)(find-file "c:/Users/henrypa/OneDrive - City of Ottawa/!.org")) )
-
-;; launch
-(create-scratch-buffer)
+	(defun office.org ()(interactive)(find-file (concat default-directory "!.org"))) )
