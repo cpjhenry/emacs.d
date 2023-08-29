@@ -73,10 +73,7 @@
 (setq-default help-window-select t)
 (setq-default indicate-empty-lines t)
 
-(setq frame-title-format nil)
 (setq ns-use-native-fullscreen t)
-(setq pop-up-windows nil)
-(setq pop-up-frames 'graphic-only)
 (setq use-dialog-box nil)
 (setq use-file-dialog nil)
 
@@ -122,6 +119,8 @@
 (setq url-configuration-directory	(concat user-emacs-directory "var/url/configuration/"))
 
 ;; custom variables
+(setq custom-file "/Users/cpjh/.emacs.d/custom.el")
+(load "cus-edit+")
 
 ;; backups
 (setq auto-save-default nil)
@@ -144,7 +143,7 @@
 		"\\|^INDEX$\\|-t\\.tex$\\|\\.DS_Store$\\|\\.localized$"))
 	(require 'ls-lisp)
 	(setq ls-lisp-use-string-collate nil)
-;	(setq ls-lisp-use-insert-directory-program nil)
+	(setq ls-lisp-use-insert-directory-program nil)
 	(setq ls-lisp-ignore-case 't) )
 (add-hook 'dired-mode-hook (lambda()
 	(local-set-key (kbd "q")		'kill-dired-buffers)
@@ -224,6 +223,10 @@
 ;(unless *w32* (setq initial-buffer-choice "~/"))
 
 ;; make using frames easier
+(setq frame-title-format nil)
+(setq pop-up-windows nil)
+(setq pop-up-frames 'graphic-only)
+
 (set 'gdb-use-separate-io-buffer nil)
 (set 'gdb-many-windows nil)
 (set 'org-agenda-window-setup 'other-frame)
@@ -231,21 +234,8 @@
 (set 'mouse-autoselect-window nil)
 (set 'focus-follows-mouse nil)
 
-;; kill frames when a buffer is buried, makes most things play nice with
-;; frames
+;; kill frames when a buffer is buried
 (set 'frame-auto-hide-function 'delete-frame)
-
-(defvar kill-frame-when-buffer-killed-buffer-list
-  '("*RefTeX Select*" "*Help*" "*Popup Help*")
-  "Buffer names for which the containing frame should be
-  killed when the buffer is killed.")
-(defun kill-frame-if-current-buffer-matches ()
-  "Kill frames as well when certain buffers are closed, helps stop some
-  packages spamming frames."
- (interactive)
- (if (member (buffer-name) kill-frame-when-buffer-killed-buffer-list)
-     (delete-frame)))
-(add-hook 'kill-buffer-hook 'kill-frame-if-current-buffer-matches)
 
 
 ;; calendar
@@ -412,9 +402,9 @@
 (use-package org-chef :ensure t)
 (add-hook 'org-mode-hook 'org-indent-mode)
 
-(load "init/org-mode")			; org-mode functions
-(load "init/pdfexport")			; pdf functions
-;(load "init/misc" 'noerror)	; misc. functions
+(load "init/org-mode")		; org-mode functions
+(load "init/pdfexport")		; pdf functions
+(load "init/misc" 'noerror)	; misc. functions
 
 
 ;; Configure specific machines
@@ -423,12 +413,12 @@
 		browse-url-generic-program "/Applications/Firefox.app/Contents/MacOS/firefox")
 	(load "init/elfeed") )
 
-(when *mac*
+;(when *mac*
 ;	(load "init/deft")	; note functions (bound to <f7>)
 ;	(load "init/sn")	; simplenote	 (bound to <f8>)
-	(use-package gnugo ; Game of Go
-		:init	(setq gnugo-program "/usr/local/bin/gnugo")
-		:config	(easy-menu-add-item  nil '("tools" "games") ["Go" gnugo t])) )
+;	(use-package gnugo ; Game of Go
+;		:init	(setq gnugo-program "/usr/local/bin/gnugo")
+;		:config	(easy-menu-add-item  nil '("tools" "games") ["Go" gnugo t])) )
 
 (when *gnu*
 	(setq browse-url-browser-function 'browse-url-generic
