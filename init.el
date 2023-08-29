@@ -122,7 +122,6 @@
 (setq url-configuration-directory	(concat user-emacs-directory "var/url/configuration/"))
 
 ;; custom variables
-(setq custom-file (make-temp-file "emacs-custom"))
 
 ;; backups
 (setq auto-save-default nil)
