@@ -288,6 +288,21 @@
 
 (add-hook 'kill-buffer-hook 'kill-frame-if-current-buffer-matches)
 
+;; make using frames easier
+(setq frame-title-format nil)
+(setq pop-up-windows nil)
+(setq pop-up-frames 'graphic-only)
+
+(set 'gdb-use-separate-io-buffer nil)
+(set 'gdb-many-windows nil)
+(set 'org-agenda-window-setup 'other-frame)
+(set 'org-src-window-setup 'other-frame)
+(set 'mouse-autoselect-window nil)
+(set 'focus-follows-mouse nil)
+
+;; kill frames when a buffer is buried
+(set 'frame-auto-hide-function 'delete-frame)
+
 
 ;; PRINT functions
 (setq enscript "enscript -cqB")

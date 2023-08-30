@@ -64,6 +64,7 @@
 					"/usr/local/opt/gnu-sed/libexec/gnubin/" "/usr/local/opt/coreutils/libexec/gnubin/"
 					"/usr/local/bin/" "/usr/local/sbin/" "/usr/bin/" "/usr/sbin/" "/bin/" "/sbin/"
 					"/Applications/Emacs.app/Contents/MacOS/libexec/")) )
+	;(unless *w32* (setq initial-buffer-choice "~/"))
 
 ;; settings
 (set-language-environment 'utf-8)
@@ -119,16 +120,15 @@
 (setq url-configuration-directory	(concat user-emacs-directory "var/url/configuration/"))
 
 ;; custom variables
-(setq custom-file "/Users/cpjh/.emacs.d/custom.el")
-(load "cus-edit+")
+(setq custom-file (concat user-emacs-directory "custom.el"))
 
 ;; backups
 (setq auto-save-default nil)
 (setq backup-by-copying t)
 (setq make-backup-files nil)
 
-(unless *w32* (require 'backup-each-save)
-	(add-hook 'after-save-hook 'backup-each-save))
+(unless *w32*	(require 'backup-each-save)
+				(add-hook 'after-save-hook 'backup-each-save))
 
 
 ;; buffers
@@ -147,7 +147,7 @@
 	(setq ls-lisp-ignore-case 't) )
 (add-hook 'dired-mode-hook (lambda()
 	(local-set-key (kbd "q")		'kill-dired-buffers)
-	(defalias 'dired-find-file		'dired-find-alternate-file)
+;	(defalias 'dired-find-file		'dired-find-alternate-file)
 	(dired-omit-mode 1) ))
 
 (add-hook 'emacs-lisp-mode-hook (lambda()
@@ -198,13 +198,7 @@
 (setq initial-scratch-message nil)	; Makes *scratch* empty
 (add-hook 'minibuffer-exit-hook		; Removes *Completions* buffer when done
 	(lambda () (let ((buffer "*Completions*")) (and (get-buffer buffer) (kill-buffer buffer)))))
-
-;(kill-buffer "*scratch*")
-;(use-package persistent-scratch
-;	:config	(persistent-scratch-setup-default))
-;(use-package unkillable-scratch :ensure t
-;	:init	(setq unkillable-scratch-do-not-reset-scratch-buffer t))
-;	:config	(unkillable-scratch t)
+;(kill-buffer "*scratch*")			; Removes *scratch*
 
 ;; opening multiple files
 (setq inhibit-startup-buffer-menu t) ; Don't show *Buffer list*
@@ -217,25 +211,6 @@
 (ido-mode t)
 (setq ido-enable-flex-matching t)
 (define-key (cdr ido-minor-mode-map-entry) [remap write-file] nil); turn off C-x C-w remapping
-(bind-key (kbd "C-<tab>") 'ido-switch-buffer)
-(global-set-key (kbd "C-x C-d")	'ido-dired)
-
-;(unless *w32* (setq initial-buffer-choice "~/"))
-
-;; make using frames easier
-(setq frame-title-format nil)
-(setq pop-up-windows nil)
-(setq pop-up-frames 'graphic-only)
-
-(set 'gdb-use-separate-io-buffer nil)
-(set 'gdb-many-windows nil)
-(set 'org-agenda-window-setup 'other-frame)
-(set 'org-src-window-setup 'other-frame)
-(set 'mouse-autoselect-window nil)
-(set 'focus-follows-mouse nil)
-
-;; kill frames when a buffer is buried
-(set 'frame-auto-hide-function 'delete-frame)
 
 
 ;; calendar
@@ -399,12 +374,13 @@
 
 (use-package org-autolist)
 (add-hook 'org-mode-hook (lambda () (org-autolist-mode)) )
-(use-package org-chef :ensure t)
 (add-hook 'org-mode-hook 'org-indent-mode)
 
 (load "init/org-mode")		; org-mode functions
 (load "init/pdfexport")		; pdf functions
-(load "init/misc" 'noerror)	; misc. functions
+;(load "init/misc")			; misc. functions
+
+(use-package org-chef :ensure t)
 
 
 ;; Configure specific machines
@@ -415,10 +391,7 @@
 
 ;(when *mac*
 ;	(load "init/deft")	; note functions (bound to <f7>)
-;	(load "init/sn")	; simplenote	 (bound to <f8>)
-;	(use-package gnugo ; Game of Go
-;		:init	(setq gnugo-program "/usr/local/bin/gnugo")
-;		:config	(easy-menu-add-item  nil '("tools" "games") ["Go" gnugo t])) )
+;	(load "init/sn")	; simplenote	 (bound to <f8>) )
 
 (when *gnu*
 	(setq browse-url-browser-function 'browse-url-generic
@@ -460,8 +433,6 @@
 ;; alternate keys
 (bind-key "C-S-k"	'kill-whole-line)
 (bind-key "C-x k"	'kill-current-buffer)
-(bind-key "C-x M-k"	'nuke-all-buffers)
-
 (bind-key "C-x x k"	'kill-other-buffers)
 (bind-key "C-x x r"	'rename-file-and-buffer)
 
@@ -472,6 +443,8 @@
 
 (global-set-key (kbd "<f12>")	'list-buffers)
 (global-set-key (kbd "TAB")		'self-insert-command)
+(global-set-key (kbd "C-<tab>") 'ido-switch-buffer)
+(global-set-key (kbd "C-x C-d")	'ido-dired)
 
 (global-set-key (kbd "A-<return>")(kbd "M-<return>"))
 
@@ -560,6 +533,7 @@
 (defalias 'lcd 'list-colors-display)
 (defalias 'lh 'list-hols)
 (defalias 'li 'lorem-ipsum-insert-paragraphs)
+(defalias 'lp 'list-packages)
 (defalias 'pm (kbd "¶"))
 (defalias 'ppc 'ps-print-customize)
 (defalias 'rs 'replace-string)
