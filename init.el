@@ -40,6 +40,7 @@
 (setq calendar-latitude 45.3)
 (setq calendar-longitude -75.7)
 (setq calendar-location-name "Ottawa")
+(setq inhibit-startup-echo-area-message "cpjh")
 (setq maidenhead "FN25dg")
 
 ;; Initialize package manager
@@ -189,7 +190,6 @@
 
 ;; remove unneeded messages and buffers
 (setq inhibit-startup-message t)	; 'About Emacs'
-(setq inhibit-startup-echo-area-message "cpjh")
 (setq initial-scratch-message nil)	; Makes *scratch* empty
 (add-hook 'minibuffer-exit-hook		; Removes *Completions* buffer when done
 	(lambda () (let ((buffer "*Completions*")) (and (get-buffer buffer) (kill-buffer buffer)))))
