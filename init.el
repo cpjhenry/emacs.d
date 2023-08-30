@@ -204,7 +204,7 @@
 (require 'ido)
 (ido-mode t)
 (setq ido-enable-flex-matching t)
-;(define-key (cdr ido-minor-mode-map-entry) [remap write-file] nil); turn off C-x C-w remapping
+(define-key (cdr ido-minor-mode-map-entry) [remap write-file] nil); turn off C-x C-w remapping
 
 
 ;; calendar
