@@ -57,14 +57,8 @@
 (add-to-list 'load-path (expand-file-name "opt" user-emacs-directory))
 (add-to-list 'load-path (expand-file-name "var" user-emacs-directory))
 
-(when *mac*
-	(setq default-directory "~/")
-	(setq exec-path '("/Users/cpjh/bin/" "/Library/TeX/texbin/" "/usr/local/opt/qt@5/bin/"
-					"/usr/local/opt/python@3/libexec/bin/" "/usr/local/MacGPG2/bin/" "/usr/libexec/"
-					"/usr/local/opt/gnu-sed/libexec/gnubin/" "/usr/local/opt/coreutils/libexec/gnubin/"
-					"/usr/local/bin/" "/usr/local/sbin/" "/usr/bin/" "/usr/sbin/" "/bin/" "/sbin/"
-					"/Applications/Emacs.app/Contents/MacOS/libexec/")) )
-	;(unless *w32* (setq initial-buffer-choice "~/"))
+(when *mac*	(setq default-directory "~/"))
+;(unless *w32* (setq initial-buffer-choice "~/"))
 
 ;; settings
 (set-language-environment 'utf-8)
@@ -378,9 +372,12 @@
 
 (load "init/org-mode")		; org-mode functions
 (load "init/pdfexport")		; pdf functions
-(load "init/misc")			; misc. functions
 
 (use-package org-chef :ensure t)
+
+
+;; sundry
+(load "init/misc")			; misc. functions
 
 
 ;; Configure specific machines
