@@ -58,7 +58,6 @@
 (add-to-list 'load-path (expand-file-name "var" user-emacs-directory))
 
 (when *mac*	(setq default-directory "~/"))
-;(unless *w32* (setq initial-buffer-choice "~/"))
 
 ;; settings
 (set-language-environment 'utf-8)
@@ -76,6 +75,7 @@
 (setq bookmark-save-flag 1)
 (setq bookmark-sort-flag nil)
 (setq bookmark-set-fringe-mark nil)
+(setq case-fold-search t)
 (setq comp-async-report-warnings-errors 'silent)
 (setq delete-by-moving-to-trash t)
 (setq dictionary-server "dict.org")
@@ -90,10 +90,12 @@
 (setq mark-ring-max most-positive-fixnum)
 (setq max-lisp-eval-depth 65536)
 (setq recenter-positions '(top))	; (top middle bottom)
+(setq require-final-newline nil)
 (setq ring-bell-function 'ignore)
 (setq save-abbrevs 'silent)
 (setq sentence-end-double-space nil)
 (setq show-paren-style 'mixed)
+(setq show-trailing-whitespace t)
 (setq tramp-default-method "ssh")
 (setq tramp-syntax 'simplified)		; C-x C-f /remotehost:filename
 (setq trash-directory "~/.Trash")
@@ -187,12 +189,10 @@
 
 ;; remove unneeded messages and buffers
 (setq inhibit-startup-message t)	; 'About Emacs'
-(put 'inhibit-startup-echo-area-message 'saved-value
-	(setq inhibit-startup-echo-area-message (user-login-name)))
+(setq inhibit-startup-echo-area-message "cpjh")
 (setq initial-scratch-message nil)	; Makes *scratch* empty
 (add-hook 'minibuffer-exit-hook		; Removes *Completions* buffer when done
 	(lambda () (let ((buffer "*Completions*")) (and (get-buffer buffer) (kill-buffer buffer)))))
-;(kill-buffer "*scratch*")			; Removes *scratch*
 
 ;; opening multiple files
 (setq inhibit-startup-buffer-menu t) ; Don't show *Buffer list*
@@ -309,9 +309,6 @@
 
 ;; Emacs Text and Markdown modes
 (add-hook 'text-mode-hook (lambda ()
-	(setq case-fold-search t)
-	(setq require-final-newline nil)
-	(setq show-trailing-whitespace t)
 	(abbrev-mode)
 	(unless *w32* (flyspell-mode))
 	(visual-line-mode)
@@ -338,42 +335,43 @@
 
 
 ;; Org-mode
-(use-package org)
-(setq org-directory "~/Documents/org/")
-(setq org-agenda-files (list (concat org-directory "daily.org")))
-(setq org-default-notes-file (concat org-directory "notes.org"))
+(use-package org
+	:init	(setq org-directory "~/Documents/org/")
+			(setq org-agenda-files (list (concat org-directory "daily.org")))
+			(setq org-default-notes-file (concat org-directory "notes.org"))
 
-(setq org-startup-folded 'content)			; folded children content all
-(setq org-catch-invisible-edits 'smart)
-(setq org-ctrl-k-protect-subtree t)
-(setq org-ellipsis "…")
-(setq org-enable-priority-commands nil)
-(setq org-export-preserve-breaks t)
-(setq org-export-with-toc nil)
-(setq org-footnote-auto-adjust t)
-(setq org-log-done t)						; 'CLOSED' logging
-(setq org-log-state-notes-into-drawer nil)
-(setq org-log-repeat nil)
-(setq org-special-ctrl-a/e t)
-(setq org-support-shift-select t)
-(setq org-tags-exclude-from-inheritance '("PROJECT"))
+			(setq org-startup-folded 'content)			; folded children content all
+			(setq org-catch-invisible-edits 'smart)
+			(setq org-ctrl-k-protect-subtree t)
+			(setq org-ellipsis "…")
+			(setq org-enable-priority-commands nil)
+			(setq org-export-preserve-breaks t)
+			(setq org-export-with-toc nil)
+			(setq org-footnote-auto-adjust t)
+			(setq org-log-done t)						; 'CLOSED' logging
+			(setq org-log-state-notes-into-drawer nil)
+			(setq org-log-repeat nil)
+			(setq org-special-ctrl-a/e t)
+			(setq org-support-shift-select t)
+			(setq org-tags-exclude-from-inheritance '("PROJECT"))
 
-(setq org-agenda-include-diary nil)
-(setq org-agenda-skip-scheduled-if-done t)
-(setq org-agenda-skip-deadline-if-done t)
-(setq org-agenda-todo-ignore-scheduled t)
-(setq org-agenda-todo-ignore-deadlines t)
-(setq org-agenda-start-on-weekday nil)
-(add-hook 'org-agenda-finalize-hook 'delete-other-windows)
+			(setq org-agenda-include-diary nil)
+			(setq org-agenda-skip-scheduled-if-done t)
+			(setq org-agenda-skip-deadline-if-done t)
+			(setq org-agenda-todo-ignore-scheduled t)
+			(setq org-agenda-todo-ignore-deadlines t)
+			(setq org-agenda-start-on-weekday nil)
+	:config	(add-hook 'org-agenda-finalize-hook 'delete-other-windows)
 
-(use-package org-autolist)
-(add-hook 'org-mode-hook (lambda () (org-autolist-mode)) )
-(add-hook 'org-mode-hook 'org-indent-mode)
+			(use-package org-autolist)
+			(add-hook 'org-mode-hook (lambda () (org-autolist-mode)) )
+			(add-hook 'org-mode-hook 'org-indent-mode)
 
-(load "init/org-mode")		; org-mode functions
-(load "init/pdfexport")		; pdf functions
+			(use-package org-chef :ensure t)
 
-(use-package org-chef :ensure t)
+			(load "init/org-mode")		; org-mode functions
+			(load "init/pdfexport")		; pdf functions
+			)
 
 
 ;; sundry
