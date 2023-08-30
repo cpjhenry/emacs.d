@@ -187,7 +187,7 @@
 	'file-name-at-point-functions
 	'ffap-guess-file-name-at-point)
 
-(defalias 'yes-or-no-p 'y-or-n-p) ; y or n is enough
+(defalias 'yes-or-no-p 'y-or-n-p)	; y or n is enough
 (easy-menu-add-item  nil '("Buffers") ["Increase text size" text-scale-increase])
 (easy-menu-add-item  nil '("Buffers") ["Decrease text size" text-scale-decrease])
 
