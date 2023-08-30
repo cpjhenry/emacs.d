@@ -147,7 +147,7 @@
 	(setq ls-lisp-ignore-case 't) )
 (add-hook 'dired-mode-hook (lambda()
 	(local-set-key (kbd "q")		'kill-dired-buffers)
-;	(defalias 'dired-find-file		'dired-find-alternate-file)
+	(defalias 'dired-find-file		'dired-find-alternate-file)
 	(dired-omit-mode 1) ))
 
 (add-hook 'emacs-lisp-mode-hook (lambda()
@@ -378,7 +378,7 @@
 
 (load "init/org-mode")		; org-mode functions
 (load "init/pdfexport")		; pdf functions
-;(load "init/misc")			; misc. functions
+(load "init/misc")			; misc. functions
 
 (use-package org-chef :ensure t)
 

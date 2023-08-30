@@ -1813,12 +1813,6 @@ Example text:
 
 ;;; Insertion helpers for characters not in my usual input methods.
 
-(defun kf-✓ ()
-  "Insert a checkmark."
-  (interactive)
-  (insert ?✓)) ; 10003
-(defalias 'kf-checkmark 'kf-✓)
-
 (defun kf-checkbox (parg)
   "Insert a checkbox.  
 With one prefix arg, insert a checked checkbox.
