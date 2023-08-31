@@ -35,12 +35,13 @@
 
 (set-background-color "Ivory")
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
+(setq pop-up-windows nil)
+(setq pop-up-frames nil)
 
 (setq user-mail-address "cpjhenry@gmail.com")
 (setq calendar-latitude 45.3)
 (setq calendar-longitude -75.7)
 (setq calendar-location-name "Ottawa")
-(setq inhibit-startup-echo-area-message "cpjh")
 (setq maidenhead "FN25dg")
 
 ;; Initialize package manager
@@ -81,6 +82,7 @@
 (setq delete-by-moving-to-trash t)
 (setq dictionary-server "dict.org")
 (setq flyspell-issue-message-flag nil)
+(setq frame-title-format nil)
 (setq help-clean-buttons t)
 (setq ibuffer-expert t)
 (setq inhibit-default-init t)
@@ -370,8 +372,7 @@
 			(use-package org-chef :ensure t)
 
 			(load "init/org-mode")		; org-mode functions
-			(load "init/pdfexport")		; pdf functions
-			)
+			(load "init/pdfexport")	)	; pdf functions
 
 
 ;; sundry

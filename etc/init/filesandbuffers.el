@@ -63,33 +63,8 @@
     (setq fill-column (if (= fill-column 55) 32 55))
 	(message "fill-column set to: %s" fill-column))
 
-(defun number-paragraphs (&optional takefirst)
-	"Numbers resp. renumber paragraphs.
-
-	If starting from already numbered, take that value as offset."
-	(interactive "*P")
-	(let ((counter 0)
-		(last 0))
-		(when  (looking-at "\\([0-9]+\\)\. ")
-			(setq counter (car (read-from-string  (match-string-no-properties 1))))
-			(forward-paragraph))
-		(while (and (forward-paragraph) (< last (point)))
-			(setq last (copy-marker (point)))
-			(backward-paragraph)
-			(skip-chars-forward " \t\r\n\f")
-			(when (looking-at "[0-9]+\. ")
-				(delete-region (match-beginning 0) (match-end 0)))
-			(insert (format "%s. " (1+ counter)))
-			(setq counter (1+ counter))
-			(goto-char last))))
-
 
 ;; https://svn.red-bean.com/repos/kfogel/trunk/.emacs
-;; VC is great, unless you're trying to do version control.
-(remove-hook 'find-file-hooks 'vc-find-file-hook)
-
-;; Sometimes I have to tweak dired. ;;
-;; (setq dired-listing-switches "-laF")
 
 ;;; Setting modes based on filenames:
 (add-to-list 'auto-mode-alist '("\\.mnu$" . food-menu-mode))
@@ -102,11 +77,7 @@
 (add-to-list 'auto-mode-alist '("\\.s?html?\\'" . text-mode))
 (add-to-list 'auto-mode-alist '("\\.scm$" . scheme-mode))
 (add-to-list 'auto-mode-alist '("logv\\.out$" . kf-changelog-mode))
-
-;; Diff mode gives me the willies.  Yes, all of them!
 (add-to-list 'auto-mode-alist '("\\.patch$" . text-mode))
-
-;; I don't find HTML mode any more convenient than text mode
 (add-to-list 'auto-mode-alist '("\\.html$" . text-mode))
 
 
@@ -260,41 +231,6 @@
 	(find-file file wildcards))
 	(add-hook 'ibuffer-mode-hook (lambda ()
 		(define-key ibuffer-mode-map (kbd "C-x C-f") 'ibuffer-ido-find-file)) )
-
-;(add-hook 'ibuffer-hook (lambda ()
-;	(ibuffer-tramp-set-filter-groups-by-tramp-connection)
-;	(ibuffer-do-sort-by-alphabetic) ))
-
-
-;; Frame functions
-(defvar kill-frame-when-buffer-killed-buffer-list
-  '("*RefTeX Select*" "*Help*" "*Popup Help*")
-  "Buffer names for which the containing frame should be
-  killed when the buffer is killed.")
-
-(defun kill-frame-if-current-buffer-matches ()
-  "Kill frames as well when certain buffers are closed, helps stop some
-  packages spamming frames."
- (interactive)
- (if (member (buffer-name) kill-frame-when-buffer-killed-buffer-list)
-     (delete-frame)))
-
-(add-hook 'kill-buffer-hook 'kill-frame-if-current-buffer-matches)
-
-;; make using frames easier
-(setq frame-title-format nil)
-(setq pop-up-windows nil)
-(setq pop-up-frames 'graphic-only)
-
-(set 'gdb-use-separate-io-buffer nil)
-(set 'gdb-many-windows nil)
-(set 'org-agenda-window-setup 'other-frame)
-(set 'org-src-window-setup 'other-frame)
-(set 'mouse-autoselect-window nil)
-(set 'focus-follows-mouse nil)
-
-;; kill frames when a buffer is buried
-(set 'frame-auto-hide-function 'delete-frame)
 
 
 ;; PRINT functions
