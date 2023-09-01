@@ -201,6 +201,12 @@
 (add-hook 'window-setup-hook		 ; Show only one active window
 	'delete-other-windows)
 
+;; Revert buffers when the underlying file has changed
+(global-auto-revert-mode 1)
+
+;; Revert Dired and other buffers
+(setq global-auto-revert-non-file-buffers t)
+
 ;; IDO
 ;; https://www.emacswiki.org/emacs/InteractivelyDoThings
 (require 'ido)
