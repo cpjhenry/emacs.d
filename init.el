@@ -391,9 +391,10 @@
 		browse-url-generic-program "/Applications/Firefox.app/Contents/MacOS/firefox")
 	(load "init/elfeed") )
 
-;(when *mac*
-;	(load "init/deft")	; note functions (bound to <f7>)
-;	(load "init/sn")	; simplenote	 (bound to <f8>) )
+(when *mac*
+	(load "init/deft")	; note functions (bound to <f7>)
+;	(load "init/sn")	; simplenote	 (bound to <f8>)
+	)
 
 (when *gnu*
 	(setq browse-url-browser-function 'browse-url-generic
