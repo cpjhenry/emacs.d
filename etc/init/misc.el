@@ -13,7 +13,8 @@
       (setq lines (count-lines (point-min) (point-max)))
     (setq win (display-buffer buf))
     (when (> lines (window-text-height win))
-      (select-window win)))))
+      (select-window win))
+	(help-mode) )))
 
 (defmacro kf-gen-displayer (txt-sym fn-doc-str buf-name &optional fn-alias)
   "Generate an interactive function with the same symbol name as TXT-SYM,
@@ -1930,5 +1931,58 @@ column, then prepend asterisk + space and postpend colon + space."
 
 
 ;; cpjh help
-(defconst emacs-help
-)
+(defconst my/emacs-help
+"EMACS
+
+<ROPT>-…	   			MacOS alt keys
+C-x 8 …					Emacs alt keys
+
+C-<tab> | C-x ← | →		switch buffer
+C-k | C-S-<del>			kill eol | line
+C-<bsp> | C-<del>  		kill word ← →
+C-s | C-r				search fwd | bk
+C-z						undo
+C-x h					select all text
+M-q | M-S-q				fill | un-fill
+M-|						pipe region
+M-:						eval
+C-u 0 C-M-\\   			remove indent
+C-c d | C-c D			insert date
+C-u C-x r N				number lines
+C-l						re-centre page
+C-<spc>					mark
+C-x a g					Define abbrev
+C-q C-l      			<FF>
+C-x [ | C-x ]			<FF> bk | fwd
+
+ORG-MODE
+	
+S-<tab>					cycle visibility
+C-'						cycle agenda
+C-c a					agenda
+C-c c					capture
+C-c l					store link
+C-c C-l					edit link
+C-c C-s					schedule
+C-c C-x C-a				archive
+S-←   | S-→ ↑↓ 			status
+M-←   | M-→ ↑↓ 			heading
+M-↑   | M-↓				move subtree
+M-S-↑ | M-S-↓			move item
+C⏎    | M-⏎				new head / item
+M-S-⏎					new TODO / ☑︎
+C-c C-c					tick ☑︎ / edit tag
+C-u C-c C-c				adds ☑︎ to list
+C-c C-t					TODO / DONE
+C-c / t					TODO tree
+C-c * | C-c -			headline | item
+C-c ^					sort
+C-c C-q					tag
+
+MODES
+
+C-c m					Markdown
+C-c t					Olivetti
+")
+(kf-gen-displayer my/emacs-help "Display Emacs help." "*Emacs cheatsheet*")
+(bind-key "M-<f1>" 'my/emacs-help)
