@@ -1927,3 +1927,8 @@ column, then prepend asterisk + space and postpend colon + space."
       ;; that's what's most likely to need editing right now.
       (re-search-backward "([0-9]")
       (forward-char 1))))
+
+
+;; cpjh help
+(defconst emacs-help
+)
