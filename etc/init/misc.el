@@ -1,3 +1,20 @@
+;; https://svn.red-bean.com/repos/kfogel/trunk/.emacs
+
+;;; Setting modes based on filenames:
+(add-to-list 'auto-mode-alist '("\\.mnu$" . food-menu-mode))
+(add-to-list 'auto-mode-alist '("\\.pl$" . perl-mode))
+(add-to-list 'auto-mode-alist '("\\.py$" . python-mode))
+(add-to-list 'auto-mode-alist '("\\.pm$" . perl-mode))
+(add-to-list 'auto-mode-alist '("\\.cgi$" . perl-mode))
+(add-to-list 'auto-mode-alist '("\\.sgml$" . text-mode))
+(add-to-list 'auto-mode-alist '("\\.ss$" . scheme-mode))
+(add-to-list 'auto-mode-alist '("\\.s?html?\\'" . text-mode))
+(add-to-list 'auto-mode-alist '("\\.scm$" . scheme-mode))
+(add-to-list 'auto-mode-alist '("logv\\.out$" . kf-changelog-mode))
+(add-to-list 'auto-mode-alist '("\\.patch$" . text-mode))
+(add-to-list 'auto-mode-alist '("\\.html$" . text-mode))
+
+
 ;;; On-demand help panels for obscure topics. ;;;
 
 (defun kf-display-something-maybe-big (contents &optional title)

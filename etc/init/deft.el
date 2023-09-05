@@ -11,13 +11,18 @@
 	:bind (("<f7>" . deft))
 	:commands (deft deft-open-file deft-new-file-named)
 	:init
-	(setq deft-directory "~/Documents/Notes/"
-		  deft-recursive nil
-		  deft-extensions '("md" "markdown" "txt" "text" "org" "tex")
-		  deft-use-filter-string-for-filename nil
-		  deft-use-filename-as-title t
-		  deft-markdown-mode-title-level 1)
-
+		(setq
+			deft-auto-save-interval 0
+			deft-directory "~/Documents/Notes/"
+			deft-recursive nil
+			deft-extensions '("md" "markdown" "txt" "text" "org" "tex")
+			deft-file-limit nil
+			deft-filter-only-filenames t
+			deft-use-filter-string-for-filename nil
+			deft-use-filename-as-title t
+			deft-markdown-mode-title-level 1
+			)
+		(global-set-key (kbd "C-x C-g") 'deft-find-file)
 	:config
 	; https://blog.xot.nl/2023/08/01/optimising-deft-for-emacs/
 	(defun deft-truncate-string-to-window-width (str)

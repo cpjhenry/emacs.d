@@ -150,8 +150,9 @@
 	(dired-omit-mode 1) ))
 
 (add-hook 'emacs-lisp-mode-hook (lambda()
+	(goto-address-mode)
 	(prettify-symbols-mode)
-	(show-paren-mode) ))
+	(show-paren-local-mode) ))
 (add-hook 'emacs-news-view-mode-hook (lambda()
 	(local-set-key (kbd "<right>")	'viewmodenext)
 	(local-set-key (kbd "<left>" )	'viewmodeprev)
@@ -319,6 +320,7 @@
 (add-hook 'text-mode-hook (lambda ()
 	(abbrev-mode)
 	(unless *w32* (flyspell-mode))
+	(goto-address-mode)
 	(visual-line-mode)
 	(wc-mode) ))
 (eval-after-load "flyspell" '(progn
@@ -331,6 +333,7 @@
 	:init	(setq markdown-command "multimarkdown")
 			(setq markdown-enable-prefix-prompts nil)
 			(setq markdown-hide-urls t)
+			(setq markdown-italic-underscore t)
 			(setq markdown-unordered-list-item-prefix "* ")
 	:config	(add-to-list 'markdown-uri-types "gemini")
 	:mode	(("README\\.md\\'" . gfm-mode)
@@ -344,9 +347,9 @@
 
 ;; Org-mode
 (use-package org
-	:init	(setq org-directory "~/Documents/org/")
-			(setq org-agenda-files (list (concat org-directory "daily.org")))
-			(setq org-default-notes-file (concat org-directory "notes.org"))
+	:init	(setq org-directory "~/Documents/org")
+			(setq org-agenda-files (list (concat org-directory "/daily.org")))
+			(setq org-default-notes-file (concat org-directory "/notes.org"))
 
 			(setq org-startup-folded 'content)			; folded children content all
 			(setq org-catch-invisible-edits 'smart)
@@ -392,7 +395,7 @@
 	(load "init/elfeed") )
 
 (when *mac*
-	(load "init/deft")	; note functions (bound to <f7>)
+;	(load "init/deft")	; note functions (bound to <f7>)
 ;	(load "init/sn")	; simplenote	 (bound to <f8>)
 	)
 
