@@ -45,7 +45,9 @@
 	"Run Marked on the current file and revert the buffer"
 	(interactive)
 	(shell-command (format "open -a /Applications/Marked\\ 2.app %s"
-		(shell-quote-argument (buffer-file-name)) )) )
+		(shell-quote-argument (buffer-file-name)) ))
+	(let ((buffer "*Shell Command Output*")) (and (get-buffer buffer) 
+		(kill-buffer buffer))) )
 
 (defun flush-blank-lines (start end)
 	"Remove blank lines in a buffer."
