@@ -499,8 +499,8 @@
 (bind-key "C-c a"	'org-agenda)
 
 (bind-key "C-c b m" 'new-markdown-buffer)
-(bind-key "C-c b n" 'new-empty-buffer)
 (bind-key "C-c b s" 'create-scratch-buffer)
+(bind-key "C-c b t" 'new-empty-buffer)
 
 (bind-key "C-c d SPC" 'display-current-time)
 (bind-key "C-c d c"	'insert-date)
