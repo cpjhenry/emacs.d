@@ -148,12 +148,10 @@
 	(local-set-key (kbd "q")		'kill-dired-buffers)
 	(defalias 'dired-find-file		'dired-find-alternate-file)
 	(dired-omit-mode 1) ))
-
 (add-hook 'emacs-lisp-mode-hook (lambda()
 	(goto-address-mode)
 	(prettify-symbols-mode)
-	(show-paren-local-mode)
-	(rainbow-delimiters-mode) ))
+	(show-paren-local-mode) ))
 (add-hook 'emacs-news-view-mode-hook (lambda()
 	(local-set-key (kbd "<right>")	'viewmodenext)
 	(local-set-key (kbd "<left>" )	'viewmodeprev)
@@ -307,8 +305,6 @@
 	:init	(setq page-break-lines-max-width 80)
 	:config	(global-page-break-lines-mode)
 	:diminish)
-(use-package rainbow-delimiters
-	:ensure t)
 (use-package smooth-scrolling
 	:config (smooth-scrolling-mode))
 (use-package ssh)
