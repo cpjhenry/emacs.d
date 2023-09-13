@@ -152,6 +152,7 @@
 
 ;; eval-after-loads are run once, before mode hooks
 ;; mode-hooks execute once for every buffer in which the mode is enabled 
+
 (with-eval-after-load 'doc-view-mode
 	(define-key doc-view-mode-map (kbd "q") 	'kill-current-buffer) )
 (with-eval-after-load 'emacs-news-mode
