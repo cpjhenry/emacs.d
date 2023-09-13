@@ -152,24 +152,13 @@
 
 ;; eval-after-loads are run once, before mode hooks
 ;; mode-hooks execute once for every buffer in which the mode is enabled 
-(with-eval-after-load 'dired
-	(require 'dired-x)
-	(unless *w32* (setq dired-kill-when-opening-new-dired-buffer t))
-	(setq dired-omit-files (concat dired-omit-files
-		"\\|^INDEX$\\|-t\\.tex$\\|\\.DS_Store$\\|\\.localized$"))
-	(require 'ls-lisp)
-	(setq ls-lisp-use-string-collate nil)
-	(setq ls-lisp-use-insert-directory-program nil)
-	(setq ls-lisp-ignore-case 't)
-	(define-key dired-mode-map (kbd "q")		'kill-dired-buffers)
-	(defalias 'dired-find-file					'dired-find-alternate-file) )
 (with-eval-after-load 'doc-view-mode
 	(define-key doc-view-mode-map (kbd "q") 	'kill-current-buffer) )
 (with-eval-after-load 'emacs-news-mode
-	(define-key emacs-news-view-mode-map (kbd "<right>") 'viewmodenext)
-	(define-key emacs-news-view-mode-map (kbd "<left>" ) 'viewmodeprev)
-	(defun viewmodenext ()(interactive)(outline-next-heading)(recenter-top-bottom))
-	(defun viewmodeprev ()(interactive)(outline-previous-heading)(recenter-top-bottom)) )
+	(define-key emacs-news-view-mode-map (kbd "<right>")
+		(lambda()(interactive)(outline-next-heading)(recenter-top-bottom)))
+	(define-key emacs-news-view-mode-map (kbd "<left>" )
+		(lambda()(interactive)(outline-previous-heading)(recenter-top-bottom))) )
 (with-eval-after-load 'eww-mode
 	(define-key eww-mode-map (kbd "q")			'kill-current-buffer)
 	(define-key eww-mode-map (kbd "<left>")		'eww-back-url) )
@@ -210,8 +199,7 @@
 (setq ido-enable-flex-matching t)
 (define-key (cdr ido-minor-mode-map-entry) [remap write-file] nil); turn off C-x C-w remapping
 
-(use-package ido-sort-mtime
-	:config	(ido-sort-mtime-mode 1))
+(use-package ido-sort-mtime :config	(ido-sort-mtime-mode 1))
 
 (add-to-list 'ido-ignore-buffers "*Messages*")
 (add-to-list 'ido-ignore-files ".DS_Store")
@@ -305,7 +293,7 @@
 	:diminish)
 (use-package lorem-ipsum)
 (use-package page-break-lines ; ^L
-	:init	(setq page-break-lines-max-width 80)
+	:init	(setq page-break-lines-max-width 55)
 	:config	(global-page-break-lines-mode)
 	:diminish)
 (use-package smooth-scrolling

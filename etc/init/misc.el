@@ -1972,6 +1972,7 @@ C-x a g					Define abbrev
 C-q C-l      			<FF>
 C-x [ | C-x ]			<FF> bk | fwd
 
+
 ORG-MODE
 	
 S-<tab>					cycle visibility
@@ -1996,6 +1997,7 @@ C-c * | C-c -			headline | item
 C-c ^					sort
 C-c C-q					tag
 
+
 MODES
 
 C-c m					Markdown

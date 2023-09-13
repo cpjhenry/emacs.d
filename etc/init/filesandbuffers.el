@@ -66,6 +66,18 @@
 
 ;; DIRED functions
 
+(with-eval-after-load 'dired
+	(require 'dired-x)
+	(unless *w32* (setq dired-kill-when-opening-new-dired-buffer t))
+	(setq dired-omit-files (concat dired-omit-files
+		"\\|^INDEX$\\|-t\\.tex$\\|\\.DS_Store$\\|\\.localized$"))
+	(require 'ls-lisp)
+	(setq ls-lisp-use-string-collate nil)
+	(setq ls-lisp-use-insert-directory-program nil)
+	(setq ls-lisp-ignore-case 't)
+	(define-key dired-mode-map (kbd "q")		'kill-dired-buffers)
+	(defalias 'dired-find-file					'dired-find-alternate-file) )
+
 (defun kill-dired-buffers ()
 	(interactive)
 	(mapc (lambda (buffer) 
