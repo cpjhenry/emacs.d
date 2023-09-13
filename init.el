@@ -134,7 +134,24 @@
 (load "init/filesandbuffers")
 
 (add-hook 'before-save-hook 'time-stamp)
+(add-hook 'dired-mode-hook (lambda()
+	(dired-omit-mode 1) ))
+(add-hook 'emacs-lisp-mode-hook (lambda()
+	(goto-address-mode)
+	(prettify-symbols-mode)
+	(show-paren-local-mode) ))
+(add-hook 'emacs-news-view-mode-hook (lambda()
+	(page-break-lines-mode) ))
+(add-hook 'ibuffer-mode-hook (lambda()
+	(ibuffer-switch-to-saved-filter-groups "home")
+	(ibuffer-update nil t) ))
 
+(remove-hook
+	'file-name-at-point-functions
+	'ffap-guess-file-name-at-point)
+
+;; eval-after-loads are run once, before mode hooks
+;; mode-hooks execute once for every buffer in which the mode is enabled 
 (with-eval-after-load 'dired
 	(require 'dired-x)
 	(unless *w32* (setq dired-kill-when-opening-new-dired-buffer t))
@@ -143,48 +160,27 @@
 	(require 'ls-lisp)
 	(setq ls-lisp-use-string-collate nil)
 	(setq ls-lisp-use-insert-directory-program nil)
-	(setq ls-lisp-ignore-case 't) )
-(add-hook 'dired-mode-hook (lambda()
-	(local-set-key (kbd "q")		'kill-dired-buffers)
-	(defalias 'dired-find-file		'dired-find-alternate-file)
-	(dired-omit-mode 1) ))
-(add-hook 'emacs-lisp-mode-hook (lambda()
-	(goto-address-mode)
-	(prettify-symbols-mode)
-	(show-paren-local-mode) ))
-(add-hook 'emacs-news-view-mode-hook (lambda()
-	(local-set-key (kbd "<right>")	'viewmodenext)
-	(local-set-key (kbd "<left>" )	'viewmodeprev)
-	(page-break-lines-mode) ))
-	(defun viewmodenext ()(interactive)
-		(outline-next-heading)
-		(recenter-top-bottom))
-	(defun viewmodeprev ()(interactive)
-		(outline-previous-heading)
-		(recenter-top-bottom))
-(add-hook 'eww-mode-hook (lambda ()
-	(local-set-key (kbd "q")		'kill-current-buffer)
-	(local-set-key (kbd "<left>")	'eww-back-url) ))
-(add-hook 'help-mode-hook (lambda()
-	(local-set-key (kbd "q")		'kill-current-buffer)
-	(local-set-key (kbd "<left>" )	'help-go-back)
-	(local-set-key (kbd "<right>")	'help-go-forward) ))
-(add-hook 'ibuffer-mode-hook (lambda()
-	(local-set-key (kbd "q")		'kill-current-buffer)
-	(local-set-key (kbd "<up>")		'ibuffer-previous-line)
-	(local-set-key (kbd "<down>")	'ibuffer-next-line)
-	(local-set-key (kbd "<right>")	'ibuffer-previous-header)
-	(local-set-key (kbd "<left>")	'ibuffer-next-header)
-	(ibuffer-switch-to-saved-filter-groups "home")
-	(ibuffer-update nil t) ))
-(add-hook 'Info-mode-hook (lambda()
-	(local-set-key (kbd "q")		'kill-current-buffer)
-	(local-set-key (kbd "<left>" )	'Info-history-back)
-	(local-set-key (kbd "<right>")	'Info-history-forward) ))
-
-(remove-hook
-	'file-name-at-point-functions
-	'ffap-guess-file-name-at-point)
+	(setq ls-lisp-ignore-case 't)
+	(define-key dired-mode-map (kbd "q")		'kill-dired-buffers)
+	(defalias 'dired-find-file					'dired-find-alternate-file) )
+(with-eval-after-load 'doc-view-mode
+	(define-key doc-view-mode-map (kbd "q") 	'kill-current-buffer) )
+(with-eval-after-load 'emacs-news-mode
+	(define-key emacs-news-view-mode-map (kbd "<right>") 'viewmodenext)
+	(define-key emacs-news-view-mode-map (kbd "<left>" ) 'viewmodeprev)
+	(defun viewmodenext ()(interactive)(outline-next-heading)(recenter-top-bottom))
+	(defun viewmodeprev ()(interactive)(outline-previous-heading)(recenter-top-bottom)) )
+(with-eval-after-load 'eww-mode
+	(define-key eww-mode-map (kbd "q")			'kill-current-buffer)
+	(define-key eww-mode-map (kbd "<left>")		'eww-back-url) )
+(with-eval-after-load 'help-mode
+	(define-key help-mode-map (kbd "q")			'kill-current-buffer)
+	(define-key help-mode-map (kbd "<left>")	'help-go-back)
+	(define-key help-mode-map (kbd "<right>")	'help-go-forward) )
+(with-eval-after-load 'Info-mode
+	(define-key Info-mode-map (kbd "q")			'kill-current-buffer)
+	(define-key Info-mode-map (kbd "<left>" )	'Info-history-back)
+	(define-key Info-mode-map (kbd "<right>")	'Info-history-forward) )
 
 (defalias 'yes-or-no-p 'y-or-n-p)	; y or n is enough
 (easy-menu-add-item  nil '("Buffers") ["Increase text size" text-scale-increase])
@@ -213,6 +209,13 @@
 (ido-mode t)
 (setq ido-enable-flex-matching t)
 (define-key (cdr ido-minor-mode-map-entry) [remap write-file] nil); turn off C-x C-w remapping
+
+(use-package ido-sort-mtime
+	:config	(ido-sort-mtime-mode 1))
+
+(add-to-list 'ido-ignore-buffers "*Messages*")
+(add-to-list 'ido-ignore-files ".DS_Store")
+(add-to-list 'ido-ignore-files "ido.last")
 
 
 ;; calendar

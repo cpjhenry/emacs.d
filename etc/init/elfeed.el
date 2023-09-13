@@ -12,3 +12,4 @@
 		(define-key elfeed-search-mode-map (kbd "R") 'elfeed-mark-all-as-read)
 	(easy-menu-add-item  nil '("tools") ["Read web feeds" elfeed t])
 	(bind-key "C-c f" 'elfeed)
+	(define-key elfeed-search-mode-map (kbd "q") 'kill-current-buffer)

@@ -125,6 +125,13 @@
 (require 'ibuffer)
 (defalias 'list-buffers 'ibuffer) ; always use ibuffer
 (setq ibuffer-hidden-filter-groups (list "Helm" "*Internal*"))
+(define-key ibuffer-mode-map (kbd "q")		'kill-current-buffer)
+(define-key ibuffer-mode-map (kbd "<up>")	'ibuffer-previous-line)
+(define-key ibuffer-mode-map (kbd "<down>")	'ibuffer-next-line)
+(define-key ibuffer-mode-map (kbd "<right>")'ibuffer-previous-header)
+(define-key ibuffer-mode-map (kbd "<left>")	'ibuffer-next-header)
+(define-key ibuffer-mode-map (kbd "<return>")(lambda()(interactive)(ibuffer-visit-buffer)
+	(let ((buffer "*Ibuffer*")) (and (get-buffer buffer) (kill-buffer buffer))) ))
 
 (require 'ibuf-ext)
 (add-to-list 'ibuffer-never-show-predicates "^\\*Messages\\*")
