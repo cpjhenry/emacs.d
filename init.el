@@ -38,11 +38,12 @@
 (setq pop-up-windows nil)
 (setq pop-up-frames nil)
 
-(setq user-mail-address "cpjhenry@gmail.com")
-(setq calendar-latitude 45.3)
-(setq calendar-longitude -75.7)
-(setq calendar-location-name "Ottawa")
-(setq maidenhead "FN25dg")
+(setq
+	user-mail-address "cpjhenry@gmail.com"
+	calendar-latitude 45.3
+	calendar-longitude -75.7
+	calendar-location-name "Ottawa"
+	maidenhead "FN25dg")
 
 ;; Initialize package manager
 (setq gnutls-algorithm-priority "normal:-vers-tls1.3")
@@ -63,60 +64,62 @@
 
 ;; settings
 (set-language-environment 'utf-8)
-(setq default-major-mode 'text-mode)
-(setq-default tab-width 4)
-(setq-default fill-column 55)
-(setq-default help-window-select t)
-(setq-default indicate-empty-lines t)
+(setq-default
+	tab-width 4
+	fill-column 55
+	help-window-select t
+	indicate-empty-lines t)
 
-(setq ns-use-native-fullscreen t)
-(setq use-dialog-box nil)
-(setq use-file-dialog nil)
-
-(setq ad-redefinition-action 'accept)
-(setq bookmark-save-flag 1)
-(setq bookmark-sort-flag nil)
-(setq bookmark-set-fringe-mark nil)
-(setq case-fold-search t)
-(setq comp-async-report-warnings-errors 'silent)
-(setq delete-by-moving-to-trash t)
-(setq dictionary-server "dict.org")
-(setq flyspell-issue-message-flag nil)
-(setq frame-title-format nil)
-(setq help-clean-buttons t)
-(setq ibuffer-expert t)
-(setq inhibit-default-init t)
-(setq ispell-list-command "--list") ; correct command
-(setq ispell-program-name "aspell") ; spell checker
-(setq ispell-silently-savep t)		; save personal list automatically
-(setq kill-ring-max 512)
-(setq mark-ring-max most-positive-fixnum)
-(setq max-lisp-eval-depth 65536)
-(setq recenter-positions '(top))	; (top middle bottom)
-(setq require-final-newline nil)
-(setq ring-bell-function 'ignore)
-(setq save-abbrevs 'silent)
-(setq sentence-end-double-space nil)
-(setq show-paren-style 'mixed)
-(setq show-trailing-whitespace t)
-(setq tramp-default-method "ssh")
-(setq tramp-syntax 'simplified)		; C-x C-f /remotehost:filename
-(setq trash-directory "~/.Trash")
-(setq use-short-answers t)
-(setq visual-line-fringe-indicators '(nil right-curly-arrow))
+(setq 
+	ad-redefinition-action 'accept
+	bookmark-save-flag 1
+	bookmark-set-fringe-mark nil
+	bookmark-sort-flag nil
+	case-fold-search t
+	comp-async-report-warnings-errors 'silent
+	default-major-mode 'text-mode
+	delete-by-moving-to-trash t
+	dictionary-server "dict.org"
+	flyspell-issue-message-flag nil
+	frame-title-format nil
+	help-clean-buttons t
+	ibuffer-expert t
+	inhibit-default-init t
+	ispell-list-command "--list"	; correct command
+	ispell-program-name "aspell"	; spell checker
+	ispell-silently-savep t			; save personal list automatically
+	kill-ring-max 512
+	mark-ring-max most-positive-fixnum
+	max-lisp-eval-depth 65536
+	ns-use-native-fullscreen t
+	recenter-positions '(top)		; top middle bottom
+	require-final-newline nil
+	ring-bell-function 'ignore
+	save-abbrevs 'silent
+	sentence-end-double-space nil
+	show-paren-style 'mixed
+	show-trailing-whitespace t
+	tramp-default-method "ssh"
+	tramp-syntax 'simplified		; C-x C-f /remotehost:filename
+	trash-directory "~/.Trash"
+	use-dialog-box nil
+	use-file-dialog nil
+	use-short-answers t
+	visual-line-fringe-indicators '(nil right-curly-arrow) )
 
 ;; files
-(setq abbrev-file-name				(concat user-emacs-directory "etc/abbrev_defs"))
-(setq auto-save-list-file-prefix	(concat user-emacs-directory "var/auto-save/sessions/"))
-(setq bookmark-default-file			(concat user-emacs-directory "etc/bookmarks"))
-(setq eshell-aliases-file			(concat user-emacs-directory "etc/eshell/aliases"))
-(setq eshell-directory-name			(concat user-emacs-directory "var/eshell/"))
-(setq eww-bookmarks-directory		(concat user-emacs-directory "etc/"))
-(setq request-storage-directory		(concat user-emacs-directory "var/request/storage/"))
-(setq tramp-auto-save-directory		(concat user-emacs-directory "var/tramp/auto-save/"))
-(setq tramp-persistency-file-name	(concat user-emacs-directory "var/tramp/persistency"))
-(setq url-cache-directory			(concat user-emacs-directory "var/url/cache/"))
-(setq url-configuration-directory	(concat user-emacs-directory "var/url/configuration/"))
+(setq
+	abbrev-file-name			(concat user-emacs-directory "etc/abbrev_defs")
+	auto-save-list-file-prefix	(concat user-emacs-directory "var/auto-save/sessions/")
+	bookmark-default-file	   	(concat user-emacs-directory "etc/bookmarks")
+	eshell-aliases-file			(concat user-emacs-directory "etc/eshell/aliases")
+	eshell-directory-name  		(concat user-emacs-directory "var/eshell/")
+	eww-bookmarks-directory		(concat user-emacs-directory "etc/")
+	request-storage-directory  	(concat user-emacs-directory "var/request/storage/")
+	tramp-auto-save-directory  	(concat user-emacs-directory "var/tramp/auto-save/")
+	tramp-persistency-file-name	(concat user-emacs-directory "var/tramp/persistency")
+	url-cache-directory			(concat user-emacs-directory "var/url/cache/")
+	url-configuration-directory	(concat user-emacs-directory "var/url/configuration/") )
 
 ;; custom variables
 (setq custom-file (concat user-emacs-directory "custom.el"))
