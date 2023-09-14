@@ -52,11 +52,14 @@
 	("Asia/Shanghai" "Beijing")
 	("Asia/Tokyo" "Tokyo")))
 
-(defun list-hols () (interactive) (list-holidays (string-to-number (format-time-string "%Y"))))
+(defun list-hols () (interactive)
+	(list-holidays (string-to-number (format-time-string "%Y"))))
+
 (defun my/save-diary-before-calendar-exit (_)
 	(let ((diary-buffer (get-file-buffer diary-file)))
     	(or (not diary-buffer)
 			(not (buffer-modified-p diary-buffer))
 			(with-current-buffer diary-buffer (save-buffer)))))
 
-(defun display-current-time () (interactive) (message (format-time-string "%Y-%m-%d %H:%M:%S")))
+(defun display-current-time () (interactive)
+	(message (format-time-string "%Y-%m-%d %H:%M:%S")))

@@ -286,7 +286,7 @@ To find/fetch a key:
   gpg --keyserver hkps://KEYSERVER --recv-keys 0xAEA84EDCF01AD86C4701C85C63113AE866587D0A
   gpg --keyserver hkps://KEYSERVER --search-keys some@email.address
 
-Keyservers to try: 
+Keyservers to try:
 
   - keyring.debian.org
   - keyserver.ubuntu.com
@@ -351,7 +351,7 @@ Dealing with key errors:
 
     gpg: 8E8AF6393F237A2E: There is no assurance this key belongs to the named user
     gpg: [stdin]: encryption failed: Unusable public key
-  
+
   It's due to GPG trust/signature issues that are so intricate
   that I won't go into them here because I don't want to use up
   the remaining blank bits in my .emacs :-(.  The solution I
@@ -364,55 +364,55 @@ Dealing with key errors:
 
     > $ gpg --edit-key 5972830CA206DCBA1EF97758D674C7632F4AC0E7
     > pub  rsa4096/2674C7632F4AC0E7
-    >      created: 2022-11-21  expires: 2024-11-21  usage: SC  
+    >      created: 2022-11-21  expires: 2024-11-21  usage: SC
     >      trust: full          validity: unknown
     > sub  rsa4096/8E8AF6393F237A2E
-    >      created: 2022-11-21  expires: 2024-11-21  usage: E   
+    >      created: 2022-11-21  expires: 2024-11-21  usage: E
     > [ unknown] (1). J. Random <jrandom@example.com>
-    > 
+    >
     > gpg> key 8E8AF6393F237A2E
-    > 
+    >
     > [...]
-    > 
-    > gpg> trust  
+    >
+    > gpg> trust
     > Please decide how far you trust this user to correctly verify other users' keys
     > (by looking at passports, checking fingerprints from different sources, etc.)
-    > 
+    >
     >   1 = I don't know or won't say
     >   2 = I do NOT trust
     >   3 = I trust marginally
     >   4 = I trust fully
     >   5 = I trust ultimately
     >   m = back to the main menu
-    > 
+    >
     > Your decision? 4
-    > 
+    >
     > [...]
-    > 
+    >
     > gpg> sign
     > Your current signature on \"J. Random <jrandom@example.com>\"
     > is a local signature.
     > Do you want to promote it to a full exportable signature? (y/N) y
-    > 
+    >
     > pub  rsa4096/2674C7632F4AC0E7
-    >      created: 2022-11-21  expires: 2024-11-21  usage: SC  
+    >      created: 2022-11-21  expires: 2024-11-21  usage: SC
     >      trust: full          validity: full
     >  Primary key fingerprint: 5972 830C A206 DCBA 1EF9  7758 D674 C763 2F4A C0E7
-    > 
+    >
     >      J. Random <jrandom@example.com>
-    > 
+    >
     > This key is due to expire on 2024-11-21.
     > Are you sure that you want to sign this key with your
     > key \"Karl Fogel <kfogel@example.com>\" (810A75CB5CDE3845)
-    > 
+    >
     > Really sign? (y/N) y
-  
+
   Note that I had first done 'lsign' instead of 'sign', and that
   worked fine insofar as it solved my problem, but it generated a
   local (non-exportable) signature.  Since I wanted to send the
   signed key to others, I did the dance again with 'sign' before
   exporting.
-  
+
   See also this thread from Matthias Apitz on gnupg-users@:
 
   https://lists.gnupg.org/pipermail/gnupg-users/2019-October/thread.html#62955
@@ -799,11 +799,11 @@ Pare everything but named files from a repository's history:
 To cherry-pick commits from one or more divergent repositories:
 
   ## First, some context:
-  ## 
+  ##
   ##   Conservatory/wmctrl -> commits have full 1.00->1.07 release history
   ##   geekless/wmctrl     -> divergent changes made over a 1.07 top-skim
   ##   dancor/wmctrl       -> other divergent changes over a 1.07 top-skim
-  ## 
+  ##
   ## To \"merge\" changes from the latter two repositories into the former,
   ## we have to get their master branches into the local repository as
   ## as appropriately-named local branches and then cherry-pick commits.
@@ -825,16 +825,16 @@ To cherry-pick commits from one or more divergent repositories:
     remotes/origin/master
   $ git checkout geekless/master
   Note: checking out 'geekless/master'.
-  
+
   You are in 'detached HEAD' state. You can look around, make experimental
   changes and commit them, and you can discard any commits you make in this
   state without impacting any branches by performing another checkout.
-  
+
   If you want to create a new branch to retain commits you create, you may
   do so (now or later) by using -b with the checkout command again. Example:
-  
+
     git checkout -b <new-branch-name>
-  
+
   HEAD is now at c5c5eb8 Merge pull request #1 from r2rien/master
   $ git branch geekless-master
   $ git checkout master
@@ -1208,7 +1208,7 @@ Missing a group:
   An alternative method seems to be to do `A A' (to invoke
   `gnus-group-list-active'), which will show all groups and will
   include the new group you're expecting, and if you then enter and
-  leave that group... and a bunch of funny stuff happens... then 
+  leave that group... and a bunch of funny stuff happens... then
   when it's all over, you're new group with its new messages will be
   visible in the Groups buffer.  I'm not sure whether this way or the
   `S s' way is better.
@@ -1230,7 +1230,7 @@ Missing mails in some groups:
 Import an mbox file:
 
   Create a nndoc group based on the mbox file by doing this in the
-  Group buffer: `G f /path/to/foo.mbox RET'. 
+  Group buffer: `G f /path/to/foo.mbox RET'.
 
   You now have read-only access to the messages in the mbox.  To
   import them into the regular Gnus groups, enter the new nndoc
@@ -1281,7 +1281,7 @@ Keep a block of text all on the same page:
 
 Suppressing page numbering:
 
-  This is a surprisingly complex topic.  
+  This is a surprisingly complex topic.
   TL;DR: Before \\begin{document}, do
 
     \\pagenumbering{gobble}
@@ -1529,17 +1529,17 @@ Lists:
 
   1. First ordered list item
   2. Another item
-  ⋅⋅* Unordered sub-list. 
+  ⋅⋅* Unordered sub-list.
   1. Actual numbers don't matter, just that it's a number
   ⋅⋅1. Ordered sub-list
   4. And another item.
-  
+
   ⋅⋅⋅Properly indented paragraphs within list items.  Notice blank line above & leading spaces (at least 1).
-  
+
   ⋅⋅⋅To have a line break without a paragraph, you will need to use two trailing spaces.⋅⋅
   ⋅⋅⋅Note that this line is separate, but within the same paragraph.⋅⋅
   ⋅⋅⋅(This is contrary to the typical GFM line break behaviour, where trailing spaces are not required.)
-  
+
   * Unordered list can use asterisks
   - Or minuses
   + Or pluses
@@ -1550,7 +1550,7 @@ Links:
   [inline with link text](https://www.example.com \"Example.com's Homepage\")
   [relative ref to a repository file](../path/to/something)
   URLs and <URLs> auto-convert: http://www.example.com or <http://www.example.com>
-  
+
   Reference links are special:
 
     [reference style][arbitrary case-insensitive ref text]
@@ -1558,7 +1558,7 @@ Links:
     Or leave it empty and use the [link text itself].
 
     Then at the bottom of your doc you can put the ref resolutions:
-  
+
     [arbitrary case-insensitive reference text]: https://www.mozilla.org
     [1]: http://slashdot.org
     [link text itself]: http://www.reddit.com
@@ -1570,11 +1570,11 @@ Blockquotes:
 
 Images:
 
-  Inline style: 
+  Inline style:
 
     ![alt text](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png \"Logo Title Text 1\")
 
-  Reference style: 
+  Reference style:
 
     ![alt text][logo]
 
@@ -1588,13 +1588,13 @@ Inline code blocks
   ```javascript
   blah
   ```
-   
+
   ```python
   blah
   ```
-   
+
   ```
-  No language indicated, so no syntax highlighting. 
+  No language indicated, so no syntax highlighting.
   ```
 
   (You can also do it with four spaces of indentation, but it's
@@ -1609,13 +1609,13 @@ Tables:
   (Not supported everywhere, but GFM and Markdown Here support them.)
 
     Colons can be used to align columns.
-    
+
     | Tables        | Are           | Cool  |
     | ------------- |:-------------:| -----:|
     | col 3 is      | right-aligned | $1600 |
     | col 2 is      | centered      |   $12 |
     | zebra stripes | are neat      |    $1 |
-    
+
   At least 3 dashes separate each header cell.  Outer pipes (|) are
   optional.  Source doesn't need to line up prettily.  Inline
   formatting is supported:
@@ -1633,13 +1633,13 @@ of course https://daringfireball.net/projects/markdown/syntax.
 
 
 (defconst kf-mediawiki-help
-  "See 
+  "See
 
   - https://www.mediawiki.org/wiki/Help:Formatting
   - https://www.mediawiki.org/wiki/Help:Links
   - https://www.mediawiki.org/wiki/Help:Images
   - https://www.mediawiki.org/wiki/Help:Tables
-  - https://www.mediawiki.org/wiki/Help:Lists 
+  - https://www.mediawiki.org/wiki/Help:Lists
 
 Now, the quick reference.
 
@@ -1673,7 +1673,7 @@ Lists:
   : Single indent
   :: Double indent
   ::::: Multiple indent
-  
+
   Start a line with a space to get preformatted text;
   other wiki markup is still valid in preformatted text.
 
@@ -1708,7 +1708,7 @@ Images:
   @  ==>  note
   /  ==>  stuff after the slash happens after leaving the state
   |  ==>  divider between non-final states and final states
- 
+
   See also:
 
   https://orgmode.org/manual/Tracking-TODO-state-changes.html
@@ -1802,9 +1802,9 @@ Example text:
 
    We won=E2=80=99t be eating the meteorite as proposed.=C2=A0 Instead,
    we (=3D=3D just us, not you) would like to request:
-   
+
    =E2=80=A2 Yams or nightshades;=C2=A0
-   
+
    =E2=80=A2 Anything involving beryllium.
 
    Thank =E2=80=98you=E2=80=99 for your =E2=80=9Ctime=E2=80=9D.
@@ -1832,7 +1832,7 @@ Example text:
 ;;; Insertion helpers for characters not in my usual input methods.
 
 (defun kf-checkbox (parg)
-  "Insert a checkbox.  
+  "Insert a checkbox.
 With one prefix arg, insert a checked checkbox.
 With two prefix args, insert an x'ed checkbox."
   (interactive "P")
@@ -1851,7 +1851,7 @@ With two prefix args, insert an x'ed checkbox."
     - \"[r]ight\"
     - \"[h]orizontal double arrow\"
     - \"[v]ertical double arrow\""
-  (interactive 
+  (interactive
    "cArrow type ([u]p, [d]own, [l]eft, [r]ight, [h]oriz, [v]ert): ")
     (insert (cdr (assoc type '((?u . ?↑)
                                (?d . ?↓)
@@ -1909,7 +1909,7 @@ With two prefix args, insert an x'ed checkbox."
                        (lambda (a b) (< (car a) (car b)))))
     (mapc
      'insert
-     ;; Insert using original list, `all', 
+     ;; Insert using original list, `all',
      ;; but pull *words* from randomly-sorted list, `sorted'.
      (mapcar (lambda (x)
                (if (> 0 (car x))
@@ -1974,7 +1974,7 @@ C-x [ | C-x ]			<FF> bk | fwd
 
 
 ORG-MODE
-	
+
 S-<tab>					cycle visibility
 C-'						cycle agenda
 C-c a					agenda

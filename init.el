@@ -16,21 +16,23 @@
 
 (when *mac*
 	(set-frame-font "Inconsolata 21" nil t)
-	; Mac command key is Super
-	; Mac option  key is Meta
-	; Mac control key is Control
-	(setq mac-function-modifier 'hyper)		; Hyper
-	(setq mac-right-command-modifier 'alt)	; Alt
-	(setq mac-right-option-modifier nil)
+	(setq
+		; Mac command key is Super
+		; Mac option  key is Meta
+		; Mac control key is Control
+		mac-function-modifier 'hyper	; Hyper
+		mac-right-command-modifier 'alt	; Alt
+		mac-right-option-modifier nil)	; pass-thru
 	(define-key key-translation-map
 		(kbd "<C-mouse-1>") (kbd "<mouse-2>")))
 (when *gnu*
 	(set-frame-font "Monospace 17" nil t))
 (when *w32*
 	(set-frame-font "Consolas 12" nil t)
-	(setq w32-apps-modifier 'hyper)
-	(setq w32-lwindow-modifier 'super)
-	(setq w32-pass-lwindow-to-system nil)
+	(setq
+		w32-lwindow-modifier 'super
+		w32-pass-lwindow-to-system nil
+		w32-apps-modifier 'hyper)
 	(message "Running on Windows."))
 
 (set-background-color "Ivory")
@@ -97,6 +99,7 @@
 	require-final-newline nil
 	ring-bell-function 'ignore
 	save-abbrevs 'silent
+	scroll-preserve-screen-position t
 	sentence-end-double-space nil
 	show-paren-style 'mixed
 	tramp-default-method "ssh"
@@ -104,8 +107,13 @@
 	trash-directory "~/.Trash"
 	use-dialog-box nil
 	use-file-dialog nil
-	use-short-answers t
 	visual-line-fringe-indicators '(nil right-curly-arrow) )
+
+(when (>= emacs-major-version 28)
+	(setq
+		use-short-answers t
+   		goto-address-mail-face 'default)
+	(global-goto-address-mode) )
 
 ;; files
 (setq
@@ -125,9 +133,10 @@
 (setq custom-file (concat user-emacs-directory "custom.el"))
 
 ;; backups
-(setq auto-save-default nil)
-(setq backup-by-copying t)
-(setq make-backup-files nil)
+(setq
+	auto-save-default nil
+	backup-by-copying t
+	make-backup-files nil)
 
 (unless *w32*	(require 'backup-each-save)
 				(add-hook 'after-save-hook 'backup-each-save))
@@ -142,7 +151,6 @@
 	(dired-omit-mode 1) ))
 (add-hook 'emacs-lisp-mode-hook (lambda()
 	(setq show-trailing-whitespace t)
-	(goto-address-mode)
 	(prettify-symbols-mode)
 	(show-paren-local-mode) ))
 (add-hook 'emacs-news-view-mode-hook (lambda()
@@ -161,10 +169,10 @@
 (with-eval-after-load 'doc-view-mode
 	(define-key doc-view-mode-map (kbd "q") 	'kill-current-buffer) )
 (with-eval-after-load 'emacs-news-mode
-	(define-key emacs-news-view-mode-map (kbd "<right>")
-		(lambda()(interactive)(outline-next-heading)(recenter-top-bottom)))
 	(define-key emacs-news-view-mode-map (kbd "<left>")
-		(lambda()(interactive)(outline-previous-heading)(recenter-top-bottom))) )
+		(lambda()(interactive)(outline-previous-heading)(recenter-top-bottom)))
+	(define-key emacs-news-view-mode-map (kbd "<right>")
+		(lambda()(interactive)(outline-next-heading)(recenter-top-bottom))) )
 (with-eval-after-load 'eww-mode
 	(define-key eww-mode-map (kbd "q")			'kill-current-buffer)
 	(define-key eww-mode-map (kbd "<left>")		'eww-back-url) )
@@ -193,10 +201,8 @@
 	'delete-other-windows)
 
 ;; Revert buffers when the underlying file has changed
+(setq global-auto-revert-non-file-buffers t) ; Dired, etc.
 (global-auto-revert-mode 1)
-
-;; Revert Dired and other buffers
-(setq global-auto-revert-non-file-buffers t)
 
 ;; IDO
 ;; https://www.emacswiki.org/emacs/InteractivelyDoThings
@@ -214,24 +220,26 @@
 
 ;; calendar
 (load "init/calendar")
-(setq diary-file "~/Documents/diary")
-(setq diary-list-includes-blanks t)
-(setq diary-show-holidays-flag nil)
 (add-hook 'diary-list-entries-hook 'diary-sort-entries t)
 (add-hook 'diary-mode-hook (lambda()
 	(local-set-key (kbd "C-c C-q") 'kill-current-buffer) ))
 (add-hook 'diary-fancy-display-mode-hook (lambda()
-	(local-set-key (kbd "q")	'kill-current-buffer) ))
+	(local-set-key (kbd "q") 'kill-current-buffer) ))
 (add-hook 'special-mode-hook (lambda()
-	(local-set-key (kbd "q")	'kill-current-buffer) ))
+	(local-set-key (kbd "q") 'kill-current-buffer) ))
 (add-hook 'calendar-mode-hook (lambda()
-	(local-set-key (kbd "q")	(lambda()(interactive)(calendar-exit 'kill))) ))
+	(local-set-key (kbd "q") '(calendar-exit 'kill)) ))
 (advice-add 'calendar-exit :before #'my/save-diary-before-calendar-exit)
 
-(setq calendar-date-style 'iso)
-(setq calendar-mark-holidays-flag t)
-(setq calendar-view-holidays-initially-flag t)
-(setq calendar-mark-diary-entries-flag t)
+(setq
+	diary-file "~/Documents/diary"
+	diary-list-includes-blanks t
+	diary-show-holidays-flag nil
+
+	calendar-date-style 'iso
+	calendar-mark-holidays-flag t
+	calendar-view-holidays-initially-flag t
+	calendar-mark-diary-entries-flag t)
 
 
 ;; print functions
@@ -282,24 +290,29 @@
 
 (use-package elpher
 	:init	(setq elpher-bookmarks-file (concat user-emacs-directory "var/elpher-bookmarks"))
-	:config	(easy-menu-add-item  nil '("tools") ["Gopher" elpher t]))
-	(defun elpher:eww-browse-url (original url &optional new-window) ; eww
-		"Handle gemini links."
-		(cond ((string-match-p "\\`\\(gemini\\|gopher\\)://" url)
-		(use-package elpher) ; r
-		(elpher-go url))
-		(t (funcall original url new-window))) )
-		(advice-add 'eww-browse-url :around 'elpher:eww-browse-url)
+	:config	(easy-menu-add-item  nil '("tools") ["Gopher" elpher t])
+			(defun elpher:eww-browse-url (original url &optional new-window) "Handle gemini links."
+				(cond ((string-match-p "\\`\\(gemini\\|gopher\\)://" url) (elpher-go url))
+				(t (funcall original url new-window))) )
+			(advice-add 'eww-browse-url :around 'elpher:eww-browse-url) )
 	(add-hook 'elpher-mode-hook (lambda ()
-		(setq-local left-margin-width 10)
-		(setq-local gnutls-verify-error nil)
+		(setq-local
+			left-margin-width 10
+			gnutls-verify-error nil)
 		(set-window-buffer nil (current-buffer))
-		(local-set-key (kbd "<left>") 'elpher-back) ))
+		(local-set-key (kbd "<left>") 'elpher-back)
+		(local-set-key (kbd "[") 'elpher-up)
+		(defun elpher-up() (interactive)(previous-line)(backward-paragraph))
+		(local-set-key (kbd "]") 'elpher-down)
+		(defun elpher-down() (interactive)(forward-paragraph)(next-line)(recenter-top-bottom))
+		(message "'[' to scroll up, ']' to scroll down.") ))
 
 (use-package google-this
 	:config (google-this-mode)
 	:diminish)
-(use-package lorem-ipsum)
+(use-package lorem-ipsum
+	:init	(setq-default lorem-ipsum-sentence-separator " ")
+	:config	(easy-menu-add-item  nil '("edit") ["Lorem-ipsum" lorem-ipsum-insert-paragraphs t]))
 (use-package page-break-lines ; ^L
 	:init	(setq page-break-lines-max-width 55)
 	:config	(global-page-break-lines-mode)
@@ -318,7 +331,6 @@
 (add-hook 'text-mode-hook (lambda ()
 	(abbrev-mode)
 	(unless *w32* (flyspell-mode))
-	(goto-address-mode)
 	(visual-line-mode)
 	(wc-mode) ))
 (eval-after-load "flyspell" '(progn
@@ -328,16 +340,19 @@
 	:init	(setq olivetti-body-width 80) )
 
 (use-package markdown-mode
-	:init	(setq markdown-command "multimarkdown")
-			(setq markdown-enable-prefix-prompts nil)
-			(setq markdown-hide-urls t)
-			(setq markdown-italic-underscore t)
-			(setq markdown-unordered-list-item-prefix "* ")
-	:config	(add-to-list 'markdown-uri-types "gemini")
-	:mode	(("README\\.md\\'" . gfm-mode)
-			("\\.md\\'" . markdown-mode)
-			("\\.markdown\\'" . markdown-mode)
-			("\\.gmi\\'" . markdown-mode))
+	:init (setq
+		markdown-command "multimarkdown"
+		markdown-enable-prefix-prompts nil
+		markdown-hide-urls t
+		markdown-italic-underscore t
+		markdown-unordered-list-item-prefix "* ")
+	:config
+		(add-to-list 'markdown-uri-types "gemini")
+	:mode
+		(("README\\.md\\'" . gfm-mode)
+		("\\.md\\'" . markdown-mode)
+		("\\.markdown\\'" . markdown-mode)
+		("\\.gmi\\'" . markdown-mode))
 	:commands (markdown-mode gfm-mode) )
 
 (load "init/text") ; text functions
@@ -345,46 +360,47 @@
 
 ;; Org-mode
 (use-package org
-	:init	(setq
-				org-directory "~/Documents/org"
-				org-agenda-files (list (concat org-directory "/daily.org"))
-				org-default-notes-file (concat org-directory "/notes.org")
+	:init (setq
+		org-directory "~/Documents/org"
+		org-agenda-files (list (concat org-directory "/daily.org"))
+		org-default-notes-file (concat org-directory "/notes.org")
 
-				org-startup-folded 'content			; folded children content all
-				org-catch-invisible-edits 'smart
-				org-ctrl-k-protect-subtree t
-				org-ellipsis " ."
-				org-enable-priority-commands nil
-				org-export-preserve-breaks t
-				org-export-with-toc nil
-				org-footnote-auto-adjust t
-				org-log-done t						; 'CLOSED' logging
-				org-log-state-notes-into-drawer nil
-				org-log-repeat nil
-				org-special-ctrl-a/e t
-				org-support-shift-select t
-				org-tags-exclude-from-inheritance '("PROJECT")
+		org-startup-folded 'content			; folded children content all
+		org-catch-invisible-edits 'smart
+		org-ctrl-k-protect-subtree t
+		org-ellipsis " ."
+		org-enable-priority-commands nil
+		org-export-preserve-breaks t
+		org-export-with-toc nil
+		org-footnote-auto-adjust t
+		org-log-done t						; 'CLOSED' logging
+		org-log-state-notes-into-drawer nil
+		org-log-repeat nil
+		org-special-ctrl-a/e t
+		org-support-shift-select t
+		org-tags-exclude-from-inheritance '("PROJECT")
 
-				org-agenda-include-diary nil
-				org-agenda-skip-scheduled-if-done t
-				org-agenda-skip-deadline-if-done t
-				org-agenda-todo-ignore-scheduled t
-				org-agenda-todo-ignore-deadlines t
-				org-agenda-start-on-weekday nil)
-	:config	(add-hook 'org-agenda-finalize-hook 'delete-other-windows)
+		org-agenda-include-diary nil
+		org-agenda-skip-scheduled-if-done t
+		org-agenda-skip-deadline-if-done t
+		org-agenda-todo-ignore-scheduled t
+		org-agenda-todo-ignore-deadlines t
+		org-agenda-start-on-weekday nil)
+	:config
+		(add-hook 'org-agenda-finalize-hook 'delete-other-windows)
 
-			(use-package org-autolist)
-			(add-hook 'org-mode-hook (lambda () (org-autolist-mode)) )
-			(add-hook 'org-mode-hook 'org-indent-mode)
+		(use-package org-autolist)
+		(add-hook 'org-mode-hook (lambda () (org-autolist-mode)) )
+		(add-hook 'org-mode-hook 'org-indent-mode)
 
-			(use-package org-chef :ensure t)
+		(use-package org-chef :ensure t)
 
-			(load "init/org-mode")		; org-mode functions
-			(load "init/pdfexport")	)	; pdf functions
+		(load "init/org-mode")		; org-mode functions
+		(load "init/pdfexport")	)	; pdf functions
 
 
 ;; sundry
-(load "init/misc")			; misc. functions
+(load "init/misc")
 
 
 ;; Configure specific machines
@@ -440,6 +456,7 @@
 (bind-key "C-x k"	'kill-current-buffer)
 (bind-key "C-x x k"	'kill-other-buffers)
 (bind-key "C-x x r"	'rename-file-and-buffer)
+(bind-key "C-x x v" 'view-text-file-as-info-manual)
 
 (global-set-key (kbd "C-s")		'isearch-forward-regexp)
 (global-set-key (kbd "C-r")		'isearch-backward-regexp)

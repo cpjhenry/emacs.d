@@ -29,24 +29,12 @@
 		(insert body))
 	(message-send-and-exit) )
 
-(defun elfeed-mail-todo (&optional use-generic-p)
-	"Mail this to myself for later reading"
-	(interactive "P")
-	(let ((entries (elfeed-search-selected)))
-		(cl-loop for entry in entries
-			do (elfeed-untag entry 'unread)
-			when (elfeed-entry-title entry)
-			do (todo it (elfeed-entry-link entry)))
-		(mapc #'elfeed-search-update-entry entries)
-		(unless (use-region-p) (forward-line))))
-;(define-key elfeed-search-mode-map (kbd "m") 'elfeed-mail-todo)
-
 (defun markdown-preview-file ()
 	"Run Marked on the current file and revert the buffer"
 	(interactive)
 	(shell-command (format "open -a /Applications/Marked\\ 2.app %s"
 		(shell-quote-argument (buffer-file-name)) ))
-	(let ((buffer "*Shell Command Output*")) (and (get-buffer buffer) 
+	(let ((buffer "*Shell Command Output*")) (and (get-buffer buffer)
 		(kill-buffer buffer))) )
 
 (defun flush-blank-lines (start end)
@@ -82,3 +70,20 @@
 			(insert (format "%s. " (1+ counter)))
 			(setq counter (1+ counter))
 			(goto-char last))))
+
+;; https://emacsnotes.wordpress.com/2023/09/11/view-info-texi-org-and-md-files-as-info-manual/
+(defun view-text-file-as-info-manual ()
+	(interactive)
+	(require 'ox-texinfo)
+	(let ((org-export-with-broken-links 'mark))
+		(pcase (file-name-extension (buffer-file-name))
+			(`"info" (info (buffer-file-name)))
+			(`"texi" (info (org-texinfo-compile (buffer-file-name))))
+			(`"org"  (info (org-texinfo-export-to-info)))
+			(`"md"   (let ((org-file-name (concat (file-name-sans-extension (buffer-file-name)) ".org")))
+				(apply #'call-process "pandoc" nil standard-output nil
+				`("-f" "markdown" "-t" "org" "-o" , org-file-name , (buffer-file-name)))
+				 (with-current-buffer (find-file-noselect org-file-name)
+				 (info (org-texinfo-export-to-info)))))
+			(_ (user-error "Don't know how to convert `%s' to an `info' file"
+				(file-name-extension (buffer-file-name)))))))
