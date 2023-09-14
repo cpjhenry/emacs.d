@@ -35,8 +35,10 @@
 
 (set-background-color "Ivory")
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
-(setq pop-up-windows nil)
-(setq pop-up-frames nil)
+
+(setq
+	pop-up-windows nil
+	pop-up-frames nil)
 
 (setq
 	user-mail-address "cpjhenry@gmail.com"
@@ -69,8 +71,7 @@
 	fill-column 55
 	help-window-select t
 	indicate-empty-lines t)
-
-(setq 
+(setq
 	ad-redefinition-action 'accept
 	bookmark-save-flag 1
 	bookmark-set-fringe-mark nil
@@ -98,7 +99,6 @@
 	save-abbrevs 'silent
 	sentence-end-double-space nil
 	show-paren-style 'mixed
-	show-trailing-whitespace t
 	tramp-default-method "ssh"
 	tramp-syntax 'simplified		; C-x C-f /remotehost:filename
 	trash-directory "~/.Trash"
@@ -136,10 +136,12 @@
 ;; buffers
 (load "init/filesandbuffers")
 
-(add-hook 'before-save-hook 'time-stamp)
+(add-hook 'before-save-hook
+	'time-stamp)
 (add-hook 'dired-mode-hook (lambda()
 	(dired-omit-mode 1) ))
 (add-hook 'emacs-lisp-mode-hook (lambda()
+	(setq show-trailing-whitespace t)
 	(goto-address-mode)
 	(prettify-symbols-mode)
 	(show-paren-local-mode) ))
@@ -154,14 +156,14 @@
 	'ffap-guess-file-name-at-point)
 
 ;; eval-after-loads are run once, before mode hooks
-;; mode-hooks execute once for every buffer in which the mode is enabled 
+;; mode-hooks execute once for every buffer in which the mode is enabled
 
 (with-eval-after-load 'doc-view-mode
 	(define-key doc-view-mode-map (kbd "q") 	'kill-current-buffer) )
 (with-eval-after-load 'emacs-news-mode
 	(define-key emacs-news-view-mode-map (kbd "<right>")
 		(lambda()(interactive)(outline-next-heading)(recenter-top-bottom)))
-	(define-key emacs-news-view-mode-map (kbd "<left>" )
+	(define-key emacs-news-view-mode-map (kbd "<left>")
 		(lambda()(interactive)(outline-previous-heading)(recenter-top-bottom))) )
 (with-eval-after-load 'eww-mode
 	(define-key eww-mode-map (kbd "q")			'kill-current-buffer)
@@ -241,26 +243,28 @@
 (define-key menu-bar-print-menu [ps-print-buffer] nil)
 (define-key menu-bar-print-menu [ps-print-region] nil)
 
-(when *mac*
-	(setq printer-name "Brother_HL_L2370DW")
-	(setq ps-paper-type 'a5)
-	(setq ps-lpr-switches '("-o media=a5"))
-	(setq ps-left-margin 28)
-	(setq ps-right-margin 28)
-	(setq ps-top-margin 28)
-	(setq ps-bottom-margin 28)
+(when *mac* (setq
+	printer-name "Brother_HL_L2370DW"
+	ps-paper-type 'a5
+	ps-lpr-switches '("-o media=a5")
 
-	(setq ps-font-size 11)
-	(setq ps-print-color-p nil)
-	(setq ps-print-header nil)
-	(setq ps-print-footer nil) )
+	ps-left-margin 28
+	ps-right-margin 28
+	ps-top-margin 28
+	ps-bottom-margin 28
+
+	ps-font-size 11
+	ps-print-color-p nil
+	ps-print-header nil
+	ps-print-footer nil) )
 
 
 ;; Mode Line
-(setq battery-mode-line-format "%p%% ")
-(setq display-time-24hr-format t)
-(setq display-time-default-load-average nil)
-(setq mode-line-compact t)
+(setq
+	battery-mode-line-format "%p%% "
+	display-time-24hr-format t
+	display-time-default-load-average nil
+	mode-line-compact t)
 (column-number-mode)
 (display-battery-mode)
 (display-time-mode -1)
@@ -341,31 +345,32 @@
 
 ;; Org-mode
 (use-package org
-	:init	(setq org-directory "~/Documents/org")
-			(setq org-agenda-files (list (concat org-directory "/daily.org")))
-			(setq org-default-notes-file (concat org-directory "/notes.org"))
+	:init	(setq
+				org-directory "~/Documents/org"
+				org-agenda-files (list (concat org-directory "/daily.org"))
+				org-default-notes-file (concat org-directory "/notes.org")
 
-			(setq org-startup-folded 'content)			; folded children content all
-			(setq org-catch-invisible-edits 'smart)
-			(setq org-ctrl-k-protect-subtree t)
-			(setq org-ellipsis "…")
-			(setq org-enable-priority-commands nil)
-			(setq org-export-preserve-breaks t)
-			(setq org-export-with-toc nil)
-			(setq org-footnote-auto-adjust t)
-			(setq org-log-done t)						; 'CLOSED' logging
-			(setq org-log-state-notes-into-drawer nil)
-			(setq org-log-repeat nil)
-			(setq org-special-ctrl-a/e t)
-			(setq org-support-shift-select t)
-			(setq org-tags-exclude-from-inheritance '("PROJECT"))
+				org-startup-folded 'content			; folded children content all
+				org-catch-invisible-edits 'smart
+				org-ctrl-k-protect-subtree t
+				org-ellipsis " ."
+				org-enable-priority-commands nil
+				org-export-preserve-breaks t
+				org-export-with-toc nil
+				org-footnote-auto-adjust t
+				org-log-done t						; 'CLOSED' logging
+				org-log-state-notes-into-drawer nil
+				org-log-repeat nil
+				org-special-ctrl-a/e t
+				org-support-shift-select t
+				org-tags-exclude-from-inheritance '("PROJECT")
 
-			(setq org-agenda-include-diary nil)
-			(setq org-agenda-skip-scheduled-if-done t)
-			(setq org-agenda-skip-deadline-if-done t)
-			(setq org-agenda-todo-ignore-scheduled t)
-			(setq org-agenda-todo-ignore-deadlines t)
-			(setq org-agenda-start-on-weekday nil)
+				org-agenda-include-diary nil
+				org-agenda-skip-scheduled-if-done t
+				org-agenda-skip-deadline-if-done t
+				org-agenda-todo-ignore-scheduled t
+				org-agenda-todo-ignore-deadlines t
+				org-agenda-start-on-weekday nil)
 	:config	(add-hook 'org-agenda-finalize-hook 'delete-other-windows)
 
 			(use-package org-autolist)
