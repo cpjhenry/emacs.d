@@ -112,8 +112,7 @@
 (when (>= emacs-major-version 28)
 	(setq
 		use-short-answers t
-   		goto-address-mail-face 'default)
-	(global-goto-address-mode) )
+   		goto-address-mail-face 'default) )
 
 ;; files
 (setq
@@ -151,10 +150,13 @@
 	(dired-omit-mode 1) ))
 (add-hook 'emacs-lisp-mode-hook (lambda()
 	(setq show-trailing-whitespace t)
+	(goto-address-mode)
 	(prettify-symbols-mode)
 	(show-paren-local-mode) ))
 (add-hook 'emacs-news-view-mode-hook (lambda()
 	(page-break-lines-mode) ))
+(add-hook 'eww-bookmark-mode-hook  (lambda()
+	(define-key eww-bookmark-mode-map (kbd "w")	'eww) ))
 (add-hook 'ibuffer-mode-hook (lambda()
 	(ibuffer-switch-to-saved-filter-groups "home")
 	(ibuffer-update nil t) ))
@@ -272,7 +274,8 @@
 	battery-mode-line-format "%p%% "
 	display-time-24hr-format t
 	display-time-default-load-average nil
-	mode-line-compact t)
+	mode-line-compact t
+	mode-line-position (list mode-line-percent-position " " "(%l,%C)") )
 (column-number-mode)
 (display-battery-mode)
 (display-time-mode -1)
@@ -294,22 +297,33 @@
 			(defun elpher:eww-browse-url (original url &optional new-window) "Handle gemini links."
 				(cond ((string-match-p "\\`\\(gemini\\|gopher\\)://" url) (elpher-go url))
 				(t (funcall original url new-window))) )
-			(advice-add 'eww-browse-url :around 'elpher:eww-browse-url) )
+			(advice-add 'eww-browse-url :around 'elpher:eww-browse-url)
+			(defun elpher-up() (interactive)(backward-paragraph)(recenter-top-bottom))
+			(defun elpher-down() (interactive)(forward-paragraph)(recenter-top-bottom)) )
 	(add-hook 'elpher-mode-hook (lambda ()
 		(setq-local
 			left-margin-width 10
 			gnutls-verify-error nil)
 		(set-window-buffer nil (current-buffer))
 		(local-set-key (kbd "<left>") 'elpher-back)
-		(local-set-key (kbd "[") 'elpher-up)
-		(defun elpher-up() (interactive)(previous-line)(backward-paragraph))
-		(local-set-key (kbd "]") 'elpher-down)
-		(defun elpher-down() (interactive)(forward-paragraph)(next-line)(recenter-top-bottom))
-		(message "'[' to scroll up, ']' to scroll down.") ))
+		(local-set-key (kbd "<right>") 'elpher-down) ))
 
 (use-package google-this
 	:config (google-this-mode)
 	:diminish)
+
+(use-package hl-todo
+    :hook (prog-mode . hl-todo-mode)
+          (emacs-lisp-mode . hl-todo-mode)
+    :config
+    (setq hl-todo-keyword-faces
+          `(("TODO"       warning bold)
+            ("FIXME"      error bold)
+            ("HACK"       font-lock-constant-face bold)
+            ("REVIEW"     font-lock-keyword-face bold)
+            ("NOTE"       success bold)
+            ("DEPRECATED" font-lock-doc-face bold))))
+
 (use-package lorem-ipsum
 	:init	(setq-default lorem-ipsum-sentence-separator " ")
 	:config	(easy-menu-add-item  nil '("edit") ["Lorem-ipsum" lorem-ipsum-insert-paragraphs t]))
@@ -331,6 +345,7 @@
 (add-hook 'text-mode-hook (lambda ()
 	(abbrev-mode)
 	(unless *w32* (flyspell-mode))
+	(goto-address-mode)
 	(visual-line-mode)
 	(wc-mode) ))
 (eval-after-load "flyspell" '(progn
@@ -522,7 +537,7 @@
 (bind-key "C-c d c"	'insert-date)
 (bind-key "C-c d i"	'insert-iso-date)
 
-(bind-key "C-c g"	'elpher) ; gopher / gemini
+(bind-key "C-c g"	'elpher-show-bookmarks) ; gopher / gemini
 
 (bind-key "C-c o a" 'org-archive-subtree-default)
 (bind-key "C-c o c"	'org-capture)
