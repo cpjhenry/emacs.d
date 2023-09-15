@@ -83,6 +83,7 @@
 	default-major-mode 'text-mode
 	delete-by-moving-to-trash t
 	dictionary-server "dict.org"
+	eww-search-prefix "https://www.google.ca/search?q="
 	flyspell-issue-message-flag nil
 	frame-title-format nil
 	help-clean-buttons t
