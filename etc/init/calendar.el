@@ -38,12 +38,14 @@
 	"☾ Last Quarter Moon"))
 
 (setq zoneinfo-style-world-list '(
+	("America/Los_Angeles" "Cupertino")
 	("America/Vancouver" "Vancouver")
 	("America/Edmonton" "Edmonton")
 	("America/Toronto" "Ottawa")
 	("America/Halifax" "Halifax")
 	("America/St_Johns" "St. John's")
 	("America/Marigot" "St. Martin")
+	("UTC" "UTC")
 	("Europe/London" "Edinburgh")
 	("Europe/Lisbon" "Lisbon")
 	("Europe/Paris" "Paris")
@@ -51,9 +53,6 @@
 	("Asia/Calcutta" "Bangalore")
 	("Asia/Shanghai" "Beijing")
 	("Asia/Tokyo" "Tokyo")))
-
-(defun list-hols () (interactive)
-	(list-holidays (string-to-number (format-time-string "%Y"))))
 
 (defun my/save-diary-before-calendar-exit (_)
 	(let ((diary-buffer (get-file-buffer diary-file)))

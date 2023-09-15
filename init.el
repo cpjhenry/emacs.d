@@ -222,11 +222,13 @@
 
 ;; calendar
 (load "init/calendar")
-(add-hook 'calendar-mode-hook (lambda()
-	(local-set-key (kbd "q") '(calendar-exit 'kill)) ))
 (advice-add 'calendar-exit :before #'my/save-diary-before-calendar-exit)
+(add-hook 'calendar-mode-hook (lambda()
+	(local-set-key (kbd "q") (lambda()(interactive)(calendar-exit 'kill)))
+	(local-set-key (kbd "w") (lambda()(interactive)(calendar-exit 'kill)(world-clock)))
+	(local-set-key (kbd "y") (lambda()(interactive)(list-holidays (string-to-number (format-time-string "%Y")))))
+	))
 (add-hook 'diary-list-entries-hook 'diary-sort-entries t)
-
 (add-hook 'diary-mode-hook (lambda()
 	(local-set-key (kbd "C-c C-q") 'kill-current-buffer) ))
 (add-hook 'diary-fancy-display-mode-hook (lambda()
@@ -382,7 +384,8 @@
 (use-package org
 	:init (setq
 		org-directory "~/Documents/org"
-		org-agenda-files (list (concat org-directory "/daily.org"))
+		org-primary-agenda (concat org-directory "/" "daily.org")
+		org-agenda-files (list org-primary-agenda)
 		org-default-notes-file (concat org-directory "/notes.org")
 
 		org-startup-folded 'content			; folded children content all
@@ -473,10 +476,6 @@
 
 ;; alternate keys
 (bind-key "C-S-k"	'kill-whole-line)
-(bind-key "C-x k"	'kill-current-buffer)
-(bind-key "C-x x k"	'kill-other-buffers)
-(bind-key "C-x x r"	'rename-file-and-buffer)
-(bind-key "C-x x v" 'view-text-file-as-info-manual)
 
 (global-set-key (kbd "C-s")		'isearch-forward-regexp)
 (global-set-key (kbd "C-r")		'isearch-backward-regexp)
@@ -485,30 +484,28 @@
 
 (global-set-key (kbd "<f12>")	'list-buffers)
 (global-set-key (kbd "TAB")		'self-insert-command)
-(global-set-key (kbd "C-<tab>") 'ido-switch-buffer)
-(global-set-key (kbd "C-x C-d")	'ido-dired)
 
 (global-set-key (kbd "A-<return>")(kbd "M-<return>"))
 
 (global-unset-key (kbd "C-x C-z"))
-(global-unset-key (kbd "C-z"))
 
 ;; Darwin overrides
 (when *mac*
-(global-set-key   (kbd "s-o")	'find-file)
-(global-set-key   (kbd "s-S")	'write-file)
+	(global-set-key   (kbd "s-o")	'find-file)
+	(global-set-key   (kbd "s-S")	'write-file)
 
-(global-unset-key (kbd "s-m"))
-(global-unset-key (kbd "s-n"))
-(global-unset-key (kbd "s-q"))
-(global-unset-key (kbd "s-w"))
+	(global-unset-key (kbd "s-m"))
+	(global-unset-key (kbd "s-n"))
+	(global-unset-key (kbd "s-q"))
+	(global-unset-key (kbd "s-w"))
 
-(when (display-graphic-p)
-(global-set-key	  (kbd "s-p")	'ps-print-buffer-with-faces)
+	(when (display-graphic-p)
+	(global-set-key	  (kbd "s-p")	'ps-print-buffer-with-faces)
 
-(global-unset-key (kbd "<f10>"))
-(global-unset-key (kbd "C-<f10>"))
-(global-unset-key (kbd "S-<f10>")) ))
+	(global-unset-key (kbd "<f10>"))
+	(global-unset-key (kbd "C-<f10>"))
+	(global-unset-key (kbd "S-<f10>"))
+	(global-unset-key (kbd "C-z")) ))
 
 ;; window navigation
 (when (fboundp 'windmove-default-keybindings)
@@ -532,11 +529,15 @@
 (bind-key "M-P"		'spool-to-enscript-region)
 
 (bind-key "C-c ?"	'describe-personal-keybindings)
-(bind-key "C-c a"	'org-agenda)
+
+(bind-key "C-c a a"	'org-agenda) (when *mac*
+(bind-key "C-c a d"	'daily-agenda) (defun daily-agenda() (interactive)(find-file org-primary-agenda)))
 
 (bind-key "C-c b m" 'new-markdown-buffer)
 (bind-key "C-c b s" 'create-scratch-buffer)
 (bind-key "C-c b t" 'new-empty-buffer)
+
+(bind-key "C-c c"	'calendar)
 
 (bind-key "C-c d SPC" 'display-current-time)
 (bind-key "C-c d c"	'insert-date)
@@ -553,34 +554,42 @@
 (bind-key "C-c w"	'eww-list-bookmarks) ; www
 
 (bind-key "C-c x b"	'flush-blank-lines)
-(bind-key "C-c x f"	'toggle-fill-column)
-(bind-key "C-c x i"	'display-fill-column-indicator-mode)
+
+(bind-key "C-c x d d" 'delete-duplicate-lines)
+(bind-key "C-c x d t" 'delete-trailing-whitespace)
+(bind-key "C-c x d w" 'delete-whitespace-rectangle)
+
+(bind-key "C-c x f f" 'toggle-fill-column)
+(bind-key "C-c x f i" 'display-fill-column-indicator-mode)
+
+(bind-key "C-c x l" 'lorem-ipsum-insert-paragraphs)
 (bind-key "C-c x n"	'number-paragraphs)
 (bind-key "C-c x q"	'replace-smart-quotes)
-(bind-key "C-c x w"	'delete-whitespace-rectangle)
 
-(when *mac*	(bind-key "C-c x d"	'daily.org)
-			(defun daily.org () (interactive)(find-file "~/Documents/org/daily.org")))
+(bind-key "C-x c" 'kill-current-buffer)
+
+(bind-key "C-x x k"	'kill-other-buffers)
+(bind-key "C-x x r"	'rename-file-and-buffer)
+(bind-key "C-x x v" 'view-text-file-as-info-manual)
+
+; For 'C-x'... 'C-a', 'C-g', 'C-y' and 'C-z' are available
+
+(global-set-key (kbd "C-<tab>") 'ido-switch-buffer)
+(global-set-key (kbd "C-x C-d")	'ido-dired)
 
 
 ;; Aliases
-(defalias 'cal 'calendar)
-(defalias 'clock 'world-clock)
 (defalias 'cm (kbd "✓"))
-(defalias 'ddl 'delete-duplicate-lines)
-(defalias 'dtw 'delete-trailing-whitespace)
+(defalias 'no (kbd "№"))
+(defalias 'pm (kbd "¶"))
+
+(defalias 'dr 'desktop-read)
 (defalias 'ds 'desktop-save)
-(defalias 'dsm 'desktop-save-mode)
+
 (defalias 'er 'eval-region)
 (defalias 'la 'list-abbrevs)
 (defalias 'lcd 'list-colors-display)
-(defalias 'lh 'list-hols)
-(defalias 'li 'lorem-ipsum-insert-paragraphs)
 (defalias 'lp 'list-packages)
-(defalias 'no (kbd "№"))
-(defalias 'pm (kbd "¶"))
-(defalias 'ppc 'ps-print-customize)
-(defalias 'rs 'replace-string)
 
 (defalias 'elm 'emacs-lisp-mode)
 (defalias 'flym 'flyspell-mode)
@@ -596,9 +605,6 @@
 (defalias 'wm 'whitespace-mode)
 
 ;; Work-specific
-(when *natasha*
-	(bind-key "C-c x o"	'office.org)
-	(defun office.org ()(interactive)(find-file "~/OD/Work/!.org")) )
 (when *w32*
 	(setq default-directory "c:/Users/henrypa/OneDrive - City of Ottawa/")
 	(bind-key "C-c x o"	'office.org)
