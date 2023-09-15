@@ -219,6 +219,9 @@
 (add-to-list 'ido-ignore-files ".DS_Store")
 (add-to-list 'ido-ignore-files "ido.last")
 
+(global-set-key (kbd "C-<tab>") 'ido-switch-buffer)
+(global-set-key (kbd "C-x C-d")	'ido-dired)
+
 
 ;; calendar
 (load "init/calendar")
@@ -226,8 +229,7 @@
 (add-hook 'calendar-mode-hook (lambda()
 	(local-set-key (kbd "q") (lambda()(interactive)(calendar-exit 'kill)))
 	(local-set-key (kbd "w") (lambda()(interactive)(calendar-exit 'kill)(world-clock)))
-	(local-set-key (kbd "y") (lambda()(interactive)(list-holidays (string-to-number (format-time-string "%Y")))))
-	))
+	(local-set-key (kbd "y") (lambda()(interactive)(list-holidays (string-to-number (format-time-string "%Y"))))) ))
 (add-hook 'diary-list-entries-hook 'diary-sort-entries t)
 (add-hook 'diary-mode-hook (lambda()
 	(local-set-key (kbd "C-c C-q") 'kill-current-buffer) ))
@@ -310,11 +312,13 @@
 		(set-window-buffer nil (current-buffer))
 		(local-set-key (kbd "<left>") 'elpher-back)
 		(local-set-key (kbd "<right>") 'elpher-down) ))
+
 (require 'eww)
 (define-key eww-bookmark-mode-map (kbd "w")	'eww)
 
 (use-package google-this
 	:config (google-this-mode)
+	(which-key-add-key-based-replacements "C-c /" "Google This")
 	:diminish)
 
 (use-package hl-todo
@@ -332,17 +336,24 @@
 (use-package lorem-ipsum
 	:init	(setq-default lorem-ipsum-sentence-separator " ")
 	:config	(easy-menu-add-item  nil '("edit") ["Lorem-ipsum" lorem-ipsum-insert-paragraphs t]))
+
 (use-package page-break-lines ; ^L
 	:init	(setq page-break-lines-max-width 55)
 	:config	(global-page-break-lines-mode)
 	:diminish)
+
 (use-package pdf-tools
 	:config (pdf-tools-install))
+
 (use-package smooth-scrolling
 	:config (smooth-scrolling-mode))
+
 (use-package ssh)
+
 (use-package visible-mark)
+
 (use-package wc-mode)
+
 (use-package which-key
 	:config (which-key-mode)
 	:diminish)
@@ -384,14 +395,15 @@
 (use-package org
 	:init (setq
 		org-directory "~/Documents/org"
-		org-primary-agenda (concat org-directory "/" "daily.org")
-		org-agenda-files (list org-primary-agenda)
+		org-agenda-file (concat org-directory "/" "daily.org")
+		org-agenda-files (list org-agenda-file)
+		org-agenda-text-search-extra-files '(agenda-archives)
 		org-default-notes-file (concat org-directory "/notes.org")
 
 		org-startup-folded 'content			; folded children content all
 		org-catch-invisible-edits 'smart
 		org-ctrl-k-protect-subtree t
-		org-ellipsis " ."
+		org-ellipsis "."
 		org-enable-priority-commands nil
 		org-export-preserve-breaks t
 		org-export-with-toc nil
@@ -531,23 +543,27 @@
 (bind-key "C-c ?"	'describe-personal-keybindings)
 
 (bind-key "C-c a a"	'org-agenda) (when *mac*
-(bind-key "C-c a d"	'daily-agenda) (defun daily-agenda() (interactive)(find-file org-primary-agenda)))
+(bind-key "C-c a d"	'daily-agenda) (defun daily-agenda() (interactive)(find-file org-agenda-file)))
+(which-key-add-key-based-replacements "C-c a" "org agenda")
 
 (bind-key "C-c b m" 'new-markdown-buffer)
 (bind-key "C-c b s" 'create-scratch-buffer)
 (bind-key "C-c b t" 'new-empty-buffer)
+(which-key-add-key-based-replacements "C-c b" "buffers")
 
 (bind-key "C-c c"	'calendar)
 
 (bind-key "C-c d SPC" 'display-current-time)
 (bind-key "C-c d c"	'insert-date)
 (bind-key "C-c d i"	'insert-iso-date)
+(which-key-add-key-based-replacements "C-c d" "dates")
 
 (bind-key "C-c g"	'elpher-show-bookmarks) ; gopher / gemini
 
 (bind-key "C-c o a" 'org-archive-subtree-default)
 (bind-key "C-c o c"	'org-capture)
 (bind-key "C-c o l"	'org-store-link)
+(which-key-add-key-based-replacements "C-c o" "org")
 
 (bind-key "C-c p"	'markdown-preview-file)
 (bind-key "C-c s"	'dictionary-search)
@@ -558,34 +574,35 @@
 (bind-key "C-c x d d" 'delete-duplicate-lines)
 (bind-key "C-c x d t" 'delete-trailing-whitespace)
 (bind-key "C-c x d w" 'delete-whitespace-rectangle)
+(which-key-add-key-based-replacements "C-c x d" "deleting")
 
 (bind-key "C-c x f f" 'toggle-fill-column)
 (bind-key "C-c x f i" 'display-fill-column-indicator-mode)
+(which-key-add-key-based-replacements "C-c x f" "fill-column")
 
 (bind-key "C-c x l" 'lorem-ipsum-insert-paragraphs)
 (bind-key "C-c x n"	'number-paragraphs)
 (bind-key "C-c x q"	'replace-smart-quotes)
+(which-key-add-key-based-replacements "C-c x" "text extended functions")
 
+(bind-key "C-c 8 c" (kbd "✓"))
+(bind-key "C-c 8 n" (kbd "№"))
+(bind-key "C-c 8 p" (kbd "¶"))
+(which-key-add-key-based-replacements "C-c 8" "key translations")
+
+;; Ctrl-x (buffer functions)
 (bind-key "C-x c" 'kill-current-buffer)
 
 (bind-key "C-x x k"	'kill-other-buffers)
 (bind-key "C-x x r"	'rename-file-and-buffer)
 (bind-key "C-x x v" 'view-text-file-as-info-manual)
 
-; For 'C-x'... 'C-a', 'C-g', 'C-y' and 'C-z' are available
-
-(global-set-key (kbd "C-<tab>") 'ido-switch-buffer)
-(global-set-key (kbd "C-x C-d")	'ido-dired)
+(which-key-add-key-based-replacements "C-x 8" "key translations")
+(which-key-add-key-based-replacements "C-x 8 e" "emojis")
+;; For 'C-x'... 'C-a', 'C-g', 'C-y' and 'C-z' are available
 
 
 ;; Aliases
-(defalias 'cm (kbd "✓"))
-(defalias 'no (kbd "№"))
-(defalias 'pm (kbd "¶"))
-
-(defalias 'dr 'desktop-read)
-(defalias 'ds 'desktop-save)
-
 (defalias 'er 'eval-region)
 (defalias 'la 'list-abbrevs)
 (defalias 'lcd 'list-colors-display)
@@ -603,6 +620,9 @@
 (defalias 'ssm 'shell-script-mode)
 (defalias 'vlm 'visual-line-mode)
 (defalias 'wm 'whitespace-mode)
+
+(defalias 'dr 'desktop-read)
+(defalias 'ds 'desktop-save)
 
 ;; Work-specific
 (when *w32*
