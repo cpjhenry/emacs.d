@@ -155,8 +155,6 @@
 	(show-paren-local-mode) ))
 (add-hook 'emacs-news-view-mode-hook (lambda()
 	(page-break-lines-mode) ))
-(add-hook 'eww-bookmark-mode-hook  (lambda()
-	(define-key eww-bookmark-mode-map (kbd "w")	'eww) ))
 (add-hook 'ibuffer-mode-hook (lambda()
 	(ibuffer-switch-to-saved-filter-groups "home")
 	(ibuffer-update nil t) ))
@@ -187,6 +185,7 @@
 	(define-key Info-mode-map (kbd "<left>" )	'Info-history-back)
 	(define-key Info-mode-map (kbd "<right>")	'Info-history-forward) )
 
+;(defalias 'kill-buffer 'kill-current-buffer)
 (defalias 'yes-or-no-p 'y-or-n-p)	; y or n is enough
 (easy-menu-add-item  nil '("Buffers") ["Increase text size" text-scale-increase])
 (easy-menu-add-item  nil '("Buffers") ["Decrease text size" text-scale-decrease])
@@ -222,16 +221,17 @@
 
 ;; calendar
 (load "init/calendar")
+(add-hook 'calendar-mode-hook (lambda()
+	(local-set-key (kbd "q") '(calendar-exit 'kill)) ))
+(advice-add 'calendar-exit :before #'my/save-diary-before-calendar-exit)
 (add-hook 'diary-list-entries-hook 'diary-sort-entries t)
+
 (add-hook 'diary-mode-hook (lambda()
 	(local-set-key (kbd "C-c C-q") 'kill-current-buffer) ))
 (add-hook 'diary-fancy-display-mode-hook (lambda()
 	(local-set-key (kbd "q") 'kill-current-buffer) ))
 (add-hook 'special-mode-hook (lambda()
 	(local-set-key (kbd "q") 'kill-current-buffer) ))
-(add-hook 'calendar-mode-hook (lambda()
-	(local-set-key (kbd "q") '(calendar-exit 'kill)) ))
-(advice-add 'calendar-exit :before #'my/save-diary-before-calendar-exit)
 
 (setq
 	diary-file "~/Documents/diary"
@@ -307,6 +307,8 @@
 		(set-window-buffer nil (current-buffer))
 		(local-set-key (kbd "<left>") 'elpher-back)
 		(local-set-key (kbd "<right>") 'elpher-down) ))
+(require 'eww)
+(define-key eww-bookmark-mode-map (kbd "w")	'eww)
 
 (use-package google-this
 	:config (google-this-mode)
@@ -331,6 +333,8 @@
 	:init	(setq page-break-lines-max-width 55)
 	:config	(global-page-break-lines-mode)
 	:diminish)
+(use-package pdf-tools
+	:config (pdf-tools-install))
 (use-package smooth-scrolling
 	:config (smooth-scrolling-mode))
 (use-package ssh)
