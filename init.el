@@ -585,9 +585,9 @@
 (bind-key "C-c x q"	'replace-smart-quotes)
 (which-key-add-key-based-replacements "C-c x" "text extended functions")
 
-(bind-key "C-c 8 c" (kbd "✓"))
-(bind-key "C-c 8 n" (kbd "№"))
-(bind-key "C-c 8 p" (kbd "¶"))
+(global-set-key (kbd "C-c 8 c") (kbd "✓"))
+(global-set-key (kbd "C-c 8 n") (kbd "№"))
+(global-set-key (kbd "C-c 8 p") (kbd "¶"))
 (which-key-add-key-based-replacements "C-c 8" "key translations")
 
 ;; Ctrl-x (buffer functions)

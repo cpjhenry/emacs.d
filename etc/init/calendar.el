@@ -37,10 +37,14 @@
 	"○ Full Moon"
 	"☾ Last Quarter Moon"))
 
+(setq world-clock-time-format "%9A %2d %9B %R %Z")
 (setq zoneinfo-style-world-list '(
+	("Pacific/Honolulu" "Hawai'i")
 	("America/Los_Angeles" "Cupertino")
 	("America/Vancouver" "Vancouver")
 	("America/Edmonton" "Edmonton")
+	("America/Regina" "Saskatoon")
+	("America/Winnipeg" "Winnipeg")
 	("America/Toronto" "Ottawa")
 	("America/Halifax" "Halifax")
 	("America/St_Johns" "St. John's")
@@ -49,10 +53,14 @@
 	("Europe/London" "Edinburgh")
 	("Europe/Lisbon" "Lisbon")
 	("Europe/Paris" "Paris")
+	("Europe/Rome" "Rome")
 	("Europe/Istanbul" "Ankara")
 	("Asia/Calcutta" "Bangalore")
 	("Asia/Shanghai" "Beijing")
-	("Asia/Tokyo" "Tokyo")))
+	("Asia/Tokyo" "Tokyo")
+	("Australia/Sydney" "Sydney")
+	("NZ" "Wellington")
+	))
 
 (defun my/save-diary-before-calendar-exit (_)
 	(let ((diary-buffer (get-file-buffer diary-file)))
