@@ -227,9 +227,11 @@
 (load "init/calendar")
 (advice-add 'calendar-exit :before #'my/save-diary-before-calendar-exit)
 (add-hook 'calendar-mode-hook (lambda()
-	(local-set-key (kbd "q") (lambda()(interactive)(calendar-exit 'kill)))
-	(local-set-key (kbd "w") (lambda()(interactive)(calendar-exit 'kill)(world-clock)))
-	(local-set-key (kbd "y") (lambda()(interactive)(list-holidays (string-to-number (format-time-string "%Y"))))) ))
+	(local-set-key (kbd "q") (lambda()(interactive)(calendar-exit 'kill)
+							 (let ((buffer "*wclock*")) (and (get-buffer buffer) (kill-buffer buffer)))))
+	(local-set-key (kbd "w") (lambda()(interactive)(world-clock)(next-window-any-frame)(fit-window-to-buffer)))
+	(local-set-key (kbd "y") (lambda()(interactive)(list-holidays (string-to-number (format-time-string "%Y")))))
+ ))
 (add-hook 'diary-list-entries-hook 'diary-sort-entries t)
 (add-hook 'diary-mode-hook (lambda()
 	(local-set-key (kbd "C-c C-q") 'kill-current-buffer) ))
@@ -245,7 +247,7 @@
 
 	calendar-date-style 'iso
 	calendar-mark-holidays-flag t
-	calendar-view-holidays-initially-flag t
+	calendar-view-holidays-initially-flag nil
 	calendar-mark-diary-entries-flag t)
 
 
