@@ -216,6 +216,7 @@
 (use-package ido-sort-mtime :config	(ido-sort-mtime-mode 1))
 
 (add-to-list 'ido-ignore-buffers "*Messages*")
+(add-to-list 'ido-ignore-buffers "*Shell Command Output*")
 (add-to-list 'ido-ignore-files ".DS_Store")
 (add-to-list 'ido-ignore-files "ido.last")
 
