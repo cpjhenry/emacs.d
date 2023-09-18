@@ -223,6 +223,51 @@
 (global-set-key (kbd "C-<tab>") 'ido-switch-buffer)
 (global-set-key (kbd "C-x C-d")	'ido-dired)
 
+;; iBuffer
+;; https://www.emacswiki.org/emacs/IbufferMode
+(require 'ibuffer)
+(defalias 'list-buffers 'ibuffer) ; always use ibuffer
+(define-key ibuffer-mode-map (kbd "q")		'kill-current-buffer)
+(define-key ibuffer-mode-map (kbd "<up>")	'ibuffer-previous-line)
+(define-key ibuffer-mode-map (kbd "<down>")	'ibuffer-next-line)
+(define-key ibuffer-mode-map (kbd "<right>")'ibuffer-previous-header)
+(define-key ibuffer-mode-map (kbd "<left>")	'ibuffer-next-header)
+(define-key ibuffer-mode-map (kbd "<return>")(lambda()(interactive)(ibuffer-visit-buffer)
+	(let ((buffer "*Ibuffer*")) (and (get-buffer buffer) (kill-buffer buffer))) ))
+
+(setq
+	ibuffer-hidden-filter-groups (list "Helm" "*Internal*")
+	ibuffer-saved-filter-groups (quote (("home"
+	   	("dired" (mode . dired-mode))
+		("emacs" (or
+			(name . "^\\*scratch\\*$")
+			(name . "^\\*Messages\\*$")
+			(name . "\\.el")))
+		("org" (name . "\\.org"))
+		("planner" (or
+			(name . "^\\*Calendar\\*$")
+			(name . "^diary$")
+			(name . "^\\*Org Agenda\\*")))
+		;("perl" (mode . cperl-mode))
+		;("erc" (mode . erc-mode))
+		;("gnus" (or
+		;	(mode . message-mode)
+		;	(mode . bbdb-mode)
+		;	(mode . mail-mode)
+		;	(mode . gnus-group-mode)
+		;	(mode . gnus-summary-mode)
+		;	(mode . gnus-article-mode)
+		;	(name . "^\\.bbdb$")
+		;	(name . "^\\.newsrc-dribble")))
+		)) ))
+
+(require 'ibuf-ext)
+(add-to-list 'ibuffer-never-show-predicates "^\\*Messages\\*")
+(add-to-list 'ibuffer-never-show-predicates "^\\*Shell Command Output\\*")
+(add-to-list 'ibuffer-never-show-predicates "^\\*tramp/")
+
+(use-package ibuffer-tramp)
+
 
 ;; calendar
 (load "init/calendar")
@@ -232,7 +277,7 @@
 							 (let ((buffer "*wclock*")) (and (get-buffer buffer) (kill-buffer buffer)))))
 	(local-set-key (kbd "w") (lambda()(interactive)(world-clock)(next-window-any-frame)(fit-window-to-buffer)))
 	(local-set-key (kbd "y") (lambda()(interactive)(list-holidays (string-to-number (format-time-string "%Y")))))
- ))
+	))
 (add-hook 'diary-list-entries-hook 'diary-sort-entries t)
 (add-hook 'diary-mode-hook (lambda()
 	(local-set-key (kbd "C-c C-q") 'kill-current-buffer) ))
@@ -398,7 +443,7 @@
 (use-package org
 	:init (setq
 		org-directory "~/Documents/org"
-		org-agenda-file (concat org-directory "/" "daily.org")
+		org-agenda-file (concat org-directory "/daily.org")
 		org-agenda-files (list org-agenda-file)
 		org-agenda-text-search-extra-files '(agenda-archives)
 		org-default-notes-file (concat org-directory "/notes.org")
@@ -427,9 +472,12 @@
 	:config
 		(add-hook 'org-agenda-finalize-hook 'delete-other-windows)
 
-		(use-package org-autolist)
-		(add-hook 'org-mode-hook (lambda () (org-autolist-mode)) )
-		(add-hook 'org-mode-hook 'org-indent-mode)
+		(use-package org-autolist
+			:diminish "AL")
+
+		(add-hook 'org-mode-hook (lambda ()
+			(org-autolist-mode)
+			(org-indent-mode) ))
 
 		(use-package org-chef :ensure t)
 
@@ -550,6 +598,7 @@
 (which-key-add-key-based-replacements "C-c a" "org agenda")
 
 (bind-key "C-c b m" 'new-markdown-buffer)
+(bind-key "C-c b o" 'new-org-buffer)
 (bind-key "C-c b s" 'create-scratch-buffer)
 (bind-key "C-c b t" 'new-empty-buffer)
 (which-key-add-key-based-replacements "C-c b" "buffers")
@@ -563,6 +612,15 @@
 
 (bind-key "C-c g"	'elpher-show-bookmarks) ; gopher / gemini
 
+(bind-key "C-c i f" 'toggle-fill-column)
+(bind-key "C-c i i" 'display-fill-column-indicator-mode)
+(which-key-add-key-based-replacements "C-c i" "fill-column")
+
+(bind-key "C-c l d" 'delete-duplicate-lines)
+(bind-key "C-c l t" 'delete-trailing-whitespace)
+(bind-key "C-c l w" 'delete-whitespace-rectangle)
+(which-key-add-key-based-replacements "C-c l" "line functions")
+
 (bind-key "C-c o a" 'org-archive-subtree-default)
 (bind-key "C-c o c"	'org-capture)
 (bind-key "C-c o l"	'org-store-link)
@@ -574,19 +632,10 @@
 
 (bind-key "C-c x b"	'flush-blank-lines)
 
-(bind-key "C-c x d d" 'delete-duplicate-lines)
-(bind-key "C-c x d t" 'delete-trailing-whitespace)
-(bind-key "C-c x d w" 'delete-whitespace-rectangle)
-(which-key-add-key-based-replacements "C-c x d" "deleting")
-
-(bind-key "C-c x f f" 'toggle-fill-column)
-(bind-key "C-c x f i" 'display-fill-column-indicator-mode)
-(which-key-add-key-based-replacements "C-c x f" "fill-column")
-
 (bind-key "C-c x l" 'lorem-ipsum-insert-paragraphs)
 (bind-key "C-c x n"	'number-paragraphs)
 (bind-key "C-c x q"	'replace-smart-quotes)
-(which-key-add-key-based-replacements "C-c x" "text extended functions")
+(which-key-add-key-based-replacements "C-c x" "text functions")
 
 (global-set-key (kbd "C-c 8 c") (kbd "✓"))
 (global-set-key (kbd "C-c 8 n") (kbd "№"))

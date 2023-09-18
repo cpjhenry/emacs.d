@@ -19,8 +19,15 @@
 	(interactive)
 	(let ((buf (generate-new-buffer "untitled\.md")))
 		(switch-to-buffer buf)
-		(funcall (and default-major-mode))
 		(markdown-mode)
+		(setq buffer-offer-save t) ))
+
+(defun new-org-buffer ()
+	"Create new empty org-mode buffer."
+	(interactive)
+	(let ((buf (generate-new-buffer "untitled\.org")))
+		(switch-to-buffer buf)
+		(org-mode)
 		(setq buffer-offer-save t) ))
 
 (defun kill-other-buffers ()
@@ -131,50 +138,7 @@
 	(mydired-sort))
 
 
-;; iBuffer
-;; https://www.emacswiki.org/emacs/IbufferMode
-
-(require 'ibuffer)
-(defalias 'list-buffers 'ibuffer) ; always use ibuffer
-(setq ibuffer-hidden-filter-groups (list "Helm" "*Internal*"))
-(define-key ibuffer-mode-map (kbd "q")		'kill-current-buffer)
-(define-key ibuffer-mode-map (kbd "<up>")	'ibuffer-previous-line)
-(define-key ibuffer-mode-map (kbd "<down>")	'ibuffer-next-line)
-(define-key ibuffer-mode-map (kbd "<right>")'ibuffer-previous-header)
-(define-key ibuffer-mode-map (kbd "<left>")	'ibuffer-next-header)
-(define-key ibuffer-mode-map (kbd "<return>")(lambda()(interactive)(ibuffer-visit-buffer)
-	(let ((buffer "*Ibuffer*")) (and (get-buffer buffer) (kill-buffer buffer))) ))
-
-(require 'ibuf-ext)
-(add-to-list 'ibuffer-never-show-predicates "^\\*Messages\\*")
-(add-to-list 'ibuffer-never-show-predicates "^\\*Shell Command Output\\*")
-(add-to-list 'ibuffer-never-show-predicates "^\\*tramp/")
-
-(use-package ibuffer-tramp)
-
-(setq ibuffer-saved-filter-groups (quote (("home"
-   	("dired" (mode . dired-mode))
-	("emacs" (or
-		(name . "^\\*scratch\\*$")
-		(name . "^\\*Messages\\*$")
-		(name . "\\.el")))
-	("planner" (or
-		(name . "^\\*Calendar\\*$")
-		(name . "^diary$")
-		(name . "^\\*Org Agenda\\*")))
-;	( "tramp" (ibuffer-tramp-generate-filter-groups-by-tramp-connection))
-;  	("perl" (mode . cperl-mode))
-;  	("erc" (mode . erc-mode))
-;	("gnus" (or
-;		(mode . message-mode)
-;		(mode . bbdb-mode)
-;		(mode . mail-mode)
-;		(mode . gnus-group-mode)
-;		(mode . gnus-summary-mode)
-;		(mode . gnus-article-mode)
-;		(name . "^\\.bbdb$")
-;		(name . "^\\.newsrc-dribble")))
-	))))
+;; iBuffer functions
 
 (defun ibuffer-advance-motion (direction)
 	(forward-line direction)

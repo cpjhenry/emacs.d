@@ -31,7 +31,7 @@
 (setq org-capture-templates '(
 		("c" "Cookbook" entry
 			(file "~/Documents/org/cookbook.org") "%(org-chef-get-recipe-from-url)" :empty-lines 1)
-        ("m" "Manual Cookbook" entry 
+        ("m" "Manual Cookbook" entry
 			(file "~/Documents/org/cookbook.org") "* %^{Recipe title: }\n  :PROPERTIES:\n  :source-url:\n  :servings:\n  :prep-time:\n  :cook-time:\n  :ready-in:\n  :END:\n** Ingredients\n   %?\n** Directions\n\n") ))
 
 ;; org links
@@ -115,6 +115,8 @@
 						(equal (match-string 2) (match-string 3)))
 						(org-todo 'done)
 						(org-todo 'todo)))))))
+
+;; org PROPERTIES
 
 ;; other org functions
 (defun org-clocking-buffer (&rest _))
