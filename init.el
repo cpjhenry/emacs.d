@@ -156,6 +156,8 @@
 	(show-paren-local-mode) ))
 (add-hook 'emacs-news-view-mode-hook (lambda()
 	(page-break-lines-mode) ))
+(add-hook 'eww-mode-hook (lambda()
+	(define-key eww-mode-map (kbd "<left>") 'eww-back-url) ))
 (add-hook 'ibuffer-mode-hook (lambda()
 	(ibuffer-switch-to-saved-filter-groups "home")
 	(ibuffer-update nil t) ))
@@ -174,9 +176,6 @@
 		(lambda()(interactive)(outline-previous-heading)(recenter-top-bottom)))
 	(define-key emacs-news-view-mode-map (kbd "<right>")
 		(lambda()(interactive)(outline-next-heading)(recenter-top-bottom))) )
-(with-eval-after-load 'eww-mode
-	(define-key eww-mode-map (kbd "q")			'kill-current-buffer)
-	(define-key eww-mode-map (kbd "<left>")		'eww-back-url) )
 (with-eval-after-load 'help-mode
 	(define-key help-mode-map (kbd "q")			'kill-current-buffer)
 	(define-key help-mode-map (kbd "<left>")	'help-go-back)
@@ -366,7 +365,7 @@
 
 (use-package google-this
 	:config (google-this-mode)
-	(which-key-add-key-based-replacements "C-c /" "Google This")
+	(which-key-add-key-based-replacements "C-c /" "google-this")
 	:diminish)
 
 (use-package hl-todo
@@ -631,7 +630,6 @@
 (bind-key "C-c w"	'eww-list-bookmarks) ; www
 
 (bind-key "C-c x b"	'flush-blank-lines)
-
 (bind-key "C-c x l" 'lorem-ipsum-insert-paragraphs)
 (bind-key "C-c x n"	'number-paragraphs)
 (bind-key "C-c x q"	'replace-smart-quotes)
