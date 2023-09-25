@@ -1,9 +1,8 @@
 ;; Emacs configuration / cpjh
 
 ;; Initialize terminal
-(when (display-graphic-p)(tool-bar-mode -1))
-(when (display-graphic-p)(scroll-bar-mode -1))
 (toggle-frame-maximized)
+(scroll-bar-mode -1)
 (electric-indent-mode -1)
 (tooltip-mode -1)
 
@@ -15,7 +14,7 @@
 (defconst *natasha* (string-equal (system-name) "natasha"))
 
 (when *mac*
-	(set-frame-font "Inconsolata 21" nil t)
+	(add-to-list 'default-frame-alist '(font . "Inconsolata 21"))
 	(setq
 		; Mac command key is Super
 		; Mac option  key is Meta
@@ -23,20 +22,21 @@
 		mac-function-modifier 'hyper	; Hyper
 		mac-right-command-modifier 'alt	; Alt
 		mac-right-option-modifier nil)	; pass-thru
-	(define-key key-translation-map
-		(kbd "<C-mouse-1>") (kbd "<mouse-2>")))
+	(define-key key-translation-map (kbd "<C-mouse-1>") (kbd "<mouse-2>")) )
 (when *gnu*
-	(set-frame-font "Monospace 17" nil t))
+	(add-to-list 'default-frame-alist '(font . "Monospace 17")) )
 (when *w32*
-	(set-frame-font "Consolas 12" nil t)
+	(add-to-list 'default-frame-alist '(font . "Consolas 12"))
 	(setq
 		w32-lwindow-modifier 'super
 		w32-pass-lwindow-to-system nil
 		w32-apps-modifier 'hyper)
 	(message "Running on Windows."))
 
-(set-background-color "Ivory")
+(when (display-graphic-p)
+(add-to-list 'default-frame-alist '(background-color . "Ivory")) )
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
+(add-to-list 'default-frame-alist '(tool-bar-lines . 0))
 
 (setq
 	user-mail-address "cpjhenry@gmail.com"
