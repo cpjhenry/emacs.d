@@ -39,10 +39,6 @@
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
 (setq
-	pop-up-windows nil
-	pop-up-frames nil)
-
-(setq
 	user-mail-address "cpjhenry@gmail.com"
 	calendar-latitude 45.3
 	calendar-longitude -75.7
@@ -96,6 +92,8 @@
 	mark-ring-max most-positive-fixnum
 	max-lisp-eval-depth 65536
 	ns-use-native-fullscreen t
+	pop-up-windows nil
+	pop-up-frames nil
 	recenter-positions '(top)		; top middle bottom
 	require-final-newline nil
 	ring-bell-function 'ignore
