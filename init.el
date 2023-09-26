@@ -2,8 +2,8 @@
 
 ;; Initialize terminal
 (toggle-frame-maximized)
-(scroll-bar-mode -1)
 (electric-indent-mode -1)
+(scroll-bar-mode -1)
 (tooltip-mode -1)
 
 (defconst *mac* (eq system-type 'darwin))
@@ -13,8 +13,7 @@
 (defconst *bullwinkle* (string-equal (system-name) "bullwinkle"))
 (defconst *natasha* (string-equal (system-name) "natasha"))
 
-(when *mac*
-	(add-to-list 'default-frame-alist '(font . "Inconsolata 21"))
+(when *mac* (add-to-list 'default-frame-alist '(font . "Inconsolata 21"))
 	(setq
 		; Mac command key is Super
 		; Mac option  key is Meta
@@ -23,15 +22,13 @@
 		mac-right-command-modifier 'alt	; Alt
 		mac-right-option-modifier nil)	; pass-thru
 	(define-key key-translation-map (kbd "<C-mouse-1>") (kbd "<mouse-2>")) )
-(when *gnu*
-	(add-to-list 'default-frame-alist '(font . "Monospace 17")) )
-(when *w32*
-	(add-to-list 'default-frame-alist '(font . "Consolas 12"))
+(when *gnu* (add-to-list 'default-frame-alist '(font . "Monospace 17")) )
+(when *w32* (add-to-list 'default-frame-alist '(font . "Consolas 12"))
 	(setq
 		w32-lwindow-modifier 'super
 		w32-pass-lwindow-to-system nil
 		w32-apps-modifier 'hyper)
-	(message "Running on Windows."))
+	(message "Running on Windows.") )
 
 (when (display-graphic-p)
 (add-to-list 'default-frame-alist '(background-color . "Ivory")) )
@@ -108,9 +105,12 @@
 	use-file-dialog nil
 	visual-line-fringe-indicators '(nil right-curly-arrow) )
 
+(if (>= emacs-major-version 28)
+	(setq use-short-answers t)
+	(defalias 'yes-or-no-p 'y-or-n-p) )
+
 (when (>= emacs-major-version 28)
 	(setq
-		use-short-answers t
    		goto-address-mail-face 'default) )
 
 ;; files
@@ -153,7 +153,7 @@
 	(prettify-symbols-mode)
 	(show-paren-local-mode) ))
 (add-hook 'emacs-news-view-mode-hook (lambda()
-	(page-break-lines-mode) ))
+	(form-feed-mode) ))
 (add-hook 'eww-mode-hook (lambda()
 	(define-key eww-mode-map (kbd "<left>") 'eww-back-url) ))
 (add-hook 'ibuffer-mode-hook (lambda()
@@ -183,8 +183,6 @@
 	(define-key Info-mode-map (kbd "<left>" )	'Info-history-back)
 	(define-key Info-mode-map (kbd "<right>")	'Info-history-forward) )
 
-;(defalias 'kill-buffer 'kill-current-buffer)
-(defalias 'yes-or-no-p 'y-or-n-p)	; y or n is enough
 (easy-menu-add-item  nil '("Buffers") ["Increase text size" text-scale-increase])
 (easy-menu-add-item  nil '("Buffers") ["Decrease text size" text-scale-decrease])
 
@@ -382,9 +380,8 @@
 	:init	(setq-default lorem-ipsum-sentence-separator " ")
 	:config	(easy-menu-add-item  nil '("edit") ["Lorem-ipsum" lorem-ipsum-insert-paragraphs t]))
 
-(use-package page-break-lines ; ^L
-	:init	(setq page-break-lines-max-width 55)
-	:config	(global-page-break-lines-mode)
+(use-package form-feed ; ^L
+	:config (global-form-feed-mode)
 	:diminish)
 
 (use-package pdf-tools
