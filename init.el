@@ -57,8 +57,6 @@
 (add-to-list 'load-path (expand-file-name "opt" user-emacs-directory))
 (add-to-list 'load-path (expand-file-name "var" user-emacs-directory))
 
-(when *mac*	(setq default-directory "~/"))
-
 ;; settings
 (set-language-environment 'utf-8)
 (setq-default
