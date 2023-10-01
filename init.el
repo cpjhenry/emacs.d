@@ -390,6 +390,8 @@
 
 (use-package ssh)
 
+(use-package sudo-edit)
+
 (use-package visible-mark)
 
 (use-package wc-mode)
@@ -632,6 +634,8 @@
 (global-set-key (kbd "C-c 8 n") (kbd "№"))
 (global-set-key (kbd "C-c 8 p") (kbd "¶"))
 (which-key-add-key-based-replacements "C-c 8" "key translations")
+
+(bind-key "C-c C-r" 'sudo-edit)
 
 ;; Ctrl-x (buffer functions)
 (bind-key "C-x c" 'kill-current-buffer)
