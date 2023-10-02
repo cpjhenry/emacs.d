@@ -61,6 +61,7 @@
 (set-language-environment 'utf-8)
 (setq-default
 	tab-width 4
+	standard-indent 4
 	fill-column 55
 	help-window-select t
 	indicate-empty-lines t)

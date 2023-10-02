@@ -17,6 +17,11 @@
 	(elfeed-search-untag-all-unread))
 	(define-key elfeed-search-mode-map (kbd "R") 'elfeed-mark-all-as-read)
 
+(defun elfeed-beginning-to-point-as-read () (interactive)
+	(mark-to-beginning-of-buffer)
+	(elfeed-search-untag-all-unread))
+	(define-key elfeed-search-mode-map (kbd "B") 'elfeed-beginning-to-point-as-read)
+
 (defun elfeed-mail-todo (&optional use-generic-p)
 	"Mail this to myself for later reading"
 	(interactive "P")
