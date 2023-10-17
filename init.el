@@ -149,8 +149,7 @@
 (add-hook 'emacs-lisp-mode-hook (lambda()
 	(setq show-trailing-whitespace t)
 	(goto-address-mode)
-	(prettify-symbols-mode)
-	(show-paren-local-mode) ))
+	(prettify-symbols-mode) ))
 (add-hook 'emacs-news-view-mode-hook (lambda()
 	(form-feed-mode) ))
 (add-hook 'eww-mode-hook (lambda()
@@ -383,9 +382,6 @@
 	:config (global-form-feed-mode)
 	:diminish)
 
-(use-package pdf-tools
-	:config (pdf-tools-install))
-
 (use-package smooth-scrolling
 	:config (smooth-scrolling-mode))
 
@@ -486,8 +482,9 @@
 
 ;; Configure specific machines
 (when *natasha*
-	(setq browse-url-browser-function 'browse-url-generic
-		browse-url-generic-program "/Applications/Firefox.app/Contents/MacOS/firefox")
+	(setq 	browse-url-browser-function 'browse-url-generic
+		;	browse-url-generic-program "/Applications/Firefox.app/Contents/MacOS/firefox"
+			browse-url-generic-program "/Applications/Waterfox.app/Contents/MacOS/waterfox")
 	(load "init/elfeed") )
 
 (when *mac*
@@ -496,8 +493,12 @@
 	)
 
 (when *gnu*
-	(setq browse-url-browser-function 'browse-url-generic
-		browse-url-generic-program "firefox-esr") )
+	(setq	browse-url-browser-function 'browse-url-generic
+			browse-url-generic-program "firefox-esr") )
+
+(unless *w32*
+	(use-package pdf-tools
+		:config (pdf-tools-install)) )
 
 
 ;; Diminish modes
