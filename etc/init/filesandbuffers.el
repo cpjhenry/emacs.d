@@ -1,10 +1,10 @@
 ;; FILE/BUFFER functions
 
-(defun create-scratch-buffer ()
-	"Create new *scratch* buffer."
+(if (< emacs-major-version 29)(defun scratch-buffer ()
+	"Switch to the *scratch* buffer.
+	If the buffer doesn't exist, create it first."
 	(interactive)
-	(switch-to-buffer (get-buffer-create "*scratch*"))
-	(funcall (and initial-major-mode)) )
+	(pop-to-buffer-same-window (get-scratch-buffer-create))))
 
 (defun new-empty-buffer ()
 	"Create new empty buffer."

@@ -1,9 +1,10 @@
-;; Emacs configuration / cpjh
+;;; Emacs configuration / cpjh
 
 ;; Initialize terminal
 (toggle-frame-maximized)
 (electric-indent-mode -1)
 (scroll-bar-mode -1)
+(show-paren-mode -1)
 (tooltip-mode -1)
 
 (defconst *mac* (eq system-type 'darwin))
@@ -112,6 +113,9 @@
 	(setq
    		goto-address-mail-face 'default) )
 
+(when (< emacs-major-version 28)
+	(defalias 'show-paren-local-mode 'show-paren-mode) )
+
 ;; files
 (setq
 	abbrev-file-name			(concat user-emacs-directory "etc/abbrev_defs")
@@ -149,7 +153,8 @@
 (add-hook 'emacs-lisp-mode-hook (lambda()
 	(setq show-trailing-whitespace t)
 	(goto-address-mode)
-	(prettify-symbols-mode) ))
+	(prettify-symbols-mode)
+	(show-paren-local-mode) ))
 (add-hook 'emacs-news-view-mode-hook (lambda()
 	(form-feed-mode) ))
 (add-hook 'eww-mode-hook (lambda()
@@ -157,6 +162,14 @@
 (add-hook 'ibuffer-mode-hook (lambda()
 	(ibuffer-switch-to-saved-filter-groups "home")
 	(ibuffer-update nil t) ))
+
+;; prog-mode-hook settings
+(add-hook 'prog-mode-hook (lambda()
+	(abbrev-mode)
+	(when (not (memq major-mode (list 'lisp-interaction-mode)))
+		(display-line-numbers-mode) )
+	(flyspell-prog-mode)
+	(show-paren-local-mode) ))
 
 (remove-hook
 	'file-name-at-point-functions
@@ -595,7 +608,7 @@
 
 (bind-key "C-c b m" 'new-markdown-buffer)
 (bind-key "C-c b o" 'new-org-buffer)
-(bind-key "C-c b s" 'create-scratch-buffer)
+(bind-key "C-c b s" 'scratch-buffer)
 (bind-key "C-c b t" 'new-empty-buffer)
 (which-key-add-key-based-replacements "C-c b" "buffers")
 
