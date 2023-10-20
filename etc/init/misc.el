@@ -1996,12 +1996,6 @@ C-c / t					TODO tree
 C-c * | C-c -			headline | item
 C-c ^					sort
 C-c C-q					tag
-
-
-MODES
-
-C-c m					Markdown
-C-c t					Olivetti
 ")
 (kf-gen-displayer my/emacs-help "Display Emacs help." "*Emacs cheatsheet*")
 (bind-key "M-<f1>" 'my/emacs-help)

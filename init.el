@@ -385,18 +385,18 @@
             ("HACK"       font-lock-constant-face bold)
             ("REVIEW"     font-lock-keyword-face bold)
             ("NOTE"       success bold)
-            ("DEPRECATED" font-lock-doc-face bold))))
+            ("DEPRECATED" font-lock-doc-face bold) )))
 
 (use-package lorem-ipsum
 	:init	(setq-default lorem-ipsum-sentence-separator " ")
-	:config	(easy-menu-add-item  nil '("edit") ["Lorem-ipsum" lorem-ipsum-insert-paragraphs t]))
+	:config	(easy-menu-add-item  nil '("edit") ["Lorem-ipsum" lorem-ipsum-insert-paragraphs t]) )
 
 (use-package form-feed ; ^L
 	:config (global-form-feed-mode)
 	:diminish)
 
 (use-package smooth-scrolling
-	:config (smooth-scrolling-mode))
+	:config (smooth-scrolling-mode) )
 
 (use-package ssh)
 
@@ -409,6 +409,27 @@
 (use-package which-key
 	:config (which-key-mode)
 	:diminish)
+
+
+;; Configure specific machines
+(when *natasha*
+	(setq 	browse-url-browser-function 'browse-url-generic
+		;	browse-url-generic-program "/Applications/Firefox.app/Contents/MacOS/firefox"
+			browse-url-generic-program "/Applications/Waterfox.app/Contents/MacOS/waterfox")
+	(load "init/elfeed") )
+
+(when *mac*
+;	(load "init/deft")	; note functions (bound to <f7>)
+;	(load "init/sn")	; simplenote	 (bound to <f8>)
+	)
+
+(when *gnu*
+	(setq	browse-url-browser-function 'browse-url-generic
+			browse-url-generic-program "firefox-esr") )
+
+(unless *w32*
+	(use-package pdf-tools
+		:config (pdf-tools-install) ) )
 
 
 ;; Emacs Text and Markdown modes
@@ -491,27 +512,6 @@
 
 ;; sundry
 (load "init/misc")
-
-
-;; Configure specific machines
-(when *natasha*
-	(setq 	browse-url-browser-function 'browse-url-generic
-		;	browse-url-generic-program "/Applications/Firefox.app/Contents/MacOS/firefox"
-			browse-url-generic-program "/Applications/Waterfox.app/Contents/MacOS/waterfox")
-	(load "init/elfeed") )
-
-(when *mac*
-;	(load "init/deft")	; note functions (bound to <f7>)
-;	(load "init/sn")	; simplenote	 (bound to <f8>)
-	)
-
-(when *gnu*
-	(setq	browse-url-browser-function 'browse-url-generic
-			browse-url-generic-program "firefox-esr") )
-
-(unless *w32*
-	(use-package pdf-tools
-		:config (pdf-tools-install)) )
 
 
 ;; Diminish modes
@@ -667,7 +667,7 @@
 ;; Aliases
 (defalias 'er 'eval-region)
 (defalias 'la 'list-abbrevs)
-(defalias 'lcd 'list-colors-display)
+(defalias 'lc 'list-colors-display)
 (defalias 'lp 'list-packages)
 
 (defalias 'elm 'emacs-lisp-mode)
