@@ -67,17 +67,20 @@
 	help-window-select t
 	indicate-empty-lines t)
 (setq
+	initial-major-mode 'fundamental-mode
+	default-major-mode 'text-mode
+
 	ad-redefinition-action 'accept
 	bookmark-save-flag 1
 	bookmark-set-fringe-mark nil
 	bookmark-sort-flag nil
 	case-fold-search t
 	comp-async-report-warnings-errors 'silent
-	default-major-mode 'text-mode
 	delete-by-moving-to-trash t
 	dictionary-server "dict.org"
 	eww-search-prefix "https://www.google.ca/search?q="
 	flyspell-issue-message-flag nil
+	frame-inhibit-implied-resize t
 	frame-title-format nil
 	help-clean-buttons t
 	ibuffer-expert t
@@ -86,6 +89,7 @@
 	ispell-program-name "aspell"	; spell checker
 	ispell-silently-savep t			; save personal list automatically
 	kill-ring-max 512
+	kill-whole-line t
 	mark-ring-max most-positive-fixnum
 	max-lisp-eval-depth 65536
 	ns-use-native-fullscreen t
