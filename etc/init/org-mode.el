@@ -1,39 +1,3 @@
-;; org-mode
-(load "org-phscroll" 'noerror 'nomessage) ; org-table fix
-
-(setq org-todo-keywords '((sequence "TODO" "DONE")))
-(setq org-todo-keyword-faces '(("INPROGRESS" . (:foreground "blue" :weight bold)))) ; add inprogress keyword
-
-(setq org-emphasis-alist '(
-	("*" bold)
-	("**" bold)
-	("/" italic)
-	("_" italic)
-	("=" (:background "maroon" :foreground "white"))
-	("~" (:background "deep sky blue" :foreground "MidnightBlue"))
-    ("+" (:strike-through t)) ))
-
-(setq org-agenda-custom-commands '(
-	("P" "Project List" (
-		(tags "PROJECT") ) )
-	("O" "Office" (
-		(agenda)
-		(tags-todo "OFFICE") ) )
-	("W" "Weekly Plan" (
-		(agenda)
-		(todo "TODO")
-		(tags "PROJECT") ) )
-	("H" "Home NA Lists" (
-		(agenda)
-		(tags-todo "HOME")
-		(tags-todo "COMPUTER") ) ) ))
-
-(setq org-capture-templates '(
-		("c" "Cookbook" entry
-			(file "~/Documents/org/cookbook.org") "%(org-chef-get-recipe-from-url)" :empty-lines 1)
-        ("m" "Manual Cookbook" entry
-			(file "~/Documents/org/cookbook.org") "* %^{Recipe title: }\n  :PROPERTIES:\n  :source-url:\n  :servings:\n  :prep-time:\n  :cook-time:\n  :ready-in:\n  :END:\n** Ingredients\n   %?\n** Directions\n\n") ))
-
 ;; org links
 (require 'ol)
 (org-link-set-parameters ; link type: gemini://host/index.gmi
@@ -94,7 +58,7 @@
 			;y(t path)
 			)))
 
-;; org checkboxes
+;; org check-boxes
 ;; see https://orgmode.org/list/87r5718ytv.fsf@sputnik.localhost
 (eval-after-load 'org-list
   '(add-hook 'org-checkbox-statistics-hook (function ndk/checkbox-list-complete)))
@@ -115,8 +79,6 @@
 						(equal (match-string 2) (match-string 3)))
 						(org-todo 'done)
 						(org-todo 'todo)))))))
-
-;; org PROPERTIES
 
 ;; other org functions
 (defun org-clocking-buffer (&rest _))

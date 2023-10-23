@@ -497,21 +497,90 @@
 		org-agenda-skip-deadline-if-done t
 		org-agenda-todo-ignore-scheduled t
 		org-agenda-todo-ignore-deadlines t
-		org-agenda-start-on-weekday nil)
+		org-agenda-start-on-weekday nil
+
+		org-todo-keywords '((sequence "TODO" "DONE"))
+
+		org-todo-keyword-faces '(
+		("INPROGRESS" . (:foreground "blue" :weight bold)) ) ; add in-progress keyword
+
+		org-emphasis-alist '(
+		("*" bold)
+		("**" bold)
+		("/" italic)
+		("_" italic)
+		("=" (:background "maroon" :foreground "white"))
+		("~" (:background "deep sky blue" :foreground "MidnightBlue"))
+	    ("+" (:strike-through t)) )
+
+		org-agenda-custom-commands '(
+		("P" "Project List" (
+			(tags "PROJECT") ) )
+		("O" "Office" (
+			(agenda)
+			(tags-todo "OFFICE") ) )
+		("W" "Weekly Plan" (
+			(agenda)
+			(todo "TODO")
+			(tags "PROJECT") ) )
+		("H" "Home NA Lists" (
+			(agenda)
+			(tags-todo "HOME")
+			(tags-todo "COMPUTER") ) ) )
+
+		org-capture-templates '(
+		("c" "Cookbook" entry (file "~/Documents/org/cookbook.org")
+	   		"%(org-chef-get-recipe-from-url)" :empty-lines 1)
+		("m" "Manual Cookbook" entry (file "~/Documents/org/cookbook.org")
+			"* %^{Recipe title: }\n
+			:PROPERTIES:\n
+			:source-url:\n
+			:servings:\n
+			:prep-time:\n
+			:cook-time:\n
+			:ready-in:\n
+			:END:\n
+			** Ingredients\n
+			%?\n
+			** Directions\n\n")
+
+		;; https://benadha.com/notes/how-i-manage-my-reading-list-with-org-mode/
+		("i" "📥 Inbox" entry (file "~/Documents/org/inbox.org")
+			"* %?\n  %i\n" :prepend t)
+		("j" "📔 Journal" entry (file+datetree "~/Documents/org/journal.org")
+			"* %? %^G\nEntered on %U\n  %i\n")
+		("b" "📑 Bookmark" entry (file "~/Documents/org/bookmarks.org")
+			"* %? %^g\n  %i\n" :prepend t)
+		("s" "🛒 Shopping List" entry (file+headline "~/Documents/org/shoppinglist.org" "SHOPPING LIST")
+			"* TODO %?\n  %i\n" :prepend t)
+
+		;; https://github.com/rexim/org-cliplink
+		("K" "Cliplink capture task" entry (file "")
+			"* TODO %(org-cliplink-capture) \n  SCHEDULED: %t\n" :empty-lines 1)
+		) )
 	:config
 		(add-hook 'org-agenda-finalize-hook 'delete-other-windows)
+
+		(add-hook 'org-mode-hook (lambda ()
+			(org-autolist-mode)
+			(org-indent-mode)
+			(prettify-symbols-mode) ))
 
 		(use-package org-autolist
 			:diminish "AL")
 
-		(add-hook 'org-mode-hook (lambda ()
-			(org-autolist-mode)
-			(org-indent-mode) ))
+		(use-package org-bullets
+			:config
+				(add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
 
 		(use-package org-chef :ensure t)
 
+		(use-package org-cliplink)
+
 		(load "init/org-mode")		; org-mode functions
+		(load "org-phscroll" 'noerror 'nomessage) ; org-table fix
 		(load "init/pdfexport")	)	; pdf functions
+
 
 
 ;; sundry
@@ -636,6 +705,7 @@
 
 (bind-key "C-c o a" 'org-archive-subtree-default)
 (bind-key "C-c o c"	'org-capture)
+(bind-key "C-c o k" 'org-cliplink)
 (bind-key "C-c o l"	'org-store-link)
 (which-key-add-key-based-replacements "C-c o" "org")
 
