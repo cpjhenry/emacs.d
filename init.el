@@ -205,7 +205,7 @@
 (setq inhibit-startup-message t)	; 'About Emacs'
 (setq initial-scratch-message nil)	; Makes *scratch* empty
 (add-hook 'minibuffer-exit-hook		; Removes *Completions* buffer when done
-	(lambda () (let ((buffer "*Completions*")) (and (get-buffer buffer) (kill-buffer buffer)))))
+	(lambda () (let ((buffer "*Completions*")) (and (get-buffer buffer) (kill-buffer buffer)))) )
 
 ;; opening multiple files
 (setq inhibit-startup-buffer-menu t) ; Don't show *Buffer list*
@@ -248,18 +248,18 @@
 (setq
 	ibuffer-hidden-filter-groups (list "Helm" "*Internal*")
 	ibuffer-saved-filter-groups (quote (("home"
-	   	("dired" (mode . dired-mode))
+	   	("dired" (mode . dired-mode) )
 		("emacs" (or
 			(name . "^\\*scratch\\*$")
 			(name . "^\\*Messages\\*$")
-			(name . "\\.el")))
-		("org" (name . "\\.org"))
+			(name . "\\.el") ))
+		("org" (name . "\\.org") )
 		("planner" (or
 			(name . "^\\*Calendar\\*$")
 			(name . "^diary$")
-			(name . "^\\*Org Agenda\\*")))
-		;("perl" (mode . cperl-mode))
-		;("erc" (mode . erc-mode))
+			(name . "^\\*Org Agenda\\*") ))
+		;("perl" (mode . cperl-mode) )
+		;("erc" (mode . erc-mode) )
 		;("gnus" (or
 		;	(mode . message-mode)
 		;	(mode . bbdb-mode)
@@ -268,7 +268,7 @@
 		;	(mode . gnus-summary-mode)
 		;	(mode . gnus-article-mode)
 		;	(name . "^\\.bbdb$")
-		;	(name . "^\\.newsrc-dribble")))
+		;	(name . "^\\.newsrc-dribble") ))
 		)) ))
 
 (require 'ibuf-ext)
@@ -557,7 +557,8 @@
 		;; https://github.com/rexim/org-cliplink
 		("K" "Cliplink capture task" entry (file "")
 			"* TODO %(org-cliplink-capture) \n  SCHEDULED: %t\n" :empty-lines 1)
-		) )
+		) ; capture templates
+		) ; setq
 	:config
 		(add-hook 'org-agenda-finalize-hook 'delete-other-windows)
 
@@ -569,22 +570,28 @@
 		(use-package org-autolist
 			:diminish "AL")
 
-		(use-package org-bullets
-			:config
-				(add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
-
 		(use-package org-chef :ensure t)
 
 		(use-package org-cliplink)
 
-		(load "init/org-mode")		; org-mode functions
-		(load "org-phscroll" 'noerror 'nomessage) ; org-table fix
-		(load "init/pdfexport")	)	; pdf functions
+		(use-package org-modern)
+		(with-eval-after-load 'org (global-org-modern-mode))
 
+		(load "init/org-mode")						; org-mode functions
+		(load "org-phscroll" 'noerror 'nomessage)	; org-table fix
+		) ; use-package
 
 
 ;; sundry
 (load "init/misc")
+
+(load "init/pdfexport")
+(eval-after-load 'latex-mode
+  '(define-key latex-mode-map (kbd "C-c r") 'latex-compile-and-update-other-buffer))
+(eval-after-load 'markdown-mode
+  '(define-key markdown-mode-map (kbd "C-c r") 'md-compile-and-update-other-buffer))
+
+(define-key org-mode-map (kbd "C-c o r") 'org-compile-latex-and-update-other-buffer)
 
 
 ;; Diminish modes

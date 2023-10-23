@@ -44,12 +44,3 @@
   (interactive)
   (org-latex-export-to-pdf)
   (update-other-buffer))
-
-(eval-after-load 'latex-mode
-  '(define-key latex-mode-map (kbd "C-c r") 'latex-compile-and-update-other-buffer))
-
-(define-key org-mode-map (kbd "C-c lr") 'org-compile-latex-and-update-other-buffer)
-(define-key org-mode-map (kbd "C-c br") 'org-compile-beamer-and-update-other-buffer)
-
-(eval-after-load 'markdown-mode
-  '(define-key markdown-mode-map (kbd "C-c r") 'md-compile-and-update-other-buffer))
