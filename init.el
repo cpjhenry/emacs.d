@@ -167,7 +167,6 @@
 	(ibuffer-switch-to-saved-filter-groups "home")
 	(ibuffer-update nil t) ))
 
-;; prog-mode-hook settings
 (add-hook 'prog-mode-hook (lambda()
 	(abbrev-mode)
 	(when (not (memq major-mode (list 'lisp-interaction-mode)))
@@ -414,6 +413,11 @@
 	:config (which-key-mode)
 	:diminish)
 
+;; Diminish built-in modes
+(diminish 'abbrev-mode)
+(diminish 'eldoc-mode)
+(diminish 'visual-line-mode "VLM")
+
 
 ;; Configure specific machines
 (when *natasha*
@@ -527,7 +531,9 @@
 			(agenda)
 			(tags-todo "HOME")
 			(tags-todo "COMPUTER") ) ) )
+		) ; set
 
+	(setq
 		org-capture-templates '(
 		("c" "Cookbook" entry (file "~/Documents/org/cookbook.org")
 	   		"%(org-chef-get-recipe-from-url)" :empty-lines 1)
@@ -558,7 +564,7 @@
 		("K" "Cliplink capture task" entry (file "")
 			"* TODO %(org-cliplink-capture) \n  SCHEDULED: %t\n" :empty-lines 1)
 		) ; capture templates
-		) ; setq
+		) ; set
 	:config
 		(add-hook 'org-agenda-finalize-hook 'delete-other-windows)
 
@@ -577,7 +583,7 @@
 		(use-package org-modern)
 		(with-eval-after-load 'org (global-org-modern-mode))
 
-		(load "init/org-mode")						; org-mode functions
+		(load "init/org")							; org-mode functions
 		(load "org-phscroll" 'noerror 'nomessage)	; org-table fix
 		) ; use-package
 
@@ -590,14 +596,7 @@
   '(define-key latex-mode-map (kbd "C-c r") 'latex-compile-and-update-other-buffer))
 (eval-after-load 'markdown-mode
   '(define-key markdown-mode-map (kbd "C-c r") 'md-compile-and-update-other-buffer))
-
 (define-key org-mode-map (kbd "C-c o r") 'org-compile-latex-and-update-other-buffer)
-
-
-;; Diminish modes
-(diminish 'abbrev-mode)
-(diminish 'eldoc-mode)
-(diminish 'visual-line-mode "VLM")
 
 
 ;; arrow keys (Darwin)

@@ -1,3 +1,5 @@
+;;; org-mode functions
+
 ;; org links
 (require 'ol)
 (org-link-set-parameters ; link type: gemini://host/index.gmi
