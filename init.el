@@ -351,6 +351,8 @@
 
 
 ;; Initialize packages
+(message "Loading packages.")
+
 (use-package diminish)
 
 (use-package elpher
@@ -441,6 +443,8 @@
 
 
 ;; Emacs Text and Markdown modes
+(message "Configuring modes.")
+
 (add-hook 'text-mode-hook (lambda ()
 	(abbrev-mode)
 	(unless *w32* (flyspell-mode))
