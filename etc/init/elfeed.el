@@ -1,9 +1,10 @@
 (use-package elfeed
-	:init	(setq elfeed-db-directory (concat user-emacs-directory "var/elfeed/db/"))
-			(setq elfeed-enclosure-default-dir (concat user-emacs-directory "var/elfeed/enclosures/"))
-			(setq elfeed-score-score-file (concat user-emacs-directory "etc/elfeed/score/score.el"))
-			(setq elfeed-sort-order 'ascending)
-			(setq elfeed-use-curl t)
+	:init	(setq
+				elfeed-db-directory (concat user-emacs-directory "var/elfeed/db/")
+				elfeed-enclosure-default-dir (concat user-emacs-directory "var/elfeed/enclosures/")
+				elfeed-score-score-file (concat user-emacs-directory "etc/elfeed/score/score.el")
+				elfeed-sort-order 'ascending
+				elfeed-use-curl t)
 	:config	(load "rc/elfeed" 'noerror 'nomessage)
 			(eval-after-load 'elfeed `(make-directory ,(concat user-emacs-directory "var/elfeed/") t))
 			(easy-menu-add-item  nil '("tools") ["Read web feeds" elfeed t])

@@ -438,6 +438,7 @@
 			browse-url-generic-program "firefox-esr") )
 
 (unless *w32*
+	(message "Loading pdf-tools.")
 	(use-package pdf-tools
 		:config (pdf-tools-install) ) )
 
