@@ -51,7 +51,14 @@
 (unless package-archive-contents (package-refresh-contents))
 (unless (package-installed-p 'use-package) (package-install 'use-package))
 (require 'use-package)
-(setf use-package-always-ensure t)
+(setf
+	use-package-always-ensure t
+	use-package-verbose t)
+(use-package auto-package-update
+	:config
+	(setq auto-package-update-delete-old-versions t)
+	(setq auto-package-update-hide-results t)
+	(auto-package-update-maybe) )
 
 ;; Add directories to load-path
 (add-to-list 'load-path (expand-file-name "etc" user-emacs-directory))
@@ -145,6 +152,11 @@
 
 (unless *w32*	(require 'backup-each-save)
 				(add-hook 'after-save-hook 'backup-each-save))
+
+;; garbage collection
+(use-package gcmh
+	:config (gcmh-mode 1)
+	:diminish)
 
 
 ;; buffers
@@ -351,13 +363,11 @@
 
 
 ;; Initialize packages
-(message "Loading packages.")
-
 (use-package diminish)
 
 (use-package elpher
-	:init	(setq elpher-bookmarks-file (concat user-emacs-directory "var/elpher-bookmarks"))
-	:config	(easy-menu-add-item  nil '("tools") ["Gopher" elpher t])
+	:config	(setq elpher-bookmarks-file (concat user-emacs-directory "var/elpher-bookmarks"))
+			(easy-menu-add-item  nil '("tools") ["Gopher" elpher t])
 			(defun elpher:eww-browse-url (original url &optional new-window) "Handle gemini links."
 				(cond ((string-match-p "\\`\\(gemini\\|gopher\\)://" url) (elpher-go url))
 				(t (funcall original url new-window))) )
@@ -393,8 +403,8 @@
             ("DEPRECATED" font-lock-doc-face bold) )))
 
 (use-package lorem-ipsum
-	:init	(setq-default lorem-ipsum-sentence-separator " ")
-	:config	(easy-menu-add-item  nil '("edit") ["Lorem-ipsum" lorem-ipsum-insert-paragraphs t]) )
+	:config	(setq-default lorem-ipsum-sentence-separator " ")
+			(easy-menu-add-item  nil '("edit") ["Lorem-ipsum" lorem-ipsum-insert-paragraphs t]) )
 
 (use-package form-feed ; ^L
 	:config (global-form-feed-mode)
@@ -437,15 +447,14 @@
 	(setq	browse-url-browser-function 'browse-url-generic
 			browse-url-generic-program "firefox-esr") )
 
-(unless *w32*
-	(message "Loading pdf-tools.")
-	(use-package pdf-tools
-		:config (pdf-tools-install) ) )
+(unless *w32* (use-package pdf-tools
+	:load-path "site-lisp/pdf-tools/lisp"
+	:magic ("%PDF" . pdf-view-mode)
+	:config
+		(pdf-tools-install :no-query) ))
 
 
 ;; Emacs Text and Markdown modes
-(message "Configuring modes.")
-
 (add-hook 'text-mode-hook (lambda ()
 	(abbrev-mode)
 	(unless *w32* (flyspell-mode))
@@ -456,16 +465,15 @@
 	(define-key flyspell-mouse-map [down-mouse-3] #'flyspell-correct-word)))
 
 (use-package olivetti
-	:init	(setq olivetti-body-width 80) )
+	:config	(setq olivetti-body-width 80) )
 
 (use-package markdown-mode
-	:init (setq
+	:config (setq
 		markdown-command "multimarkdown"
 		markdown-enable-prefix-prompts nil
 		markdown-hide-urls t
 		markdown-italic-underscore t
 		markdown-unordered-list-item-prefix "* ")
-	:config
 		(add-to-list 'markdown-uri-types "gemini")
 	:mode
 		(("README\\.md\\'" . gfm-mode)
@@ -479,7 +487,7 @@
 
 ;; Org-mode
 (use-package org
-	:init (setq
+	:config (setq
 		org-directory "~/Documents/org"
 		org-agenda-file (concat org-directory "/daily.org")
 		org-agenda-files (list org-agenda-file)
@@ -570,7 +578,6 @@
 			"* TODO %(org-cliplink-capture) \n  SCHEDULED: %t\n" :empty-lines 1)
 		) ; capture templates
 		) ; set
-	:config
 		(add-hook 'org-agenda-finalize-hook 'delete-other-windows)
 
 		(add-hook 'org-mode-hook (lambda ()
