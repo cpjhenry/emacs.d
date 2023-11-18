@@ -227,6 +227,23 @@
 (setq global-auto-revert-non-file-buffers t) ; Dired, etc.
 (global-auto-revert-mode 1)
 
+;; automatically save buffers associated with files on buffer or window switch
+(defadvice switch-to-buffer (before save-buffer-now activate)
+	(when buffer-file-name (save-buffer)))
+(defadvice other-window (before other-window-now activate)
+	(when buffer-file-name (save-buffer)))
+(defadvice windmove-up (before other-window-now activate)
+	(when buffer-file-name (save-buffer)))
+(defadvice windmove-down (before other-window-now activate)
+	(when buffer-file-name (save-buffer)))
+(defadvice windmove-left (before other-window-now activate)
+	(when buffer-file-name (save-buffer)))
+(defadvice windmove-right (before other-window-now activate)
+	(when buffer-file-name (save-buffer)))
+
+;; automatically save buffers associated with files on frame (app) switch
+(add-hook 'focus-out-hook (lambda () (save-some-buffers t)))
+
 ;; IDO
 ;; https://www.emacswiki.org/emacs/InteractivelyDoThings
 (require 'ido)
@@ -366,14 +383,15 @@
 (use-package diminish)
 
 (use-package elpher
-	:config	(setq elpher-bookmarks-file (concat user-emacs-directory "var/elpher-bookmarks"))
-			(easy-menu-add-item  nil '("tools") ["Gopher" elpher t])
-			(defun elpher:eww-browse-url (original url &optional new-window) "Handle gemini links."
-				(cond ((string-match-p "\\`\\(gemini\\|gopher\\)://" url) (elpher-go url))
-				(t (funcall original url new-window))) )
-			(advice-add 'eww-browse-url :around 'elpher:eww-browse-url)
-			(defun elpher-up() (interactive)(backward-paragraph)(recenter-top-bottom))
-			(defun elpher-down() (interactive)(forward-paragraph)(recenter-top-bottom)) )
+	:config
+		(setq elpher-bookmarks-file (concat user-emacs-directory "var/elpher-bookmarks"))
+		(easy-menu-add-item  nil '("tools") ["Gopher" elpher t])
+		(defun elpher:eww-browse-url (original url &optional new-window) "Handle gemini links."
+			(cond ((string-match-p "\\`\\(gemini\\|gopher\\)://" url) (elpher-go url))
+			(t (funcall original url new-window))) )
+		(advice-add 'eww-browse-url :around 'elpher:eww-browse-url)
+		(defun elpher-up() (interactive)(backward-paragraph)(recenter-top-bottom))
+		(defun elpher-down() (interactive)(forward-paragraph)(recenter-top-bottom)) )
 	(add-hook 'elpher-mode-hook (lambda ()
 		(setq-local
 			left-margin-width 10
@@ -386,32 +404,37 @@
 (define-key eww-bookmark-mode-map (kbd "w")	'eww)
 
 (use-package google-this
-	:config (google-this-mode)
-	(which-key-add-key-based-replacements "C-c /" "google-this")
+	:config
+		(google-this-mode)
+		(which-key-add-key-based-replacements "C-c /" "google-this")
 	:diminish)
 
 (use-package hl-todo
-    :hook (prog-mode . hl-todo-mode)
-          (emacs-lisp-mode . hl-todo-mode)
+    :hook
+		(prog-mode . hl-todo-mode)
+        (emacs-lisp-mode . hl-todo-mode)
     :config
-    (setq hl-todo-keyword-faces
-          `(("TODO"       warning bold)
-            ("FIXME"      error bold)
-            ("HACK"       font-lock-constant-face bold)
-            ("REVIEW"     font-lock-keyword-face bold)
-            ("NOTE"       success bold)
-            ("DEPRECATED" font-lock-doc-face bold) )))
+		(setq hl-todo-keyword-faces `(
+		("TODO"       warning bold)
+		("FIXME"      error bold)
+		("HACK"       font-lock-constant-face bold)
+		("REVIEW"     font-lock-keyword-face bold)
+		("NOTE"       success bold)
+		("DEPRECATED" font-lock-doc-face bold) )))
 
 (use-package lorem-ipsum
-	:config	(setq-default lorem-ipsum-sentence-separator " ")
-			(easy-menu-add-item  nil '("edit") ["Lorem-ipsum" lorem-ipsum-insert-paragraphs t]) )
+	:config
+		(setq-default lorem-ipsum-sentence-separator " ")
+		(easy-menu-add-item  nil '("edit") ["Lorem-ipsum" lorem-ipsum-insert-paragraphs t]) )
 
 (use-package form-feed ; ^L
-	:config (global-form-feed-mode)
+	:config
+		(global-form-feed-mode)
 	:diminish)
 
 (use-package smooth-scrolling
-	:config (smooth-scrolling-mode) )
+	:config
+		(smooth-scrolling-mode) )
 
 (use-package ssh)
 
@@ -422,7 +445,8 @@
 (use-package wc-mode)
 
 (use-package which-key
-	:config (which-key-mode)
+	:config
+		(which-key-mode)
 	:diminish)
 
 ;; Diminish built-in modes
@@ -439,8 +463,8 @@
 	(load "init/elfeed") )
 
 (when *mac*
-;	(load "init/deft")	; note functions (bound to <f7>)
-;	(load "init/sn")	; simplenote	 (bound to <f8>)
+	;(load "init/deft")	; note functions (bound to <f7>)
+	;(load "init/sn")	; simplenote	 (bound to <f8>)
 	)
 
 (when *gnu*
@@ -450,8 +474,7 @@
 (unless *w32* (use-package pdf-tools
 	:load-path "site-lisp/pdf-tools/lisp"
 	:magic ("%PDF" . pdf-view-mode)
-	:config
-		(pdf-tools-install :no-query) ))
+	:config (pdf-tools-install :no-query) ))
 
 
 ;; Emacs Text and Markdown modes
@@ -465,13 +488,13 @@
 	(define-key flyspell-mouse-map [down-mouse-3] #'flyspell-correct-word)))
 
 (use-package olivetti
-	:config	(setq olivetti-body-width 80) )
+	:init (setq olivetti-body-width 80) )
 
 (use-package markdown-mode
+	:init (setq markdown-hide-urls t)
 	:config (setq
 		markdown-command "multimarkdown"
 		markdown-enable-prefix-prompts nil
-		markdown-hide-urls t
 		markdown-italic-underscore t
 		markdown-unordered-list-item-prefix "* ")
 		(add-to-list 'markdown-uri-types "gemini")
@@ -597,7 +620,7 @@
 
 		(load "init/org")							; org-mode functions
 		(load "org-phscroll" 'noerror 'nomessage)	; org-table fix
-		) ; use-package
+		)
 
 
 ;; sundry
@@ -605,9 +628,9 @@
 
 (load "init/pdfexport")
 (eval-after-load 'latex-mode
-  '(define-key latex-mode-map (kbd "C-c r") 'latex-compile-and-update-other-buffer))
+	'(define-key latex-mode-map (kbd "C-c r") 'latex-compile-and-update-other-buffer))
 (eval-after-load 'markdown-mode
-  '(define-key markdown-mode-map (kbd "C-c r") 'md-compile-and-update-other-buffer))
+	'(define-key markdown-mode-map (kbd "C-c r") 'md-compile-and-update-other-buffer))
 (define-key org-mode-map (kbd "C-c o r") 'org-compile-latex-and-update-other-buffer)
 
 
