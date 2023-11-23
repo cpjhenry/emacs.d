@@ -30,6 +30,13 @@
 		(org-mode)
 		(setq buffer-offer-save t) ))
 
+(defun copy-current-buffer-to-temp-buffer ()
+	"Copy the current buffer, create temp buffer, paste it there."
+	(interactive)
+	(kill-ring-save (point-min) (point-max))
+	(switch-to-buffer (make-temp-name ""))
+	(yank))
+
 (defun kill-other-buffers ()
 	"Kill all other buffers."
 	(interactive)
@@ -51,7 +58,27 @@
     "Toggle fill-column values between 32 and 55"
     (interactive)
     (setq fill-column (if (= fill-column 55) 32 55))
+	;; three values: (setq tab-width (if (= tab-width 8) 4 (if (= tab-width 4) 2 8)))
 	(message "fill-column set to: %s" fill-column))
+
+;; https://emacs.stackexchange.com/questions/46935/adjust-the-line-according-to-the-screen-width
+(defun dynamic-fill-column-set-var (frame)
+  (when dynamic-fill-column-mode
+    (setq fill-column (- (window-total-width) 3))))
+
+(defun dynamic-fill-column-buffer-list-change ()
+  (when dynamic-fill-column-mode
+    (setq fill-column (- (window-total-width) 3))))
+
+(define-minor-mode dynamic-fill-column-mode
+  "Sets `fill-column' when buffer's window is resized"
+  :lighter " DFC"
+  (if dynamic-fill-column-mode
+      (progn
+        (add-hook 'window-size-change-functions 'dynamic-fill-column-set-var nil t)
+        (add-hook 'buffer-list-update-hook 'dynamic-fill-column-buffer-list-change nil t))
+    (remove-hook 'window-size-change-functions 'dynamic-fill-column-set-var t)
+    (remove-hook 'buffer-list-update-hook 'dynamic-fill-column-buffer-list-change t)))
 
 
 ;; DIRED functions
@@ -196,6 +223,28 @@
 	"Sends current region to 'enscript'."
 	(interactive "r")
 	(shell-command-on-region b e enscript))
+
+(defun print-to-receipt-printer ()
+	"Re-formats and sends text in current buffer to POS printer."
+	(interactive)
+	(copy-current-buffer-to-temp-buffer)
+	(text-mode)
+	(setq fill-column 32)
+	(mark-whole-buffer)
+	(fill-region (point-min) (point-max))
+	(spool-to-enscript)
+	(kill-current-buffer) )
+
+(defun print-to-a5-printer ()
+	"Re-formats and sends text in current buffer to a5 printer."
+	(interactive)
+	(copy-current-buffer-to-temp-buffer)
+	(text-mode)
+	(setq fill-column 50)
+	(mark-whole-buffer)
+	(fill-region (point-min) (point-max))
+	(ps-print-buffer-with-faces)
+	(kill-current-buffer) )
 
 ;; https://genomeek.wordpress.com/2013/03/08/emarch-2-create-a-pdf-with-highlighted-code-source/
 (defun print-to-pdf ()

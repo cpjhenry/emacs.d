@@ -70,11 +70,10 @@
 (setq-default
 	tab-width 4
 	standard-indent 4
-	fill-column 55
 	help-window-select t
 	indicate-empty-lines t)
 (setq
-	initial-major-mode 'fundamental-mode
+	;initial-major-mode 'fundamental-mode
 	default-major-mode 'text-mode
 
 	ad-redefinition-action 'accept
@@ -337,27 +336,30 @@
 
 ;; print functions
 (load "init/page-dimensions")
-(easy-menu-add-item nil '("file" "print") ["Enscript" spool-to-enscript t])
-(easy-menu-add-item nil '("file" "print") ["Enscript (region)" spool-to-enscript-region t])
-(define-key menu-bar-print-menu [print-buffer] nil)
-(define-key menu-bar-print-menu [print-region] nil)
-(define-key menu-bar-print-menu [ps-print-buffer] nil)
-(define-key menu-bar-print-menu [ps-print-region] nil)
+(define-key global-map [menu-bar file print] nil)
 
 (when *mac* (setq
-	printer-name "Brother_HL_L2370DW"
+	ps-printer-name "Brother_HL_L2370DW"
 	ps-paper-type 'a5
 	ps-lpr-switches '("-o media=a5")
 
-	ps-left-margin 28
-	ps-right-margin 28
-	ps-top-margin 28
-	ps-bottom-margin 28
-
-	ps-font-size 11
+	ps-font-size 12
 	ps-print-color-p nil
 	ps-print-header nil
-	ps-print-footer nil) )
+
+	ps-print-footer t
+	ps-print-footer-frame nil
+	ps-footer-font-family ps-font-family
+	ps-footer-lines 1
+	ps-right-footer nil
+	ps-left-footer (list (concat
+	"{pagenumberstring dup stringwidth pop"
+	" 2 div PrintWidth 2 div exch sub 0 rmoveto}"))
+
+	ps-top-margin 42
+	ps-bottom-margin 14
+	ps-left-margin 28
+	ps-right-margin 28 ))
 
 
 ;; Mode Line
@@ -486,9 +488,14 @@
 	(wc-mode) ))
 (eval-after-load "flyspell" '(progn
 	(define-key flyspell-mouse-map [down-mouse-3] #'flyspell-correct-word)))
+(add-hook 'fill-nobreak-predicate #'fill-french-nobreak-p)
 
-(use-package olivetti
-	:init (setq olivetti-body-width 80) )
+(use-package visual-fill-column)
+(add-hook 'visual-line-mode-hook 'visual-fill-column-mode)
+(use-package adaptive-wrap)
+(add-hook 'visual-line-mode-hook 'adaptive-wrap-prefix-mode)
+
+(use-package olivetti)
 
 (use-package markdown-mode
 	:init (setq markdown-hide-urls t)
@@ -686,8 +693,6 @@
 	(global-unset-key (kbd "s-w"))
 
 	(when (display-graphic-p)
-	(global-set-key	  (kbd "s-p")	'ps-print-buffer-with-faces)
-
 	(global-unset-key (kbd "<f10>"))
 	(global-unset-key (kbd "C-<f10>"))
 	(global-unset-key (kbd "S-<f10>"))
@@ -711,8 +716,10 @@
 
 (bind-key "<f6>"	'list-bookmarks)
 (bind-key "M-Q"		'unfill-paragraph)
-(bind-key "M-p"		'spool-to-enscript)
-(bind-key "M-P"		'spool-to-enscript-region)
+
+(bind-key "M-p"		'print-to-receipt-printer)
+(when *mac* (when (display-graphic-p)
+(bind-key "s-p"		'print-to-a5-printer) ))
 
 (bind-key "C-c ?"	'describe-personal-keybindings)
 
@@ -733,11 +740,9 @@
 (bind-key "C-c d i"	'insert-iso-date)
 (which-key-add-key-based-replacements "C-c d" "dates")
 
-(bind-key "C-c g"	'elpher-show-bookmarks) ; gopher / gemini
+;(bind-key "C-c i" 'toggle-fill-column)
 
-(bind-key "C-c i f" 'toggle-fill-column)
-(bind-key "C-c i i" 'display-fill-column-indicator-mode)
-(which-key-add-key-based-replacements "C-c i" "fill-column")
+(bind-key "C-c g"	'elpher-show-bookmarks) ; gopher / gemini
 
 (bind-key "C-c l d" 'delete-duplicate-lines)
 (bind-key "C-c l t" 'delete-trailing-whitespace)
@@ -787,8 +792,10 @@
 
 (defalias 'elm 'emacs-lisp-mode)
 (defalias 'flym 'flyspell-mode)
+(defalias 'fci 'display-fill-column-indicator-mode)
 (defalias 'fm 'fundamental-mode)
 (defalias 'hm 'html-mode)
+(defalias 'lim 'lisp-interaction-mode)
 (defalias 'jsm 'js-mode)
 (defalias 'mm 'markdown-mode)
 (defalias 'olv 'olivetti-mode)
