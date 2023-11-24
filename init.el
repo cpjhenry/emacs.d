@@ -344,12 +344,13 @@
 	ps-lpr-switches '("-o media=a5")
 
 	ps-font-size 12
+	ps-font-family 'Courier
+	ps-footer-font-family 'Courier
 	ps-print-color-p nil
 	ps-print-header nil
 
 	ps-print-footer t
 	ps-print-footer-frame nil
-	ps-footer-font-family ps-font-family
 	ps-footer-lines 1
 	ps-right-footer nil
 	ps-left-footer (list (concat
@@ -689,6 +690,7 @@
 
 	(global-unset-key (kbd "s-m"))
 	(global-unset-key (kbd "s-n"))
+	(global-unset-key (kbd "s-p"))
 	(global-unset-key (kbd "s-q"))
 	(global-unset-key (kbd "s-w"))
 
@@ -717,9 +719,11 @@
 (bind-key "<f6>"	'list-bookmarks)
 (bind-key "M-Q"		'unfill-paragraph)
 
-(bind-key "M-p"		'print-to-receipt-printer)
-(when *mac* (when (display-graphic-p)
-(bind-key "s-p"		'print-to-a5-printer) ))
+(bind-key "M-p a"  	'print-to-a5-printer)
+(bind-key "M-p r"  	'print-to-receipt-printer)
+
+;(when *mac* (when (display-graphic-p)
+;(bind-key "s-p"		'print-to-a5-printer) ))
 
 (bind-key "C-c ?"	'describe-personal-keybindings)
 
