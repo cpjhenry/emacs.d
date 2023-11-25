@@ -708,7 +708,7 @@
 	(global-set-key (kbd "ESC <left>")	'windmove-left) )
 
 
-;; Diabled keys
+;; Re-enable Disabled keys
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'upcase-region 'disabled nil)	; C-x C-u
 (put 'downcase-region 'disabled nil); C-x C-l
@@ -721,9 +721,6 @@
 
 (bind-key "M-p a"  	'print-to-a5-printer)
 (bind-key "M-p r"  	'print-to-receipt-printer)
-
-;(when *mac* (when (display-graphic-p)
-;(bind-key "s-p"		'print-to-a5-printer) ))
 
 (bind-key "C-c ?"	'describe-personal-keybindings)
 
