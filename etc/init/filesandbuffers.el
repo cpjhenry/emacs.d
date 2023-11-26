@@ -55,11 +55,21 @@
 	(set-window-width 80))
 
 (defun toggle-fill-column ()
-    "Toggle fill-column values between 32 and 55"
+    "Toggle fill-column values between 32 and 55."
     (interactive)
     (setq fill-column (if (= fill-column 55) 32 55))
-	;; three values: (setq tab-width (if (= tab-width 8) 4 (if (= tab-width 4) 2 8)))
-	(message "fill-column set to: %s" fill-column))
+	;; three values: (setq fill-column (if (= fill-column 8) 4 (if (= fill-column 4) 2 8)))
+	(message "'fill-column' set to: %s" fill-column))
+
+(defun toggle-fill-column-center ()
+	"Toggles fill-column-center when in visual-fill-column-mode."
+	(interactive)
+	(if (bound-and-true-p visual-fill-column-mode) (progn
+		(if (bound-and-true-p visual-fill-column-center-text)
+			(setq visual-fill-column-center-text nil)
+			(setq visual-fill-column-center-text t) )
+			(visual-fill-column-adjust) )
+		(message "'visual-fill-column-mode' not enabled.") ))
 
 ;; https://emacs.stackexchange.com/questions/46935/adjust-the-line-according-to-the-screen-width
 (defun dynamic-fill-column-set-var (frame)

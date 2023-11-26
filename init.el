@@ -492,11 +492,11 @@
 (add-hook 'fill-nobreak-predicate #'fill-french-nobreak-p)
 
 (use-package visual-fill-column)
-(add-hook 'visual-line-mode-hook 'visual-fill-column-mode)
 (use-package adaptive-wrap)
+(add-hook 'visual-line-mode-hook 'visual-fill-column-mode)
 (add-hook 'visual-line-mode-hook 'adaptive-wrap-prefix-mode)
-
-(use-package olivetti)
+(add-hook 'visual-fill-column-mode-hook #'(lambda ()
+	(setq visual-fill-column-fringes-outside-margins nil)))
 
 (use-package markdown-mode
 	:init (setq markdown-hide-urls t)
@@ -716,6 +716,7 @@
 
 ;; Shortcuts
 
+(bind-key "<f5>"	'toggle-fill-column-center)
 (bind-key "<f6>"	'list-bookmarks)
 (bind-key "M-Q"		'unfill-paragraph)
 
@@ -799,7 +800,6 @@
 (defalias 'lim 'lisp-interaction-mode)
 (defalias 'jsm 'js-mode)
 (defalias 'mm 'markdown-mode)
-(defalias 'olv 'olivetti-mode)
 (defalias 'om 'org-mode)
 (defalias 'tm 'text-mode)
 (defalias 'ssm 'shell-script-mode)
