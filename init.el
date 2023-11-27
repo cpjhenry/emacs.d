@@ -309,11 +309,17 @@
 ;; calendar
 (load "init/calendar")
 (advice-add 'calendar-exit :before #'my/save-diary-before-calendar-exit)
+(defun calendar-holidays () (interactive)
+	(list-holidays (string-to-number (format-time-string "%Y"))))
+(defun calendar-world-clock () (interactive)
+	(world-clock)(next-window-any-frame)(fit-window-to-buffer))
 (add-hook 'calendar-mode-hook (lambda()
 	(local-set-key (kbd "q") (lambda()(interactive)(calendar-exit 'kill)
 							 (let ((buffer "*wclock*")) (and (get-buffer buffer) (kill-buffer buffer)))))
-	(local-set-key (kbd "w") (lambda()(interactive)(world-clock)(next-window-any-frame)(fit-window-to-buffer)))
-	(local-set-key (kbd "y") (lambda()(interactive)(list-holidays (string-to-number (format-time-string "%Y")))))
+	(local-set-key (kbd "w") 'calendar-world-clock)
+	(local-set-key (kbd "y") 'calendar-holidays)
+	(easy-menu-add-item nil '("Holidays") ["Holidays this year" calendar-holidays t])
+	(easy-menu-add-item nil '("Holidays") ["World clock" calendar-world-clock t])
 	))
 (add-hook 'diary-list-entries-hook 'diary-sort-entries t)
 (add-hook 'diary-mode-hook (lambda()
@@ -331,11 +337,10 @@
 	calendar-date-style 'iso
 	calendar-mark-holidays-flag t
 	calendar-view-holidays-initially-flag nil
-	calendar-mark-diary-entries-flag t)
-
-;(add-to-list calendar-mode-line-format "A 3-months / Y year / W world-clock")
-;(add-hook 'calendar-mode-hook (lambda() (setq calendar-mode-line-format (list
-;	) )))
+	calendar-mark-diary-entries-flag t
+	calendar-month-header '(propertize
+		(format "%s %d" (calendar-month-name month) year)
+		'font-lock-face 'calendar-month-header))
 
 
 ;; print functions
