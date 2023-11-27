@@ -174,9 +174,6 @@
 	(form-feed-mode) ))
 (add-hook 'eww-mode-hook (lambda()
 	(define-key eww-mode-map (kbd "<left>") 'eww-back-url) ))
-(add-hook 'ibuffer-mode-hook (lambda()
-	(ibuffer-switch-to-saved-filter-groups "home")
-	(ibuffer-update nil t) ))
 
 (add-hook 'prog-mode-hook (lambda()
 	(abbrev-mode)
@@ -271,6 +268,9 @@
 (define-key ibuffer-mode-map (kbd "<left>")	'ibuffer-next-header)
 (define-key ibuffer-mode-map (kbd "<return>")(lambda()(interactive)(ibuffer-visit-buffer)
 	(let ((buffer "*Ibuffer*")) (and (get-buffer buffer) (kill-buffer buffer))) ))
+(add-hook 'ibuffer-mode-hook (lambda()
+	(ibuffer-switch-to-saved-filter-groups "home")
+	(ibuffer-update nil t) ))
 
 (setq
 	ibuffer-hidden-filter-groups (list "Helm" "*Internal*")
@@ -332,6 +332,10 @@
 	calendar-mark-holidays-flag t
 	calendar-view-holidays-initially-flag nil
 	calendar-mark-diary-entries-flag t)
+
+;(add-to-list calendar-mode-line-format "A 3-months / Y year / W world-clock")
+;(add-hook 'calendar-mode-hook (lambda() (setq calendar-mode-line-format (list
+;	) )))
 
 
 ;; print functions
@@ -491,12 +495,14 @@
 	(define-key flyspell-mouse-map [down-mouse-3] #'flyspell-correct-word)))
 (add-hook 'fill-nobreak-predicate #'fill-french-nobreak-p)
 
-(use-package visual-fill-column)
+(use-package visual-fill-column
+	:config (advice-add 'text-scale-adjust :after #'visual-fill-column-adjust) )
 (use-package adaptive-wrap)
 (add-hook 'visual-line-mode-hook 'visual-fill-column-mode)
 (add-hook 'visual-line-mode-hook 'adaptive-wrap-prefix-mode)
-(add-hook 'visual-fill-column-mode-hook #'(lambda ()
-	(setq visual-fill-column-fringes-outside-margins nil)))
+(add-hook 'visual-fill-column-mode-hook #'(lambda()
+	(setq visual-fill-column-fringes-outside-margins nil) ))
+(add-hook 'org-mode-hook (lambda() (visual-fill-column-mode -1) ))
 
 (use-package markdown-mode
 	:init (setq markdown-hide-urls t)
