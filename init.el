@@ -308,19 +308,14 @@
 
 ;; calendar
 (load "init/calendar")
-(advice-add 'calendar-exit :before #'my/save-diary-before-calendar-exit)
-(defun calendar-holidays () (interactive)
-	(list-holidays (string-to-number (format-time-string "%Y"))))
-(defun calendar-world-clock () (interactive)
-	(world-clock)(next-window-any-frame)(fit-window-to-buffer))
+(advice-add 'calendar-exit :before #'save-diary-before-calendar-exit)
 (add-hook 'calendar-mode-hook (lambda()
 	(local-set-key (kbd "q") (lambda()(interactive)(calendar-exit 'kill)
 							 (let ((buffer "*wclock*")) (and (get-buffer buffer) (kill-buffer buffer)))))
 	(local-set-key (kbd "w") 'calendar-world-clock)
 	(local-set-key (kbd "y") 'calendar-holidays)
 	(easy-menu-add-item nil '("Holidays") ["Holidays this year" calendar-holidays t])
-	(easy-menu-add-item nil '("Holidays") ["World clock" calendar-world-clock t])
-	))
+	(easy-menu-add-item nil '("Sun/Moon") ["World clock" calendar-world-clock t]) ))
 (add-hook 'diary-list-entries-hook 'diary-sort-entries t)
 (add-hook 'diary-mode-hook (lambda()
 	(local-set-key (kbd "C-c C-q") 'kill-current-buffer) ))
@@ -340,7 +335,16 @@
 	calendar-mark-diary-entries-flag t
 	calendar-month-header '(propertize
 		(format "%s %d" (calendar-month-name month) year)
-		'font-lock-face 'calendar-month-header))
+		'font-lock-face 'calendar-month-header)
+	world-clock-time-format "%9A %2d %9B %R %Z"
+
+	calendar-christian-all-holidays-flag t
+	calendar-chinese-all-holidays-flag t
+	holiday-general-holidays nil
+	holiday-bahai-holidays nil
+	;holiday-hebrew-holidays nil
+	;holiday-islamic-holidays nil
+	)
 
 
 ;; print functions
@@ -618,8 +622,9 @@
 		;; https://github.com/rexim/org-cliplink
 		("K" "Cliplink capture task" entry (file "")
 			"* TODO %(org-cliplink-capture) \n  SCHEDULED: %t\n" :empty-lines 1)
-		) ; capture templates
-		) ; set
+		) ;; capture templates
+		) ;; set
+
 		(add-hook 'org-agenda-finalize-hook 'delete-other-windows)
 
 		(add-hook 'org-mode-hook (lambda ()
@@ -639,7 +644,7 @@
 
 		(load "init/org")							; org-mode functions
 		(load "org-phscroll" 'noerror 'nomessage)	; org-table fix
-		)
+		) ;; use-package
 
 
 ;; sundry
@@ -719,7 +724,7 @@
 	(global-set-key (kbd "ESC <left>")	'windmove-left) )
 
 
-;; Re-enable Disabled keys
+;; Re-enable disabled keys
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'upcase-region 'disabled nil)	; C-x C-u
 (put 'downcase-region 'disabled nil); C-x C-l
@@ -730,6 +735,7 @@
 (bind-key "<f5>"	'toggle-fill-column-center)
 (bind-key "<f6>"	'list-bookmarks)
 (bind-key "M-Q"		'unfill-paragraph)
+(bind-key "M-C-;"	'eval-region)
 
 (bind-key "M-p a"  	'print-to-a5-printer)
 (bind-key "M-p r"  	'print-to-receipt-printer)
@@ -798,7 +804,6 @@
 
 
 ;; Aliases
-(defalias 'er 'eval-region)
 (defalias 'la 'list-abbrevs)
 (defalias 'lc 'list-colors-display)
 (defalias 'lp 'list-packages)

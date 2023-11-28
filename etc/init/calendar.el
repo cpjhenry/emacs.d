@@ -1,11 +1,5 @@
 ;; calendar settings
 
-(setq calendar-christian-all-holidays-flag t)
-(setq calendar-chinese-all-holidays-flag t)
-(setq holiday-general-holidays nil)
-(setq holiday-bahai-holidays nil)
-;(setq holiday-hebrew-holidays nil)
-;(setq holiday-islamic-holidays nil)
 (setq holiday-local-holidays '( ; National / Provincial Holidays and Commemorations
 	(holiday-fixed 01 01  "New Year's Day")
 	(holiday-fixed 02 02  "Groundhog Day")
@@ -37,7 +31,6 @@
 	"○ Full Moon"
 	"☾ Last Quarter Moon"))
 
-(setq world-clock-time-format "%9A %2d %9B %R %Z")
 (setq zoneinfo-style-world-list '(
 	("Pacific/Honolulu" "Hawai'i")
 	("America/Los_Angeles" "Cupertino")
@@ -62,7 +55,7 @@
 	("NZ" "Wellington")
 	))
 
-(defun my/save-diary-before-calendar-exit (_)
+(defun save-diary-before-calendar-exit (_)
 	(let ((diary-buffer (get-file-buffer diary-file)))
     	(or (not diary-buffer)
 			(not (buffer-modified-p diary-buffer))
@@ -70,3 +63,9 @@
 
 (defun display-current-time () (interactive)
 	(message (format-time-string "%Y-%m-%d %H:%M:%S")))
+
+(defun calendar-holidays () (interactive)
+	(list-holidays (string-to-number (format-time-string "%Y"))))
+
+(defun calendar-world-clock () (interactive)
+	(world-clock)(next-window-any-frame)(fit-window-to-buffer))
