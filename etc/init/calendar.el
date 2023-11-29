@@ -25,6 +25,9 @@
 	(holiday-fixed 09 30  "Truth and Reconciliation")
 	(holiday-fixed 12 11  "Statute of Westminster")))
 
+(setq holiday-other-holidays '(
+	(holiday-advent -11 "Prayer & Repentance")))
+
 (setq lunar-phase-names '(
 	"● New Moon"
 	"☽ First Quarter Moon"
