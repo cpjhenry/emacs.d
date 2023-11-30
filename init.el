@@ -310,16 +310,11 @@
 (load "init/calendar")
 (advice-add 'calendar-exit :before #'save-diary-before-calendar-exit)
 (add-hook 'calendar-mode-hook (lambda()
-	(local-set-key (kbd "?")(lambda()(interactive)
-   							(info "(emacs)Calendar/Diary")
-							(delete-other-windows)
-							(calendar-exit 'kill)
-							(local-set-key (kbd "q")(lambda()(interactive)
-								(kill-current-buffer)(calendar))) ))
-	(local-set-key (kbd "q")(lambda()(interactive)
-							(calendar-exit 'kill)
-							(let ((buffer "*wclock*"))(and
-								(get-buffer buffer) (kill-buffer buffer))) ))
+	(local-set-key (kbd "?") (lambda() (interactive)(info "(emacs)Calendar/Diary")
+		(delete-other-windows)(calendar-exit 'kill)
+		(local-set-key (kbd "q") (lambda() (interactive)(kill-current-buffer)(calendar))) ))
+	(local-set-key (kbd "q") (lambda() (interactive)(calendar-exit 'kill)
+		(let ((buffer "*wclock*"))(and (get-buffer buffer) (kill-buffer buffer))) ))
 	(local-set-key (kbd "w") 'calendar-world-clock)
 	(local-set-key (kbd "y") 'calendar-holidays)
 	(easy-menu-add-item nil '("Holidays") ["Holidays this year" calendar-holidays t])
@@ -598,7 +593,7 @@
 			(agenda)
 			(tags-todo "HOME")
 			(tags-todo "COMPUTER") ) ) )
-		) ; set
+		) ;; set
 
 	(setq
 		org-capture-templates '(
@@ -630,8 +625,7 @@
 		;; https://github.com/rexim/org-cliplink
 		("K" "Cliplink capture task" entry (file "")
 			"* TODO %(org-cliplink-capture) \n  SCHEDULED: %t\n" :empty-lines 1)
-		) ;; capture templates
-		) ;; set
+		)) ;; set
 
 		(add-hook 'org-agenda-finalize-hook 'delete-other-windows)
 
@@ -652,7 +646,7 @@
 
 		(load "init/org")							; org-mode functions
 		(load "org-phscroll" 'noerror 'nomessage)	; org-table fix
-		) ;; use-package
+		) ;; use-package org
 
 
 ;; sundry
@@ -675,8 +669,8 @@
 (global-set-key (kbd "C-<home>" ) 'beginning-of-buffer)
 (global-set-key (kbd "C-<end>"  ) 'end-of-buffer)
 
-(global-set-key (kbd "<C-M-prior>") 'backward-page)
-(global-set-key (kbd "<C-M-next>") 'forward-page)
+(global-set-key (kbd "<C-M-prior>") (lambda()(interactive)(backward-page)(recenter-top-bottom)))
+(global-set-key (kbd "<C-M-next>")  (lambda()(interactive)(forward-page) (recenter-top-bottom)))
 
 (global-unset-key (kbd "C-<prior>"))
 (global-unset-key (kbd "C-<next>" ))
@@ -743,7 +737,7 @@
 (bind-key "<f5>"	'toggle-fill-column-center)
 (bind-key "<f6>"	'list-bookmarks)
 (bind-key "M-Q"		'unfill-paragraph)
-(bind-key "M-C-;"	'eval-region)
+(bind-key "M-C-;"	'eval-r) (defun eval-r(b e) (interactive "r")(eval-region b e)(deactivate-mark))
 
 (bind-key "M-p a"  	'print-to-a5-printer)
 (bind-key "M-p r"  	'print-to-receipt-printer)
