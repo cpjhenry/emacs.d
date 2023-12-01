@@ -140,7 +140,7 @@
        (t (user-error "Don't know how to convert `%s' to an `info' file"
                       (buffer-file-name)))))))
 
-(defun mark-to-beginning-of-buffer ()
+(defun mark-from-beginning-of-buffer ()
 	"Marks the region from the beginning of the buffer to point."
 	(interactive)
 	(push-mark (point-min) nil t))

@@ -409,8 +409,8 @@
 			(cond ((string-match-p "\\`\\(gemini\\|gopher\\)://" url) (elpher-go url))
 			(t (funcall original url new-window))) )
 		(advice-add 'eww-browse-url :around 'elpher:eww-browse-url)
-		(defun elpher-up() (interactive)(backward-paragraph)(recenter-top-bottom))
-		(defun elpher-down() (interactive)(forward-paragraph)(recenter-top-bottom)) )
+		(defun elpher-up () (interactive)(backward-paragraph)(recenter-top-bottom))
+		(defun elpher-down () (interactive)(forward-paragraph)(recenter-top-bottom)) )
 	(add-hook 'elpher-mode-hook (lambda ()
 		(setq-local
 			left-margin-width 10
@@ -737,7 +737,7 @@
 (bind-key "<f5>"	'toggle-fill-column-center)
 (bind-key "<f6>"	'list-bookmarks)
 (bind-key "M-Q"		'unfill-paragraph)
-(bind-key "M-C-;"	'eval-r) (defun eval-r(b e) (interactive "r")(eval-region b e)(deactivate-mark))
+(bind-key "M-C-;"	'eval-r) (defun eval-r (b e) (interactive "r")(eval-region b e)(deactivate-mark))
 
 (bind-key "M-p a"  	'print-to-a5-printer)
 (bind-key "M-p r"  	'print-to-receipt-printer)
@@ -745,7 +745,7 @@
 (bind-key "C-c ?"	'describe-personal-keybindings)
 
 (bind-key "C-c a a"	'org-agenda) (when *mac*
-(bind-key "C-c a d"	'daily-agenda) (defun daily-agenda() (interactive)(find-file org-agenda-file)))
+(bind-key "C-c a d"	'daily-agenda) (defun daily-agenda () (interactive)(find-file org-agenda-file)))
 (which-key-add-key-based-replacements "C-c a" "org agenda")
 
 (bind-key "C-c b m" 'new-markdown-buffer)
@@ -830,5 +830,5 @@
 ;; Work-specific
 (when *w32*
 	(setq default-directory "c:/Users/henrypa/OneDrive - City of Ottawa/")
-	(bind-key "C-c x o"	'office.org)
+	(bind-key "C-c a o"	'office.org)
 	(defun office.org ()(interactive)(find-file (concat default-directory "!.org"))) )
