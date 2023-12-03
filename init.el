@@ -119,9 +119,8 @@
 	(setq use-short-answers t)
 	(defalias 'yes-or-no-p 'y-or-n-p) )
 
-(when (>= emacs-major-version 28)
-	(setq
-   		goto-address-mail-face 'default) )
+(when (>= emacs-major-version 28) (setq
+	goto-address-mail-face 'default))
 
 (when (< emacs-major-version 28)
 	(defalias 'show-paren-local-mode 'show-paren-mode) )
@@ -302,8 +301,6 @@
 (add-to-list 'ibuffer-never-show-predicates "^\\*Messages\\*")
 (add-to-list 'ibuffer-never-show-predicates "^\\*Shell Command Output\\*")
 (add-to-list 'ibuffer-never-show-predicates "^\\*tramp/")
-
-(use-package ibuffer-tramp)
 
 
 ;; calendar
@@ -554,6 +551,7 @@
 		org-log-done t						; 'CLOSED' logging
 		org-log-state-notes-into-drawer nil
 		org-log-repeat nil
+		org-pretty-entities t
 		org-special-ctrl-a/e t
 		org-support-shift-select t
 		org-tags-exclude-from-inheritance '("PROJECT")
@@ -593,9 +591,7 @@
 			(agenda)
 			(tags-todo "HOME")
 			(tags-todo "COMPUTER") ) ) )
-		) ;; set
 
-	(setq
 		org-capture-templates '(
 		("c" "Cookbook" entry (file "~/Documents/org/cookbook.org")
 	   		"%(org-chef-get-recipe-from-url)" :empty-lines 1)
@@ -701,6 +697,10 @@
 
 (global-unset-key (kbd "C-x C-z"))
 
+;; avoid accidental exits
+(global-unset-key (kbd "C-x C-c"))
+(global-set-key (kbd "C-x C-c C-c") 'save-buffers-kill-terminal)
+
 ;; Darwin overrides
 (when *mac*
 	(global-set-key   (kbd "s-o")	'find-file)
@@ -794,6 +794,8 @@
 (bind-key "C-c C-r" 'sudo-edit)
 
 ;; Ctrl-x (buffer functions)
+;; 'C-a', 'C-g', 'C-y' and 'C-z' are available
+
 (bind-key "C-x c" 'kill-current-buffer)
 
 (bind-key "C-x x k"	'kill-other-buffers)
@@ -802,7 +804,6 @@
 
 (which-key-add-key-based-replacements "C-x 8" "key translations")
 (which-key-add-key-based-replacements "C-x 8 e" "emojis")
-;; For 'C-x'... 'C-a', 'C-g', 'C-y' and 'C-z' are available
 
 
 ;; Aliases

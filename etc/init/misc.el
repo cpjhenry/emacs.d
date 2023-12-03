@@ -1996,6 +1996,11 @@ C-c / t					TODO tree
 C-c * | C-c -			headline | item
 C-c ^					sort
 C-c C-q					tag
+
+
+Calendar
+
+C-<spc> ... M-=			number of days between mark and point
 ")
 (kf-gen-displayer my/emacs-help "Display Emacs help." "*Emacs cheatsheet*")
 (bind-key "M-<f1>" 'my/emacs-help)
