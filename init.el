@@ -2,6 +2,7 @@
 
 ;; Initialize terminal
 (toggle-frame-maximized)
+(delete-selection-mode 1)
 (electric-indent-mode -1)
 (scroll-bar-mode -1)
 (show-paren-mode -1)
@@ -105,9 +106,10 @@
 	require-final-newline nil
 	ring-bell-function 'ignore
 	save-abbrevs 'silent
+	scroll-conservatively 1
 	scroll-preserve-screen-position t
 	sentence-end-double-space nil
-	show-paren-style 'mixed
+	show-paren-style 'parenthesis
 	tramp-default-method "ssh"
 	tramp-syntax 'simplified		; C-x C-f /remotehost:filename
 	trash-directory "~/.Trash"
@@ -575,8 +577,9 @@
 		("_" italic)
 		("=" (:background "maroon" :foreground "white"))
 		("~" (:background "deep sky blue" :foreground "MidnightBlue"))
-	    ("+" (:strike-through t)) )
+	    ("+" (:strike-through t)) ) )
 
+	(setq
 		org-agenda-custom-commands '(
 		("P" "Project List" (
 			(tags "PROJECT") ) )
