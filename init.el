@@ -338,7 +338,7 @@
 	calendar-month-header '(propertize
 		(format "%s %d" (calendar-month-name month) year)
 		'font-lock-face 'calendar-month-header)
-	world-clock-time-format "%9A %2d %9B %R %Z"
+	world-clock-time-format "%9A %2e %9B %R %Z"
 
 	calendar-christian-all-holidays-flag t
 	calendar-chinese-all-holidays-flag t
