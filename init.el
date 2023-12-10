@@ -353,12 +353,16 @@
 (load "init/page-dimensions")
 (define-key global-map [menu-bar file print] nil)
 
+(setq
+	printer-name "Munbyn_ITPP047"
+	lpr-switches '("-o cpi=17")
+	)
 (when *mac* (setq
 	ps-printer-name "Brother_HL_L2370DW"
 	ps-paper-type 'a5
 	ps-lpr-switches '("-o media=a5")
 
-	ps-font-size 12
+	font-size 12
 	ps-font-family 'Courier
 	ps-footer-font-family 'Courier
 	ps-print-color-p nil
