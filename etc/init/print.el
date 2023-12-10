@@ -1,7 +1,6 @@
 ;; PRINT functions
 
 (setq enscript "enscript -cqB")
-
 ;; https://stackoverflow.com/questions/15869131/emacs-shell-command-on-buffer (adapted)
 (defun spool-to-enscript ()
 	"Sends current buffer to 'enscript'."

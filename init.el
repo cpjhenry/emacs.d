@@ -353,14 +353,15 @@
 (load "init/page-dimensions")
 (define-key global-map [menu-bar file print] nil)
 
-(setq
+(when *mac*
+	(setq
 	printer-name "Munbyn_ITPP047"
-	lpr-switches '("-o cpi=17 -o print-quality=5")
-	)
-(when *mac* (setq
+	lpr-switches '("-o cpi=19")) ; -o print-quality=5
+
+	(setq
 	ps-printer-name "Brother_HL_L2370DW"
-	ps-paper-type 'a5
 	ps-lpr-switches '("-o media=a5")
+	ps-paper-type 'a5
 
 	font-size 12
 	ps-font-family 'Courier
@@ -380,6 +381,8 @@
 	ps-bottom-margin 14
 	ps-left-margin 28
 	ps-right-margin 28 ))
+
+(load "init/print")
 
 
 ;; Mode Line
@@ -748,6 +751,7 @@
 
 (bind-key "M-p a"  	'print-to-a5-printer)
 (bind-key "M-p r"  	'print-to-receipt-printer)
+(global-set-key (kbd "s-p") (lambda()(interactive)(print-region-1 (point-min) (point-max) lpr-switches nil)))
 
 (bind-key "C-c ?"	'describe-personal-keybindings)
 
