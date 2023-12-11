@@ -356,7 +356,7 @@
 (when *mac*
 	(setq
 	printer-name "Munbyn_ITPP047"
-	lpr-switches '("-o cpi=19")) ; -o print-quality=5
+	lpr-switches '("-o cpi=12 -o lpi=8 -o print-quality=4"))
 
 	(setq
 	ps-printer-name "Brother_HL_L2370DW"
