@@ -127,6 +127,9 @@
 (when (< emacs-major-version 28)
 	(defalias 'show-paren-local-mode 'show-paren-mode) )
 
+(when (>= emacs-major-version 29) (setq
+	help-enable-variable-value-editing t))
+
 ;; files
 (setq
 	abbrev-file-name			(concat user-emacs-directory "etc/abbrev_defs")
@@ -162,10 +165,7 @@
 ;; buffers
 (load "init/filesandbuffers")
 
-(add-hook 'before-save-hook
-	'time-stamp)
-(add-hook 'dired-mode-hook (lambda()
-	(dired-omit-mode 1) ))
+(add-hook 'before-save-hook 'time-stamp)
 (add-hook 'emacs-lisp-mode-hook (lambda()
 	(setq show-trailing-whitespace t)
 	(goto-address-mode)
@@ -175,6 +175,7 @@
 	(form-feed-mode) ))
 (add-hook 'eww-mode-hook (lambda()
 	(define-key eww-mode-map (kbd "<left>") 'eww-back-url) ))
+(add-hook 'help-mode-hook 'font-lock-mode)
 
 (add-hook 'prog-mode-hook (lambda()
 	(abbrev-mode)
@@ -241,6 +242,7 @@
 ;; automatically save buffers associated with files on frame (app) switch
 (add-hook 'focus-out-hook (lambda () (save-some-buffers t)))
 
+
 ;; IDO
 ;; https://www.emacswiki.org/emacs/InteractivelyDoThings
 (require 'ido)
@@ -257,6 +259,22 @@
 
 (global-set-key (kbd "C-<tab>") 'ido-switch-buffer)
 (global-set-key (kbd "C-x C-d")	'ido-dired)
+
+;; Dired
+(add-hook 'dired-mode-hook (lambda()(dired-omit-mode 1) ))
+(with-eval-after-load 'dired
+	(require 'dired-x)
+	(unless *w32* (setq dired-kill-when-opening-new-dired-buffer t))
+	(setq dired-omit-files (concat dired-omit-files
+		"\\|^INDEX$\\|-t\\.tex$\\|\\.DS_Store$\\|\\.localized$"))
+	(require 'ls-lisp)
+	(setq	ls-lisp-use-string-collate nil
+			ls-lisp-use-insert-directory-program nil
+			ls-lisp-ignore-case 't)
+	(define-key dired-mode-map (kbd "q")	'kill-dired-buffers)
+	(define-key dired-mode-map (kbd "o")	'dired-find-file-ow)
+	(defun dired-find-file-ow() (interactive)(dired-find-file-other-window)(delete-other-windows))
+	(defalias 'dired-find-file				'dired-find-alternate-file) )
 
 ;; iBuffer
 ;; https://www.emacswiki.org/emacs/IbufferMode
@@ -297,7 +315,7 @@
 		;	(mode . gnus-article-mode)
 		;	(name . "^\\.bbdb$")
 		;	(name . "^\\.newsrc-dribble") ))
-		)) ))
+		))) )
 
 (require 'ibuf-ext)
 (add-to-list 'ibuffer-never-show-predicates "^\\*Messages\\*")
@@ -747,11 +765,12 @@
 (bind-key "<f5>"	'toggle-fill-column-center)
 (bind-key "<f6>"	'list-bookmarks)
 (bind-key "M-Q"		'unfill-paragraph)
-(bind-key "M-C-;"	'eval-r) (defun eval-r (b e) (interactive "r")(eval-region b e)(deactivate-mark))
 
 (bind-key "M-p a"  	'print-to-a5-printer)
 (bind-key "M-p r"  	'print-to-receipt-printer)
 (global-set-key (kbd "s-p") (lambda()(interactive)(print-region-1 (point-min) (point-max) lpr-switches nil)))
+
+(bind-key "C-M-;"	'eval-r) (defun eval-r (b e) (interactive "r")(eval-region b e)(deactivate-mark))
 
 (bind-key "C-c ?"	'describe-personal-keybindings)
 
@@ -776,11 +795,6 @@
 
 (bind-key "C-c g"	'elpher-show-bookmarks) ; gopher / gemini
 
-(bind-key "C-c l d" 'delete-duplicate-lines)
-(bind-key "C-c l t" 'delete-trailing-whitespace)
-(bind-key "C-c l w" 'delete-whitespace-rectangle)
-(which-key-add-key-based-replacements "C-c l" "line functions")
-
 (bind-key "C-c o a" 'org-archive-subtree-default)
 (bind-key "C-c o c"	'org-capture)
 (bind-key "C-c o k" 'org-cliplink)
@@ -792,10 +806,13 @@
 (bind-key "C-c w"	'eww-list-bookmarks) ; www
 
 (bind-key "C-c x b"	'flush-blank-lines)
+(bind-key "C-c x d" 'delete-duplicate-lines)
 (bind-key "C-c x l" 'lorem-ipsum-insert-paragraphs)
 (bind-key "C-c x n"	'number-paragraphs)
 (bind-key "C-c x q"	'replace-smart-quotes)
-(which-key-add-key-based-replacements "C-c x" "text functions")
+(bind-key "C-c x t" 'delete-trailing-whitespace)
+(bind-key "C-c x w" 'delete-whitespace-rectangle)
+(which-key-add-key-based-replacements "C-c x" "text")
 
 (global-set-key (kbd "C-c 8 c") (kbd "✓"))
 (global-set-key (kbd "C-c 8 n") (kbd "№"))
