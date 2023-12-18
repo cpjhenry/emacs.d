@@ -4,7 +4,7 @@
 (toggle-frame-maximized)
 (delete-selection-mode 1)
 (electric-indent-mode -1)
-(scroll-bar-mode -1)
+;(scroll-bar-mode -1)
 (show-paren-mode -1)
 (tooltip-mode -1)
 
