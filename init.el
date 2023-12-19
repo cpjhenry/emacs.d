@@ -4,7 +4,6 @@
 (toggle-frame-maximized)
 (delete-selection-mode 1)
 (electric-indent-mode -1)
-;(scroll-bar-mode -1)
 (show-paren-mode -1)
 (tooltip-mode -1)
 
@@ -445,6 +444,8 @@
 
 (require 'eww)
 (define-key eww-bookmark-mode-map (kbd "w")	'eww)
+
+(use-package free-keys :defer t)
 
 (use-package google-this
 	:config
