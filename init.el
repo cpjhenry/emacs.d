@@ -37,11 +37,14 @@
 (add-to-list 'default-frame-alist '(tool-bar-lines . 0))
 
 (setq
-	user-mail-address "cpjhenry@gmail.com"
 	calendar-latitude 45.3
 	calendar-longitude -75.7
 	calendar-location-name "Ottawa"
 	maidenhead "FN25dg")
+
+(setq
+	user-mail-address "cn914@ncf.ca"
+	rmail-primary-inbox-list '("imaps://cn914@mail.ncf.ca"))
 
 ;; Initialize package manager
 (setq gnutls-algorithm-priority "normal:-vers-tls1.3")
@@ -98,6 +101,8 @@
 	kill-whole-line t
 	mark-ring-max most-positive-fixnum
 	max-lisp-eval-depth 65536
+	newsticker-treeview-own-frame t
+	newsticker-url-list-defaults nil
 	ns-use-native-fullscreen t
 	pop-up-windows nil
 	pop-up-frames nil
@@ -137,6 +142,7 @@
 	eshell-aliases-file			(concat user-emacs-directory "etc/eshell/aliases")
 	eshell-directory-name  		(concat user-emacs-directory "var/eshell/")
 	eww-bookmarks-directory		(concat user-emacs-directory "etc/")
+	newsticker-dir				(concat user-emacs-directory "var/newsticker/")
 	request-storage-directory  	(concat user-emacs-directory "var/request/storage/")
 	tramp-auto-save-directory  	(concat user-emacs-directory "var/tramp/auto-save/")
 	tramp-persistency-file-name	(concat user-emacs-directory "var/tramp/persistency")
@@ -305,15 +311,15 @@
 			(name . "^\\*Org Agenda\\*") ))
 		;("perl" (mode . cperl-mode) )
 		;("erc" (mode . erc-mode) )
-		;("gnus" (or
-		;	(mode . message-mode)
-		;	(mode . bbdb-mode)
-		;	(mode . mail-mode)
-		;	(mode . gnus-group-mode)
-		;	(mode . gnus-summary-mode)
-		;	(mode . gnus-article-mode)
-		;	(name . "^\\.bbdb$")
-		;	(name . "^\\.newsrc-dribble") ))
+		("gnus" (or
+			(mode . message-mode)
+			(mode . bbdb-mode)
+			(mode . mail-mode)
+			(mode . gnus-group-mode)
+			(mode . gnus-summary-mode)
+			(mode . gnus-article-mode)
+			(name . "^\\.bbdb$")
+			(name . "^\\.newsrc-dribble") ))
 		))) )
 
 (require 'ibuf-ext)
@@ -504,7 +510,25 @@
 	(setq 	browse-url-browser-function 'browse-url-generic
 		;	browse-url-generic-program "/Applications/Firefox.app/Contents/MacOS/firefox"
 			browse-url-generic-program "/Applications/Waterfox.app/Contents/MacOS/waterfox")
-	(load "init/elfeed") )
+	(load "init/elfeed")
+
+	(require 'newsticker)
+	(add-to-list 'newsticker-url-list '("Slashdot" "https://rss.slashdot.org/Slashdot/slashdotMain"))
+	;(add-to-list 'newsticker-url-list '("SO" "https://stackoverflow.com/feeds/tag?tagnames=emacs"))
+	;(add-hook 'newsticker-mode-hook 'imenu-add-menubar-index)
+
+	(use-package sx
+		:config
+		(bind-keys :prefix "C-c s"
+				   :prefix-map my-sx-map
+				   :prefix-docstring "Global keymap for SX."
+				   ("q" . sx-tab-all-questions)
+				   ("i" . sx-inbox)
+				   ("o" . sx-open-link)
+				   ("u" . sx-tab-unanswered-my-tags)
+				   ("a" . sx-ask)
+				   ("s" . sx-search)))
+)
 
 (when *mac*
 	;(load "init/deft")	; note functions (bound to <f7>)
@@ -792,9 +816,11 @@
 (bind-key "C-c d i"	'insert-iso-date)
 (which-key-add-key-based-replacements "C-c d" "dates")
 
+(bind-key "C-c g"	'elpher-show-bookmarks) ; gopher / gemini
+
 ;(bind-key "C-c i" 'toggle-fill-column)
 
-(bind-key "C-c g"	'elpher-show-bookmarks) ; gopher / gemini
+(bind-key "C-c n"	'newsticker-show-news)
 
 (bind-key "C-c o a" 'org-archive-subtree-default)
 (bind-key "C-c o c"	'org-capture)
