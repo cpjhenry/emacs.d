@@ -1,18 +1,3 @@
-(use-package elfeed
-	:config	(setq
-				elfeed-db-directory (concat user-emacs-directory "var/elfeed/db/")
-				elfeed-enclosure-default-dir (concat user-emacs-directory "var/elfeed/enclosures/")
-				elfeed-score-score-file (concat user-emacs-directory "etc/elfeed/score/score.el")
-				elfeed-sort-order 'ascending
-				elfeed-use-curl t)
-			(load "rc/elfeed" 'noerror 'nomessage)
-			(eval-after-load 'elfeed `(make-directory ,(concat user-emacs-directory "var/elfeed/") t))
-			(easy-menu-add-item  nil '("tools") ["Read web feeds" elfeed t])
-
-			(bind-key "C-c f" 'elfeed)
-			(define-key elfeed-search-mode-map (kbd "q") (lambda()(interactive) (kill-current-buffer)
-			(let ((buffer "*elfeed-log*")) (and (get-buffer buffer) (kill-buffer buffer))) )) )
-
 (defun elfeed-mark-all-as-read () (interactive)
 	(mark-whole-buffer)
 	(elfeed-search-untag-all-unread))
@@ -33,4 +18,4 @@
 			do (todo it (elfeed-entry-link entry)))
 		(mapc #'elfeed-search-update-entry entries)
 		(unless (use-region-p) (forward-line))))
-	;(define-key elfeed-search-mode-map (kbd "m") 'elfeed-mail-todo)
+	(define-key elfeed-search-mode-map (kbd "m") 'elfeed-mail-todo)

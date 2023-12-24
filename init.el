@@ -42,14 +42,10 @@
 	calendar-location-name "Ottawa"
 	maidenhead "FN25dg")
 
-(setq
-	user-mail-address "cn914@ncf.ca"
-	rmail-primary-inbox-list '("imaps://cn914@mail.ncf.ca"))
-
 ;; Initialize package manager
 (setq gnutls-algorithm-priority "normal:-vers-tls1.3")
 (require 'package)
-(package-initialize t)
+(package-initialize)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 (unless package-archive-contents (package-refresh-contents))
 (unless (package-installed-p 'use-package) (package-install 'use-package))
@@ -144,6 +140,9 @@
 	eww-bookmarks-directory		(concat user-emacs-directory "etc/")
 	newsticker-dir				(concat user-emacs-directory "var/newsticker/")
 	request-storage-directory  	(concat user-emacs-directory "var/request/storage/")
+	rmail-secondary-file-directory (concat user-emacs-directory "var/")
+	rmail-default-file			(concat user-emacs-directory "var/XMAIL")
+	rmail-file-name				(concat user-emacs-directory "var/RMAIL")
 	tramp-auto-save-directory  	(concat user-emacs-directory "var/tramp/auto-save/")
 	tramp-persistency-file-name	(concat user-emacs-directory "var/tramp/persistency")
 	url-cache-directory			(concat user-emacs-directory "var/url/cache/")
@@ -433,7 +432,8 @@
 (use-package elpher
 	:config
 		(setq elpher-bookmarks-file (concat user-emacs-directory "var/elpher-bookmarks"))
-		(easy-menu-add-item  nil '("tools") ["Gopher" elpher t])
+		(easy-menu-add-item  nil '("tools") ["Gopher" elpher t] "Browse the Web...")
+
 		(defun elpher:eww-browse-url (original url &optional new-window) "Handle gemini links."
 			(cond ((string-match-p "\\`\\(gemini\\|gopher\\)://" url) (elpher-go url))
 			(t (funcall original url new-window))) )
@@ -510,16 +510,56 @@
 	(setq 	browse-url-browser-function 'browse-url-generic
 		;	browse-url-generic-program "/Applications/Firefox.app/Contents/MacOS/firefox"
 			browse-url-generic-program "/Applications/Waterfox.app/Contents/MacOS/waterfox")
-	(load "init/elfeed")
+
+	;; Mail / News
+	(setq
+	user-full-name "cpj"
+	user-mail-address "cn914@ncf.ca"
+	rmail-primary-inbox-list '("imaps://cn914@mail.ncf.ca")
+	rmail-movemail-variant-in-use 'mailutils
+	rmail-remote-password-required t
+
+	smtpmail-smtp-server "mail.ncf.ca"
+	send-mail-function   'smtpmail-send-it
+	smtpmail-smtp-service 587
+
+	rmail-mime-prefer-html nil
+	rmail-preserve-inbox nil
+	rmail-delete-after-output t
+	rmail-mail-new-frame t
+	rmail-mime-prefer-html nil
+
+	rmail-ignored-headers (concat rmail-ignored-headers
+		"\\|^In-Reply-To:\\|^Content-Type:\\|^DKIM-Filter:")
+	rmail-nonignored-headers nil)
 
 	(require 'newsticker)
 	(add-to-list 'newsticker-url-list '("Slashdot" "https://rss.slashdot.org/Slashdot/slashdotMain"))
-	;(add-to-list 'newsticker-url-list '("SO" "https://stackoverflow.com/feeds/tag?tagnames=emacs"))
-	;(add-hook 'newsticker-mode-hook 'imenu-add-menubar-index)
+	(add-hook 'newsticker-mode-hook 'imenu-add-menubar-index)
+	(global-set-key [remap gnus] 'newsticker-show-news)
 
+	(use-package elfeed
+		:config	(setq
+			elfeed-db-directory (concat user-emacs-directory "var/elfeed/db/")
+	   		elfeed-enclosure-default-dir (concat user-emacs-directory "var/elfeed/enclosures/")
+   			elfeed-score-score-file (concat user-emacs-directory "etc/elfeed/score/score.el")
+			elfeed-sort-order 'ascending
+			elfeed-use-curl t)
+
+			(eval-after-load 'elfeed `(make-directory ,(concat user-emacs-directory "var/elfeed/") t))
+			(easy-menu-add-item  nil '("tools") ["Read Web Feeds" elfeed t] "Read Mail")
+
+			(bind-key "C-c f" 'elfeed)
+			(define-key elfeed-search-mode-map (kbd "q") (lambda()(interactive) (kill-current-buffer)
+			(let ((buffer "*elfeed-log*")) (and (get-buffer buffer) (kill-buffer buffer))) ))
+
+			(load "rc/elfeed" 'noerror 'nomessage)	; feeds
+			(load "init/elfeed"))					; routines
+
+	;; Stack Exchange
 	(use-package sx
 		:config
-		(bind-keys :prefix "C-c s"
+		(bind-keys :prefix "C-c S"
 				   :prefix-map my-sx-map
 				   :prefix-docstring "Global keymap for SX."
 				   ("q" . sx-tab-all-questions)
@@ -528,7 +568,7 @@
 				   ("u" . sx-tab-unanswered-my-tags)
 				   ("a" . sx-ask)
 				   ("s" . sx-search)))
-)
+	)
 
 (when *mac*
 	;(load "init/deft")	; note functions (bound to <f7>)
@@ -674,7 +714,7 @@
 		;; https://github.com/rexim/org-cliplink
 		("K" "Cliplink capture task" entry (file "")
 			"* TODO %(org-cliplink-capture) \n  SCHEDULED: %t\n" :empty-lines 1)
-		)) ;; set
+		)) ; set
 
 		(add-hook 'org-agenda-finalize-hook 'delete-other-windows)
 
@@ -693,9 +733,12 @@
 		(use-package org-modern)
 		(with-eval-after-load 'org (global-org-modern-mode))
 
+		(define-key org-mode-map (kbd "C-<") 'org-backward-heading-same-level)
+		(define-key org-mode-map (kbd "C->") 'org-forward-heading-same-level)
+
 		(load "init/org")							; org-mode functions
 		(load "org-phscroll" 'noerror 'nomessage)	; org-table fix
-		) ;; use-package org
+	) ; use-package org
 
 
 ;; sundry
@@ -748,11 +791,12 @@
 
 (global-set-key (kbd "A-<return>")(kbd "M-<return>"))
 
-(global-unset-key (kbd "C-x C-z"))
-
 ;; avoid accidental exits
 (global-unset-key (kbd "C-x C-c"))
 (global-set-key (kbd "C-x C-c C-c") 'save-buffers-kill-terminal)
+
+(global-unset-key (kbd "C-z"))
+(global-unset-key (kbd "C-x C-z"))
 
 ;; Darwin overrides
 (when *mac*
@@ -768,8 +812,7 @@
 	(when (display-graphic-p)
 	(global-unset-key (kbd "<f10>"))
 	(global-unset-key (kbd "C-<f10>"))
-	(global-unset-key (kbd "S-<f10>"))
-	(global-unset-key (kbd "C-z")) ))
+	(global-unset-key (kbd "S-<f10>")) ))
 
 ;; window navigation
 (when (fboundp 'windmove-default-keybindings)
@@ -779,10 +822,11 @@
 	(global-set-key (kbd "ESC <left>")	'windmove-left) )
 
 
-;; Re-enable disabled keys
+;; Disabled keys
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'upcase-region 'disabled nil)	; C-x C-u
 (put 'downcase-region 'disabled nil); C-x C-l
+(put 'suspend-frame 'disabled t)	; C-x C-z / C-z
 
 
 ;; Shortcuts
@@ -820,6 +864,7 @@
 
 ;(bind-key "C-c i" 'toggle-fill-column)
 
+(bind-key "C-c m"	'menu-bar-read-mail)
 (bind-key "C-c n"	'newsticker-show-news)
 
 (bind-key "C-c o a" 'org-archive-subtree-default)
