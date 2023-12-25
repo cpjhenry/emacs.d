@@ -97,8 +97,6 @@
 	kill-whole-line t
 	mark-ring-max most-positive-fixnum
 	max-lisp-eval-depth 65536
-	newsticker-treeview-own-frame t
-	newsticker-url-list-defaults nil
 	ns-use-native-fullscreen t
 	pop-up-windows nil
 	pop-up-frames nil
@@ -138,11 +136,7 @@
 	eshell-aliases-file			(concat user-emacs-directory "etc/eshell/aliases")
 	eshell-directory-name  		(concat user-emacs-directory "var/eshell/")
 	eww-bookmarks-directory		(concat user-emacs-directory "etc/")
-	newsticker-dir				(concat user-emacs-directory "var/newsticker/")
 	request-storage-directory  	(concat user-emacs-directory "var/request/storage/")
-	rmail-secondary-file-directory (concat user-emacs-directory "var/")
-	rmail-default-file			(concat user-emacs-directory "var/XMAIL")
-	rmail-file-name				(concat user-emacs-directory "var/RMAIL")
 	tramp-auto-save-directory  	(concat user-emacs-directory "var/tramp/auto-save/")
 	tramp-persistency-file-name	(concat user-emacs-directory "var/tramp/persistency")
 	url-cache-directory			(concat user-emacs-directory "var/url/cache/")
@@ -512,7 +506,7 @@
 			browse-url-generic-program "/Applications/Waterfox.app/Contents/MacOS/waterfox")
 
 	;; Mail / News
-	(setq
+	(require 'rmail) (setq
 	user-full-name "cpj"
 	user-mail-address "cn914@ncf.ca"
 	rmail-primary-inbox-list '("imaps://cn914@mail.ncf.ca")
@@ -531,30 +525,51 @@
 
 	rmail-ignored-headers (concat rmail-ignored-headers
 		"\\|^In-Reply-To:\\|^Content-Type:\\|^DKIM-Filter:")
-	rmail-nonignored-headers nil)
+	rmail-nonignored-headers nil
 
-	(require 'newsticker)
+	rmail-secondary-file-directory	(concat user-emacs-directory "var/")
+	rmail-default-file			(concat user-emacs-directory "var/XMAIL")
+	rmail-file-name				(concat user-emacs-directory "var/RMAIL"))
+
+	(require 'newsticker) (setq
+	newsticker-dir (concat user-emacs-directory "var/newsticker/")
+	newsticker-html-renderer nil
+	newsticker-treeview-own-frame t
+	newsticker-treeview-use-feed-name-from-url-list-in-itemview nil
+	newsticker-treeview-use-feed-name-from-url-list-in-treeview nil
+	newsticker-url-list-defaults nil)
+
 	(add-to-list 'newsticker-url-list '("Slashdot" "https://rss.slashdot.org/Slashdot/slashdotMain"))
+
 	(add-hook 'newsticker-mode-hook 'imenu-add-menubar-index)
 	(global-set-key [remap gnus] 'newsticker-show-news)
 
 	(use-package elfeed
 		:config	(setq
-			elfeed-db-directory (concat user-emacs-directory "var/elfeed/db/")
-	   		elfeed-enclosure-default-dir (concat user-emacs-directory "var/elfeed/enclosures/")
-   			elfeed-score-score-file (concat user-emacs-directory "etc/elfeed/score/score.el")
-			elfeed-sort-order 'ascending
-			elfeed-use-curl t)
+		elfeed-db-directory (concat user-emacs-directory "var/elfeed/db/")
+   		elfeed-enclosure-default-dir (concat user-emacs-directory "var/elfeed/enclosures/")
+		elfeed-score-score-file (concat user-emacs-directory "etc/elfeed/score/score.el")
+		elfeed-sort-order 'ascending
+		elfeed-use-curl t)
 
-			(eval-after-load 'elfeed `(make-directory ,(concat user-emacs-directory "var/elfeed/") t))
-			(easy-menu-add-item  nil '("tools") ["Read Web Feeds" elfeed t] "Read Mail")
+		(eval-after-load 'elfeed `(make-directory ,(concat user-emacs-directory "var/elfeed/") t))
+		(easy-menu-add-item  nil '("tools") ["Read Web Feeds" elfeed t] "Read Mail")
 
-			(bind-key "C-c f" 'elfeed)
-			(define-key elfeed-search-mode-map (kbd "q") (lambda()(interactive) (kill-current-buffer)
-			(let ((buffer "*elfeed-log*")) (and (get-buffer buffer) (kill-buffer buffer))) ))
+		(bind-key "C-c f" 'elfeed)
+		(define-key elfeed-search-mode-map (kbd "q") (lambda()(interactive) (kill-current-buffer)
+		(define-key elfeed-search-mode-map (kbd "/") 'elfeed-search-live-filter)
+		(define-key elfeed-search-mode-map (kbd "s") nil)
+		(let ((buffer "*elfeed-log*")) (and (get-buffer buffer) (kill-buffer buffer))) ))
 
-			(load "rc/elfeed" 'noerror 'nomessage)	; feeds
-			(load "init/elfeed"))					; routines
+		;(use-package elfeed-org
+		;	:config
+		;	(elfeed-org)
+		;	(setq rmh-elfeed-org-files (list "~/.emacs.d/etc/rc/elfeed.org")))
+
+		(use-package elfeed-summary)
+
+		(load "rc/elfeed" 'noerror 'nomessage)	; feeds
+		(load "init/elfeed"))					; routines
 
 	;; Stack Exchange
 	(use-package sx
