@@ -556,7 +556,7 @@
 		(easy-menu-add-item  nil '("tools") ["Read Web Feeds" elfeed t] "Read Mail")
 
 		(bind-key "C-c f" 'elfeed)
-		(define-key elfeed-search-mode-map (kbd "q") (lambda()(interactive) (kill-current-buffer)
+		(define-key elfeed-search-mode-map (kbd "q") (lambda()(interactive)(kill-current-buffer)))
 		(define-key elfeed-search-mode-map (kbd "/") 'elfeed-search-live-filter)
 		(define-key elfeed-search-mode-map (kbd "s") nil)
 		(let ((buffer "*elfeed-log*")) (and (get-buffer buffer) (kill-buffer buffer))) ))
@@ -568,7 +568,7 @@
 
 		(use-package elfeed-summary)
 
-		(load "rc/elfeed" 'noerror 'nomessage)	; feeds
+		(load "rc/feeds" 'noerror 'nomessage)	; feeds
 		(load "init/elfeed"))					; routines
 
 	;; Stack Exchange
@@ -753,6 +753,12 @@
 
 		(define-key org-mode-map (kbd "C-<") 'org-backward-heading-same-level)
 		(define-key org-mode-map (kbd "C->") 'org-forward-heading-same-level)
+
+		;; FIXME
+		;(define-key org-mode-map (kbd "C-c e") (lambda() (interactive)
+		;	(org-forward-heading-same-level)
+		;	(backward-char)
+		;	(org-insert-heading) ))
 
 		(load "init/org")							; org-mode functions
 		(load "org-phscroll" 'noerror 'nomessage)	; org-table fix
