@@ -144,3 +144,9 @@
 	"Marks the region from the beginning of the buffer to point."
 	(interactive)
 	(push-mark (point-min) nil t))
+
+(defun undo-yank (arg)
+  "Undo the yank you just did.  Really, adjust just-yanked text
+like \\[yank-pop] does, but in the opposite direction."
+  (interactive "p")
+  (yank-pop (- arg)))

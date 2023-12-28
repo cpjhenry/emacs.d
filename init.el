@@ -11,8 +11,8 @@
 (defconst *gnu* (eq system-type 'gnu/linux))
 (defconst *w32* (eq system-type 'windows-nt))
 
-(defconst *bullwinkle* (string-equal (system-name) "bullwinkle"))
-(defconst *natasha* (string-equal (system-name) "natasha"))
+(defconst *bullwinkle* (string-equal (shell-command-to-string "hostname -s") "bullwinkle\n"))
+(defconst *natasha* (string-equal (shell-command-to-string "hostname -s") "natasha\n"))
 
 (when *mac* (add-to-list 'default-frame-alist '(font . "Inconsolata 21"))
 	(setq
@@ -240,6 +240,7 @@
 ;; automatically save buffers associated with files on frame (app) switch
 (add-hook 'focus-out-hook (lambda () (save-some-buffers t)))
 
+(setq enable-recursive-minibuffers t)
 
 ;; IDO
 ;; https://www.emacswiki.org/emacs/InteractivelyDoThings
@@ -484,6 +485,10 @@
 
 (use-package sudo-edit)
 
+(use-package marginalia
+	:config
+	(marginalia-mode))
+
 (use-package visible-mark)
 
 (use-package wc-mode)
@@ -559,7 +564,7 @@
 		(define-key elfeed-search-mode-map (kbd "q") (lambda()(interactive)(kill-current-buffer)))
 		(define-key elfeed-search-mode-map (kbd "/") 'elfeed-search-live-filter)
 		(define-key elfeed-search-mode-map (kbd "s") nil)
-		(let ((buffer "*elfeed-log*")) (and (get-buffer buffer) (kill-buffer buffer))) ))
+		(let ((buffer "*elfeed-log*")) (and (get-buffer buffer) (kill-buffer buffer))) )
 
 		;(use-package elfeed-org
 		;	:config
@@ -569,7 +574,7 @@
 		(use-package elfeed-summary)
 
 		(load "rc/feeds" 'noerror 'nomessage)	; feeds
-		(load "init/elfeed"))					; routines
+		(load "init/elfeed")					; routines
 
 	;; Stack Exchange
 	(use-package sx
@@ -864,6 +869,7 @@
 (global-set-key (kbd "s-p") (lambda()(interactive)(print-region-1 (point-min) (point-max) lpr-switches nil)))
 
 (bind-key "C-M-;"	'eval-r) (defun eval-r (b e) (interactive "r")(eval-region b e)(deactivate-mark))
+(bind-key "C-M-Y"	'undo-yank)
 
 (bind-key "C-c ?"	'describe-personal-keybindings)
 
