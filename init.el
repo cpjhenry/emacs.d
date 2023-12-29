@@ -11,8 +11,9 @@
 (defconst *gnu* (eq system-type 'gnu/linux))
 (defconst *w32* (eq system-type 'windows-nt))
 
-(defconst *bullwinkle* (string-equal (shell-command-to-string "hostname -s") "bullwinkle\n"))
-(defconst *natasha* (string-equal (shell-command-to-string "hostname -s") "natasha\n"))
+(defconst system-short-name (nth 0 (split-string (system-name) "\\.")))
+(defconst *bullwinkle*	(string-equal system-short-name "bullwinkle"))
+(defconst *natasha*		(string-equal system-short-name "natasha"))
 
 (when *mac* (add-to-list 'default-frame-alist '(font . "Inconsolata 21"))
 	(setq

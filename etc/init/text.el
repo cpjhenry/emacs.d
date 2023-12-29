@@ -25,7 +25,7 @@
 
 (defun todo (text &optional body)
 	(interactive "sTodo: ")
-	(compose-mail-other-window "cpjh" text)
+	(compose-mail-other-window user-mail-address text)
 	(mail-text)
 	(if body
 		(insert body))
