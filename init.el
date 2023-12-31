@@ -486,9 +486,9 @@
 
 (use-package sudo-edit)
 
-(use-package marginalia
-	:config
-	(marginalia-mode))
+;(use-package marginalia
+;	:config
+;	(marginalia-mode))
 
 (use-package visible-mark)
 
@@ -536,19 +536,6 @@
 	rmail-secondary-file-directory	(concat user-emacs-directory "var/")
 	rmail-default-file			(concat user-emacs-directory "var/XMAIL")
 	rmail-file-name				(concat user-emacs-directory "var/RMAIL"))
-
-	(require 'newsticker) (setq
-	newsticker-dir (concat user-emacs-directory "var/newsticker/")
-	newsticker-html-renderer nil
-	newsticker-treeview-own-frame t
-	newsticker-treeview-use-feed-name-from-url-list-in-itemview nil
-	newsticker-treeview-use-feed-name-from-url-list-in-treeview nil
-	newsticker-url-list-defaults nil)
-
-	(add-to-list 'newsticker-url-list '("Slashdot" "https://rss.slashdot.org/Slashdot/slashdotMain"))
-
-	(add-hook 'newsticker-mode-hook 'imenu-add-menubar-index)
-	(global-set-key [remap gnus] 'newsticker-show-news)
 
 	(use-package elfeed
 		:config	(setq
@@ -628,6 +615,7 @@
 (add-hook 'visual-fill-column-mode-hook #'(lambda()
 	(setq visual-fill-column-fringes-outside-margins nil) ))
 (add-hook 'org-mode-hook (lambda() (visual-fill-column-mode -1) ))
+(add-hook 'prog-mode-hook (lambda() (visual-fill-column-mode -1) ))
 
 (use-package markdown-mode
 	:init (setq markdown-hide-urls t)
@@ -760,11 +748,7 @@
 		(define-key org-mode-map (kbd "C-<") 'org-backward-heading-same-level)
 		(define-key org-mode-map (kbd "C->") 'org-forward-heading-same-level)
 
-		;; FIXME
-		;(define-key org-mode-map (kbd "C-c e") (lambda() (interactive)
-		;	(org-forward-heading-same-level)
-		;	(backward-char)
-		;	(org-insert-heading) ))
+		(define-key org-mode-map (kbd "A-<right>") (lambda() (interactive)(org-end-of-subtree)))
 
 		(load "init/org")							; org-mode functions
 		(load "org-phscroll" 'noerror 'nomessage)	; org-table fix
@@ -954,6 +938,7 @@
 (defalias 'tm 'text-mode)
 (defalias 'ssm 'shell-script-mode)
 (defalias 'vlm 'visual-line-mode)
+(defalias 'vfc 'visual-fill-column-mode)
 (defalias 'wm 'whitespace-mode)
 
 (defalias 'dr 'desktop-read)
