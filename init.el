@@ -370,11 +370,15 @@
 ;; print functions
 (load "init/page-dimensions")
 (define-key global-map [menu-bar file print] nil)
+(bind-key "M-p a"  	'print-to-a5-printer)
+(bind-key "M-p r"  	'print-to-receipt-printer)
+(bind-key "s-p" (lambda()(interactive)(print-region (point-min) (point-max))))
 
 (when *mac*
 	(setq
 	printer-name "Munbyn_ITPP047"
-	lpr-switches '("-o cpi=12 -o lpi=8 -o print-quality=4"))
+	lpr-switches '("-o cpi=12 -o lpi=8 -o print-quality=4")
+	lpr-page-header-switches '("-t"))
 
 	(setq
 	ps-printer-name "Brother_HL_L2370DW"
@@ -848,10 +852,6 @@
 (bind-key "<f5>"	'toggle-fill-column-center)
 (bind-key "<f6>"	'list-bookmarks)
 (bind-key "M-Q"		'unfill-paragraph)
-
-(bind-key "M-p a"  	'print-to-a5-printer)
-(bind-key "M-p r"  	'print-to-receipt-printer)
-(global-set-key (kbd "s-p") (lambda()(interactive)(print-region-1 (point-min) (point-max) lpr-switches nil)))
 
 (bind-key "C-M-;"	'eval-r) (defun eval-r (b e) (interactive "r")(eval-region b e)(deactivate-mark))
 (bind-key "C-M-Y"	'undo-yank)
