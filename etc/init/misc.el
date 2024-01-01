@@ -2003,4 +2003,3 @@ Calendar
 C-<spc> ... M-=			number of days between mark and point
 ")
 (kf-gen-displayer my/emacs-help "Display Emacs help." "*Emacs cheatsheet*")
-(bind-key "M-<f1>" 'my/emacs-help)

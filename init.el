@@ -11,7 +11,7 @@
 (defconst *gnu* (eq system-type 'gnu/linux))
 (defconst *w32* (eq system-type 'windows-nt))
 
-(defconst system-short-name (nth 0 (split-string (system-name) "\\.")))
+(defconst system-short-name (car (split-string (system-name) "\\.")) "Hostname of local machine.")
 (defconst *bullwinkle*	(string-equal system-short-name "bullwinkle"))
 (defconst *natasha*		(string-equal system-short-name "natasha"))
 
@@ -105,7 +105,7 @@
 	require-final-newline nil
 	ring-bell-function 'ignore
 	save-abbrevs 'silent
-	scroll-conservatively 1
+	scroll-conservatively 232323
 	scroll-preserve-screen-position t
 	sentence-end-double-space nil
 	show-paren-style 'parenthesis
@@ -175,7 +175,6 @@
 (add-hook 'eww-mode-hook (lambda()
 	(define-key eww-mode-map (kbd "<left>") 'eww-back-url) ))
 (add-hook 'help-mode-hook 'font-lock-mode)
-
 (add-hook 'prog-mode-hook (lambda()
 	(abbrev-mode)
 	(when (not (memq major-mode (list 'lisp-interaction-mode)))
@@ -372,7 +371,9 @@
 (define-key global-map [menu-bar file print] nil)
 (bind-key "M-p a"  	'print-to-a5-printer)
 (bind-key "M-p r"  	'print-to-receipt-printer)
-(bind-key "s-p" (lambda()(interactive)(print-region (point-min) (point-max))))
+(bind-key "s-p" 	'print-buffer-or-region)
+	(defun print-buffer-or-region () (interactive)
+	(print-region (point-min) (point-max)))
 
 (when *mac*
 	(setq
@@ -849,12 +850,11 @@
 
 ;; Shortcuts
 
+(bind-key "M-<f1>" 'my/emacs-help)
+(bind-key "M-<f2>" 'shortdoc)
+
 (bind-key "<f5>"	'toggle-fill-column-center)
 (bind-key "<f6>"	'list-bookmarks)
-(bind-key "M-Q"		'unfill-paragraph)
-
-(bind-key "C-M-;"	'eval-r) (defun eval-r (b e) (interactive "r")(eval-region b e)(deactivate-mark))
-(bind-key "C-M-Y"	'undo-yank)
 
 (bind-key "C-c ?"	'describe-personal-keybindings)
 
@@ -877,10 +877,8 @@
 
 (bind-key "C-c g"	'elpher-show-bookmarks) ; gopher / gemini
 
-;(bind-key "C-c i" 'toggle-fill-column)
-
 (bind-key "C-c m"	'menu-bar-read-mail)
-(bind-key "C-c n"	'newsticker-show-news)
+;(bind-key "C-c n"	'newsticker-show-news)
 
 (bind-key "C-c o a" 'org-archive-subtree-default)
 (bind-key "C-c o c"	'org-capture)
@@ -894,6 +892,7 @@
 
 (bind-key "C-c x b"	'flush-blank-lines)
 (bind-key "C-c x d" 'delete-duplicate-lines)
+(bind-key "C-c x f" 'toggle-fill-column)
 (bind-key "C-c x l" 'lorem-ipsum-insert-paragraphs)
 (bind-key "C-c x n"	'number-paragraphs)
 (bind-key "C-c x q"	'replace-smart-quotes)
@@ -919,6 +918,11 @@
 
 (which-key-add-key-based-replacements "C-x 8" "key translations")
 (which-key-add-key-based-replacements "C-x 8 e" "emojis")
+
+(bind-key "M-Q"		'unfill-paragraph)
+
+(bind-key "C-M-;"	'eval-r) (defun eval-r (b e) (interactive "r")(eval-region b e)(deactivate-mark))
+(bind-key "C-M-Y"	'undo-yank)
 
 
 ;; Aliases
@@ -949,3 +953,5 @@
 	(setq default-directory "c:/Users/henrypa/OneDrive - City of Ottawa/")
 	(bind-key "C-c a o"	'office.org)
 	(defun office.org ()(interactive)(find-file (concat default-directory "!.org"))) )
+
+; LocalWords:  el
