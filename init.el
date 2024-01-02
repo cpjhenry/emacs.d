@@ -105,8 +105,6 @@
 	require-final-newline nil
 	ring-bell-function 'ignore
 	save-abbrevs 'silent
-	scroll-conservatively 232323
-	scroll-preserve-screen-position t
 	sentence-end-double-space nil
 	show-paren-style 'parenthesis
 	tramp-default-method "ssh"
@@ -241,6 +239,7 @@
 (add-hook 'focus-out-hook (lambda () (save-some-buffers t)))
 
 (setq enable-recursive-minibuffers t)
+
 
 ;; IDO
 ;; https://www.emacswiki.org/emacs/InteractivelyDoThings
@@ -248,6 +247,9 @@
 (ido-mode t)
 (setq ido-enable-flex-matching t)
 (define-key (cdr ido-minor-mode-map-entry) [remap write-file] nil); turn off C-x C-w remapping
+
+;(icomplete-mode) ; IDO for M-x
+;(fido-mode) ; makes complete act like IDO mode
 
 (use-package ido-sort-mtime :config	(ido-sort-mtime-mode 1))
 
@@ -506,7 +508,7 @@
 
 ;; Diminish built-in modes
 (diminish 'abbrev-mode)
-(diminish 'eldoc-mode)
+(diminish 'eldoc-mode "Ed")
 (diminish 'visual-line-mode "VLM")
 
 
@@ -796,6 +798,19 @@
 (global-unset-key (kbd "s-<up>"   ))
 (global-unset-key (kbd "s-<down>" ))
 
+(setq
+	scroll-conservatively 0
+	scroll-margin 0
+	scroll-preserve-screen-position 1
+	scroll-step 0)
+
+;(load "init/smooth-scrolling")
+;(global-set-key (kbd "<down>") 'next-one-line)
+;(global-set-key (kbd "<up>") 'previous-one-line)
+
+;; – Andre Riemann
+;(add-hook 'post-command-hook (lambda () (recenter '("don't redraw"))))
+
 
 ;; alternate keys
 (bind-key "C-S-k"	'kill-whole-line)
@@ -883,6 +898,7 @@
 (bind-key "C-c o c"	'org-capture)
 (bind-key "C-c o k" 'org-cliplink)
 (bind-key "C-c o l"	'org-store-link)
+(bind-key "C-c o t" 'org-toggle-link-display)
 (which-key-add-key-based-replacements "C-c o" "org")
 
 (bind-key "C-c p"	'markdown-preview-file)
@@ -925,6 +941,7 @@
 
 
 ;; Aliases
+(defalias 'cr 'customize-rogue)
 (defalias 'la 'list-abbrevs)
 (defalias 'lc 'list-colors-display)
 (defalias 'lp 'list-packages)
@@ -953,4 +970,4 @@
 	(bind-key "C-c a o"	'office.org)
 	(defun office.org ()(interactive)(find-file (concat default-directory "!.org"))) )
 
-; LocalWords:  el
+; LocalWords:  el icomplete init
