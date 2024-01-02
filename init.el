@@ -822,11 +822,10 @@
 	(global-set-key   (kbd "s-o")	'find-file)
 	(global-set-key   (kbd "s-S")	'write-file)
 
-	(global-unset-key (kbd "s-m"))
-	(global-unset-key (kbd "s-n"))
-	(global-unset-key (kbd "s-p"))
-	(global-unset-key (kbd "s-q"))
-	(global-unset-key (kbd "s-w"))
+;	(global-unset-key (kbd "s-m"))
+;	(global-unset-key (kbd "s-n"))
+;	(global-unset-key (kbd "s-q"))
+;	(global-unset-key (kbd "s-w"))
 
 	(when (display-graphic-p)
 	(global-unset-key (kbd "<f10>"))
@@ -850,11 +849,11 @@
 
 ;; Shortcuts
 
-(bind-key "M-<f1>" 'my/emacs-help)
-(bind-key "M-<f2>" 'shortdoc)
-
 (bind-key "<f5>"	'toggle-fill-column-center)
 (bind-key "<f6>"	'list-bookmarks)
+
+(bind-key "M-<f1>" 'my/emacs-help)
+(bind-key "M-<f2>" 'shortdoc)
 
 (bind-key "C-c ?"	'describe-personal-keybindings)
 
