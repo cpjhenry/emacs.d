@@ -38,6 +38,8 @@
 (add-to-list 'default-frame-alist '(tool-bar-lines . 0))
 
 (setq
+	user-full-name "cpj"
+	user-mail-address "cn914@ncf.ca"
 	calendar-latitude 45.3
 	calendar-longitude -75.7
 	calendar-location-name "Ottawa"
@@ -163,21 +165,21 @@
 (load "init/filesandbuffers")
 
 (add-hook 'before-save-hook 'time-stamp)
-(add-hook 'emacs-lisp-mode-hook (lambda()
-	(setq show-trailing-whitespace t)
-	(goto-address-mode)
-	(prettify-symbols-mode)
-	(show-paren-local-mode) ))
 (add-hook 'emacs-news-view-mode-hook (lambda()
 	(form-feed-mode) ))
 (add-hook 'eww-mode-hook (lambda()
 	(define-key eww-mode-map (kbd "<left>") 'eww-back-url) ))
-(add-hook 'help-mode-hook 'font-lock-mode)
+(add-hook 'help-mode-hook (lambda ()
+	(font-lock-mode)
+	(goto-address-mode) ))
 (add-hook 'prog-mode-hook (lambda()
+	(setq show-trailing-whitespace t)
 	(abbrev-mode)
 	(when (not (memq major-mode (list 'lisp-interaction-mode)))
 		(display-line-numbers-mode) )
 	(flyspell-prog-mode)
+	(goto-address-mode)
+	(prettify-symbols-mode)
 	(show-paren-local-mode) ))
 
 (remove-hook
@@ -485,10 +487,6 @@
 		(global-form-feed-mode)
 	:diminish)
 
-(use-package smooth-scrolling
-	:config
-		(smooth-scrolling-mode) )
-
 (use-package ssh)
 
 (use-package sudo-edit)
@@ -499,7 +497,7 @@
 
 (use-package visible-mark)
 
-(use-package wc-mode)
+(use-package wc-mode) ; word count
 
 (use-package which-key
 	:config
@@ -520,8 +518,6 @@
 
 	;; Mail / News
 	(require 'rmail) (setq
-	user-full-name "cpj"
-	user-mail-address "cn914@ncf.ca"
 	rmail-primary-inbox-list '("imaps://cn914@mail.ncf.ca")
 	rmail-movemail-variant-in-use 'mailutils
 	rmail-remote-password-required t
@@ -536,13 +532,15 @@
 	rmail-mail-new-frame t
 	rmail-mime-prefer-html nil
 
+	rmail-highlighted-headers "^Subject:"
 	rmail-ignored-headers (concat rmail-ignored-headers
 		"\\|^In-Reply-To:\\|^Content-Type:\\|^DKIM-Filter:")
 	rmail-nonignored-headers nil
 
 	rmail-secondary-file-directory	(concat user-emacs-directory "var/")
-	rmail-default-file			(concat user-emacs-directory "var/XMAIL")
-	rmail-file-name				(concat user-emacs-directory "var/RMAIL"))
+	rmail-default-file			(concat rmail-secondary-file-directory "XMAIL")
+	rmail-file-name				(concat rmail-secondary-file-directory "RMAIL"))
+	(add-hook 'rmail-show-message-hook 'goto-address-mode)
 
 	(use-package elfeed
 		:config	(setq
@@ -553,7 +551,7 @@
 		elfeed-use-curl t)
 
 		(eval-after-load 'elfeed `(make-directory ,(concat user-emacs-directory "var/elfeed/") t))
-		(easy-menu-add-item  nil '("tools") ["Read Web Feeds" elfeed t] "Read Mail")
+		(easy-menu-add-item  nil '("tools") ["Read Web Feeds" elfeed t] "Read Feeds")
 
 		(bind-key "C-c f" 'elfeed)
 		(define-key elfeed-search-mode-map (kbd "q") (lambda()(interactive)(kill-current-buffer)))
@@ -799,17 +797,11 @@
 (global-unset-key (kbd "s-<down>" ))
 
 (setq
-	scroll-conservatively 0
+	auto-window-vscroll nil
+	scroll-conservatively 10000
 	scroll-margin 0
 	scroll-preserve-screen-position 1
 	scroll-step 0)
-
-;(load "init/smooth-scrolling")
-;(global-set-key (kbd "<down>") 'next-one-line)
-;(global-set-key (kbd "<up>") 'previous-one-line)
-
-;; – Andre Riemann
-;(add-hook 'post-command-hook (lambda () (recenter '("don't redraw"))))
 
 
 ;; alternate keys
@@ -970,4 +962,4 @@
 	(bind-key "C-c a o"	'office.org)
 	(defun office.org ()(interactive)(find-file (concat default-directory "!.org"))) )
 
-; LocalWords:  el icomplete init
+; LocalWords:  el icomplete init pdfexport filesandbuffers

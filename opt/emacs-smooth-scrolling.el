@@ -1,4 +1,4 @@
-;; https://www.emacswiki.org/emacs/SmoothScrolling
+;; 
 
 (defun point-of-beginning-of-bottom-line ()
   (save-excursion
@@ -26,3 +26,6 @@
       (progn (scroll-down 1)
              (previous-line 1))
     (previous-line 1)))
+
+(global-set-key (kbd "<down>") 'next-one-line)
+(global-set-key (kbd "<up>") 'previous-one-line)
