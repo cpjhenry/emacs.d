@@ -8,6 +8,15 @@
 	(elfeed-search-untag-all-unread))
 	(define-key elfeed-search-mode-map (kbd "B") 'elfeed-beginning-to-point-as-read)
 
+;; https://noonker.github.io/posts/2020-04-22-elfeed/
+(defun todo (text &optional body)
+	(interactive "sTodo: ")
+	(compose-mail-other-window user-mail-address text)
+	(mail-text)
+	(if body
+		(insert body))
+	(message-send-and-exit) )
+
 (defun elfeed-mail-todo (&optional use-generic-p)
 	"Mail this to myself for later reading"
 	(interactive "P")

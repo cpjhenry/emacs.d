@@ -491,10 +491,6 @@
 
 (use-package sudo-edit)
 
-;(use-package marginalia
-;	:config
-;	(marginalia-mode))
-
 (use-package visible-mark)
 
 (use-package wc-mode) ; word count
@@ -551,7 +547,7 @@
 		elfeed-use-curl t)
 
 		(eval-after-load 'elfeed `(make-directory ,(concat user-emacs-directory "var/elfeed/") t))
-		(easy-menu-add-item  nil '("tools") ["Read Web Feeds" elfeed t] "Read Feeds")
+		(easy-menu-add-item  nil '("tools") ["Read Web Feeds" elfeed :help "Read RSS feeds"] "Read Mail")
 
 		(bind-key "C-c f" 'elfeed)
 		(define-key elfeed-search-mode-map (kbd "q") (lambda()(interactive)(kill-current-buffer)))
@@ -796,6 +792,7 @@
 (global-unset-key (kbd "s-<up>"   ))
 (global-unset-key (kbd "s-<down>" ))
 
+;; scroll settings
 (setq
 	auto-window-vscroll nil
 	scroll-conservatively 10000
@@ -910,6 +907,7 @@
 (global-set-key (kbd "C-c 8 c") (kbd "✓"))
 (global-set-key (kbd "C-c 8 n") (kbd "№"))
 (global-set-key (kbd "C-c 8 p") (kbd "¶"))
+
 (which-key-add-key-based-replacements "C-c 8" "key translations")
 
 (bind-key "C-c C-r" 'sudo-edit)
@@ -962,4 +960,4 @@
 	(bind-key "C-c a o"	'office.org)
 	(defun office.org ()(interactive)(find-file (concat default-directory "!.org"))) )
 
-; LocalWords:  el icomplete init pdfexport filesandbuffers
+; LocalWords:  el icomplete init pdfexport filesandbuffers RSS

@@ -23,14 +23,6 @@
 	(interactive)
 	(insert (format-time-string "%-d %B %Y")))
 
-(defun todo (text &optional body)
-	(interactive "sTodo: ")
-	(compose-mail-other-window user-mail-address text)
-	(mail-text)
-	(if body
-		(insert body))
-	(message-send-and-exit) )
-
 (defun markdown-preview-file ()
 	"Run Marked on the current file and revert the buffer"
 	(interactive)
