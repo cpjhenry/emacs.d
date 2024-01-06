@@ -1954,9 +1954,9 @@ column, then prepend asterisk + space and postpend colon + space."
 <ROPT>-…	   			MacOS alt keys
 C-x 8 …					Emacs alt keys
 
-C-<tab> | C-x ← | →		switch buffer
-C-k | C-S-<del>			kill eol | line
-C-<bsp> | C-<del>  		kill word ← →
+C-TAB | C-x ← | →		switch buffer
+C-k | C-S-DEL			kill eol | line
+C-DEL | C-BS 	 		kill word ← →
 C-s | C-r				search fwd | bk
 C-z						undo
 C-x h					select all text
@@ -1966,11 +1966,13 @@ M-:						eval
 C-u 0 C-M-\\   			remove indent
 C-c d | C-c D			insert date
 C-u C-x r N				number lines
-C-l						re-centre page
-C-<spc>					mark
+C-l						re-centre top
+C-SPC					mark | un-mark
 C-x a g					Define abbrev
 C-q C-l      			<FF>
 C-x [ | C-x ]			<FF> bk | fwd
+
+C-s-SPC					character viewer
 
 
 ORG-MODE
@@ -2003,3 +2005,5 @@ Calendar
 C-<spc> ... M-=			number of days between mark and point
 ")
 (kf-gen-displayer my/emacs-help "Display Emacs help." "*Emacs cheatsheet*")
+
+; LocalWords:  un

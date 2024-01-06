@@ -24,7 +24,9 @@
 		mac-right-command-modifier 'alt	; Alt
 		mac-right-option-modifier nil)	; pass-thru
 	(define-key key-translation-map (kbd "<C-mouse-1>") (kbd "<mouse-2>")) )
+
 (when *gnu* (add-to-list 'default-frame-alist '(font . "Monospace 17")) )
+
 (when *w32* (add-to-list 'default-frame-alist '(font . "Consolas 12"))
 	(setq
 		w32-lwindow-modifier 'super
@@ -205,8 +207,8 @@
 	(define-key Info-mode-map (kbd "<left>" )	'Info-history-back)
 	(define-key Info-mode-map (kbd "<right>")	'Info-history-forward) )
 
-(easy-menu-add-item  nil '("Buffers") ["Increase text size" text-scale-increase])
-(easy-menu-add-item  nil '("Buffers") ["Decrease text size" text-scale-decrease])
+(easy-menu-add-item  nil '("Buffers") ["Increase text size" text-scale-increase :help "Change text scale"])
+(easy-menu-add-item  nil '("Buffers") ["Decrease text size" text-scale-decrease :help "Change text scale"])
 
 ;; remove unneeded messages and buffers
 (setq inhibit-startup-message t)	; 'About Emacs'
@@ -337,8 +339,8 @@
 		(let ((buffer "*wclock*"))(and (get-buffer buffer) (kill-buffer buffer))) ))
 	(local-set-key (kbd "w") 'calendar-world-clock)
 	(local-set-key (kbd "y") 'calendar-holidays)
-	(easy-menu-add-item nil '("Holidays") ["Holidays this year" calendar-holidays t])
-	(easy-menu-add-item nil '("Sun/Moon") ["World clock" calendar-world-clock t]) ))
+	(easy-menu-add-item nil '("Holidays") ["Holidays this year" calendar-holidays :help "Holidays"])
+	(easy-menu-add-item nil '("Sun/Moon") ["World clock" calendar-world-clock :help "World clock"])))
 (add-hook 'diary-list-entries-hook 'diary-sort-entries t)
 (add-hook 'diary-mode-hook (lambda()
 	(local-set-key (kbd "C-c C-q") 'kill-current-buffer) ))
@@ -437,7 +439,7 @@
 (use-package elpher
 	:config
 		(setq elpher-bookmarks-file (concat user-emacs-directory "var/elpher-bookmarks"))
-		(easy-menu-add-item  nil '("tools") ["Gopher" elpher t] "Browse the Web...")
+		(easy-menu-add-item  nil '("tools") ["Gopher" elpher :help "Browse Gopherspace"] "Browse the Web...")
 
 		(defun elpher:eww-browse-url (original url &optional new-window) "Handle gemini links."
 			(cond ((string-match-p "\\`\\(gemini\\|gopher\\)://" url) (elpher-go url))
@@ -451,7 +453,7 @@
 			gnutls-verify-error nil)
 		(set-window-buffer nil (current-buffer))
 		(local-set-key (kbd "<left>") 'elpher-back)
-		(local-set-key (kbd "<right>") 'elpher-down) ))
+		(local-set-key (kbd "<right>") 'elpher-down)))
 
 (require 'eww)
 (define-key eww-bookmark-mode-map (kbd "w")	'eww)
@@ -480,7 +482,7 @@
 (use-package lorem-ipsum
 	:config
 		(setq-default lorem-ipsum-sentence-separator " ")
-		(easy-menu-add-item  nil '("edit") ["Lorem-ipsum" lorem-ipsum-insert-paragraphs t]) )
+		(easy-menu-add-item  nil '("edit") ["Lorem-ipsum" lorem-ipsum-insert-paragraphs :help "Insert..."]))
 
 (use-package form-feed ; ^L
 	:config
@@ -550,10 +552,10 @@
 		(easy-menu-add-item  nil '("tools") ["Read Web Feeds" elfeed :help "Read RSS feeds"] "Read Mail")
 
 		(bind-key "C-c f" 'elfeed)
-		(define-key elfeed-search-mode-map (kbd "q") (lambda()(interactive)(kill-current-buffer)))
+		(define-key elfeed-search-mode-map (kbd "q") (lambda()(interactive)(kill-current-buffer)
+		(let ((buffer "*elfeed-log*")) (and (get-buffer buffer) (kill-buffer buffer)))))
 		(define-key elfeed-search-mode-map (kbd "/") 'elfeed-search-live-filter)
 		(define-key elfeed-search-mode-map (kbd "s") nil)
-		(let ((buffer "*elfeed-log*")) (and (get-buffer buffer) (kill-buffer buffer))) )
 
 		;(use-package elfeed-org
 		;	:config
@@ -563,7 +565,7 @@
 		(use-package elfeed-summary)
 
 		(load "rc/feeds" 'noerror 'nomessage)	; feeds
-		(load "init/elfeed")					; routines
+		(load "init/elfeed"))					; routines
 
 	;; Stack Exchange
 	(use-package sx
@@ -615,7 +617,6 @@
 (add-hook 'visual-line-mode-hook 'adaptive-wrap-prefix-mode)
 (add-hook 'visual-fill-column-mode-hook #'(lambda()
 	(setq visual-fill-column-fringes-outside-margins nil) ))
-(add-hook 'org-mode-hook (lambda() (visual-fill-column-mode -1) ))
 (add-hook 'prog-mode-hook (lambda() (visual-fill-column-mode -1) ))
 
 (use-package markdown-mode
@@ -734,7 +735,12 @@
 		(add-hook 'org-mode-hook (lambda ()
 			(org-autolist-mode)
 			(org-indent-mode)
-			(prettify-symbols-mode) ))
+			(prettify-symbols-mode)
+			(visual-fill-column-mode -1) ))
+
+		(define-key org-mode-map (kbd "C-<") 'org-backward-heading-same-level)
+		(define-key org-mode-map (kbd "C->") 'org-forward-heading-same-level)
+		(define-key org-mode-map (kbd "A-<right>") (lambda() (interactive)(org-end-of-subtree)))
 
 		(use-package org-autolist
 			:diminish "AL")
@@ -743,13 +749,27 @@
 
 		(use-package org-cliplink)
 
-		(use-package org-modern)
-		(with-eval-after-load 'org (global-org-modern-mode))
+		(use-package org-modern
+			:config
+			(with-eval-after-load 'org (global-org-modern-mode)))
 
-		(define-key org-mode-map (kbd "C-<") 'org-backward-heading-same-level)
-		(define-key org-mode-map (kbd "C->") 'org-forward-heading-same-level)
-
-		(define-key org-mode-map (kbd "A-<right>") (lambda() (interactive)(org-end-of-subtree)))
+		(when *natasha* (use-package org-roam
+			:ensure t
+			:custom
+			(org-roam-directory (file-truename (concat org-directory "/Roam/")))
+			:bind (
+				("C-c n l" . org-roam-buffer-toggle)
+				("C-c n f" . org-roam-node-find)
+				("C-c n g" . org-roam-graph)
+				("C-c n i" . org-roam-node-insert)
+				("C-c n c" . org-roam-capture)
+				;; Dailies
+				("C-c n j" . org-roam-dailies-capture-today))
+			:config
+				(org-roam-setup)
+				(org-roam-db-autosync-mode)
+				;(require 'org-roam-protocol)
+			))
 
 		(load "init/org")							; org-mode functions
 		(load "org-phscroll" 'noerror 'nomessage)	; org-table fix
@@ -826,10 +846,8 @@
 	(global-set-key   (kbd "s-o")	'find-file)
 	(global-set-key   (kbd "s-S")	'write-file)
 
-;	(global-unset-key (kbd "s-m"))
-;	(global-unset-key (kbd "s-n"))
-;	(global-unset-key (kbd "s-q"))
-;	(global-unset-key (kbd "s-w"))
+	(dolist (key '("s-m" "s-n" "s-q" "s-t" "s-w"))
+	(global-unset-key (kbd key)))
 
 	(when (display-graphic-p)
 	(global-unset-key (kbd "<f10>"))
@@ -931,6 +949,7 @@
 
 
 ;; Aliases
+(defalias 'flv 'add-file-local-variable)
 (defalias 'cr 'customize-rogue)
 (defalias 'la 'list-abbrevs)
 (defalias 'lc 'list-colors-display)
@@ -960,4 +979,5 @@
 	(bind-key "C-c a o"	'office.org)
 	(defun office.org ()(interactive)(find-file (concat default-directory "!.org"))) )
 
-; LocalWords:  el icomplete init pdfexport filesandbuffers RSS
+; LocalWords:  el icomplete init pdfexport filesandbuffers RSS Lorem
+; LocalWords:  Gopherspace ipsum Monospace Consolas
