@@ -28,4 +28,3 @@
 		(mapc #'elfeed-search-update-entry entries)
 		(unless (use-region-p) (forward-line)))
 	(delete-other-windows))
-	(define-key elfeed-search-mode-map (kbd "m") 'elfeed-mail-todo)

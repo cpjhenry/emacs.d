@@ -539,6 +539,7 @@
 	rmail-default-file			(concat rmail-secondary-file-directory "XMAIL")
 	rmail-file-name				(concat rmail-secondary-file-directory "RMAIL"))
 	(add-hook 'rmail-show-message-hook 'goto-address-mode)
+	(add-hook 'rmail-quit-hook 'kill-current-buffer)
 
 	(use-package elfeed
 		:config	(setq
@@ -553,9 +554,12 @@
 
 		(bind-key "C-c f" 'elfeed)
 		(define-key elfeed-search-mode-map (kbd "q") (lambda()(interactive)(kill-current-buffer)
-		(let ((buffer "*elfeed-log*")) (and (get-buffer buffer) (kill-buffer buffer)))))
+		(let ((buffer "*elfeed-log*")) (and (get-buffer buffer) (kill-buffer buffer)))
+		(let ((buffer "*send mail to cn*")) (and (get-buffer buffer) (kill-buffer buffer)))))
 		(define-key elfeed-search-mode-map (kbd "/") 'elfeed-search-live-filter)
 		(define-key elfeed-search-mode-map (kbd "s") nil)
+		(define-key elfeed-search-mode-map (kbd "m") 'elfeed-mail-todo)
+		(define-key elfeed-show-mode-map (kbd "<tab>") 'shr-next-link)
 
 		;(use-package elfeed-org
 		;	:config
@@ -734,12 +738,13 @@
 
 		(add-hook 'org-mode-hook (lambda ()
 			(org-autolist-mode)
-			(org-indent-mode)
+			;(org-indent-mode)
 			(prettify-symbols-mode)
 			(visual-fill-column-mode -1) ))
 
 		(define-key org-mode-map (kbd "C-<") 'org-backward-heading-same-level)
 		(define-key org-mode-map (kbd "C->") 'org-forward-heading-same-level)
+		(define-key org-mode-map (kbd "A-<left>") 'outline-up-heading)
 		(define-key org-mode-map (kbd "A-<right>") (lambda() (interactive)(org-end-of-subtree)))
 
 		(use-package org-autolist
@@ -766,10 +771,9 @@
 				;; Dailies
 				("C-c n j" . org-roam-dailies-capture-today))
 			:config
+				(which-key-add-key-based-replacements "C-c n" "org-roam")
 				(org-roam-setup)
-				(org-roam-db-autosync-mode)
-				;(require 'org-roam-protocol)
-			))
+				(org-roam-db-autosync-mode)))
 
 		(load "init/org")							; org-mode functions
 		(load "org-phscroll" 'noerror 'nomessage)	; org-table fix
@@ -966,8 +970,8 @@
 (defalias 'om 'org-mode)
 (defalias 'tm 'text-mode)
 (defalias 'ssm 'shell-script-mode)
-(defalias 'vlm 'visual-line-mode)
 (defalias 'vfc 'visual-fill-column-mode)
+(defalias 'vlm 'visual-line-mode)
 (defalias 'wm 'whitespace-mode)
 
 (defalias 'dr 'desktop-read)
