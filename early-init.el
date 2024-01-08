@@ -40,7 +40,7 @@
 
 ;; Disable Emacs 27's automatic package.el initialization before the init.el
 ;; file is loaded. I use straight.el instead of package.el.
-(setq package-enable-at-startup nil)
+;(setq package-enable-at-startup nil)
 
 ;; Prevent the glimpse of un-styled Emacs by disabling these UI elements early.
 (setq tool-bar-mode nil

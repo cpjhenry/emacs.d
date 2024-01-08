@@ -62,7 +62,7 @@
 	:config
 	(setq auto-package-update-delete-old-versions t)
 	(setq auto-package-update-hide-results t)
-	(auto-package-update-maybe) )
+	(auto-package-update-maybe))
 
 ;; Add directories to load-path
 (add-to-list 'load-path (expand-file-name "etc" user-emacs-directory))
@@ -77,7 +77,6 @@
 	help-window-select t
 	indicate-empty-lines t)
 (setq
-	;initial-major-mode 'fundamental-mode
 	default-major-mode 'text-mode
 
 	ad-redefinition-action 'accept
@@ -644,139 +643,144 @@
 ;; Org-mode
 (use-package org
 	:config (setq
-		org-directory "~/Documents/org"
-		org-agenda-file (concat org-directory "/daily.org")
-		org-agenda-files (list org-agenda-file)
-		org-agenda-text-search-extra-files '(agenda-archives)
-		org-default-notes-file (concat org-directory "/notes.org")
+	org-directory "~/Documents/org"
+	org-agenda-file (concat org-directory "/daily.org")
+	org-agenda-files (list org-agenda-file)
+	org-agenda-text-search-extra-files '(agenda-archives)
+	org-default-notes-file (concat org-directory "/notes.org")
 
-		org-startup-folded 'content			; folded children content all
-		org-catch-invisible-edits 'smart
-		org-ctrl-k-protect-subtree t
-		org-ellipsis "."
-		org-enable-priority-commands nil
-		org-export-preserve-breaks t
-		org-export-with-toc nil
-		org-footnote-auto-adjust t
-		org-log-done t						; 'CLOSED' logging
-		org-log-state-notes-into-drawer nil
-		org-log-repeat nil
-		org-pretty-entities t
-		org-special-ctrl-a/e t
-		org-support-shift-select t
-		org-tags-exclude-from-inheritance '("PROJECT")
+	org-startup-folded 'content			; folded children content all
+	org-startup-shrink-all-tables t
 
-		org-agenda-include-diary nil
-		org-agenda-skip-scheduled-if-done t
-		org-agenda-skip-deadline-if-done t
-		org-agenda-todo-ignore-scheduled t
-		org-agenda-todo-ignore-deadlines t
-		org-agenda-start-on-weekday nil
+	org-catch-invisible-edits 'smart
+	org-ctrl-k-protect-subtree t
+	org-ellipsis "."
+	org-enable-priority-commands nil
+	org-export-preserve-breaks t
+	org-export-with-toc nil
+	org-footnote-auto-adjust t
+	org-log-done t						; 'CLOSED' logging
+	org-log-repeat nil
+	org-log-state-notes-into-drawer nil
+	org-pretty-entities t
+	org-special-ctrl-a/e t
+	org-support-shift-select t
 
-		org-todo-keywords '((sequence "TODO" "DONE"))
-
-		org-todo-keyword-faces '(
-		("INPROGRESS" . (:foreground "blue" :weight bold)) ) ; add in-progress keyword
-
-		org-emphasis-alist '(
-		("*" bold)
-		("**" bold)
-		("/" italic)
-		("_" italic)
-		("=" (:background "maroon" :foreground "white"))
-		("~" (:background "deep sky blue" :foreground "MidnightBlue"))
-	    ("+" (:strike-through t)) ) )
+	org-agenda-include-diary nil
+	org-agenda-skip-deadline-if-done t
+	org-agenda-skip-scheduled-if-done t
+	org-agenda-start-on-weekday nil
+	org-agenda-todo-ignore-deadlines t
+	org-agenda-todo-ignore-scheduled t)
 
 	(setq
-		org-agenda-custom-commands '(
-		("P" "Project List" (
-			(tags "PROJECT") ) )
-		("O" "Office" (
-			(agenda)
-			(tags-todo "OFFICE") ) )
-		("W" "Weekly Plan" (
-			(agenda)
-			(todo "TODO")
-			(tags "PROJECT") ) )
-		("H" "Home NA Lists" (
-			(agenda)
-			(tags-todo "HOME")
-			(tags-todo "COMPUTER") ) ) )
+	org-tags-exclude-from-inheritance '("PROJECT")
 
-		org-capture-templates '(
-		("c" "Cookbook" entry (file "~/Documents/org/cookbook.org")
-	   		"%(org-chef-get-recipe-from-url)" :empty-lines 1)
-		("m" "Manual Cookbook" entry (file "~/Documents/org/cookbook.org")
-			"* %^{Recipe title: }\n
-			:PROPERTIES:\n
-			:source-url:\n
-			:servings:\n
-			:prep-time:\n
-			:cook-time:\n
-			:ready-in:\n
-			:END:\n
-			** Ingredients\n
-			%?\n
-			** Directions\n\n")
+	org-todo-keywords '((sequence "TODO" "DONE"))
 
-		;; https://benadha.com/notes/how-i-manage-my-reading-list-with-org-mode/
-		("i" "📥 Inbox" entry (file "~/Documents/org/inbox.org")
-			"* %?\n  %i\n" :prepend t)
-		("j" "📔 Journal" entry (file+datetree "~/Documents/org/journal.org")
-			"* %? %^G\nEntered on %U\n  %i\n")
-		("b" "📑 Bookmark" entry (file "~/Documents/org/bookmarks.org")
-			"* %? %^g\n  %i\n" :prepend t)
-		("s" "🛒 Shopping List" entry (file+headline "~/Documents/org/shoppinglist.org" "SHOPPING LIST")
-			"* TODO %?\n  %i\n" :prepend t)
+	org-todo-keyword-faces '(
+	("INPROGRESS" . (:foreground "blue" :weight bold)) ) ; add in-progress keyword
 
-		;; https://github.com/rexim/org-cliplink
-		("K" "Cliplink capture task" entry (file "")
-			"* TODO %(org-cliplink-capture) \n  SCHEDULED: %t\n" :empty-lines 1)
-		)) ; set
+	org-emphasis-alist '(
+	("*" bold)
+	("**" bold)
+	("/" italic)
+	("_" italic)
+	("=" (:background "maroon" :foreground "white"))
+	("~" (:background "deep sky blue" :foreground "MidnightBlue"))
+    ("+" (:strike-through t)))
 
-		(add-hook 'org-agenda-finalize-hook 'delete-other-windows)
+	org-agenda-custom-commands '(
+	("P" "Project List" (
+		(tags "PROJECT")))
+	("O" "Office" (
+		(agenda)
+		(tags-todo "OFFICE")))
+	("W" "Weekly Plan" (
+		(agenda)
+		(todo "TODO")
+		(tags "PROJECT")))
+	("H" "Home NA Lists" (
+		(agenda)
+		(tags-todo "HOME")
+		(tags-todo "COMPUTER"))))
 
-		(add-hook 'org-mode-hook (lambda ()
-			(org-autolist-mode)
-			;(org-indent-mode)
-			(prettify-symbols-mode)
-			(visual-fill-column-mode -1) ))
+	org-capture-templates '(
+	("c" "Cookbook" entry (file "~/Documents/org/cookbook.org")
+   		"%(org-chef-get-recipe-from-url)" :empty-lines 1)
+	("m" "Manual Cookbook" entry (file "~/Documents/org/cookbook.org")
+		"* %^{Recipe title: }\n
+		:PROPERTIES:\n
+		:source-url:\n
+		:servings:\n
+		:prep-time:\n
+		:cook-time:\n
+		:ready-in:\n
+		:END:\n
+		** Ingredients\n
+		%?\n
+		** Directions\n\n")
 
-		(define-key org-mode-map (kbd "C-<") 'org-backward-heading-same-level)
-		(define-key org-mode-map (kbd "C->") 'org-forward-heading-same-level)
-		(define-key org-mode-map (kbd "A-<left>") 'outline-up-heading)
-		(define-key org-mode-map (kbd "A-<right>") (lambda() (interactive)(org-end-of-subtree)))
+	;; https://benadha.com/notes/how-i-manage-my-reading-list-with-org-mode/
+	("i" "📥 Inbox" entry (file "~/Documents/org/inbox.org")
+		"* %?\n  %i\n" :prepend t)
+	("j" "📔 Journal" entry (file+datetree "~/Documents/org/journal.org")
+		"* %? %^G\nEntered on %U\n  %i\n")
+	("b" "📑 Bookmark" entry (file "~/Documents/org/bookmarks.org")
+		"* %? %^g\n  %i\n" :prepend t)
+	("s" "🛒 Shopping List" entry (file+headline "~/Documents/org/shoppinglist.org" "SHOPPING LIST")
+		"* TODO %?\n  %i\n" :prepend t)
 
-		(use-package org-autolist
-			:diminish "AL")
+	;; https://github.com/rexim/org-cliplink
+	("K" "Cliplink capture task" entry (file "")
+		"* TODO %(org-cliplink-capture) \n  SCHEDULED: %t\n" :empty-lines 1)
+	)) ; set
 
-		(use-package org-chef :ensure t)
+	(define-key org-mode-map (kbd "C-<") 'org-backward-heading-same-level)
+	(define-key org-mode-map (kbd "C->") 'org-forward-heading-same-level)
+	(define-key org-mode-map (kbd "A-<left>") 'outline-up-heading)
+	(define-key org-mode-map (kbd "A-<right>") (lambda() (interactive)(org-end-of-subtree)))
 
-		(use-package org-cliplink)
+	(use-package org-autolist ; pressing "Return" will insert a new list item automatically
+		:diminish "AL")
 
-		(use-package org-modern
-			:config
-			(with-eval-after-load 'org (global-org-modern-mode)))
+	(use-package org-chef :ensure t)
 
-		(when *natasha* (use-package org-roam
-			:ensure t
-			:custom
-			(org-roam-directory (file-truename (concat org-directory "/Roam/")))
-			:bind (
-				("C-c n l" . org-roam-buffer-toggle)
-				("C-c n f" . org-roam-node-find)
-				("C-c n g" . org-roam-graph)
-				("C-c n i" . org-roam-node-insert)
-				("C-c n c" . org-roam-capture)
-				;; Dailies
-				("C-c n j" . org-roam-dailies-capture-today))
-			:config
-				(which-key-add-key-based-replacements "C-c n" "org-roam")
-				(org-roam-setup)
-				(org-roam-db-autosync-mode)))
+	(use-package org-cliplink) ; insert org-mode links from the clipboard
 
-		(load "init/org")							; org-mode functions
-		(load "org-phscroll" 'noerror 'nomessage)	; org-table fix
+	(use-package org-d20)
+
+	(use-package org-modern
+		:config
+		(with-eval-after-load 'org (global-org-modern-mode)))
+
+	(when *natasha* (use-package org-roam
+		:ensure t
+		:custom
+		(org-roam-directory (file-truename (concat org-directory "/Roam/")))
+		:bind (
+		("C-c n l" . org-roam-buffer-toggle)
+		("C-c n f" . org-roam-node-find)
+		("C-c n g" . org-roam-graph)
+		("C-c n i" . org-roam-node-insert)
+		("C-c n c" . org-roam-capture)
+		;; Dailies
+		("C-c n j" . org-roam-dailies-capture-today))
+		:config
+		(which-key-add-key-based-replacements "C-c n" "org-roam")
+		(org-roam-setup)
+		(org-roam-db-autosync-mode)))
+
+	(add-hook 'org-agenda-finalize-hook 'delete-other-windows)
+
+	(add-hook 'org-mode-hook (lambda ()
+		(org-autolist-mode)
+		;(org-indent-mode)
+		(prettify-symbols-mode)
+		(visual-fill-column-mode -1) ))
+
+	(load "init/org")							; org-mode functions
+	;(load "org-phscroll" 'noerror 'nomessage)	; org-table fix
 	) ; use-package org
 
 
@@ -984,4 +988,4 @@
 	(defun office.org ()(interactive)(find-file (concat default-directory "!.org"))) )
 
 ; LocalWords:  el icomplete init pdfexport filesandbuffers RSS Lorem
-; LocalWords:  Gopherspace ipsum Monospace Consolas
+; LocalWords:  Gopherspace ipsum Monospace Consolas MidnightBlue
