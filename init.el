@@ -87,6 +87,7 @@
 	comp-async-report-warnings-errors 'silent
 	delete-by-moving-to-trash t
 	dictionary-server "dict.org"
+	dired-dwim-target t				; suggest other visible dired buffer
 	eww-search-prefix "https://www.google.ca/search?q="
 	flyspell-issue-message-flag nil
 	frame-inhibit-implied-resize t
@@ -94,6 +95,7 @@
 	help-clean-buttons t
 	ibuffer-expert t
 	inhibit-default-init t
+	isearch-allow-scroll t
 	ispell-list-command "--list"	; correct command
 	ispell-program-name "aspell"	; spell checker
 	ispell-silently-savep t			; save personal list automatically
@@ -108,6 +110,7 @@
 	require-final-newline nil
 	ring-bell-function 'ignore
 	save-abbrevs 'silent
+	search-default-mode 'char-fold-to-regexp ; cafe = café
 	sentence-end-double-space nil
 	show-paren-style 'parenthesis
 	tramp-default-method "ssh"
@@ -115,6 +118,7 @@
 	trash-directory "~/.Trash"
 	use-dialog-box nil
 	use-file-dialog nil
+	view-read-only t				; turn on view mode when buffer is read-only
 	visual-line-fringe-indicators '(nil right-curly-arrow) )
 
 (if (>= emacs-major-version 28)
@@ -166,6 +170,9 @@
 (load "init/filesandbuffers")
 
 (add-hook 'before-save-hook 'time-stamp)
+(add-hook 'doc-view-mode-hook 'auto-revert-mode)
+(add-hook 'pdf-view-mode-hook 'auto-revert-mode)
+
 (add-hook 'emacs-news-view-mode-hook (lambda()
 	(form-feed-mode) ))
 (add-hook 'eww-mode-hook (lambda()
@@ -865,12 +872,22 @@
 	(global-unset-key (kbd "C-<f10>"))
 	(global-unset-key (kbd "S-<f10>")) ))
 
+
 ;; window navigation
 (when (fboundp 'windmove-default-keybindings)
 	(global-set-key (kbd "ESC <up>")	'windmove-up)
 	(global-set-key (kbd "ESC <down>")	'windmove-down)
 	(global-set-key (kbd "ESC <right>")	'windmove-right)
 	(global-set-key (kbd "ESC <left>")	'windmove-left) )
+
+; tweaking window sizes
+(global-set-key (kbd "C-{") 'shrink-window-horizontally)
+(global-set-key (kbd "C-}") 'enlarge-window-horizontally)
+(global-set-key (kbd "C-^") 'enlarge-window)
+
+; scrolling
+(global-set-key (kbd "C-<") 'scroll-left)
+(global-set-key (kbd "C->") 'scroll-right)
 
 
 ;; Disabled keys
@@ -969,6 +986,8 @@
 (defalias 'lp 'list-packages)
 (defalias 'recs 'recover-session)
 
+(defalias 'arm 'auto-revert-mode)
+(defalias 'artm 'auto-revert-tail-mode)
 (defalias 'elm 'emacs-lisp-mode)
 (defalias 'flym 'flyspell-mode)
 (defalias 'fci 'display-fill-column-indicator-mode)

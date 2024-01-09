@@ -1957,18 +1957,26 @@ C-x 8 …					Emacs alt keys
 C-TAB | C-x ← | →		switch buffer
 C-k | C-S-DEL			kill eol | line
 C-DEL | C-BS 	 		kill word ← →
-C-s | C-r				search fwd | bk
+C-g						abort action
+C-s | C-r				search forward | back
 C-z						undo
 C-x h					select all text
-M-q | M-S-q				fill | un-fill
+M-q | M-S-q				fill | un-fill paragraph
 M-|						pipe region
 M-:						eval
 C-u 0 C-M-\\   			remove indent
 C-c d | C-c D			insert date
 C-u C-x r N				number lines
 C-l						re-centre top
+C-M-l					reposition window
+M-r						move to top
 C-SPC					mark | un-mark
-C-x a g					Define abbrev
+C-x a g					define abbreviation
+C-x n n					narrow buffer
+X-x n w					widen buffer
+C-x x g					revert buffer (quickly)
+C-x x t					toggle truncated lines
+C-x C-q					toggle read-only mode
 C-q C-l      			<FF>
 C-x [ | C-x ]			<FF> bk | fwd
 
@@ -1977,7 +1985,7 @@ C-s-SPC					character viewer
 
 ORG-MODE
 
-S-<tab>					cycle visibility
+S-TAB					cycle visibility
 C-'						cycle agenda
 C-c a					agenda
 C-c c					capture
@@ -1998,6 +2006,8 @@ C-c / t					TODO tree
 C-c * | C-c -			headline | item
 C-c ^					sort
 C-c C-q					tag
+
+C-c TAB					toggle table column visibility
 
 
 Calendar
