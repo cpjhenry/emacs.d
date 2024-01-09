@@ -243,6 +243,9 @@
 
 (setq enable-recursive-minibuffers t)
 
+;; clean-up old buffers
+(midnight-mode +1)
+
 
 ;; IDO
 ;; https://www.emacswiki.org/emacs/InteractivelyDoThings
@@ -874,13 +877,15 @@
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'upcase-region 'disabled nil)	; C-x C-u
 (put 'downcase-region 'disabled nil); C-x C-l
+(put 'narrow-to-region 'disabled nil) ; C-x n n
 (put 'suspend-frame 'disabled t)	; C-x C-z / C-z
 
 
 ;; Shortcuts
 
-(bind-key "<f5>"	'toggle-fill-column-center)
-(bind-key "<f6>"	'list-bookmarks)
+(bind-key "<f5>"	'toggle-fill-column)
+(bind-key "<f6>"	'toggle-fill-column-center)
+(bind-key "<f7>"	'list-bookmarks)
 
 (bind-key "M-<f1>" 'my/emacs-help)
 (bind-key "M-<f2>" 'shortdoc)
@@ -962,6 +967,7 @@
 (defalias 'la 'list-abbrevs)
 (defalias 'lc 'list-colors-display)
 (defalias 'lp 'list-packages)
+(defalias 'recs 'recover-session)
 
 (defalias 'elm 'emacs-lisp-mode)
 (defalias 'flym 'flyspell-mode)

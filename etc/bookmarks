@@ -2,7 +2,15 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("org-capture-last-stored"
+(("(emacs) Projects"
+ (front-context-string . "\n29.2 Working wi")
+ (rear-context-string . "Up: Maintaining\n")
+ (position . 1215594)
+ (last-modified 26012 48476 491378 0)
+ (filename . "/usr/local/Cellar/emacs-plus@29/29.1/share/info/emacs/emacs")
+ (info-node . "Projects")
+ (handler . Info-bookmark-jump))
+("org-capture-last-stored"
  (filename . "~/Documents/org/Roam/20240105095348-test3.org")
  (front-context-string)
  (rear-context-string . "\n#+title: Test3\n")

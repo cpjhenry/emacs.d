@@ -55,9 +55,9 @@
 	(set-window-width 80))
 
 (defun toggle-fill-column ()
-    "Toggle fill-column values between 32 and 55."
+    "Toggle fill-column values between 32 and 70."
     (interactive)
-    (setq fill-column (if (= fill-column 55) 32 55))
+    (setq fill-column (if (= fill-column 70) 32 70))
 	;; three values: (setq fill-column (if (= fill-column 8) 4 (if (= fill-column 4) 2 8)))
 	(message "'fill-column' set to: %s" fill-column))
 
