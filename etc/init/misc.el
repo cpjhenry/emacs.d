@@ -1972,8 +1972,7 @@ C-M-l					reposition window
 M-r						move to top
 C-SPC					mark | un-mark
 C-x a g					define abbreviation
-C-x n n					narrow buffer
-X-x n w					widen buffer
+C-x n n	| C-x n w		narrow | widen buffer
 C-x x g					revert buffer (quickly)
 C-x x t					toggle truncated lines
 C-x C-q					toggle read-only mode
@@ -2007,7 +2006,7 @@ C-c * | C-c -			headline | item
 C-c ^					sort
 C-c C-q					tag
 
-C-c TAB					toggle table column visibility
+C-c TAB					toggle table column width
 
 
 Calendar
