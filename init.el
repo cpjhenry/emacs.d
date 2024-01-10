@@ -60,8 +60,9 @@
 	use-package-verbose t)
 (use-package auto-package-update
 	:config
-	(setq auto-package-update-delete-old-versions t)
-	(setq auto-package-update-hide-results t)
+	(setq
+	auto-package-update-delete-old-versions t
+	auto-package-update-hide-results t)
 	(auto-package-update-maybe))
 
 ;; Add directories to load-path
@@ -563,8 +564,8 @@
 
 		(bind-key "C-c f" 'elfeed)
 		(define-key elfeed-search-mode-map (kbd "q") (lambda()(interactive)(kill-current-buffer)
-		(let ((buffer "*elfeed-log*")) (and (get-buffer buffer) (kill-buffer buffer)))
-		(let ((buffer "*send mail to cn*")) (and (get-buffer buffer) (kill-buffer buffer)))))
+			(let ((buffer "*elfeed-log*")) (and (get-buffer buffer) (kill-buffer buffer)))
+			(let ((buffer "*send mail to cn*")) (and (get-buffer buffer) (kill-buffer buffer)))))
 		(define-key elfeed-search-mode-map (kbd "/") 'elfeed-search-live-filter)
 		(define-key elfeed-search-mode-map (kbd "s") nil)
 		(define-key elfeed-search-mode-map (kbd "m") 'elfeed-mail-todo)
@@ -883,9 +884,8 @@
 	(global-unset-key (kbd key)))
 
 	(when (display-graphic-p)
-	(global-unset-key (kbd "<f10>"))
-	(global-unset-key (kbd "C-<f10>"))
-	(global-unset-key (kbd "S-<f10>")) ))
+	(dolist (key '("<f10>" "S-<f10>" "C-<f10>" "M-<f10>"))
+	(global-unset-key (kbd key))) ))
 
 
 ;; Disabled keys
@@ -893,7 +893,7 @@
 (put 'upcase-region 'disabled nil)	; C-x C-u
 (put 'downcase-region 'disabled nil); C-x C-l
 (put 'narrow-to-region 'disabled nil) ; C-x n n
-(put 'suspend-frame 'disabled t)	; C-x C-z / C-z
+(put 'suspend-frame 'disabled t)	; C-z / C-x C-z
 
 
 ;; Shortcuts
@@ -905,6 +905,12 @@
 (bind-key "M-<f1>" 'my/emacs-help)
 (bind-key "M-<f2>" 'shortdoc)
 
+(bind-key "M-Q"		'unfill-paragraph)
+
+(bind-key "C-M-;"	'eval-r) (defun eval-r (b e) (interactive "r")(eval-region b e)(deactivate-mark))
+(bind-key "C-M-Y"	'undo-yank)
+
+(bind-key "C-c !"	'shell)
 (bind-key "C-c ?"	'describe-personal-keybindings)
 
 (bind-key "C-c a a"	'org-agenda) (when *mac*
@@ -953,14 +959,11 @@
 (global-set-key (kbd "C-c 8 c") (kbd "✓"))
 (global-set-key (kbd "C-c 8 n") (kbd "№"))
 (global-set-key (kbd "C-c 8 p") (kbd "¶"))
-
 (which-key-add-key-based-replacements "C-c 8" "key translations")
 
 (bind-key "C-c C-r" 'sudo-edit)
 
 ;; Ctrl-x (buffer functions)
-;; 'C-a', 'C-g', 'C-y' and 'C-z' are available
-
 (bind-key "C-x c" 'kill-current-buffer)
 
 (bind-key "C-x x k"	'kill-other-buffers)
@@ -969,11 +972,6 @@
 
 (which-key-add-key-based-replacements "C-x 8" "key translations")
 (which-key-add-key-based-replacements "C-x 8 e" "emojis")
-
-(bind-key "M-Q"		'unfill-paragraph)
-
-(bind-key "C-M-;"	'eval-r) (defun eval-r (b e) (interactive "r")(eval-region b e)(deactivate-mark))
-(bind-key "C-M-Y"	'undo-yank)
 
 
 ;; Aliases
