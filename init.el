@@ -975,6 +975,7 @@
 
 
 ;; Aliases
+(defalias 'di 'daily-info)
 (defalias 'flv 'add-file-local-variable)
 (defalias 'cr 'customize-rogue)
 (defalias 'la 'list-abbrevs)

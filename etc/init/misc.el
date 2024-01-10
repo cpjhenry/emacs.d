@@ -2017,4 +2017,19 @@ C-<spc> ... M-=			number of days between mark and point
 ")
 (kf-gen-displayer my/emacs-help "Display Emacs help." "*Emacs cheatsheet*")
 
+
+; daily info
+(defun daily-info () (interactive)
+	(setq xbuff (generate-new-buffer "*daily-info*"))
+	(shell-command "bash -ic di" xbuff)
+	(switch-to-buffer xbuff)
+	(kill-line 2)
+	(end-of-buffer)
+	(newline)
+	(insert "\n")(form-feed-mode)
+	(shell-command "bash -ic alert -f" xbuff)
+	(kill-line 2)
+	(beginning-of-buffer)
+	(help-mode))
+
 ; LocalWords:  un sexp
