@@ -1,2 +1,4 @@
 ;; Lists disabled commands in Emacs
-(mapatoms (lambda (x) (when (get x 'disabled) (message "%s" x) ) ) )
+(setq xbuff (generate-new-buffer "*disabled commands*"))
+(mapatoms (lambda (x) (when (get x 'disabled) (print x xbuff) ) ) )
+(switch-to-buffer xbuff)
