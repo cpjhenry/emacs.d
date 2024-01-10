@@ -1963,7 +1963,8 @@ C-z						undo
 C-x h					select all text
 M-q | M-S-q				fill | un-fill paragraph
 M-|						pipe region
-M-:						eval
+M-:						evaluate (interactive)
+C-M-;					evaluate region
 C-u 0 C-M-\\   			remove indent
 C-c d | C-c D			insert date
 C-u C-x r N				number lines
@@ -1975,6 +1976,7 @@ C-x a g					define abbreviation
 C-x n n	| C-x n w		narrow | widen buffer
 C-x x g					revert buffer (quickly)
 C-x x t					toggle truncated lines
+C-x C-e					evaluate last standard expression (sexp)
 C-x C-q					toggle read-only mode
 C-q C-l      			<FF>
 C-x [ | C-x ]			<FF> bk | fwd
@@ -2015,4 +2017,4 @@ C-<spc> ... M-=			number of days between mark and point
 ")
 (kf-gen-displayer my/emacs-help "Display Emacs help." "*Emacs cheatsheet*")
 
-; LocalWords:  un
+; LocalWords:  un sexp

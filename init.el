@@ -837,6 +837,21 @@
 	scroll-margin 0
 	scroll-preserve-screen-position 1
 	scroll-step 0)
+(global-set-key (kbd "C-<") 'scroll-left)
+(global-set-key (kbd "C->") 'scroll-right)
+
+
+;; window navigation
+(when (fboundp 'windmove-default-keybindings)
+	(global-set-key (kbd "ESC <up>")	'windmove-up)
+	(global-set-key (kbd "ESC <down>")	'windmove-down)
+	(global-set-key (kbd "ESC <right>")	'windmove-right)
+	(global-set-key (kbd "ESC <left>")	'windmove-left) )
+
+; tweaking window sizes
+(global-set-key (kbd "C-{") 'shrink-window-horizontally)
+(global-set-key (kbd "C-}") 'enlarge-window-horizontally)
+(global-set-key (kbd "C-^") 'enlarge-window)
 
 
 ;; alternate keys
@@ -871,23 +886,6 @@
 	(global-unset-key (kbd "<f10>"))
 	(global-unset-key (kbd "C-<f10>"))
 	(global-unset-key (kbd "S-<f10>")) ))
-
-
-;; window navigation
-(when (fboundp 'windmove-default-keybindings)
-	(global-set-key (kbd "ESC <up>")	'windmove-up)
-	(global-set-key (kbd "ESC <down>")	'windmove-down)
-	(global-set-key (kbd "ESC <right>")	'windmove-right)
-	(global-set-key (kbd "ESC <left>")	'windmove-left) )
-
-; tweaking window sizes
-(global-set-key (kbd "C-{") 'shrink-window-horizontally)
-(global-set-key (kbd "C-}") 'enlarge-window-horizontally)
-(global-set-key (kbd "C-^") 'enlarge-window)
-
-; scrolling
-(global-set-key (kbd "C-<") 'scroll-left)
-(global-set-key (kbd "C->") 'scroll-right)
 
 
 ;; Disabled keys
