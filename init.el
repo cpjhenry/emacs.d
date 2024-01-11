@@ -797,6 +797,7 @@
 
 ;; sundry
 (load "init/misc")
+(load "init/daily-info")
 
 (load "init/pdfexport")
 (eval-after-load 'latex-mode

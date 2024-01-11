@@ -1,0 +1,17 @@
+;; daily info
+(defun daily-info () (interactive)
+	(setq xbuff (generate-new-buffer "*daily-info*"))
+	(shell-command "bash -ic di" xbuff)
+	(switch-to-buffer xbuff)
+	(kill-line 2)
+	(end-of-buffer)
+	(newline)
+	;(insert "\n")
+	(shell-command "bash -ic alert -f" xbuff)
+	(kill-line 2)
+	(end-of-buffer)
+	(newline)
+	(shell-command "bash -ic calm-mode" xbuff)
+	(kill-line 2)
+	(beginning-of-buffer)
+	(help-mode))
