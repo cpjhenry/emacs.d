@@ -1,8 +1,7 @@
 ;; daily info
-(defun daily-info () (interactive)
+(defun daily-info () "Daily information."
+	(interactive)
 	(setq xbuff (generate-new-buffer "*daily-info*"))
-	;(setq shell-command-default-error-buffer "*Messages*")
-	(shell-command "di-mode" xbuff)
-	(switch-to-buffer xbuff)
-	;(kill-line 2)
-)
+	(shell-command (concat user-emacs-directory ".local/" "di-mode") xbuff))
+
+; LocalWords:  di

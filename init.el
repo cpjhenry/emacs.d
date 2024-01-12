@@ -123,7 +123,7 @@
 	visual-line-fringe-indicators '(nil right-curly-arrow) )
 
 ;; shell
-(setenv "BASH_ENV" "~/.bashrc")
+(setenv "BASH_ENV" (expand-file-name "~/.bashrc"))
 (add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
 
 (if (>= emacs-major-version 28)
@@ -612,7 +612,7 @@
 			browse-url-generic-program "firefox-esr") )
 
 (unless *w32* (use-package pdf-tools
-	:load-path "site-lisp/pdf-tools/lisp"
+	:load-path  "site-lisp/pdf-tools/lisp"
 	:magic ("%PDF" . pdf-view-mode)
 	:config (pdf-tools-install :no-query) ))
 
