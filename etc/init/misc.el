@@ -2017,4 +2017,45 @@ C-<spc> ... M-=			number of days between mark and point
 ")
 (kf-gen-displayer my/emacs-help "Display Emacs help." "*Emacs cheatsheet*")
 
-; LocalWords:  un sexp
+(defconst Henke-Henry
+"                                Hanke-Henry Permanent Calendar (HHPC)
+
+    January                         February                        March
+    Mo  Tu  We  Th  Fr  Sa  Su      Mo  Tu  We  Th  Fr  Sa  Su      Mo  Tu  We  Th  Fr  Sa  Su
+     1   2   3   4   5   6   7               1   2   3   4   5                       1   2   3
+     8   9  10  11  12  13  14       6   7   8   9  10  11  12       4   5   6   7   8   9  10
+    15  16  17  18  19  20  21      13  14  15  16  17  18  19      11  12  13  14  15  16  17
+    22  23  24  25  26  27  28      20  21  22  23  24  25  26      18  19  20  21  22  23  24
+    29  30                          27  28  29  30                  25  26  27  28  29  30  31
+    --------------------------      --------------------------      --------------------------
+    April                           May                             June
+    Mo  Tu  We  Th  Fr  Sa  Su      Mo  Tu  We  Th  Fr  Sa  Su      Mo  Tu  We  Th  Fr  Sa  Su
+     1   2   3   4   5   6   7               1   2   3   4   5                       1   2   3
+     8   9  10  11  12  13  14       6   7   8   9  10  11  12       4   5   6   7   8   9  10
+    15  16  17  18  19  20  21      13  14  15  16  17  18  19      11  12  13  14  15  16  17
+    22  23  24  25  26  27  28      20  21  22  23  24  25  26      18  19  20  21  22  23  24
+    29  30                          27  28  29  30                  25  26  27  28  29  30  31
+    --------------------------      --------------------------      --------------------------
+    July                            August                          September
+    Mo  Tu  We  Th  Fr  Sa  Su      Mo  Tu  We  Th  Fr  Sa  Su      Mo  Tu  We  Th  Fr  Sa  Su
+     1   2   3   4   5   6   7               1   2   3   4   5                       1   2   3
+     8   9  10  11  12  13  14       6   7   8   9  10  11  12       4   5   6   7   8   9  10
+    15  16  17  18  19  20  21      13  14  15  16  17  18  19      11  12  13  14  15  16  17
+    22  23  24  25  26  27  28      20  21  22  23  24  25  26      18  19  20  21  22  23  24
+    29  30                          27  28  29  30                  25  26  27  28  29  30  31
+    --------------------------      --------------------------      --------------------------
+    October                         November                        December
+    Mo  Tu  We  Th  Fr  Sa  Su      Mo  Tu  We  Th  Fr  Sa  Su      Mo  Tu  We  Th  Fr  Sa  Su
+     1   2   3   4   5   6   7               1   2   3   4   5                       1   2   3
+     8   9  10  11  12  13  14       6   7   8   9  10  11  12       4   5   6   7   8   9  10
+    15  16  17  18  19  20  21      13  14  15  16  17  18  19      11  12  13  14  15  16  17
+    22  23  24  25  26  27  28      20  21  22  23  24  25  26      18  19  20  21  22  23  24
+    29  30                          27  28  29  30                  25  26  27  28  29  30  31
+    --------------------------      --------------------------      --------------------------
+                                                                    Xtra
+                                                                    Mo  Tu  We  Th  Fr  Sa  Su
+                                                                     1   2   3   4   5   6   7")
+
+(kf-gen-displayer Henke-Henry "Display Henke-Henry Permanent Calendar." "*HHPC*")
+
+; LocalWords:  un sexp cheatsheet HHPC

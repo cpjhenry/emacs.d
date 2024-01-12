@@ -815,17 +815,21 @@
 (global-set-key (kbd "<end>"    ) 'move-end-of-line)
 (global-set-key (kbd "C-<home>" ) 'beginning-of-buffer)
 (global-set-key (kbd "C-<end>"  ) 'end-of-buffer)
+;; M-<home>		'beginning-of-buffer-other-window
+;; M-<end>		'end-of-buffer-other-window
+
+;; <prior>		'scroll-down-command
+;; <next>		'scroll-up-command
+(global-set-key (kbd "C-<prior>") 'scroll-down-line)
+(global-set-key (kbd "C-<next>" ) 'scroll-up-line)
+;; M-<prior>	'scroll-other-window-down
+;; M-<next>		'scroll-other-window
+
+;; C- <- ->		- by word
+;; C-<up><down>	- by paragraph
 
 (global-set-key (kbd "<C-M-prior>") (lambda()(interactive)(backward-page)(recenter-top-bottom)))
 (global-set-key (kbd "<C-M-next>")  (lambda()(interactive)(forward-page) (recenter-top-bottom)))
-
-(global-unset-key (kbd "C-<prior>"))
-(global-unset-key (kbd "C-<next>" ))
-
-(global-unset-key (kbd "M-<left>" ))
-(global-unset-key (kbd "M-<right>"))
-(global-unset-key (kbd "M-<up>"   ))
-(global-unset-key (kbd "M-<down>" ))
 
 (global-unset-key (kbd "s-<left>" ))
 (global-unset-key (kbd "s-<right>"))
