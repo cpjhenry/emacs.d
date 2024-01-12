@@ -122,6 +122,10 @@
 	view-read-only t				; turn on view mode when buffer is read-only
 	visual-line-fringe-indicators '(nil right-curly-arrow) )
 
+;; shell
+(setenv "BASH_ENV" "~/.bashrc")
+(add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
+
 (if (>= emacs-major-version 28)
 	(setq use-short-answers t)
 	(defalias 'yes-or-no-p 'y-or-n-p) )
@@ -1016,3 +1020,4 @@
 
 ; LocalWords:  el icomplete init pdfexport filesandbuffers RSS Lorem
 ; LocalWords:  Gopherspace ipsum Monospace Consolas MidnightBlue
+; LocalWords:  bashrc
