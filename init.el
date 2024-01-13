@@ -889,7 +889,7 @@
 	(global-set-key   (kbd "s-o")	'find-file)
 	(global-set-key   (kbd "s-S")	'write-file)
 
-	(dolist (key '("s-m" "s-n" "s-q" "s-t" "s-w"))
+	(dolist (key '("s-m" "s-n" "s-q" "s-t"))
 	(global-unset-key (kbd key)))
 
 	(when (display-graphic-p)
