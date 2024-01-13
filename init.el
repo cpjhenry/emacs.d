@@ -122,10 +122,6 @@
 	view-read-only t				; turn on view mode when buffer is read-only
 	visual-line-fringe-indicators '(nil right-curly-arrow) )
 
-;; shell
-(setenv "BASH_ENV" (expand-file-name "~/.bashrc"))
-(add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
-
 (if (>= emacs-major-version 28)
 	(setq use-short-answers t)
 	(defalias 'yes-or-no-p 'y-or-n-p) )
@@ -169,6 +165,9 @@
 (use-package gcmh
 	:config (gcmh-mode 1)
 	:diminish)
+
+;; path
+(load "init/exec-path")
 
 
 ;; buffers
@@ -260,6 +259,7 @@
 
 
 ;; frames
+;; https://korewanetadesu.com/emacs-on-os-x.html
 (when (featurep 'ns)
 	(defun ns-raise-emacs ()
 	"Raise Emacs."
@@ -272,7 +272,6 @@
 	(ns-raise-emacs))))
 
 	(add-hook 'after-make-frame-functions 'ns-raise-emacs-with-frame)
-
 	(when (display-graphic-p) (ns-raise-emacs)))
 
 
