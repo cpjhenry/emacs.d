@@ -90,11 +90,13 @@
 	dictionary-server "dict.org"
 	dired-dwim-target t				; suggest other visible dired buffer
 	eww-search-prefix "https://www.google.ca/search?q="
+	find-file-visit-truename t
 	flyspell-issue-message-flag nil
 	frame-inhibit-implied-resize t
 	frame-title-format nil
 	help-clean-buttons t
 	ibuffer-expert t
+	inhibit-compacting-font-caches t
 	inhibit-default-init t
 	isearch-allow-scroll t
 	ispell-list-command "--list"	; correct command
@@ -124,7 +126,7 @@
 
 (if (>= emacs-major-version 28)
 	(setq use-short-answers t)
-	(defalias 'yes-or-no-p 'y-or-n-p) )
+	(defalias 'yes-or-no-p 'y-or-n-p))
 
 (when (>= emacs-major-version 28) (setq
 	goto-address-mail-face 'default))
@@ -167,7 +169,7 @@
 	:diminish)
 
 ;; path
-(load "init/exec-path")
+(if (daemonp) (load "init/exec-path"))
 
 
 ;; buffers
@@ -301,7 +303,8 @@
 	(require 'dired-x)
 	(unless *w32* (setq dired-kill-when-opening-new-dired-buffer t))
 	(setq dired-omit-files (concat dired-omit-files
-		"\\|^INDEX$\\|-t\\.tex$\\|\\.DS_Store$\\|\\.localized$"))
+		"\\|^INDEX$\\|-t\\.tex$\\|\\.DS_Store$\\|\\.localized$")
+		  dired-omit-verbose nil)
 	(require 'ls-lisp)
 	(setq	ls-lisp-use-string-collate nil
 			ls-lisp-use-insert-directory-program nil
@@ -445,12 +448,18 @@
 
 
 ;; Mode Line
+(use-package doom-modeline
+	:ensure t
+	:hook	(after-init . doom-modeline-mode)
+	:config	(use-package nerd-icons))
+
 (setq
 	battery-mode-line-format "%p%% "
 	display-time-24hr-format t
 	display-time-default-load-average nil
-	mode-line-compact t
-	mode-line-position (list mode-line-percent-position " " "(%l,%C)") )
+	mode-line-compact nil
+	mode-line-position (list mode-line-percent-position " " "(%l,%C)")
+	mode-line-right-align-edge 'right-fringe)
 (column-number-mode)
 (display-battery-mode)
 (display-time-mode -1)
@@ -817,7 +826,7 @@
 
 ;; sundry
 (load "init/misc")
-(load "init/daily-info")
+(load "init/scripts" 'noerror)
 
 (load "init/pdfexport")
 (eval-after-load 'latex-mode
@@ -866,6 +875,11 @@
 (global-set-key (kbd "C-<") 'scroll-left)
 (global-set-key (kbd "C->") 'scroll-right)
 
+;; mouse
+;; https://github.com/purcell/disable-mouse
+(use-package disable-mouse)
+(global-disable-mouse-mode)
+
 
 ;; window navigation
 (when (fboundp 'windmove-default-keybindings)
@@ -905,6 +919,7 @@
 	(global-set-key   (kbd "s-o")	'find-file)
 	(global-set-key   (kbd "s-S")	'write-file)
 
+	;; minimize, new frame, quit, set-font
 	(dolist (key '("s-m" "s-n" "s-q" "s-t"))
 	(global-unset-key (kbd key)))
 
@@ -943,9 +958,9 @@
 (which-key-add-key-based-replacements "C-c a" "org agenda")
 
 (bind-key "C-c b m" 'new-markdown-buffer)
+(bind-key "C-c b n" 'new-empty-buffer)
 (bind-key "C-c b o" 'new-org-buffer)
 (bind-key "C-c b s" 'scratch-buffer)
-(bind-key "C-c b t" 'new-empty-buffer)
 (which-key-add-key-based-replacements "C-c b" "buffers")
 
 (bind-key "C-c c"	'calendar)

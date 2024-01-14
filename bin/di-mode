@@ -1,15 +1,15 @@
 #!/bin/bash
-# daily-info-mode backend for Emacs
+# daily-info-mode back-end for Emacs
 # 2024-01-10
 
 cond_source() { [ -f $1 ] && . $1; }
-cond_source $HOME/.bash_path
 cond_source $HOME/.bash_routines
 
 di
 echo
 calt |sed '$s/$/\n/'
-ruled 4
+#ruled 4
+echo ""
 alert -f
 echo
 calm $(date +%m)

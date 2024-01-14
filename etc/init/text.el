@@ -142,3 +142,9 @@
 like \\[yank-pop] does, but in the opposite direction."
   (interactive "p")
   (yank-pop (- arg)))
+
+;; prog-mode functions
+
+(defun align-equals (begin end)
+	(interactive "r")
+	(align-regexp begin end "\\(\\s-*\\)=" 1 1))
