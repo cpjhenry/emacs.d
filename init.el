@@ -580,6 +580,9 @@
 	(add-hook 'rmail-show-message-hook 'goto-address-mode)
 	(add-hook 'rmail-quit-hook 'kill-current-buffer)
 
+	(add-hook 'message-mode-hook (lambda()
+	(local-set-key (kbd "A-<return>") 'message-send-and-exit) ))
+
 	(use-package elfeed
 		:config	(setq
 		elfeed-db-directory (concat user-emacs-directory "var/elfeed/db/")
