@@ -196,6 +196,9 @@
 	(prettify-symbols-mode)
 	(show-paren-local-mode) ))
 
+(dolist (hook '(change-log-mode-hook log-edit-mode-hook package-menu-mode-hook))
+	(add-hook hook (lambda () (flyspell-mode -1))))
+
 (remove-hook
 	'file-name-at-point-functions
 	'ffap-guess-file-name-at-point)
@@ -858,10 +861,13 @@
 ;; M-<next>		'scroll-other-window
 
 ;; C- <- ->		- by word
-;; C-<up><down>	- by paragraph
-
-(global-set-key (kbd "<C-M-prior>") (lambda()(interactive)(backward-page)(recenter-top-bottom)))
-(global-set-key (kbd "<C-M-next>")  (lambda()(interactive)(forward-page) (recenter-top-bottom)))
+;; C- <u> <d>  	- by paragraph
+(global-unset-key (kbd "M-<left>"))
+(global-unset-key (kbd "M-<right>"))
+(global-set-key (kbd "M-<up>") (lambda()(interactive)(backward-page)(recenter-top-bottom)))
+(global-set-key (kbd "M-<down>")  (lambda()(interactive)(forward-page) (recenter-top-bottom)))
+;; C-M- <- ->	- by sexp
+;; C-M- <u> <d>	- by list
 
 (global-unset-key (kbd "s-<left>" ))
 (global-unset-key (kbd "s-<right>"))
@@ -1053,5 +1059,5 @@
 	(defun office.org ()(interactive)(find-file (concat default-directory "!.org"))) )
 
 ; LocalWords:  el icomplete init pdfexport filesandbuffers RSS Lorem
-; LocalWords:  Gopherspace ipsum Monospace Consolas MidnightBlue
-; LocalWords:  bashrc
+; LocalWords:  Gopherspace ipsum Monospace Consolas MidnightBlue sexp
+; LocalWords:  bashrc defun

@@ -6,10 +6,15 @@
 	(shell-command "di-mode" buf)
 	(switch-to-buffer buf)
 	(help-mode)))
-	
-(defun wx ()
+
+(defun fw () "Forecast"
 	(interactive)
-	(setq xbuff (generate-new-buffer "*wx*"))
-	(shell-command "wx-mode" xbuff))
+	(setq-local buf (generate-new-buffer "*fw*"))
+	(shell-command "fw" buf))
+
+(defun wx () "Weather"
+	(interactive)
+	(setq-local buf (generate-new-buffer "*wx*"))
+	(shell-command "wx-mode" buf))
 
 ; LocalWords:  di buf
