@@ -281,6 +281,31 @@
 	(when (display-graphic-p) (ns-raise-emacs)))
 
 
+;; mode line
+(when (display-graphic-p) (use-package doom-modeline
+	:ensure t
+	:hook	(after-init . doom-modeline-mode)
+	:config	(use-package nerd-icons)))
+
+(setq
+	battery-mode-line-format "%p%% "
+	display-time-24hr-format t
+	display-time-default-load-average nil
+	mode-line-compact nil
+	mode-line-position (list mode-line-percent-position " " "(%l,%C)")
+	mode-line-right-align-edge 'right-fringe)
+(column-number-mode)
+(display-battery-mode)
+(display-time-mode -1)
+
+;; Startup time
+(defun efs/display-startup-time ()
+	(message "GNU Emacs %s loaded in %s with %d garbage collections." emacs-version
+	(format "%.2f seconds" (float-time (time-subtract after-init-time before-init-time)))
+		gcs-done))
+(add-hook 'emacs-startup-hook 'efs/display-startup-time)
+
+
 ;; IDO
 ;; https://www.emacswiki.org/emacs/InteractivelyDoThings
 (require 'ido)
@@ -449,33 +474,6 @@
 	ps-right-margin 28 ))
 
 (load "init/print")
-
-
-;; Mode Line
-(use-package doom-modeline
-	:ensure t
-	:hook	(after-init . doom-modeline-mode)
-	:config	(use-package nerd-icons))
-
-(add-to-list 'load-path "~/.local/share/icons-in-terminal/")
-
-(setq
-	battery-mode-line-format "%p%% "
-	display-time-24hr-format t
-	display-time-default-load-average nil
-	mode-line-compact nil
-	mode-line-position (list mode-line-percent-position " " "(%l,%C)")
-	mode-line-right-align-edge 'right-fringe)
-(column-number-mode)
-(display-battery-mode)
-(display-time-mode -1)
-
-;; Startup time
-(defun efs/display-startup-time ()
-	(message "GNU Emacs %s loaded in %s with %d garbage collections." emacs-version
-	(format "%.2f seconds" (float-time (time-subtract after-init-time before-init-time)))
-		gcs-done))
-(add-hook 'emacs-startup-hook 'efs/display-startup-time)
 
 
 ;; Initialize packages
