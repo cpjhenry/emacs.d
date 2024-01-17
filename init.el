@@ -282,10 +282,10 @@
 
 
 ;; mode line
-(when (display-graphic-p) (use-package doom-modeline
+(use-package doom-modeline
 	:ensure t
 	:hook	(after-init . doom-modeline-mode)
-	:config	(use-package nerd-icons)))
+	:config	(use-package nerd-icons))
 
 (setq
 	battery-mode-line-format "%p%% "
