@@ -91,6 +91,7 @@
 	dired-dwim-target t				; suggest other visible dired buffer
 	eww-search-prefix "https://www.google.ca/search?q="
 	find-file-visit-truename t
+	flyspell-doublon-as-error-flag nil
 	flyspell-issue-message-flag nil
 	frame-inhibit-implied-resize t
 	frame-title-format nil

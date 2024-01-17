@@ -28,3 +28,11 @@
 		(mapc #'elfeed-search-update-entry entries)
 		(unless (use-region-p) (forward-line)))
 	(delete-other-windows))
+
+;; https://pragmaticemacs.wordpress.com/2016/09/16/star-and-unstar-articles-in-elfeed/
+(defalias 'elfeed-toggle-star
+	(elfeed-expose #'elfeed-search-toggle-all 'star))
+(eval-after-load 'elfeed-search
+	'(define-key elfeed-search-mode-map (kbd "s") 'elfeed-toggle-star))
+
+; LocalWords:  elfeed
