@@ -458,7 +458,6 @@
 	:config	(use-package nerd-icons))
 
 (add-to-list 'load-path "~/.local/share/icons-in-terminal/")
-(load "icons-in-terminal")
 
 (setq
 	battery-mode-line-format "%p%% "
