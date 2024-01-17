@@ -457,6 +457,8 @@
 	:hook	(after-init . doom-modeline-mode)
 	:config	(use-package nerd-icons))
 
+(add-to-list 'load-path "~/.local/share/icons-in-terminal/")
+
 (setq
 	battery-mode-line-format "%p%% "
 	display-time-24hr-format t
