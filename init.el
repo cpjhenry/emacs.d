@@ -892,6 +892,7 @@
 ;; https://github.com/purcell/disable-mouse
 (use-package disable-mouse)
 (global-disable-mouse-mode)
+;(mouse-avoidance-mode banish)
 
 
 ;; window navigation
