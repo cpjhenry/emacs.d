@@ -672,6 +672,14 @@
 	(setq visual-fill-column-fringes-outside-margins nil) ))
 (add-hook 'prog-mode-hook (lambda() (visual-fill-column-mode -1) ))
 
+;; fix html-mode
+(add-to-list 'auto-mode-alist '("\\.html$" . html-mode))
+(delete '("\\.html$" . text-mode) auto-mode-alist)
+(add-hook 'html-mode-hook (lambda ()
+	(visual-line-mode -1)
+	(visual-fill-column-mode -1)
+	(toggle-truncate-lines 1)))
+
 (use-package markdown-mode
 	:init (setq markdown-hide-urls t)
 	:config (setq
@@ -1023,6 +1031,7 @@
 (bind-key "C-x x k"	'kill-other-buffers)
 (bind-key "C-x x r"	'rename-file-and-buffer)
 (bind-key "C-x x v" 'view-text-file-as-info-manual)
+(bind-key "C-x x w" 'preview-html)(defun preview-html()(interactive)(shr-render-buffer (current-buffer)))
 
 (which-key-add-key-based-replacements "C-x 8" "key translations")
 (which-key-add-key-based-replacements "C-x 8 e" "emojis")
@@ -1036,6 +1045,7 @@
 (defalias 'lc 'list-colors-display)
 (defalias 'lp 'list-packages)
 (defalias 'recs 'recover-session)
+(defalias 'which-key-alias 'which-key-add-key-based-replacements)
 
 (defalias 'arm 'auto-revert-mode)
 (defalias 'artm 'auto-revert-tail-mode)
