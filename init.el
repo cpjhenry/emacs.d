@@ -280,16 +280,15 @@
 	(add-hook 'after-make-frame-functions 'ns-raise-emacs-with-frame)
 	(when (display-graphic-p) (ns-raise-emacs)))
 
-	(add-hook 'server-after-make-frame-hook (lambda ()
-	(when (display-graphic-p) (message "GUI new frame created.")) ))
-
 
 ;; mode line
 (use-package doom-modeline
 	:ensure t
 	:hook	(after-init . doom-modeline-mode)
 	:config	(use-package nerd-icons)
-			(setq doom-modeline-major-mode-icon t))
+			(setq
+				doom-modeline-major-mode-icon nil
+				doom-modeline-buffer-modification-icon nil))
 
 (setq
 	battery-mode-line-format "%p%% "
