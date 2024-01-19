@@ -2058,4 +2058,60 @@ C-<spc> ... M-=			number of days between mark and point
 
 (kf-gen-displayer Henke-Henry "Display Henke-Henry Permanent Calendar." "*HHPC*")
 
+(defconst british-currency
+"BRITISH CURRENCY
+
+PRE-DECIMAL £-s-d
+12 pence (d) = 1 shilling (s)
+20 shillings (s) = 1 pound (£)
+
+'/-' NOTATION
+1/1/1 = 1£ 1s 1d
+1/- = 1s 0d
+
+DECIMAL (1971)
+100 pence (p) = 1 pound (£)
+
+CANADA (1859)
+100 cents (¢) = 1 dollar ($)
+
+NOTES
+
+The abbreviation for the old penny, d, was derived from the Roman
+denarius, and the abbreviation for the shilling, s, from the
+Roman solidus. The shilling was also denoted by the slash symbol,
+also called a solidus for this reason, which was originally an
+adaptation of the long s. The symbol '£', for the pound, is
+derived from the first letter of the Latin word for pound, libra.
+
+The sovereign is a British gold coin with a nominal value of one
+pound sterling (£1) and contains 0.2354 troy oz of pure gold.
+Struck since 1817, it was originally a circulating coin that was
+accepted in Britain and elsewhere in the world; it is now
+a bullion coin and is sometimes mounted in jewellery. In
+addition, circulation strikes and proof examples are often
+collected for their numismatic value. In most recent years, it
+has borne the design of Saint George and the Dragon on the
+reverse; the initials (B P) of the designer, Benedetto Pistrucci,
+are visible to the right of the date.
+
+The guinea (/ˈɡɪniː/; commonly abbreviated gn., or gns. in
+plural) was a coin, minted in Great Britain between 1663 and
+1814, that contained approximately one-quarter of an ounce of
+gold. The name came from the Guinea region in West Africa, from
+where much of the gold used to make the coins was sourced. It is
+valued at one pound and one shilling (21 shillings, £1.05 in
+decimal notation).
+
+The silver crown was a denomination of sterling coinage worth 1⁄4
+of one pound, or 5 shillings, or 60 (old) pence.
+
+A common slang term for the pound unit is 'quid' (singular and
+plural). The term may have come from Latin quid via the common
+phrase quid pro quo, literally, 'what for what'.")
+
+(kf-gen-displayer british-currency "British and Canadian Currency." "*currency*")
+
+;; FIXME add measurements tables
+
 ; LocalWords:  un sexp cheatsheet HHPC

@@ -680,6 +680,8 @@
 	(visual-fill-column-mode -1)
 	(toggle-truncate-lines 1)))
 
+(use-package html-to-markdown)
+
 (use-package markdown-mode
 	:init (setq markdown-hide-urls t)
 	:config (setq
