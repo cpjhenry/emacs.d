@@ -2112,6 +2112,95 @@ phrase quid pro quo, literally, 'what for what'.")
 
 (kf-gen-displayer british-currency "British and Canadian Currency." "*currency*")
 
-;; FIXME add measurements tables
+(defconst measurements
+"UNITS OF MEASURE
+
+LENGTH											AREA
+12 inches			=	1 foot						144 sq. inches		=	1 square foot
+3 feet				=	1 yard						9 sq. feet			=	1 square yard
+22 yards			=	1 chain						4840 sq. yards		=	1 acre
+10 chains			=	1 furlong					64 acres			=	1 city block
+8 furlongs			=	1 mile						640 acres			=	1 square mile
+5280 feet			=	1 mile						1 sq. mile			=	1 section
+1760 yards			=	1 mile						36 sections			=	1 township
+													1 range				=	1 township E-W (6 mi.)
+VOLUME
+1728 cu. inches		=	1 cubic foot
+27 cu. feet			=	1 cubic yard
+
+CAPACITY (DRY) US				   					CAPACITY (LIQUID)
+2 pints				=	1 quart						20 fluid ounces (UK)=	1 pint
+8 quarts			=	1 peck						16 fluid ounces (US)=	1 pint
+4 pecks				=	1 bushel					4 gills				=	1 pint
+													2 pints				=	1 quart
+													4 quarts			=	1 gallon (8 pints)
+
+MASS												TROY WEIGHTS
+437.5 grains		=	1 ounce						24 grains			=	1 pennyweight
+16 ounces			=	1 pound (7000 grains)		20 pennyweights		=	1 ounce (480 grains)
+14 pounds			=	1 stone						12 ounces			=	1 pound (5760 grains)
+8 stones (112 lbs)	=	1 hundredweight [cwt] (UK)
+100 pounds			=	1 hundredweight [cwt] (US)
+20 cwt				=	1 ton (2240 pounds) (UK)
+20 cwt				=	1 ton (2000 pounds) (US)
+
+APOTHECARIES' MEASURES								APOTHECARIES' WEIGHTS
+20 minims			=	1 fl.scruple		   		20 grains			=	1 scruple
+3 fl.scruples		=	1 fl.drachm (dram)			3 scruples	   		=	1 drachm
+8 fl.drachms (drams)=	1 fl.ounce					8 drachms			=	1 ounce (480 grains)
+20 fl.ounces (UK)	=	1 pint						12 ounces			=	1 pound (5760 grains)
+16 fl.ounces (US)	=	1 pint
+
+
+OBSCURE MEASUREMENTS
+
+LENGTH
+1 hand				=	4 in.		(17 hands is a good horse)
+1 span				=	9 in.
+1 cubit				=	18 in.		(originally 21.8 in. / 18.3 in. / 17.5 in.)
+1 stadium			=	202 yds.
+1 Roman mile		=	5000 ft.
+1 league			=	3 mi.
+
+LENGTH (SURVEY)
+1 link				=	0.66 ft
+1 pole (rod)		=	25 links (5.5 yds.)
+1 chain				=	100 links
+
+LENGTH (NAUTICAL)
+1 fathom			=	6 ft.
+1 cable				=	100 fathoms (600 ft.)
+1 nau. mile			=	1.15 miles
+
+AREA
+1 rood				=	1,210 sq. yards
+
+MASS
+1 oz.				=	2 shekels
+
+
+LIQUID MEASURE CONVERSION
+
++---------+-----------+-----------+-----------+------------+-----------+-----------+
+|         |           |           |           | 1/2 fl oz  |   1 tbsp  |   3 tsp   |
++---------+-----------+-----------+-----------+------------+-----------+-----------+
+|         |           |           |   1/8 cup |   1 fl oz  |   2 tbsp  |   6 tsp   |
++---------+-----------+-----------+-----------+------------+-----------+-----------+
+|         |           |           |   1/4 cup |   2 fl oz  |   4 tbsp  |   12 tsp  |
++---------+-----------+-----------+-----------+------------+-----------+-----------+
+|         |           |           |   1/2 cup |   4 fl oz  |   8 tbsp  |   24 tsp  |
++---------+-----------+-----------+-----------+------------+-----------+-----------+
+|         |  1/4 qt   |  1/2 pt   |    1 cup  |   8 fl oz  |  16 tbsp  |   48 tsp  |
++---------+-----------+-----------+-----------+------------+-----------+-----------+
+|         |  1/2 qt   |   1 pt    |    2 cups |  16 fl oz  |           |           |
++---------+-----------+-----------+-----------+------------+-----------+-----------+
+| 1/4 gal |   1 qt    |   2 pt    |    4 cups |  32 fl oz  |           |           |
++---------+-----------+-----------+-----------+------------+-----------+-----------+
+| 1/2 gal |   2 qt    |   4 pt    |    8 cups |  64 fl oz  |           |           |
++---------+-----------+-----------+-----------+------------+-----------+-----------+
+| 1 gal   |   4 qt    |   8 pt    |   16 cups | 128 fl oz  |           |           |
++---------+-----------+-----------+-----------+------------+-----------+-----------+")
+
+(kf-gen-displayer measurements "Units of measurement." "*measurements*")
 
 ; LocalWords:  un sexp cheatsheet HHPC
