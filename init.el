@@ -731,9 +731,8 @@
 	org-agenda-skip-scheduled-if-done t
 	org-agenda-start-on-weekday nil
 	org-agenda-todo-ignore-deadlines t
-	org-agenda-todo-ignore-scheduled t)
+	org-agenda-todo-ignore-scheduled t
 
-	(setq
 	org-tags-exclude-from-inheritance '("PROJECT")
 
 	org-todo-keywords '((sequence "TODO" "DONE"))
@@ -798,8 +797,8 @@
 
 	(define-key org-mode-map (kbd "C-<") 'org-backward-heading-same-level)
 	(define-key org-mode-map (kbd "C->") 'org-forward-heading-same-level)
-	(define-key org-mode-map (kbd "A-<left>") 'outline-up-heading)
-	(define-key org-mode-map (kbd "A-<right>") (lambda() (interactive)(org-end-of-subtree)))
+	(define-key org-mode-map (kbd "A-<left>" ) 'outline-up-heading)
+	(define-key org-mode-map (kbd "A-<right>") 'org-end-of-subtree)
 
 	(use-package org-autolist ; pressing "Return" will insert a new list item automatically
 		:diminish "AL")
@@ -967,7 +966,8 @@
 (bind-key "<f7>"	'list-bookmarks)
 
 (bind-key "M-<f1>" 'my/emacs-help)
-(bind-key "M-<f2>" 'shortdoc)
+(bind-key "M-<f2>" 'describe-personal-keybindings)
+(bind-key "M-<f3>" 'shortdoc)
 
 (bind-key "M-Q"		'unfill-paragraph)
 
@@ -975,7 +975,6 @@
 (bind-key "C-M-Y"	'undo-yank)
 
 (bind-key "C-c !"	'shell)
-(bind-key "C-c ?"	'describe-personal-keybindings)
 
 (bind-key "C-c a a"	'org-agenda) (when *mac*
 (bind-key "C-c a d"	'daily-agenda) (defun daily-agenda () (interactive)(find-file org-agenda-file)))
