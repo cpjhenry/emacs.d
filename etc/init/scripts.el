@@ -3,7 +3,9 @@
 (defun daily-info () "Daily information."
 	(interactive)
 	(let ((buf (generate-new-buffer "*daily-info*")))
-	(shell-command "di-mode" buf)))
+	(shell-command "di-mode" buf)
+	(switch-to-buffer buf)
+	(form-feed-mode)))
 
 (defun fw () "Forecast"
 	(interactive)

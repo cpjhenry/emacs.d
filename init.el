@@ -185,7 +185,7 @@
 (add-hook 'eww-mode-hook (lambda()
 	(define-key eww-mode-map (kbd "<left>") 'eww-back-url) ))
 (add-hook 'help-mode-hook (lambda ()
-	(font-lock-mode)
+	(font-lock-mode -1)
 	(goto-address-mode) ))
 (add-hook 'prog-mode-hook (lambda()
 	(setq show-trailing-whitespace t)
