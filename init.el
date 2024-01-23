@@ -798,7 +798,7 @@
 	(define-key org-mode-map (kbd "C-<") 'org-backward-heading-same-level)
 	(define-key org-mode-map (kbd "C->") 'org-forward-heading-same-level)
 	(define-key org-mode-map (kbd "A-<left>" ) 'outline-up-heading)
-	(define-key org-mode-map (kbd "A-<right>") 'org-end-of-subtree)
+	(define-key org-mode-map (kbd "A-<right>") (lambda()(interactive)(org-end-of-subtree)))
 
 	(use-package org-autolist ; pressing "Return" will insert a new list item automatically
 		:diminish "AL")
@@ -896,6 +896,13 @@
 	scroll-step 0)
 (global-set-key (kbd "C-<") 'scroll-left)
 (global-set-key (kbd "C->") 'scroll-right)
+
+;; half-scroll
+(defun window-half-height ()(max 1 (/ (1- (window-height (selected-window))) 2)))
+(defun scroll-up-half ()	(interactive) (scroll-up (window-half-height)))
+(defun scroll-down-half ()	(interactive) (scroll-down (window-half-height)))
+(global-set-key [next] 'scroll-up-half)
+(global-set-key [prior] 'scroll-down-half)
 
 ;; mouse
 ;; https://github.com/purcell/disable-mouse
