@@ -91,8 +91,6 @@
 	dired-dwim-target t				; suggest other visible dired buffer
 	eww-search-prefix "https://www.google.ca/search?q="
 	find-file-visit-truename t
-	flyspell-doublon-as-error-flag nil
-	flyspell-issue-message-flag nil
 	frame-inhibit-implied-resize t
 	frame-title-format nil
 	help-clean-buttons t
@@ -100,9 +98,6 @@
 	inhibit-compacting-font-caches t
 	inhibit-default-init t
 	isearch-allow-scroll t
-	ispell-list-command "--list"	; correct command
-	ispell-program-name "aspell"	; spell checker
-	ispell-silently-savep t			; save personal list automatically
 	kill-ring-max 512
 	kill-whole-line t
 	mark-ring-max most-positive-fixnum
@@ -186,20 +181,8 @@
 	(define-key eww-mode-map (kbd "<left>") 'eww-back-url) ))
 (add-hook 'help-mode-hook (lambda ()
 	(font-lock-mode -1)
+	(form-feed-mode)
 	(goto-address-mode) ))
-(add-hook 'prog-mode-hook (lambda()
-	(setq show-trailing-whitespace t)
-	(abbrev-mode)
-	(when (not (memq major-mode (list 'lisp-interaction-mode)))
-		(display-line-numbers-mode) )
-	(flyspell-prog-mode)
-	(goto-address-mode)
-	(prettify-symbols-mode)
-	(show-paren-local-mode) ))
-
-(dolist (hook '(change-log-mode-hook log-edit-mode-hook package-menu-mode-hook))
-	(add-hook hook (lambda () (flyspell-mode -1))))
-
 (remove-hook
 	'file-name-at-point-functions
 	'ffap-guess-file-name-at-point)
@@ -287,8 +270,11 @@
 	:hook	(after-init . doom-modeline-mode)
 	:config	(use-package nerd-icons)
 			(setq
-				doom-modeline-major-mode-icon nil
-				doom-modeline-buffer-modification-icon nil))
+			doom-modeline-major-mode-icon nil
+			doom-modeline-buffer-modification-icon nil
+			doom-modeline-column-zero-based nil
+			doom-modeline-enable-word-count t
+			doom-modeline-continuous-word-count-modes '(markdown-mode gfm-mode org-mode text-mode)))
 
 (setq
 	battery-mode-line-format "%p%% "
@@ -541,8 +527,6 @@
 
 (use-package visible-mark)
 
-(use-package wc-mode) ; word count
-
 (use-package which-key
 	:config
 		(which-key-mode)
@@ -655,22 +639,22 @@
 ;; Emacs Text and Markdown modes
 (add-hook 'text-mode-hook (lambda ()
 	(abbrev-mode)
-	(unless *w32* (flyspell-mode))
 	(goto-address-mode)
-	(visual-line-mode)
-	(wc-mode) ))
-(eval-after-load "flyspell" '(progn
-	(define-key flyspell-mouse-map [down-mouse-3] #'flyspell-correct-word)))
+	(visual-line-mode)))
 (add-hook 'fill-nobreak-predicate #'fill-french-nobreak-p)
 
 (use-package visual-fill-column
-	:config (advice-add 'text-scale-adjust :after #'visual-fill-column-adjust) )
+	:config (advice-add 'text-scale-adjust :after #'visual-fill-column-adjust))
 (use-package adaptive-wrap)
 (add-hook 'visual-line-mode-hook 'visual-fill-column-mode)
 (add-hook 'visual-line-mode-hook 'adaptive-wrap-prefix-mode)
 (add-hook 'visual-fill-column-mode-hook #'(lambda()
 	(setq visual-fill-column-fringes-outside-margins nil) ))
 (add-hook 'prog-mode-hook (lambda() (visual-fill-column-mode -1) ))
+
+;; word count (replaced by doom-modeline)
+;(use-package wc-mode
+;	:config (setq wc-mode-map (make-sparse-keymap)))
 
 ;; fix html-mode
 (add-to-list 'auto-mode-alist '("\\.html$" . html-mode))
@@ -698,6 +682,43 @@
 	:commands (markdown-mode gfm-mode) )
 
 (load "init/text") ; text functions
+
+(add-hook 'prog-mode-hook (lambda()
+	(setq show-trailing-whitespace t)
+	(abbrev-mode)
+	(when (not (memq major-mode (list 'lisp-interaction-mode)))
+		(display-line-numbers-mode) )
+	(goto-address-mode)
+	(prettify-symbols-mode)
+	(show-paren-local-mode) ))
+
+
+;; spell checking
+(setq
+	flyspell-doublon-as-error-flag nil
+	flyspell-issue-welcome-flag nil
+	flyspell-issue-message-flag nil
+	ispell-extra-args '("--sug-mode=ultra")
+	ispell-list-command "--list"	; correct command
+	ispell-program-name "aspell"	; spell checker
+	ispell-silently-savep t)   		; save personal list automatically
+
+(unless *w32*
+	(dolist (hook '(text-mode-hook markdown-mode-hook))
+	(add-hook hook (lambda () (flyspell-mode 1))))
+	(add-hook 'prog-mode-hook 'flyspell-prog-mode))
+(dolist (hook '(change-log-mode-hook log-edit-mode-hook))
+	(add-hook hook (lambda () (flyspell-mode -1))))
+
+(use-package flyspell-lazy
+	:after flyspell
+	:config (setq
+		flyspell-lazy-idle-seconds 1
+		flyspell-lazy-window-idle-seconds 3)
+		(flyspell-lazy-mode 1))
+
+(eval-after-load "flyspell" '(progn
+	(define-key flyspell-mouse-map [down-mouse-3] #'flyspell-correct-word)))
 
 
 ;; Org-mode
@@ -839,7 +860,6 @@
 		(visual-fill-column-mode -1) ))
 
 	(load "init/org")							; org-mode functions
-	;(load "org-phscroll" 'noerror 'nomessage)	; org-table fix
 	) ; use-package org
 
 
@@ -970,7 +990,8 @@
 
 (bind-key "<f5>"	'toggle-fill-column)
 (bind-key "<f6>"	'toggle-fill-column-center)
-(bind-key "<f7>"	'list-bookmarks)
+(bind-key "<f7>"	nil)
+(bind-key "<f8>"	'list-bookmarks)
 
 (bind-key "M-<f1>" 'my/emacs-help)
 (bind-key "M-<f2>" 'describe-personal-keybindings)
@@ -1056,9 +1077,9 @@
 (defalias 'which-key-alias 'which-key-add-key-based-replacements)
 
 (defalias 'arm 'auto-revert-mode)
-(defalias 'artm 'auto-revert-tail-mode)
+(defalias 'art 'auto-revert-tail-mode)
 (defalias 'elm 'emacs-lisp-mode)
-(defalias 'flym 'flyspell-mode)
+(defalias 'fly 'flyspell-mode)
 (defalias 'fci 'display-fill-column-indicator-mode)
 (defalias 'fm 'fundamental-mode)
 (defalias 'hm 'html-mode)
@@ -1083,4 +1104,4 @@
 
 ; LocalWords:  el icomplete init pdfexport filesandbuffers RSS Lorem
 ; LocalWords:  Gopherspace ipsum Monospace Consolas MidnightBlue sexp
-; LocalWords:  bashrc defun
+; LocalWords:  bashrc defun modeline

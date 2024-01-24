@@ -11,11 +11,11 @@
  (info-node . "Projects")
  (handler . Info-bookmark-jump))
 ("org-capture-last-stored"
- (filename . "~/Documents/org/Roam/20240105095348-test3.org")
+ (filename . "~/Documents/org/Roam/20240123080204-.org")
  (front-context-string)
- (rear-context-string . "\n#+title: Test3\n")
- (position . 83)
- (last-modified 26008 6148 549271 0))
+ (rear-context-string . "e: Fourth Test\n\n")
+ (position . 90)
+ (last-modified 26031 47530 155326 0))
 ("2023-05-10 - Six years of gopher"
  (position . 684)
  (location . "gemini://zaibatsu.circumlunar.space/users/solderpunk/gemlog/six-years-of-gopher.gmi")
