@@ -1,7 +1,2 @@
 ;; Auto-generated file; don't edit -*- mode: lisp-data -*-
-((:url "https://bigthink.com/business/the-zebra-effect-why-collaboration-matters/?ref=refind#primary" :title "" :time "Wed Jan 24 08:34:00 2024")
- (:url "https://jethrokuan.github.io/org-roam-guide/" :title "How I Take Notes with Org-roam" :time "Wed Jan 24 08:14:47 2024")
- (:url "https://www.reddit.com/r/RoamResearch/comments/eho7de/building_a_second_brain_in_roamand_why_you_might/" :title "Reddit - Dive into anything" :time "Mon Jan 22 21:33:47 2024")
- (:url "https://www.lesswrong.com/posts/NfdHG6oHBJ8Qxc26s/the-zettelkasten-method-1" :title "The Zettelkasten Method — LessWrong" :time "Sun Jan 21 18:04:21 2024")
- (:url "https://slashdot.org/" :title "Slashdot: News for nerds, stuff that matters" :time "Wed Nov 10 08:01:30 2021")
- (:url "https://slate.com/human-interest/the-good-word" :title "Slate: The Good Word" :time "Sun Sep 10 12:07:33 2023"))
+((:url "https://slate.com/human-interest/the-good-word" :title "Slate: The Good Word" :time "Sun Sep 10 12:07:33 2023"))
