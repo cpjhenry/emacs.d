@@ -180,9 +180,9 @@
 (add-hook 'eww-mode-hook (lambda()
 	(define-key eww-mode-map (kbd "<left>") 'eww-back-url) ))
 (add-hook 'help-mode-hook (lambda ()
-	(font-lock-mode -1)
 	(form-feed-mode)
-	(goto-address-mode) ))
+	(goto-address-mode)
+	(setq-local font-lock-keywords-only t)))
 (remove-hook
 	'file-name-at-point-functions
 	'ffap-guess-file-name-at-point)
@@ -593,6 +593,7 @@
 		(define-key elfeed-search-mode-map (kbd "s") nil)
 		(define-key elfeed-search-mode-map (kbd "m") 'elfeed-mail-todo)
 		(define-key elfeed-show-mode-map (kbd "<tab>") 'shr-next-link)
+		(define-key elfeed-show-mode-map (kbd "SPC") 'scroll-up-half)
 
 		;(use-package elfeed-org
 		;	:config
@@ -990,7 +991,7 @@
 
 (bind-key "<f5>"	'toggle-fill-column)
 (bind-key "<f6>"	'toggle-fill-column-center)
-(bind-key "<f7>"	nil)
+(bind-key "<f7>"	'ispell-word)
 (bind-key "<f8>"	'list-bookmarks)
 
 (bind-key "M-<f1>" 'my/emacs-help)
