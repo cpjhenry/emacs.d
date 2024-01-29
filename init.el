@@ -570,6 +570,8 @@
 
 (use-package sudo-edit)
 
+(use-package typo)
+
 (use-package visible-mark)
 
 (use-package which-key
@@ -638,7 +640,7 @@
 		(define-key elfeed-search-mode-map (kbd "/") 'elfeed-search-live-filter)
 		(define-key elfeed-search-mode-map (kbd "s") nil)
 		(define-key elfeed-search-mode-map (kbd "m") 'elfeed-mail-todo)
-		(define-key elfeed-show-mode-map (kbd "<tab>") 'shr-next-link)
+		(define-key elfeed-show-mode-map (kbd "TAB") 'shr-next-link)
 		(define-key elfeed-show-mode-map (kbd "SPC") 'scroll-up-half)
 
 		;(use-package elfeed-org
