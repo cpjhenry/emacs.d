@@ -54,16 +54,25 @@
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 (unless package-archive-contents (package-refresh-contents))
 (unless (package-installed-p 'use-package) (package-install 'use-package))
+
 (require 'use-package)
 (setf
 	use-package-always-ensure t
 	use-package-verbose t)
+
 (use-package auto-package-update
 	:config
 	(setq
 	auto-package-update-delete-old-versions t
 	auto-package-update-hide-results t)
 	(auto-package-update-maybe))
+
+(use-package quelpa)
+(quelpa
+ '(quelpa-use-package
+   :fetcher git
+   :url "https://github.com/quelpa/quelpa-use-package.git"))
+(require 'quelpa-use-package)
 
 ;; Add directories to load-path
 (add-to-list 'load-path (expand-file-name "etc" user-emacs-directory))
@@ -89,7 +98,6 @@
 	delete-by-moving-to-trash t
 	dictionary-server "dict.org"
 	dired-dwim-target t				; suggest other visible dired buffer
-	eww-search-prefix "https://www.google.ca/search?q="
 	find-file-visit-truename t
 	frame-inhibit-implied-resize t
 	frame-title-format nil
@@ -140,7 +148,6 @@
 	bookmark-default-file	   	(concat user-emacs-directory "etc/bookmarks")
 	eshell-aliases-file			(concat user-emacs-directory "etc/eshell/aliases")
 	eshell-directory-name  		(concat user-emacs-directory "var/eshell/")
-	eww-bookmarks-directory		(concat user-emacs-directory "etc/")
 	request-storage-directory  	(concat user-emacs-directory "var/request/storage/")
 	tramp-auto-save-directory  	(concat user-emacs-directory "var/tramp/auto-save/")
 	tramp-persistency-file-name	(concat user-emacs-directory "var/tramp/persistency")
@@ -177,8 +184,6 @@
 
 (add-hook 'emacs-news-view-mode-hook (lambda()
 	(form-feed-mode) ))
-(add-hook 'eww-mode-hook (lambda()
-	(define-key eww-mode-map (kbd "<left>") 'eww-back-url) ))
 (add-hook 'help-mode-hook (lambda ()
 	(form-feed-mode)
 	(goto-address-mode)
@@ -200,11 +205,12 @@
 (with-eval-after-load 'help-mode
 	(define-key help-mode-map (kbd "q")			'kill-current-buffer)
 	(define-key help-mode-map (kbd "<left>")	'help-go-back)
-	(define-key help-mode-map (kbd "<right>")	'help-go-forward) )
+	(define-key help-mode-map (kbd "<right>")	'help-go-forward)
+	(define-key help-mode-map (kbd "M-RET")		'goto-address-at-point))
 (with-eval-after-load 'Info-mode
 	(define-key Info-mode-map (kbd "q")			'kill-current-buffer)
 	(define-key Info-mode-map (kbd "<left>" )	'Info-history-back)
-	(define-key Info-mode-map (kbd "<right>")	'Info-history-forward) )
+	(define-key Info-mode-map (kbd "<right>")	'Info-history-forward))
 
 (easy-menu-add-item  nil '("Buffers") ["Increase text size" text-scale-increase :help "Change text scale"])
 (easy-menu-add-item  nil '("Buffers") ["Decrease text size" text-scale-decrease :help "Change text scale"])
@@ -359,9 +365,10 @@
 		("planner" (or
 			(name . "^\\*Calendar\\*$")
 			(name . "^diary$")
-			(name . "^\\*Org Agenda\\*") ))
-		;("perl" (mode . cperl-mode) )
-		;("erc" (mode . erc-mode) )
+			(name . "^\\*Org Agenda\\*")))
+		;("perl" (mode . cperl-mode))
+		;("erc" (mode . erc-mode))
+		("Eww"   (mode . eww-mode))
 		("gnus" (or
 			(mode . message-mode)
 			(mode . bbdb-mode)
@@ -468,27 +475,65 @@
 ;; Initialize packages
 (use-package diminish)
 
+;; (use-package bookmark+
+;; 	:quelpa (bookmark+ :fetcher wiki :files (
+;; 		"bookmark+.el"
+;; 		"bookmark+-mac.el"
+;; 		"bookmark+-bmu.el"
+;; 		"bookmark+-1.el"
+;; 		"bookmark+-key.el"
+;; 		"bookmark+-lit.el"
+;; 		"bookmark+-doc.el"
+;; 		"bookmark+-chg.el"))
+;; 	:defer 2)
+
 (use-package elpher
 	:config
-		(setq elpher-bookmarks-file (concat user-emacs-directory "var/elpher-bookmarks"))
-		(easy-menu-add-item  nil '("tools") ["Gopher" elpher :help "Browse Gopherspace"] "Browse the Web...")
+	(setq elpher-bookmarks-file (concat user-emacs-directory "var/elpher-bookmarks"))
+	(easy-menu-add-item  nil '("tools") ["Gopher" elpher :help "Browse Gopherspace"] "Browse the Web...")
 
-		(defun elpher:eww-browse-url (original url &optional new-window) "Handle gemini links."
-			(cond ((string-match-p "\\`\\(gemini\\|gopher\\)://" url) (elpher-go url))
-			(t (funcall original url new-window))) )
-		(advice-add 'eww-browse-url :around 'elpher:eww-browse-url)
-		(defun elpher-up () (interactive)(backward-paragraph)(recenter-top-bottom))
-		(defun elpher-down () (interactive)(forward-paragraph)(recenter-top-bottom)) )
+	(defun elpher:eww-browse-url (original url &optional new-window) "Handle gemini links."
+		(cond ((string-match-p "\\`\\(gemini\\|gopher\\)://" url) (elpher-go url))
+		(t (funcall original url new-window))))
+	(advice-add 'eww-browse-url :around 'elpher:eww-browse-url)
+	(defun elpher-up () (interactive)(backward-paragraph)(recenter-top-bottom))
+	(defun elpher-down () (interactive)(forward-paragraph)(recenter-top-bottom))
+
 	(add-hook 'elpher-mode-hook (lambda ()
 		(setq-local
 			left-margin-width 10
 			gnutls-verify-error nil)
 		(set-window-buffer nil (current-buffer))
 		(local-set-key (kbd "<left>") 'elpher-back)
-		(local-set-key (kbd "<right>") 'elpher-down)))
+		(local-set-key (kbd "<right>") 'elpher-down))))
 
 (require 'eww)
+(define-key eww-mode-map (kbd "<left>") 'eww-back-url)
 (define-key eww-bookmark-mode-map (kbd "w")	'eww)
+(setq
+	browse-url-browser-function 'eww-browse-url
+	eww-bookmarks-directory (concat user-emacs-directory "etc/")
+	shr-use-colors nil
+	shr-use-fonts nil
+	shr-bullet "• "
+	shr-folding-mode t
+	eww-search-prefix "https://duckduckgo.com/html?q="
+	url-privacy-level '(email agent lastloc)
+
+	shr-indentation 2	; Left-side margin
+	shr-width 70)		; Fold text for comfiness
+(url-setup-privacy-info)
+
+(use-package ace-link
+	:config
+	(ace-link-setup-default))
+
+(use-package w3m
+	:config
+	(define-key w3m-mode-map (kbd "<left>") 'w3m-view-previous-page)
+	(setq
+		w3m-bookmark-file (concat user-emacs-directory "etc/w3m-bookmarks.html"))
+	(autoload 'w3m-browse-url "w3m" "Ask a WWW browser to show a URL." t))
 
 (use-package free-keys :defer t)
 
@@ -539,10 +584,11 @@
 
 
 ;; Configure specific machines
-(when *natasha*
-	(setq 	browse-url-browser-function 'browse-url-generic
-		;	browse-url-generic-program "/Applications/Firefox.app/Contents/MacOS/firefox"
-			browse-url-generic-program "/Applications/Waterfox.app/Contents/MacOS/waterfox")
+(when *natasha* (setq
+	browse-url-browser-function 'w3m-browse-url
+	browse-url-secondary-browser-function 'browse-url-generic
+	;browse-url-generic-program "/Applications/Firefox.app/Contents/MacOS/firefox"
+	browse-url-generic-program "/Applications/Waterfox.app/Contents/MacOS/waterfox")
 
 	;; Mail / News
 	(require 'rmail) (setq
@@ -588,7 +634,7 @@
 		(bind-key "C-c f" 'elfeed)
 		(define-key elfeed-search-mode-map (kbd "q") (lambda()(interactive)(kill-current-buffer)
 			(let ((buffer "*elfeed-log*")) (and (get-buffer buffer) (kill-buffer buffer)))
-			(let ((buffer "*send mail to cn*")) (and (get-buffer buffer) (kill-buffer buffer)))))
+			(let ((buffer "*sent mail to cn*")) (and (get-buffer buffer) (kill-buffer buffer)))))
 		(define-key elfeed-search-mode-map (kbd "/") 'elfeed-search-live-filter)
 		(define-key elfeed-search-mode-map (kbd "s") nil)
 		(define-key elfeed-search-mode-map (kbd "m") 'elfeed-mail-todo)
@@ -628,7 +674,7 @@
 	)
 
 (when *gnu*
-	(setq	browse-url-browser-function 'browse-url-generic
+	(setq	browse-url-secondary-browser-function 'browse-url-generic
 			browse-url-generic-program "firefox-esr") )
 
 (unless *w32* (use-package pdf-tools
@@ -689,9 +735,9 @@
 	(abbrev-mode)
 	(when (not (memq major-mode (list 'lisp-interaction-mode)))
 		(display-line-numbers-mode) )
-	(goto-address-mode)
+	(goto-address-prog-mode)
 	(prettify-symbols-mode)
-	(show-paren-local-mode) ))
+	(show-paren-local-mode)))
 
 
 ;; spell checking
@@ -1105,4 +1151,5 @@
 
 ; LocalWords:  el icomplete init pdfexport filesandbuffers RSS Lorem
 ; LocalWords:  Gopherspace ipsum Monospace Consolas MidnightBlue sexp
-; LocalWords:  bashrc defun modeline
+; LocalWords:  bashrc defun modeline waterfox comfiness ibuffer Eww
+; LocalWords:  RET quelpa
