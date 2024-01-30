@@ -587,7 +587,7 @@
 
 ;; Configure specific machines
 (when *natasha* (setq
-	browse-url-browser-function 'w3m-browse-url
+	;browse-url-browser-function 'w3m-browse-url
 	browse-url-secondary-browser-function 'browse-url-generic
 	;browse-url-generic-program "/Applications/Firefox.app/Contents/MacOS/firefox"
 	browse-url-generic-program "/Applications/Waterfox.app/Contents/MacOS/waterfox")
