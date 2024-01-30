@@ -67,9 +67,9 @@
 	auto-package-update-hide-results t)
 	(auto-package-update-maybe))
 
-(use-package quelpa)
-(quelpa
- '(quelpa-use-package
+(use-package quelpa
+	:config (setq quelpa-verbose nil))
+(quelpa '(quelpa-use-package
    :fetcher git
    :url "https://github.com/quelpa/quelpa-use-package.git"))
 (require 'quelpa-use-package)
@@ -521,7 +521,7 @@
 	url-privacy-level '(email agent lastloc)
 
 	shr-indentation 2	; Left-side margin
-	shr-width 70)		; Fold text for comfiness
+	shr-width nil)		; Fold text for comfiness
 (url-setup-privacy-info)
 
 (use-package ace-link
@@ -530,10 +530,9 @@
 
 (use-package w3m
 	:config
-	(define-key w3m-mode-map (kbd "<left>") 'w3m-view-previous-page)
-	(setq
-		w3m-bookmark-file (concat user-emacs-directory "etc/w3m-bookmarks.html"))
-	(autoload 'w3m-browse-url "w3m" "Ask a WWW browser to show a URL." t))
+	(setq w3m-bookmark-file (concat user-emacs-directory "etc/w3m-bookmarks.html"))
+	(autoload 'w3m-browse-url "w3m" "Ask a WWW browser to show a URL." t)
+	(define-key w3m-mode-map (kbd "<left>") 'w3m-view-previous-page))
 
 (use-package free-keys :defer t)
 
@@ -627,6 +626,7 @@
 		elfeed-db-directory (concat user-emacs-directory "var/elfeed/db/")
    		elfeed-enclosure-default-dir (concat user-emacs-directory "var/elfeed/enclosures/")
 		elfeed-score-score-file (concat user-emacs-directory "etc/elfeed/score/score.el")
+		elfeed-show-truncacte-long-urls t
 		elfeed-sort-order 'ascending
 		elfeed-use-curl t)
 
