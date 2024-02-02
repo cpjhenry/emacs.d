@@ -642,6 +642,8 @@
 		(define-key elfeed-search-mode-map (kbd "m") 'elfeed-mail-todo)
 		(define-key elfeed-show-mode-map (kbd "TAB") 'shr-next-link)
 		(define-key elfeed-show-mode-map (kbd "SPC") 'scroll-up-half)
+		(define-key elfeed-show-mode-map (kbd "A-<up>"  ) 'backward-paragraph)
+		(define-key elfeed-show-mode-map (kbd "A-<down>") 'forward-paragraph)
 
 		;(use-package elfeed-org
 		;	:config
