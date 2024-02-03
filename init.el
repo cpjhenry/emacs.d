@@ -35,7 +35,7 @@
 	(message "Running on Windows.") )
 
 (when (display-graphic-p)
-(add-to-list 'default-frame-alist '(background-color . "Ivory")) )
+(add-to-list 'default-frame-alist '(background-color . "Ivory")))
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 (add-to-list 'default-frame-alist '(tool-bar-lines . 0))
 
@@ -61,8 +61,7 @@
 	use-package-verbose t)
 
 (use-package auto-package-update
-	:config
-	(setq
+	:config (setq
 	auto-package-update-delete-old-versions t
 	auto-package-update-hide-results t)
 	(auto-package-update-maybe))
@@ -106,6 +105,7 @@
 	inhibit-compacting-font-caches t
 	inhibit-default-init t
 	isearch-allow-scroll t
+	kill-read-only-ok t
 	kill-ring-max 512
 	kill-whole-line t
 	mark-ring-max most-positive-fixnum
@@ -136,7 +136,7 @@
 	goto-address-mail-face 'default))
 
 (when (< emacs-major-version 28)
-	(defalias 'show-paren-local-mode 'show-paren-mode) )
+	(defalias 'show-paren-local-mode 'show-paren-mode))
 
 (when (>= emacs-major-version 29) (setq
 	help-enable-variable-value-editing t))
@@ -180,14 +180,13 @@
 
 (add-hook 'before-save-hook 'time-stamp)
 (add-hook 'doc-view-mode-hook 'auto-revert-mode)
-(add-hook 'pdf-view-mode-hook 'auto-revert-mode)
-
 (add-hook 'emacs-news-view-mode-hook (lambda()
 	(form-feed-mode) ))
 (add-hook 'help-mode-hook (lambda ()
 	(form-feed-mode)
 	(goto-address-mode)
 	(setq-local font-lock-keywords-only t)))
+(add-hook 'pdf-view-mode-hook 'auto-revert-mode)
 (remove-hook
 	'file-name-at-point-functions
 	'ffap-guess-file-name-at-point)
@@ -275,12 +274,12 @@
 	:ensure t
 	:hook	(after-init . doom-modeline-mode)
 	:config	(use-package nerd-icons)
-			(setq
-			doom-modeline-major-mode-icon nil
-			doom-modeline-buffer-modification-icon nil
-			doom-modeline-column-zero-based nil
-			doom-modeline-enable-word-count t
-			doom-modeline-continuous-word-count-modes '(markdown-mode gfm-mode org-mode text-mode)))
+	(setq
+		doom-modeline-major-mode-icon nil
+		doom-modeline-buffer-modification-icon nil
+		doom-modeline-column-zero-based nil
+		doom-modeline-enable-word-count t
+		doom-modeline-continuous-word-count-modes '(markdown-mode gfm-mode org-mode text-mode)))
 
 (setq
 	battery-mode-line-format "%p%% "
@@ -538,8 +537,8 @@
 
 (use-package google-this
 	:config
-		(google-this-mode)
-		(which-key-add-key-based-replacements "C-c /" "google-this")
+	(google-this-mode)
+	(which-key-add-key-based-replacements "C-c /" "google-this")
 	:diminish)
 
 (use-package hl-todo
@@ -974,6 +973,8 @@
 (defun scroll-down-half ()	(interactive) (scroll-down (window-half-height)))
 (global-set-key [next] 'scroll-up-half)
 (global-set-key [prior] 'scroll-down-half)
+(global-set-key (kbd "A-<down>") 'scroll-up-half)
+(global-set-key (kbd "A-<up>") 'scroll-down-half)
 
 ;; mouse
 ;; https://github.com/purcell/disable-mouse
@@ -1156,4 +1157,4 @@
 ; LocalWords:  el icomplete init pdfexport filesandbuffers RSS Lorem
 ; LocalWords:  Gopherspace ipsum Monospace Consolas MidnightBlue sexp
 ; LocalWords:  bashrc defun modeline waterfox comfiness ibuffer Eww
-; LocalWords:  RET quelpa
+; LocalWords:  RET quelpa café remotehost fido
