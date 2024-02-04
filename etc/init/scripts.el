@@ -7,7 +7,17 @@
 	(switch-to-buffer buf)
 	(form-feed-mode)))
 
-(defun fw () "Forecast"
+(defun az () "Monthly Forecast"
+	(interactive)
+	(let ((buf (generate-new-buffer "*az*")))
+	(shell-command "az -u" buf)
+	(switch-to-buffer buf)
+	(markdown-preview)
+	(and (get-buffer buf)
+		(kill-buffer buf)
+		(kill-buffer "*markdown-output*"))))
+
+(defun fw () "Weekly Forecast"
 	(interactive)
 	(setq-local buf (generate-new-buffer "*fw*"))
 	(shell-command "fw" buf))
@@ -17,4 +27,4 @@
 	(setq-local buf (generate-new-buffer "*wx*"))
 	(shell-command "wx-mode" buf))
 
-; LocalWords:  di buf
+; LocalWords:  di buf az

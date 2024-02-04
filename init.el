@@ -747,7 +747,7 @@
 		("\\.md\\'" . markdown-mode)
 		("\\.markdown\\'" . markdown-mode)
 		("\\.gmi\\'" . markdown-mode))
-	:commands (markdown-mode gfm-mode) )
+	:commands (markdown-mode gfm-mode))
 
 (load "init/text") ; text functions
 
