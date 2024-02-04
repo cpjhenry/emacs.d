@@ -929,11 +929,10 @@
 
 	(add-hook 'org-mode-hook (lambda ()
 		(org-autolist-mode)
-		;(org-indent-mode)
 		(prettify-symbols-mode)
 		(visual-fill-column-mode -1) ))
 
-	(load "init/org")							; org-mode functions
+	(load "init/org") ; org-mode functions
 	) ; use-package org
 
 
