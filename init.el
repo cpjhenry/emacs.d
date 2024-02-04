@@ -68,9 +68,10 @@
 
 (use-package quelpa
 	:config (setq quelpa-verbose nil))
-(quelpa '(quelpa-use-package
+(unless (package-installed-p 'quelpa-use-package)
+	(quelpa '(quelpa-use-package
    :fetcher git
-   :url "https://github.com/quelpa/quelpa-use-package.git"))
+   :url "https://github.com/quelpa/quelpa-use-package.git")))
 (require 'quelpa-use-package)
 
 ;; Add directories to load-path
