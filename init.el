@@ -134,7 +134,8 @@
 	(defalias 'yes-or-no-p 'y-or-n-p))
 
 (when (>= emacs-major-version 28) (setq
-	goto-address-mail-face 'default))
+	goto-address-mail-face 'default
+	shell-kill-buffer-on-exit t))
 
 (when (< emacs-major-version 28)
 	(defalias 'show-paren-local-mode 'show-paren-mode))
