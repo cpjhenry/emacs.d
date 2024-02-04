@@ -53,8 +53,9 @@
 (package-initialize)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 (unless package-archive-contents (package-refresh-contents))
-(unless (package-installed-p 'use-package) (package-install 'use-package))
 
+(unless (package-installed-p 'use-package)
+	(package-install 'use-package))
 (require 'use-package)
 (setf
 	use-package-always-ensure t
@@ -73,6 +74,21 @@
    :fetcher git
    :url "https://github.com/quelpa/quelpa-use-package.git")))
 (require 'quelpa-use-package)
+
+;; Install straight.el
+(defvar bootstrap-version)
+(let ((bootstrap-file
+	(expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+	(bootstrap-version 6))
+	(unless (file-exists-p bootstrap-file)
+		(with-current-buffer
+			(url-retrieve-synchronously
+			"https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+			'silent 'inhibit-cookies)
+			(goto-char (point-max))
+			(eval-print-last-sexp)))
+	(load bootstrap-file nil 'nomessage))
+(if (>= emacs-major-version 29) (setq straight-repository-branch "develop"))
 
 ;; Add directories to load-path
 (add-to-list 'load-path (expand-file-name "etc" user-emacs-directory))
@@ -750,6 +766,7 @@
 	flyspell-doublon-as-error-flag nil
 	flyspell-issue-welcome-flag nil
 	flyspell-issue-message-flag nil
+	ispell-dictionary "canadian"
 	ispell-extra-args '("--sug-mode=ultra")
 	ispell-list-command "--list"	; correct command
 	ispell-program-name "aspell"	; spell checker
@@ -771,6 +788,11 @@
 
 (eval-after-load "flyspell" '(progn
 	(define-key flyspell-mouse-map [down-mouse-3] #'flyspell-correct-word)))
+
+(defun my/list-packages ()
+	(interactive)
+	(unless (ispell-process-status) (ispell-start-process))
+	(list-packages))
 
 
 ;; Org-mode
@@ -1126,7 +1148,7 @@
 (defalias 'cr 'customize-rogue)
 (defalias 'la 'list-abbrevs)
 (defalias 'lc 'list-colors-display)
-(defalias 'lp 'list-packages)
+(defalias 'lp 'my/list-packages)
 (defalias 'recs 'recover-session)
 (defalias 'which-key-alias 'which-key-add-key-based-replacements)
 
