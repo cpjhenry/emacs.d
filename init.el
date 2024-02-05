@@ -47,6 +47,11 @@
 	calendar-location-name "Ottawa"
 	maidenhead "FN25dg")
 
+;; Add directories to load-path
+(add-to-list 'load-path (expand-file-name "etc" user-emacs-directory))
+(add-to-list 'load-path (expand-file-name "opt" user-emacs-directory))
+(add-to-list 'load-path (expand-file-name "var" user-emacs-directory))
+
 ;; Initialize package manager
 (setq gnutls-algorithm-priority "normal:-vers-tls1.3")
 (require 'package)
@@ -54,8 +59,9 @@
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 (unless package-archive-contents (package-refresh-contents))
 
-(unless (package-installed-p 'use-package)
-	(package-install 'use-package))
+(unless (>= emacs-major-version 29)
+	(unless (package-installed-p 'use-package)
+	(package-install 'use-package)))
 (require 'use-package)
 (setf
 	use-package-always-ensure t
@@ -75,25 +81,7 @@
    :url "https://github.com/quelpa/quelpa-use-package.git")))
 (require 'quelpa-use-package)
 
-;; Install straight.el
-(defvar bootstrap-version)
-(let ((bootstrap-file
-	(expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-	(bootstrap-version 6))
-	(unless (file-exists-p bootstrap-file)
-		(with-current-buffer
-			(url-retrieve-synchronously
-			"https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-			'silent 'inhibit-cookies)
-			(goto-char (point-max))
-			(eval-print-last-sexp)))
-	(load bootstrap-file nil 'nomessage))
-(if (>= emacs-major-version 29) (setq straight-repository-branch "develop"))
-
-;; Add directories to load-path
-(add-to-list 'load-path (expand-file-name "etc" user-emacs-directory))
-(add-to-list 'load-path (expand-file-name "opt" user-emacs-directory))
-(add-to-list 'load-path (expand-file-name "var" user-emacs-directory))
+(load "init/straight")
 
 ;; settings
 (set-language-environment 'utf-8)
@@ -292,13 +280,13 @@
 (use-package doom-modeline
 	:ensure t
 	:hook	(after-init . doom-modeline-mode)
-	:config	(use-package nerd-icons)
-	(setq
+	:config (setq
 		doom-modeline-major-mode-icon nil
 		doom-modeline-buffer-modification-icon nil
 		doom-modeline-column-zero-based nil
 		doom-modeline-enable-word-count t
-		doom-modeline-continuous-word-count-modes '(markdown-mode gfm-mode org-mode text-mode)))
+		doom-modeline-continuous-word-count-modes '(markdown-mode gfm-mode org-mode text-mode))
+	(use-package nerd-icons))
 
 (setq
 	battery-mode-line-format "%p%% "
@@ -323,7 +311,9 @@
 ;; https://www.emacswiki.org/emacs/InteractivelyDoThings
 (require 'ido)
 (ido-mode t)
-(setq ido-enable-flex-matching t)
+(setq
+	ido-enable-flex-matching t
+	ido-show-dot-for-dired t)
 (define-key (cdr ido-minor-mode-map-entry) [remap write-file] nil); turn off C-x C-w remapping
 
 ;(icomplete-mode) ; IDO for M-x
@@ -357,10 +347,10 @@
 	(defun dired-find-file-ow() (interactive)(dired-find-file-other-window)(delete-other-windows))
 	(defalias 'dired-find-file				'dired-find-alternate-file))
 
-;; iBuffer
+;; Ibuffer
 ;; https://www.emacswiki.org/emacs/IbufferMode
 (require 'ibuffer)
-(defalias 'list-buffers 'ibuffer) ; always use ibuffer
+(defalias 'list-buffers 'ibuffer) ; always use Ibuffer
 (define-key ibuffer-mode-map (kbd "q")		'kill-current-buffer)
 (define-key ibuffer-mode-map (kbd "<up>")	'ibuffer-previous-line)
 (define-key ibuffer-mode-map (kbd "<down>")	'ibuffer-next-line)
@@ -375,12 +365,12 @@
 (setq
 	ibuffer-hidden-filter-groups (list "Helm" "*Internal*")
 	ibuffer-saved-filter-groups (quote (("home"
-	   	("dired" (mode . dired-mode) )
-		("emacs" (or
+	   	("Dired" (mode . dired-mode) )
+		("Emacs" (or
 			(name . "^\\*scratch\\*$")
 			(name . "^\\*Messages\\*$")
 			(name . "\\.el") ))
-		("org" (name . "\\.org"))
+		("Org" (name . "\\.org"))
 		("planner" (or
 			(name . "^\\*Calendar\\*$")
 			(name . "^diary$")
@@ -660,10 +650,10 @@
 		(define-key elfeed-show-mode-map (kbd "A-<up>"  ) 'backward-paragraph)
 		(define-key elfeed-show-mode-map (kbd "A-<down>") 'forward-paragraph)
 
-		;(use-package elfeed-org
-		;	:config
-		;	(elfeed-org)
-		;	(setq rmh-elfeed-org-files (list "~/.emacs.d/etc/rc/elfeed.org")))
+		;; (use-package elfeed-org
+		;; 	:config (setq
+		;; 		rmh-elfeed-org-files (list (concat user-emacs-directory "etc/rc/elfeed.org")))
+		;; 	(elfeed-org))
 
 		(use-package elfeed-summary)
 
@@ -732,19 +722,21 @@
 ;(use-package html-to-markdown)
 
 (use-package markdown-mode
+	:mode
+		(("README\\.md\\'" . gfm-mode)
+		("\\.md\\'" . markdown-mode)
+		("\\.markdown\\'" . markdown-mode)
+		("\\.gmi\\'" . markdown-mode))
+	:commands (markdown-mode gfm-mode)
 	:init (setq markdown-hide-urls t)
 	:config (setq
 		markdown-command "multimarkdown"
 		markdown-enable-prefix-prompts nil
 		markdown-italic-underscore t
 		markdown-unordered-list-item-prefix "* ")
-		(add-to-list 'markdown-uri-types "gemini")
-	:mode
-		(("README\\.md\\'" . gfm-mode)
-		("\\.md\\'" . markdown-mode)
-		("\\.markdown\\'" . markdown-mode)
-		("\\.gmi\\'" . markdown-mode))
-	:commands (markdown-mode gfm-mode))
+		(add-to-list 'markdown-uri-types "gemini"))
+
+(use-package markdown-preview-mode)
 
 (load "init/text") ; text functions
 
@@ -894,45 +886,45 @@
 	(define-key org-mode-map (kbd "A-<left>" ) 'outline-up-heading)
 	(define-key org-mode-map (kbd "A-<right>") (lambda()(interactive)(org-end-of-subtree)))
 
-	(use-package org-autolist ; pressing "Return" will insert a new list item automatically
-		:diminish "AL")
-
-	(use-package org-chef :ensure t)
-
-	(use-package org-cliplink) ; insert org-mode links from the clipboard
-
-	(use-package org-d20)
-
-	(use-package org-modern
-		:config
-		(with-eval-after-load 'org (global-org-modern-mode)))
-
-	(when *natasha* (use-package org-roam
-		:ensure t
-		:custom
-			(org-roam-directory (file-truename (concat org-directory "/Roam/")))
-		:bind (
-			("C-c n l" . org-roam-buffer-toggle)
-			("C-c n f" . org-roam-node-find)
-			("C-c n g" . org-roam-graph)
-			("C-c n i" . org-roam-node-insert)
-			("C-c n c" . org-roam-capture)
-			;; Dailies
-			("C-c n j" . org-roam-dailies-capture-today))
-		:config
-			(which-key-add-key-based-replacements "C-c n" "org-roam")
-			(org-roam-setup)
-			(org-roam-db-autosync-mode)))
-
 	(add-hook 'org-agenda-finalize-hook 'delete-other-windows)
 
 	(add-hook 'org-mode-hook (lambda ()
 		(org-autolist-mode)
 		(prettify-symbols-mode)
 		(visual-fill-column-mode -1) ))
-
-	(load "init/org") ; org-mode functions
 	) ; use-package org
+
+(use-package org-autolist ; pressing "Return" will insert a new list item automatically
+	:diminish "AL")
+
+(use-package org-chef :ensure t)
+
+(use-package org-cliplink) ; insert org-mode links from the clipboard
+
+(use-package org-d20)
+
+(use-package org-modern
+	:config
+	(with-eval-after-load 'org (global-org-modern-mode)))
+
+(when *natasha* (use-package org-roam
+	:ensure t
+	:custom
+		(org-roam-directory (file-truename (concat org-directory "/Roam/")))
+	:bind (
+		("C-c n l" . org-roam-buffer-toggle)
+		("C-c n f" . org-roam-node-find)
+		("C-c n g" . org-roam-graph)
+		("C-c n i" . org-roam-node-insert)
+		("C-c n c" . org-roam-capture)
+		;; Dailies
+		("C-c n j" . org-roam-dailies-capture-today))
+	:config
+		(which-key-add-key-based-replacements "C-c n" "org-roam")
+		(org-roam-setup)
+		(org-roam-db-autosync-mode)))
+
+(load "init/org") ; org-mode functions
 
 
 ;; sundry
@@ -1176,8 +1168,9 @@
 	(bind-key "C-c a o"	'office.org)
 	(defun office.org ()(interactive)(find-file (concat default-directory "!.org"))) )
 
-; LocalWords:  LocalWords Inconsolata natasha
+; LocalWords:  LocalWords Inconsolata natasha elfeed rc keymap SX tls
 ; LocalWords:  el icomplete init pdfexport filesandbuffers RSS Lorem
 ; LocalWords:  Gopherspace ipsum Monospace Consolas MidnightBlue sexp
 ; LocalWords:  bashrc defun modeline waterfox comfiness ibuffer Eww
 ; LocalWords:  RET quelpa café remotehost fido hebrew islamic henrypa
+; LocalWords:  melpa vers defs eshell persistency url ido Ibuffer
