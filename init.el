@@ -181,8 +181,9 @@
 	backup-by-copying t
 	make-backup-files nil)
 
-(unless *w32*	(require 'backup-each-save)
-				(add-hook 'after-save-hook 'backup-each-save))
+(unless *w32*
+	(require 'backup-each-save)
+	(add-hook 'after-save-hook 'backup-each-save))
 
 ;; garbage collection
 (use-package gcmh
@@ -339,21 +340,22 @@
 (global-set-key (kbd "C-x C-d")	'ido-dired)
 
 ;; Dired
-(add-hook 'dired-mode-hook (lambda()(dired-omit-mode 1) ))
+(add-hook 'dired-mode-hook (lambda()(dired-omit-mode 1)))
 (with-eval-after-load 'dired
 	(require 'dired-x)
 	(unless *w32* (setq dired-kill-when-opening-new-dired-buffer t))
 	(setq dired-omit-files (concat dired-omit-files
 		"\\|^INDEX$\\|-t\\.tex$\\|\\.DS_Store$\\|\\.localized$")
-		  dired-omit-verbose nil)
+		dired-omit-verbose nil)
 	(require 'ls-lisp)
-	(setq	ls-lisp-use-string-collate nil
-			ls-lisp-use-insert-directory-program nil
-			ls-lisp-ignore-case 't)
+	(setq
+		ls-lisp-use-string-collate nil
+		ls-lisp-use-insert-directory-program nil
+		ls-lisp-ignore-case 't)
 	(define-key dired-mode-map (kbd "q")	'kill-dired-buffers)
 	(define-key dired-mode-map (kbd "o")	'dired-find-file-ow)
 	(defun dired-find-file-ow() (interactive)(dired-find-file-other-window)(delete-other-windows))
-	(defalias 'dired-find-file				'dired-find-alternate-file) )
+	(defalias 'dired-find-file				'dired-find-alternate-file))
 
 ;; iBuffer
 ;; https://www.emacswiki.org/emacs/IbufferMode
@@ -378,7 +380,7 @@
 			(name . "^\\*scratch\\*$")
 			(name . "^\\*Messages\\*$")
 			(name . "\\.el") ))
-		("org" (name . "\\.org") )
+		("org" (name . "\\.org"))
 		("planner" (or
 			(name . "^\\*Calendar\\*$")
 			(name . "^diary$")
@@ -394,8 +396,8 @@
 			(mode . gnus-summary-mode)
 			(mode . gnus-article-mode)
 			(name . "^\\.bbdb$")
-			(name . "^\\.newsrc-dribble") ))
-		))) )
+			(name . "^\\.newsrc-dribble")))
+		))))
 
 (require 'ibuf-ext)
 (add-to-list 'ibuffer-never-show-predicates "^\\*Messages\\*")
@@ -456,13 +458,11 @@
 	(defun print-buffer-or-region () (interactive)
 	(print-region (point-min) (point-max)))
 
-(when *mac*
-	(setq
+(when *mac* (setq
 	printer-name "Munbyn_ITPP047"
 	lpr-switches '("-o cpi=12 -o lpi=8 -o print-quality=4")
-	lpr-page-header-switches '("-t"))
+	lpr-page-header-switches '("-t")
 
-	(setq
 	ps-printer-name "Brother_HL_L2370DW"
 	ps-lpr-switches '("-o media=a5")
 	ps-paper-type 'a5
@@ -484,7 +484,7 @@
 	ps-top-margin 42
 	ps-bottom-margin 14
 	ps-left-margin 28
-	ps-right-margin 28 ))
+	ps-right-margin 28))
 
 (load "init/print")
 
@@ -506,23 +506,22 @@
 
 (use-package elpher
 	:config
-	(setq elpher-bookmarks-file (concat user-emacs-directory "var/elpher-bookmarks"))
-	(easy-menu-add-item  nil '("tools") ["Gopher" elpher :help "Browse Gopherspace"] "Browse the Web...")
+		(setq elpher-bookmarks-file (concat user-emacs-directory "var/elpher-bookmarks"))
+		(easy-menu-add-item  nil '("tools") ["Gopher" elpher :help "Browse Gopherspace"] "Browse the Web...")
 
-	(defun elpher:eww-browse-url (original url &optional new-window) "Handle gemini links."
-		(cond ((string-match-p "\\`\\(gemini\\|gopher\\)://" url) (elpher-go url))
-		(t (funcall original url new-window))))
-	(advice-add 'eww-browse-url :around 'elpher:eww-browse-url)
-	(defun elpher-up () (interactive)(backward-paragraph)(recenter-top-bottom))
-	(defun elpher-down () (interactive)(forward-paragraph)(recenter-top-bottom))
+		(defun elpher:eww-browse-url (original url &optional new-window) "Handle gemini links."
+			(cond ((string-match-p "\\`\\(gemini\\|gopher\\)://" url) (elpher-go url))
+			(t (funcall original url new-window))))
+		(advice-add 'eww-browse-url :around 'elpher:eww-browse-url)
+		(defun elpher-up () (interactive)(backward-paragraph)(recenter-top-bottom))
+		(defun elpher-down () (interactive)(forward-paragraph)(recenter-top-bottom))
 
-	(add-hook 'elpher-mode-hook (lambda ()
-		(setq-local
+		(add-hook 'elpher-mode-hook (lambda () (setq-local
 			left-margin-width 10
 			gnutls-verify-error nil)
-		(set-window-buffer nil (current-buffer))
-		(local-set-key (kbd "<left>") 'elpher-back)
-		(local-set-key (kbd "<right>") 'elpher-down))))
+			(set-window-buffer nil (current-buffer))
+			(local-set-key (kbd "<left>") 'elpher-back)
+			(local-set-key (kbd "<right>") 'elpher-down))))
 
 (require 'eww)
 (define-key eww-mode-map (kbd "<left>") 'eww-back-url)
@@ -543,28 +542,27 @@
 
 (use-package ace-link
 	:config
-	(ace-link-setup-default))
+		(ace-link-setup-default))
 
 (use-package w3m
 	:config
-	(setq w3m-bookmark-file (concat user-emacs-directory "etc/w3m-bookmarks.html"))
-	(autoload 'w3m-browse-url "w3m" "Ask a WWW browser to show a URL." t)
-	(define-key w3m-mode-map (kbd "<left>") 'w3m-view-previous-page))
+		(setq w3m-bookmark-file (concat user-emacs-directory "etc/w3m-bookmarks.html"))
+		(autoload 'w3m-browse-url "w3m" "Ask a WWW browser to show a URL." t)
+		(define-key w3m-mode-map (kbd "<left>") 'w3m-view-previous-page))
 
 (use-package free-keys :defer t)
 
 (use-package google-this
 	:config
-	(google-this-mode)
-	(which-key-add-key-based-replacements "C-c /" "google-this")
+		(google-this-mode)
+		(which-key-add-key-based-replacements "C-c /" "google-this")
 	:diminish)
 
 (use-package hl-todo
     :hook
 		(prog-mode . hl-todo-mode)
-        (emacs-lisp-mode . hl-todo-mode)
-    :config
-		(setq hl-todo-keyword-faces `(
+		(emacs-lisp-mode . hl-todo-mode)
+    :config (setq hl-todo-keyword-faces `(
 		("TODO"       warning bold)
 		("FIXME"      error bold)
 		("HACK"       font-lock-constant-face bold)
@@ -586,7 +584,7 @@
 
 (use-package sudo-edit)
 
-(use-package typo)
+(use-package typo) ; minor mode for typographic editing
 
 (use-package visible-mark)
 
@@ -640,12 +638,12 @@
 
 	(use-package elfeed
 		:config	(setq
-		elfeed-db-directory (concat user-emacs-directory "var/elfeed/db/")
-   		elfeed-enclosure-default-dir (concat user-emacs-directory "var/elfeed/enclosures/")
-		elfeed-score-score-file (concat user-emacs-directory "etc/elfeed/score/score.el")
-		elfeed-show-truncacte-long-urls t
-		elfeed-sort-order 'ascending
-		elfeed-use-curl t)
+			elfeed-db-directory (concat user-emacs-directory "var/elfeed/db/")
+	   		elfeed-enclosure-default-dir (concat user-emacs-directory "var/elfeed/enclosures/")
+			elfeed-score-score-file (concat user-emacs-directory "etc/elfeed/score/score.el")
+			elfeed-show-truncacte-long-urls t
+			elfeed-sort-order 'ascending
+			elfeed-use-curl t)
 
 		(eval-after-load 'elfeed `(make-directory ,(concat user-emacs-directory "var/elfeed/") t))
 		(easy-menu-add-item  nil '("tools") ["Read Web Feeds" elfeed :help "Read RSS feeds"] "Read Mail")
@@ -675,7 +673,7 @@
 	;; Stack Exchange
 	(use-package sx
 		:config
-		(bind-keys
+			(bind-keys
 			:prefix "C-c S"
 			:prefix-map my-sx-map
 			:prefix-docstring "Global keymap for SX."
@@ -685,8 +683,7 @@
 				("u" . sx-tab-unanswered-my-tags)
 				("a" . sx-ask)
 				("s" . sx-search))
-		(setq
-			sx-cache-directory (concat user-emacs-directory "var/sx")) )
+			(setq sx-cache-directory (concat user-emacs-directory "var/sx")))
 	)
 
 (when *mac*
@@ -696,7 +693,7 @@
 
 (when *gnu*
 	(setq	browse-url-secondary-browser-function 'browse-url-generic
-			browse-url-generic-program "firefox-esr") )
+			browse-url-generic-program "firefox-esr"))
 
 (unless *w32* (use-package pdf-tools
 	:load-path  "site-lisp/pdf-tools/lisp"
@@ -732,7 +729,7 @@
 	(visual-fill-column-mode -1)
 	(toggle-truncate-lines 1)))
 
-(use-package html-to-markdown)
+;(use-package html-to-markdown)
 
 (use-package markdown-mode
 	:init (setq markdown-hide-urls t)
@@ -754,8 +751,9 @@
 (add-hook 'prog-mode-hook (lambda()
 	(setq show-trailing-whitespace t)
 	(abbrev-mode)
-	(when (not (memq major-mode (list 'lisp-interaction-mode)))
-		(display-line-numbers-mode) )
+	(when (not (memq major-mode
+		(list 'lisp-interaction-mode)))
+		(display-line-numbers-mode))
 	(goto-address-prog-mode)
 	(prettify-symbols-mode)
 	(show-paren-local-mode)))
@@ -776,6 +774,7 @@
 	(dolist (hook '(text-mode-hook markdown-mode-hook))
 	(add-hook hook (lambda () (flyspell-mode 1))))
 	(add-hook 'prog-mode-hook 'flyspell-prog-mode))
+
 (dolist (hook '(change-log-mode-hook log-edit-mode-hook))
 	(add-hook hook (lambda () (flyspell-mode -1))))
 
@@ -911,19 +910,19 @@
 	(when *natasha* (use-package org-roam
 		:ensure t
 		:custom
-		(org-roam-directory (file-truename (concat org-directory "/Roam/")))
+			(org-roam-directory (file-truename (concat org-directory "/Roam/")))
 		:bind (
-		("C-c n l" . org-roam-buffer-toggle)
-		("C-c n f" . org-roam-node-find)
-		("C-c n g" . org-roam-graph)
-		("C-c n i" . org-roam-node-insert)
-		("C-c n c" . org-roam-capture)
-		;; Dailies
-		("C-c n j" . org-roam-dailies-capture-today))
+			("C-c n l" . org-roam-buffer-toggle)
+			("C-c n f" . org-roam-node-find)
+			("C-c n g" . org-roam-graph)
+			("C-c n i" . org-roam-node-insert)
+			("C-c n c" . org-roam-capture)
+			;; Dailies
+			("C-c n j" . org-roam-dailies-capture-today))
 		:config
-		(which-key-add-key-based-replacements "C-c n" "org-roam")
-		(org-roam-setup)
-		(org-roam-db-autosync-mode)))
+			(which-key-add-key-based-replacements "C-c n" "org-roam")
+			(org-roam-setup)
+			(org-roam-db-autosync-mode)))
 
 	(add-hook 'org-agenda-finalize-hook 'delete-other-windows)
 
@@ -1177,7 +1176,8 @@
 	(bind-key "C-c a o"	'office.org)
 	(defun office.org ()(interactive)(find-file (concat default-directory "!.org"))) )
 
+; LocalWords:  LocalWords Inconsolata natasha
 ; LocalWords:  el icomplete init pdfexport filesandbuffers RSS Lorem
 ; LocalWords:  Gopherspace ipsum Monospace Consolas MidnightBlue sexp
 ; LocalWords:  bashrc defun modeline waterfox comfiness ibuffer Eww
-; LocalWords:  RET quelpa café remotehost fido
+; LocalWords:  RET quelpa café remotehost fido hebrew islamic henrypa
