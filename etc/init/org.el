@@ -91,7 +91,3 @@
 		(set-face-underline-p 'org-link nil)
 		(set-face-underline-p 'org-link t))
 	(iimage-mode ‘toggle))
-
-;; fix table.el error
-(defun myfunc/check_table_p (oldfunc) (funcall oldfunc t))
-(advice-add 'org-at-table-p :around 'myfunc/check_table_p)
