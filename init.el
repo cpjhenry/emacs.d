@@ -194,9 +194,7 @@
 	(goto-address-mode)
 	(setq-local font-lock-keywords-only t)))
 (add-hook 'pdf-view-mode-hook 'auto-revert-mode)
-(remove-hook
-	'file-name-at-point-functions
-	'ffap-guess-file-name-at-point)
+(remove-hook 'file-name-at-point-functions 'ffap-guess-file-name-at-point)
 
 ;; eval-after-loads are run once, before mode hooks
 ;; mode-hooks execute once for every buffer in which the mode is enabled
@@ -313,7 +311,7 @@
 (ido-mode t)
 (setq
 	ido-enable-flex-matching t
-	ido-show-dot-for-dired t)
+	ido-show-dot-for-dired nil)
 (define-key (cdr ido-minor-mode-map-entry) [remap write-file] nil); turn off C-x C-w remapping
 
 ;(icomplete-mode) ; IDO for M-x
@@ -699,17 +697,14 @@
 (add-hook 'fill-nobreak-predicate #'fill-french-nobreak-p)
 
 (use-package visual-fill-column
-	:config (advice-add 'text-scale-adjust :after #'visual-fill-column-adjust))
-(use-package adaptive-wrap)
-(add-hook 'visual-line-mode-hook 'visual-fill-column-mode)
-(add-hook 'visual-line-mode-hook 'adaptive-wrap-prefix-mode)
-(add-hook 'visual-fill-column-mode-hook #'(lambda()
-	(setq visual-fill-column-fringes-outside-margins nil) ))
-(add-hook 'prog-mode-hook (lambda() (visual-fill-column-mode -1) ))
+	:config (setq visual-fill-column-fringes-outside-margins nil)
 
-;; word count (replaced by doom-modeline)
-;(use-package wc-mode
-;	:config (setq wc-mode-map (make-sparse-keymap)))
+	(advice-add 'text-scale-adjust :after #'visual-fill-column-adjust)
+	(add-hook 'visual-line-mode-hook 'visual-fill-column-mode)
+	(add-hook 'prog-mode-hook (lambda() (visual-fill-column-mode -1))))
+
+(use-package adaptive-wrap)
+	(add-hook 'visual-line-mode-hook 'adaptive-wrap-prefix-mode)
 
 ;; fix html-mode
 (add-to-list 'auto-mode-alist '("\\.html$" . html-mode))
@@ -718,8 +713,6 @@
 	(visual-line-mode -1)
 	(visual-fill-column-mode -1)
 	(toggle-truncate-lines 1)))
-
-;(use-package html-to-markdown)
 
 (use-package markdown-mode
 	:mode
@@ -903,9 +896,9 @@
 
 (use-package org-d20)
 
-(use-package org-modern
-	:config
-	(with-eval-after-load 'org (global-org-modern-mode)))
+;; (use-package org-modern
+;; 	:config
+;; 	(with-eval-after-load 'org (global-org-modern-mode)))
 
 (when *natasha* (use-package org-roam
 	:ensure t
@@ -1134,6 +1127,7 @@
 
 ;; Aliases
 (defalias 'di 'daily-info)
+(defalias 'doe 'toggle-debug-on-error)
 (defalias 'flv 'add-file-local-variable)
 (defalias 'cr 'customize-rogue)
 (defalias 'la 'list-abbrevs)
