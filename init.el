@@ -81,7 +81,7 @@
    :url "https://github.com/quelpa/quelpa-use-package.git")))
 (require 'quelpa-use-package)
 
-(load "init/straight")
+;(load "init/straight")
 
 ;; settings
 (set-language-environment 'utf-8)
@@ -94,6 +94,7 @@
 	default-major-mode 'text-mode
 
 	ad-redefinition-action 'accept
+	async-shell-command-buffer 'new-buffer
 	bookmark-save-flag 1
 	bookmark-set-fringe-mark nil
 	bookmark-sort-flag nil
