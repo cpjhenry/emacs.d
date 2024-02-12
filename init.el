@@ -280,11 +280,11 @@
 	:ensure t
 	:hook	(after-init . doom-modeline-mode)
 	:config (setq
-		doom-modeline-major-mode-icon nil
 		doom-modeline-buffer-modification-icon nil
 		doom-modeline-column-zero-based nil
 		doom-modeline-enable-word-count t
 		doom-modeline-continuous-word-count-modes '(markdown-mode gfm-mode org-mode text-mode))
+		(unless (display-graphic-p) (setq doom-modeline-icon nil))
 	(use-package nerd-icons))
 
 (setq
@@ -1026,7 +1026,7 @@
 
 ;; avoid accidental exits
 (global-unset-key (kbd "C-x C-c"))
-(global-set-key (kbd "C-x C-c C-c") 'save-buffers-kill-terminal)
+(global-set-key (kbd "C-x C-c c") 'save-buffers-kill-terminal)
 
 (global-unset-key (kbd "C-z"))
 (global-unset-key (kbd "C-x C-z"))
