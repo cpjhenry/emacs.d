@@ -369,6 +369,7 @@
 			(name . "^\\*scratch\\*$")
 			(name . "^\\*Messages\\*$")
 			(name . "\\.el") ))
+		("Markdown" (name . "\\.md"))
 		("Org" (name . "\\.org"))
 		("planner" (or
 			(name . "^\\*Calendar\\*$")
@@ -900,6 +901,8 @@
 ;; (use-package org-modern
 ;; 	:config
 ;; 	(with-eval-after-load 'org (global-org-modern-mode)))
+
+(when *mac* (use-package org-mac-link))
 
 (when *natasha* (use-package org-roam
 	:ensure t
