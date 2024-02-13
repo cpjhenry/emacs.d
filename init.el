@@ -45,7 +45,6 @@
 (when (display-graphic-p)
 (add-to-list 'default-frame-alist '(background-color . "Ivory")))
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
-(add-to-list 'default-frame-alist '(tool-bar-lines . 0))
 
 (setq
 	user-full-name "cpj"
