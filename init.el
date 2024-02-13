@@ -947,15 +947,21 @@
 
 (global-set-key (kbd "<home>"   ) 'move-beginning-of-line)
 (global-set-key (kbd "<end>"    ) 'move-end-of-line)
-(global-set-key (kbd "C-<home>" ) 'beginning-of-buffer)
-(global-set-key (kbd "C-<end>"  ) 'end-of-buffer)
-;; M-<home>		'beginning-of-buffer-other-window
-;; M-<end>		'end-of-buffer-other-window
-
 ;; <prior>		'scroll-down-command
 ;; <next>		'scroll-up-command
+
+(global-set-key (kbd "C-<home>" ) 'beginning-of-buffer)
+(global-set-key (kbd "C-<end>"  ) 'end-of-buffer)
 (global-set-key (kbd "C-<prior>") 'scroll-down-line)
 (global-set-key (kbd "C-<next>" ) 'scroll-up-line)
+
+;; C-M-<home>	'beginning-of-defun
+;; C-M-<end>	'end-of-defun
+(global-set-key (kbd "C-M-<prior>") (lambda()(interactive)(backward-paragraph)(recenter-top-bottom)))
+(global-set-key (kbd "C-M-<next>" ) (lambda()(interactive)(forward-paragraph)(recenter-top-bottom)))
+
+;; M-<home>		'beginning-of-buffer-other-window
+;; M-<end>		'end-of-buffer-other-window
 ;; M-<prior>	'scroll-other-window-down
 ;; M-<next>		'scroll-other-window
 
@@ -963,8 +969,8 @@
 ;; C- <u> <d>  	- by paragraph
 (global-unset-key (kbd "M-<left>"))
 (global-unset-key (kbd "M-<right>"))
-(global-set-key (kbd "M-<up>") (lambda()(interactive)(backward-page)(recenter-top-bottom)))
-(global-set-key (kbd "M-<down>")  (lambda()(interactive)(forward-page) (recenter-top-bottom)))
+(global-set-key (kbd "M-<up>")   (lambda()(interactive)(backward-page)(recenter-top-bottom)))
+(global-set-key (kbd "M-<down>") (lambda()(interactive)(forward-page) (recenter-top-bottom)))
 ;; C-M- <- ->	- by sexp
 ;; C-M- <u> <d>	- by list
 
