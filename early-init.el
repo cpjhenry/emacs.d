@@ -1,5 +1,7 @@
 ;;; early init file / pjh
-(add-to-list 'default-frame-alist '(undecorated-round . t))
+(add-to-list 'default-frame-alist '(undecorated . t))
+;(add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
+;(add-to-list 'default-frame-alist '(ns-appearance . dark))
 
 ;; Don't show Emacs frame until initialized
 ;(add-to-list 'initial-frame-alist '(visibility . nil))
