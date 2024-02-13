@@ -955,24 +955,15 @@
 (global-set-key (kbd "C-<prior>") 'scroll-down-line)
 (global-set-key (kbd "C-<next>" ) 'scroll-up-line)
 
-;; C-M-<home>	'beginning-of-defun
-;; C-M-<end>	'end-of-defun
-(global-set-key (kbd "C-M-<prior>") (lambda()(interactive)(backward-paragraph)(recenter-top-bottom)))
-(global-set-key (kbd "C-M-<next>" ) (lambda()(interactive)(forward-paragraph)(recenter-top-bottom)))
-
 ;; M-<home>		'beginning-of-buffer-other-window
 ;; M-<end>		'end-of-buffer-other-window
 ;; M-<prior>	'scroll-other-window-down
 ;; M-<next>		'scroll-other-window
 
-;; C- <- ->		- by word
-;; C- <u> <d>  	- by paragraph
-(global-unset-key (kbd "M-<left>"))
-(global-unset-key (kbd "M-<right>"))
+(global-set-key (kbd "M-<left>") (lambda()(interactive)(backward-paragraph)(recenter-top-bottom)))
+(global-set-key (kbd "M-<right>")(lambda()(interactive)(forward-paragraph)(recenter-top-bottom)))
 (global-set-key (kbd "M-<up>")   (lambda()(interactive)(backward-page)(recenter-top-bottom)))
 (global-set-key (kbd "M-<down>") (lambda()(interactive)(forward-page) (recenter-top-bottom)))
-;; C-M- <- ->	- by sexp
-;; C-M- <u> <d>	- by list
 
 (global-unset-key (kbd "s-<left>" ))
 (global-unset-key (kbd "s-<right>"))
@@ -1007,10 +998,10 @@
 
 ;; window navigation
 (when (fboundp 'windmove-default-keybindings)
-	(global-set-key (kbd "ESC <up>")	'windmove-up)
-	(global-set-key (kbd "ESC <down>")	'windmove-down)
-	(global-set-key (kbd "ESC <right>")	'windmove-right)
-	(global-set-key (kbd "ESC <left>")	'windmove-left) )
+	(global-set-key (kbd "s-<up>")		'windmove-up)
+	(global-set-key (kbd "s-<down>")	'windmove-down)
+	(global-set-key (kbd "s-<right>")	'windmove-right)
+	(global-set-key (kbd "s-<left>")	'windmove-left))
 
 ; tweaking window sizes
 (global-set-key (kbd "C-{") 'shrink-window-horizontally)

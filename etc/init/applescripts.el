@@ -1,3 +1,4 @@
+;; https://github.com/wainstead/swainlisp/blob/master/personal-lisp/osx.el
 (defun sw-pp () "Make iTunes either pause or play"
 	(interactive)
 	(setq apscript "
