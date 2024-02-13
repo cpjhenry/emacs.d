@@ -105,6 +105,7 @@
 	dired-dwim-target t				; suggest other visible dired buffer
 	find-file-visit-truename t
 	frame-inhibit-implied-resize t
+	frame-resize-pixelwise t
 	frame-title-format nil
 	help-clean-buttons t
 	ibuffer-expert t
