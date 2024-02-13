@@ -1031,8 +1031,8 @@
 (global-set-key (kbd "A-<return>")(kbd "M-<return>"))
 
 ;; avoid accidental exits
-(global-unset-key (kbd "C-x C-c"))
-(global-set-key (kbd "C-x C-c c") 'save-buffers-kill-terminal)
+;(global-unset-key (kbd "C-x C-c"))
+;(global-set-key (kbd "C-x C-c c") 'save-buffers-kill-terminal)
 
 (global-unset-key (kbd "C-z"))
 (global-unset-key (kbd "C-x C-z"))
