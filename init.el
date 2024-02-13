@@ -17,13 +17,21 @@
 
 (when *mac* (add-to-list 'default-frame-alist '(font . "Inconsolata 21"))
 	(setq
-		; Mac command key is Super
-		; Mac option  key is Meta
-		; Mac control key is Control
-		mac-function-modifier 'hyper	; Hyper
+		mac-function-modifier nil
+		mac-control-modifier 'control	; Control
+		mac-option-modifier 'meta		; Meta
+		mac-command-modifier 'super		; Super
 		mac-right-command-modifier 'alt	; Alt
 		mac-right-option-modifier nil)	; pass-thru
-	(define-key key-translation-map (kbd "<C-mouse-1>") (kbd "<mouse-2>")) )
+
+	(global-set-key (kbd "s-c") 'kill-ring-save)	; ⌘-c = Copy
+	(global-set-key (kbd "s-x") 'kill-region) 		; ⌘-x = Cut
+	(global-set-key (kbd "s-v") 'yank)				; ⌘-v = Paste
+	(global-set-key (kbd "s-a") 'mark-whole-buffer)	; ⌘-a = Select all
+	(global-set-key (kbd "s-z") 'undo)				; ⌘-z = Undo
+
+	(global-set-key (kbd "s-s") 'save-buffer)
+	(global-set-key (kbd "s-w") 'delete-frame))
 
 (when *gnu* (add-to-list 'default-frame-alist '(font . "Monospace 17")) )
 
@@ -32,7 +40,7 @@
 		w32-lwindow-modifier 'super
 		w32-pass-lwindow-to-system nil
 		w32-apps-modifier 'hyper)
-	(message "Running on Windows.") )
+	(message "Running on Windows."))
 
 (when (display-graphic-p)
 (add-to-list 'default-frame-alist '(background-color . "Ivory")))
