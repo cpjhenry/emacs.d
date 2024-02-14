@@ -1137,6 +1137,10 @@
 (which-key-add-key-based-replacements "C-x 8" "key translations")
 (which-key-add-key-based-replacements "C-x 8 e" "emojis")
 
+;; add Hyper- keys (C-M-s-?) to iTerm2
+(cl-loop for char from ?a to ?z do
+	(define-key input-decode-map (format "\e[1;P%c" char) (kbd (format "H-%c" char))))
+
 
 ;; Aliases
 (defalias 'di 'daily-info)
