@@ -1137,9 +1137,10 @@
 (which-key-add-key-based-replacements "C-x 8" "key translations")
 (which-key-add-key-based-replacements "C-x 8 e" "emojis")
 
-;; add Hyper- keys (C-M-s-?) to iTerm2
-(cl-loop for char from ?a to ?z do
-	(define-key input-decode-map (format "\e[1;P%c" char) (kbd (format "H-%c" char))))
+;; add Hyper- keys (C-M-s-?) to terminal frames (iTerm2)
+(add-hook 'server-after-make-frame-hook (lambda() (interactive)
+	(unless (display-graphic-p) (cl-loop for char from ?a to ?z do
+	(define-key input-decode-map (format "\e[1;P%c" char) (kbd (format "H-%c" char)))))))
 
 
 ;; Aliases
