@@ -188,7 +188,7 @@
 	:diminish)
 
 ;; path
-(if (daemonp) (load "init/exec-path"))
+(load "init/exec-path")
 
 
 ;; buffers
