@@ -974,11 +974,6 @@
 (global-set-key (kbd "M-<up>")   (lambda()(interactive)(backward-page)(recenter-top-bottom)))
 (global-set-key (kbd "M-<down>") (lambda()(interactive)(forward-page) (recenter-top-bottom)))
 
-(global-unset-key (kbd "s-<left>" ))
-(global-unset-key (kbd "s-<right>"))
-(global-unset-key (kbd "s-<up>"   ))
-(global-unset-key (kbd "s-<down>" ))
-
 (global-set-key (kbd "<swipe-left>")  'mac-next-buffer)
 (global-set-key (kbd "<swipe-right>") 'mac-previous-buffer)
 
@@ -1004,7 +999,7 @@
 ;; mouse
 ;; https://github.com/purcell/disable-mouse
 (use-package disable-mouse)
-(global-disable-mouse-mode)
+;(global-disable-mouse-mode)
 ;(mouse-avoidance-mode banish)
 
 
@@ -1079,8 +1074,6 @@
 (bind-key "C-M-;"	'eval-r) (defun eval-r (b e) (interactive "r")(eval-region b e)(deactivate-mark))
 (bind-key "C-M-Y"	'undo-yank)
 
-(bind-key "C-c !"	'shell)
-
 (bind-key "C-c a a"	'org-agenda) (when *mac*
 (bind-key "C-c a d"	'daily-agenda) (defun daily-agenda () (interactive)(find-file org-agenda-file)))
 (which-key-add-key-based-replacements "C-c a" "org agenda")
@@ -1141,6 +1134,8 @@
 
 (which-key-add-key-based-replacements "C-x 8" "key translations")
 (which-key-add-key-based-replacements "C-x 8 e" "emojis")
+
+(bind-key "C-x !"	'shell)
 
 ;; add Hyper- keys (C-M-s-?) to terminal frames (iTerm2)
 (add-hook 'server-after-make-frame-hook (lambda() (interactive)
