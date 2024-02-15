@@ -9,8 +9,10 @@ di
 echo
 icer -mb
 calt |sed '$s/$/\n/'
-#ruled 4
-echo ""
+ruled 32
 alert -f
 echo
-calm $(date +%m)
+ruled 32
+date +%B
+echo
+calm #$(date +%m)
