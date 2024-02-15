@@ -5,10 +5,10 @@
 ;; and benefits greatly from compilation.
 (setq exec-path
 	(or (eval-when-compile
-		(when (require 'exec-path-from-shell nil t)
-			(setq exec-path-from-shell-check-startup-files nil)
-			(nconc exec-path-from-shell-variables '("PATH" "MANPATH" "LC_TYPE" "LC_ALL" "LANG" ))
-			(exec-path-from-shell-initialize) exec-path))
+   	(when (require 'exec-path-from-shell nil t)
+		(setq exec-path-from-shell-check-startup-files nil)
+		(nconc exec-path-from-shell-variables '("PATH" "MANPATH" "LC_TYPE" "LC_ALL" "LANG" ))
+		(exec-path-from-shell-initialize) exec-path))
 		exec-path))
 
 ;; -or-

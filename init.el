@@ -548,6 +548,8 @@
 		(autoload 'w3m-browse-url "w3m" "Ask a WWW browser to show a URL." t)
 		(define-key w3m-mode-map (kbd "<left>") 'w3m-view-previous-page))
 
+(use-package flycheck)
+
 (use-package free-keys :defer t)
 
 (use-package google-this
@@ -976,6 +978,9 @@
 (global-unset-key (kbd "s-<right>"))
 (global-unset-key (kbd "s-<up>"   ))
 (global-unset-key (kbd "s-<down>" ))
+
+(global-set-key (kbd "<swipe-left>")  'mac-next-buffer)
+(global-set-key (kbd "<swipe-right>") 'mac-previous-buffer)
 
 ;; scroll settings
 (setq
