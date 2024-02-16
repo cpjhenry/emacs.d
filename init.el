@@ -134,6 +134,7 @@
 	search-default-mode 'char-fold-to-regexp ; cafe = café
 	sentence-end-double-space nil
 	show-paren-style 'parenthesis
+	tramp-completion-use-cache nil
 	tramp-default-method "ssh"
 	tramp-syntax 'simplified		; C-x C-f /remotehost:filename
 	trash-directory "~/.Trash"
@@ -241,7 +242,7 @@
 
 ;; Revert buffers when the underlying file has changed
 (setq global-auto-revert-non-file-buffers t) ; Dired, etc.
-(global-auto-revert-mode 1)
+;(global-auto-revert-mode)
 
 ;; automatically save buffers associated with files on buffer or window switch
 (defadvice switch-to-buffer (before save-buffer-now activate)
@@ -264,6 +265,21 @@
 
 ;; clean-up old buffers
 (midnight-mode +1)
+
+;; tramp colours
+(defvar trampbackground "misty rose")
+(defun checker-tramp-file-hook ()
+	(when (file-remote-p buffer-file-name)
+	(face-remap-add-relative 'default :background trampbackground)))
+(add-hook 'find-file-hook 'checker-tramp-file-hook)
+(defun checker-tramp-dired-hook ()
+	(when (file-remote-p dired-directory)
+	(face-remap-add-relative 'default :background trampbackground)))
+(add-hook 'dired-after-readin-hook 'checker-tramp-dired-hook)
+(defun checker-tramp-shell-hook ()
+	(when (file-remote-p default-directory)
+	(face-remap-add-relative 'default :background trampbackground)))
+(add-hook 'shell-mode-hook 'checker-tramp-shell-hook)
 
 
 ;; frames
@@ -335,6 +351,7 @@
 
 (add-to-list 'ido-ignore-buffers "*Messages*")
 (add-to-list 'ido-ignore-buffers "*Shell Command Output*")
+(add-to-list 'ido-ignore-buffers "^*tramp/")
 (add-to-list 'ido-ignore-files ".DS_Store")
 (add-to-list 'ido-ignore-files "ido.last")
 
@@ -1133,6 +1150,7 @@
 (bind-key "C-x c" 'kill-current-buffer)
 
 (bind-key "C-x x k"	'kill-other-buffers)
+(bind-key "C-x x l" 'buf-to-LF)(defun buf-to-LF()(interactive)(set-buffer-file-coding-system 'utf-8-unix))
 (bind-key "C-x x r"	'rename-file-and-buffer)
 (bind-key "C-x x v" 'view-text-file-as-info-manual)
 (bind-key "C-x x w" 'preview-html)(defun preview-html()(interactive)(shr-render-buffer (current-buffer)))
