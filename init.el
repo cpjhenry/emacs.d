@@ -42,9 +42,9 @@
 		w32-apps-modifier 'hyper)
 	(message "Running on Windows."))
 
-(when (display-graphic-p)
-(add-to-list 'default-frame-alist '(background-color . "Ivory")))
-(add-to-list 'default-frame-alist '(fullscreen . maximized))
+;(when (display-graphic-p)
+;(add-to-list 'default-frame-alist '(background-color . "Ivory")))
+;(add-to-list 'default-frame-alist '(fullscreen . maximized))
 
 (setq
 	user-full-name "cpj"
@@ -281,6 +281,11 @@
 
 	(add-hook 'after-make-frame-functions 'ns-raise-emacs-with-frame)
 	(when (display-graphic-p) (ns-raise-emacs)))
+
+;; add Hyper- keys (C-M-s-?) to terminal frames (iTerm2)
+(add-hook 'server-after-make-frame-hook (lambda() (interactive)
+	(unless (display-graphic-p) (cl-loop for char from ?a to ?z do
+	(define-key input-decode-map (format "\e[1;P%c" char) (kbd (format "H-%c" char)))))))
 
 
 ;; mode line
@@ -1136,11 +1141,6 @@
 (which-key-add-key-based-replacements "C-x 8 e" "emojis")
 
 (bind-key "C-x !"	'shell)
-
-;; add Hyper- keys (C-M-s-?) to terminal frames (iTerm2)
-(add-hook 'server-after-make-frame-hook (lambda() (interactive)
-	(unless (display-graphic-p) (cl-loop for char from ?a to ?z do
-	(define-key input-decode-map (format "\e[1;P%c" char) (kbd (format "H-%c" char)))))))
 
 
 ;; Aliases
