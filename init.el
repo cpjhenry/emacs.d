@@ -134,9 +134,6 @@
 	search-default-mode 'char-fold-to-regexp ; cafe = café
 	sentence-end-double-space nil
 	show-paren-style 'parenthesis
-	tramp-completion-use-cache nil
-	tramp-default-method "ssh"
-	tramp-syntax 'simplified		; C-x C-f /remotehost:filename
 	trash-directory "~/.Trash"
 	use-dialog-box nil
 	use-file-dialog nil
@@ -165,8 +162,6 @@
 	eshell-aliases-file			(concat user-emacs-directory "etc/eshell/aliases")
 	eshell-directory-name  		(concat user-emacs-directory "var/eshell/")
 	request-storage-directory  	(concat user-emacs-directory "var/request/storage/")
-	tramp-auto-save-directory  	(concat user-emacs-directory "var/tramp/auto-save/")
-	tramp-persistency-file-name	(concat user-emacs-directory "var/tramp/persistency")
 	url-cache-directory			(concat user-emacs-directory "var/url/cache/")
 	url-configuration-directory	(concat user-emacs-directory "var/url/configuration/") )
 
@@ -266,7 +261,15 @@
 ;; clean-up old buffers
 (midnight-mode +1)
 
-;; tramp colours
+;; tramp
+(setq
+	tramp-completion-use-cache nil
+	tramp-default-method "ssh"
+	tramp-syntax 'simplified		; C-x C-f /remotehost:filename
+
+	tramp-auto-save-directory  	(concat user-emacs-directory "var/tramp/auto-save/")
+	tramp-persistency-file-name	(concat user-emacs-directory "var/tramp/persistency"))
+
 (defvar trampbackground "misty rose")
 (defun checker-tramp-file-hook ()
 	(when (file-remote-p buffer-file-name)
@@ -1168,7 +1171,7 @@
 (defalias 'cr 'customize-rogue)
 (defalias 'la 'list-abbrevs)
 (defalias 'lc 'list-colors-display)
-(defalias 'lp 'my/list-packages)
+(defalias 'lp 'list-packages)
 (defalias 'recs 'recover-session)
 (defalias 'which-key-alias 'which-key-add-key-based-replacements)
 
