@@ -28,8 +28,7 @@
 	(shell-command "az -u" buf)
 	(switch-to-buffer buf)
 	(markdown-preview)
-	(and (get-buffer buf)
-		(kill-buffer buf)
-		(kill-buffer "*markdown-output*"))))
+	(kill-buffer buf)
+	(kill-buffer "*markdown-output*")))
 
 ; LocalWords:  buf di az fw wx gcal
