@@ -15,4 +15,4 @@ echo
 ruled 32
 date +%B
 echo
-calm #$(date +%m)
+calm |sed "s/ $(date +%b)//"

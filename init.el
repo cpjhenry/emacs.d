@@ -261,7 +261,7 @@
 ;; clean-up old buffers
 (midnight-mode +1)
 
-;; tramp
+;; Tramp
 (setq
 	tramp-completion-use-cache nil
 	tramp-default-method "ssh"
@@ -301,7 +301,7 @@
 	(add-hook 'after-make-frame-functions 'ns-raise-emacs-with-frame)
 	(when (display-graphic-p) (ns-raise-emacs)))
 
-;; add Hyper- keys (C-M-s-?) to terminal frames (iTerm2)
+;; add Hyper- keys (C-M-s-…) to terminal frames (iTerm2)
 (add-hook 'server-after-make-frame-hook (lambda() (interactive)
 	(unless (display-graphic-p) (cl-loop for char from ?a to ?z do
 	(define-key input-decode-map (format "\e[1;P%c" char) (kbd (format "H-%c" char)))))))
@@ -1173,6 +1173,7 @@
 (defalias 'lc 'list-colors-display)
 (defalias 'lp 'list-packages)
 (defalias 'recs 'recover-session)
+(defalias 'tl 'toggle-truncate-lines)
 (defalias 'which-key-alias 'which-key-add-key-based-replacements)
 
 (defalias 'arm 'auto-revert-mode)
