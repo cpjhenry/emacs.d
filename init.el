@@ -490,7 +490,7 @@
 	ps-lpr-switches '("-o media=a5")
 	ps-paper-type 'a5
 
-	font-size 12
+	ps-font-size 12
 	ps-font-family 'Courier
 	ps-footer-font-family 'Courier
 	ps-print-color-p nil
@@ -1174,6 +1174,7 @@
 (defalias 'lp 'list-packages)
 (defalias 'recs 'recover-session)
 (defalias 'tl 'toggle-truncate-lines)
+(defalias 'undefun 'fmakunbound)
 (defalias 'which-key-alias 'which-key-add-key-based-replacements)
 
 (defalias 'arm 'auto-revert-mode)

@@ -12,6 +12,11 @@
 	(setq-local buf (generate-new-buffer "*gcal*"))
 	(shell-command "gcal-mode" buf))
 
+(defun calm () "Print version of monthly calendar"
+	(interactive)
+	(setq-local buf (generate-new-buffer "*calm(p)*"))
+	(shell-command "calm-mode" buf))
+
 (defun wx () "Weather"
 	(interactive)
 	(setq-local buf (generate-new-buffer "*wx*"))
