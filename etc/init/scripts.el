@@ -24,8 +24,17 @@
 
 (defun fw () "Weekly Forecast"
 	(interactive)
-	(setq-local buf (generate-new-buffer "*fw*"))
-	(shell-command "fw" buf))
+	(let ((buf (generate-new-buffer "*fw*")))
+	(shell-command "fw -u" buf)
+	(switch-to-buffer buf)
+	(text-mode))
+
+	(let ((buf (generate-new-buffer "*fw*")))
+	(shell-command "fw -uf aries" buf)
+	(switch-to-buffer buf)
+	(text-mode)
+	(mark-whole-buffer)
+	(kill-ring-save (point-min) (point-max))))
 
 (defun az () "Monthly Forecast"
 	(interactive)
@@ -36,4 +45,4 @@
 	(kill-buffer buf)
 	(kill-buffer "*markdown-output*")))
 
-; LocalWords:  buf di az fw wx gcal
+; LocalWords:  buf di az fw wx gcal uf aries

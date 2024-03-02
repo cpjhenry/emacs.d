@@ -477,6 +477,7 @@
 (define-key global-map [menu-bar file print] nil)
 (bind-key "M-p a"  	'print-to-a5-printer)
 (bind-key "M-p r"  	'print-to-receipt-printer)
+(bind-key "M-p s"	'spool-to-enscript)
 (bind-key "s-p" 	'print-buffer-or-region)
 	(defun print-buffer-or-region () (interactive)
 	(print-region (point-min) (point-max)))
@@ -1087,7 +1088,7 @@
 
 (bind-key "<f5>"	'toggle-fill-column)
 (bind-key "<f6>"	'toggle-fill-column-center)
-(bind-key "<f7>"	'ispell-word)
+(bind-key "<f7>"	'ispell-buffer)
 (bind-key "<f8>"	'list-bookmarks)
 
 (bind-key "M-<f1>" 'my/emacs-help)
