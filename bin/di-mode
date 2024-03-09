@@ -5,19 +5,10 @@
 cond_source() { [ -f $1 ] && . $1; }
 cond_source $HOME/.bash_routines
 
-(ind -fA -aruiqX
+di
 echo
-wwv
-solunar -l $GEOLOC -q |sed 's/crescent/cres./'
-echo
-printf "CPJ %s / " $(cpj |commify)
-cpjhbio |sed 's/  /\n/'
-[ $(which zodiac) ] && zodiac
-) |sed -e "s/é/e/g;s/Ç/C/g;s/ô/o/g;s/[^a-zA-Z0-9 :'\.+/\,()\[\]-\&]//g"
-
-echo
-icer -mb
-calt |sed '$s/$/\n/'
+icer -mb |sed '$s/$/\n/'
+#calt |sed '$s/$/\n/'
 ruled 32
 alert -f
 echo

@@ -24,17 +24,18 @@
 
 (defun fw () "Weekly Forecast"
 	(interactive)
-	(let ((buf (generate-new-buffer "*fw*")))
+	(let ((buf (generate-new-buffer "*Virgo*")))
 	(shell-command "fw -u" buf)
 	(switch-to-buffer buf)
 	(text-mode))
 
-	(let ((buf (generate-new-buffer "*fw*")))
+	(let ((buf (generate-new-buffer "*Aries*")))
 	(shell-command "fw -uf aries" buf)
 	(switch-to-buffer buf)
 	(text-mode)
-	(mark-whole-buffer)
-	(kill-ring-save (point-min) (point-max))))
+	(ispell-buffer)
+	(kill-ring-save (point-min) (point-max))
+	(kill-buffer buf)))
 
 (defun az () "Monthly Forecast"
 	(interactive)

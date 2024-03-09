@@ -37,7 +37,7 @@
 	(flush-lines "^\\s-*$" start end nil))
 
 (defun replace-smart-quotes (beg end)
-	"Replace 'smart quotes' in buffer or region with ascii quotes."
+	"Replace 'smart quotes' in buffer or region with ASCII quotes."
 	(interactive "r")
 	(format-replace-strings '(
 		("\x201C" . "\"")
@@ -45,10 +45,11 @@
 		("\x2018" . "'")
 		("\x2019" . "'") ) nil beg end))
 
+;; https://emacs.stackexchange.com/questions/51629/add-paragraph-numbers
 (defun number-paragraphs (&optional takefirst)
-	"Numbers resp. renumber paragraphs.
+"Numbers resp. renumber paragraphs.
 
-	If starting from already numbered, take that value as offset."
+If starting from already numbered, take that value as offset."
 	(interactive "*P")
 	(let ((counter 0)
 		(last 0))

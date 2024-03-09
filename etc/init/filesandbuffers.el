@@ -31,11 +31,16 @@
 		(setq buffer-offer-save t) ))
 
 (defun copy-current-buffer-to-temp-buffer ()
-	"Copy the current buffer, create temp buffer, paste it there."
+	"Copy the current buffer or region, create temp buffer, paste it there."
 	(interactive)
-	(kill-ring-save (point-min) (point-max))
-	(switch-to-buffer (make-temp-name ""))
-	(yank))
+	(let ((beg (point-min)) (end (point-max)))
+		(when (region-active-p)
+			(setq beg (region-beginning))
+			(setq end (region-end)))
+
+		(kill-ring-save beg end)
+		(switch-to-buffer (make-temp-name ""))
+		(yank)))
 
 (defun kill-other-buffers ()
 	"Kill all other buffers."

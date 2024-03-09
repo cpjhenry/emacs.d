@@ -1981,8 +1981,6 @@ C-x C-q					toggle read-only mode
 C-q C-l      			<FF>
 C-x [ | C-x ]			<FF> bk | fwd
 
-C-s-SPC					character viewer
-
 
 ORG-MODE
 
@@ -2017,7 +2015,7 @@ C-<spc> ... M-=			number of days between mark and point
 ")
 (kf-gen-displayer my/emacs-help "Display Emacs help." "*Emacs cheatsheet*")
 
-(defconst Henke-Henry
+(defconst Hanke-Henry
 "                                Hanke-Henry Permanent Calendar (HHPC)
 
     January                         February                        March
@@ -2056,7 +2054,8 @@ C-<spc> ... M-=			number of days between mark and point
                                                                     Mo  Tu  We  Th  Fr  Sa  Su
                                                                      1   2   3   4   5   6   7")
 
-(kf-gen-displayer Henke-Henry "Display Henke-Henry Permanent Calendar." "*HHPC*")
+(kf-gen-displayer Hanke-Henry "Display Hanke-Henry Permanent Calendar." "*HHPC*")
+(defalias 'hanke 'Hanke-Henry)
 
 (defconst british-currency
 "BRITISH CURRENCY
