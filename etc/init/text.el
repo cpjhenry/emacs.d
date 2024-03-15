@@ -43,7 +43,8 @@
 		("\x201C" . "\"")
 		("\x201D" . "\"")
 		("\x2018" . "'")
-		("\x2019" . "'") ) nil beg end))
+		("\x2019" . "'") ) nil beg end)
+	(message "Smart quotes replaced."))
 
 ;; https://emacs.stackexchange.com/questions/51629/add-paragraph-numbers
 (defun number-paragraphs (&optional takefirst)

@@ -8,11 +8,11 @@ cond_source $HOME/.bash_routines
 di
 echo
 icer -mb |sed '$s/$/\n/'
-#calt |sed '$s/$/\n/'
+calt |sed '$s/$/\n/'
 ruled 32
 alert -f
-echo
-ruled 32
-date +%B
-echo
-calm |sed "s/ $(date +%b)//"
+# echo
+# ruled 32
+# date +%B
+# echo
+# calm |sed "s/ $(date +%b)//"

@@ -1954,6 +1954,8 @@ column, then prepend asterisk + space and postpend colon + space."
 <ROPT>-…	   			MacOS alt keys
 C-x 8 …					Emacs alt keys
 
+M-X						extended command (buffer)
+
 C-TAB | C-x ← | →		switch buffer
 C-k | C-S-DEL			kill eol | line
 C-DEL | C-BS 	 		kill word ← →

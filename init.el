@@ -74,11 +74,11 @@
 	use-package-always-ensure t
 	use-package-verbose t)
 
-(use-package auto-package-update
-	:config (setq
-	auto-package-update-delete-old-versions t
-	auto-package-update-hide-results t)
-	(auto-package-update-maybe))
+;(use-package auto-package-update
+;	:config (setq
+;	auto-package-update-delete-old-versions t
+;	auto-package-update-hide-results t)
+;	(auto-package-update-maybe))
 
 (use-package quelpa
 	:config (setq quelpa-verbose nil))
@@ -667,7 +667,7 @@
 			elfeed-db-directory (concat user-emacs-directory "var/elfeed/db/")
 	   		elfeed-enclosure-default-dir (concat user-emacs-directory "var/elfeed/enclosures/")
 			elfeed-score-score-file (concat user-emacs-directory "etc/elfeed/score/score.el")
-			elfeed-show-truncacte-long-urls t
+			elfeed-show-truncate-long-urls nil
 			elfeed-sort-order 'ascending
 			elfeed-use-curl t)
 
