@@ -263,7 +263,6 @@
 
 ;; Tramp
 (setq
-	tramp-completion-use-cache nil
 	tramp-default-method "ssh"
 	tramp-syntax 'simplified		; C-x C-f /remotehost:filename
 
@@ -461,7 +460,7 @@
 	calendar-month-header '(propertize
 		(format "%s %d" (calendar-month-name month) year)
 		'font-lock-face 'calendar-month-header)
-	world-clock-time-format "%9A %2e %9B %R %Z"
+	world-clock-time-format "%a %e %b %R %Z"
 
 	calendar-christian-all-holidays-flag t
 	calendar-chinese-all-holidays-flag t
@@ -476,9 +475,10 @@
 (load "init/page-dimensions")
 (define-key global-map [menu-bar file print] nil)
 (bind-key "M-p a"  	'print-to-a5-printer)
+(bind-key "M-p b"	'ps-print-buffer)
 (bind-key "M-p r"  	'print-to-receipt-printer)
 (bind-key "M-p s"	'spool-to-enscript)
-(bind-key "s-p" 	'print-buffer-or-region)
+(bind-key "M-p p" 	'print-buffer-or-region)
 	(defun print-buffer-or-region () (interactive)
 	(print-region (point-min) (point-max)))
 
@@ -607,8 +607,6 @@
 	:diminish)
 
 (use-package ssh)
-
-(use-package sudo-edit)
 
 (use-package typo) ; minor mode for typographic editing
 
@@ -916,6 +914,7 @@
 	(define-key org-mode-map (kbd "C->") 'org-forward-heading-same-level)
 	(define-key org-mode-map (kbd "A-<left>" ) 'outline-up-heading)
 	(define-key org-mode-map (kbd "A-<right>") (lambda()(interactive)(org-end-of-subtree)))
+	(define-key org-mode-map (kbd "C-c '") (lambda()(interactive)(org-edit-special)(visual-fill-column-mode -1)))
 
 	(add-hook 'org-agenda-finalize-hook 'delete-other-windows)
 
@@ -975,6 +974,9 @@
 	'(define-key markdown-mode-map (kbd "C-c r") 'md-compile-and-update-other-buffer))
 (define-key org-mode-map (kbd "C-c o r") 'org-compile-latex-and-update-other-buffer)
 
+(add-to-list 'safe-local-variable-values '(org-log-done))
+(add-to-list 'safe-local-variable-values '(truncate-lines . -1))
+
 
 ;; arrow keys (Darwin)
 ;; <home>  is fn-left	<end>  is fn-right
@@ -1024,7 +1026,7 @@
 
 ;; mouse
 ;; https://github.com/purcell/disable-mouse
-(use-package disable-mouse)
+;(use-package disable-mouse)
 ;(global-disable-mouse-mode)
 ;(mouse-avoidance-mode banish)
 
@@ -1117,7 +1119,7 @@
 (bind-key "C-c d i"	'insert-iso-date)
 (which-key-add-key-based-replacements "C-c d" "dates")
 
-(bind-key "C-c g"	'elpher-show-bookmarks) ; gopher / gemini
+(bind-key "C-c g"	'elpher) ; gopher / gemini
 
 (bind-key "C-c m"	'menu-bar-read-mail)
 ;(bind-key "C-c n"	'newsticker-show-news)
@@ -1136,6 +1138,7 @@
 (bind-key "C-c x b"	'flush-blank-lines)
 (bind-key "C-c x d" 'delete-duplicate-lines)
 (bind-key "C-c x f" 'toggle-fill-column)
+(bind-key "C-c x g" 'replace-garbage-chars)
 (bind-key "C-c x l" 'lorem-ipsum-insert-paragraphs)
 (bind-key "C-c x n"	'number-paragraphs)
 (bind-key "C-c x q"	'replace-smart-quotes)
@@ -1172,7 +1175,7 @@
 (defalias 'cr 'customize-rogue)
 (defalias 'la 'list-abbrevs)
 (defalias 'lc 'list-colors-display)
-(defalias 'lp 'list-packages)
+(defalias 'lp 'my/list-packages)
 (defalias 'recs 'recover-session)
 (defalias 'tl 'toggle-truncate-lines)
 (defalias 'undefun 'fmakunbound)

@@ -46,6 +46,43 @@
 		("\x2019" . "'") ) nil beg end)
 	(message "Smart quotes replaced."))
 
+;; https://www.emacswiki.org/emacs/ReplaceGarbageChars
+(defun replace-garbage-chars ()
+	"Replace goofy MS and other garbage characters with Latin1 equivalents."
+	(interactive) (save-excursion				;save the current point
+	(replace-string "΄" "\"" nil (point-min) (point-max))
+	(replace-string "“" "\"" nil (point-min) (point-max))
+	(replace-string "’" "'" nil (point-min) (point-max))
+	(replace-string "“" "\"" nil (point-min) (point-max))
+	(replace-string "—" "--" nil (point-min) (point-max)) ; multi-byte
+	(replace-string "" "'" nil (point-min) (point-max))
+	(replace-string "" "'" nil (point-min) (point-max))
+	(replace-string "" "\"" nil (point-min) (point-max))
+	(replace-string "" "\"" nil (point-min) (point-max))
+	(replace-string "" "\"" nil (point-min) (point-max))
+	(replace-string "" "\"" nil (point-min) (point-max))
+	(replace-string "‘" "\"" nil (point-min) (point-max))
+	(replace-string "’" "'" nil (point-min) (point-max))
+	(replace-string "¡\"" "\"" nil (point-min) (point-max))
+	(replace-string "¡­" "..." nil (point-min) (point-max))
+	(replace-string "" "..." nil (point-min) (point-max))
+	(replace-string "" " " nil (point-min) (point-max)) ; M-SPC
+	(replace-string "" "`" nil (point-min) (point-max))  ; \221
+	(replace-string "" "'" nil (point-min) (point-max))  ; \222
+	(replace-string "" "``" nil (point-min) (point-max))
+	(replace-string "" "''" nil (point-min) (point-max))
+	(replace-string "" "*" nil (point-min) (point-max))
+	(replace-string "" "--" nil (point-min) (point-max))
+	(replace-string "" "--" nil (point-min) (point-max))
+	(replace-string " " " " nil (point-min) (point-max)) ; M-SPC
+	(replace-string "¡" "\"" nil (point-min) (point-max))
+	(replace-string "´" "\"" nil (point-min) (point-max))
+	(replace-string "»" "<<" nil (point-min) (point-max))
+	(replace-string "Ç" "'" nil (point-min) (point-max))
+	(replace-string "È" "\"" nil (point-min) (point-max))
+	(replace-string "é" "e" nil (point-min) (point-max)) ;; &eacute;
+	(replace-string "ó" "-" nil (point-min) (point-max)) ))
+
 ;; https://emacs.stackexchange.com/questions/51629/add-paragraph-numbers
 (defun number-paragraphs (&optional takefirst)
 "Numbers resp. renumber paragraphs.
@@ -150,3 +187,5 @@ like \\[yank-pop] does, but in the opposite direction."
 (defun align-equals (begin end)
 	(interactive "r")
 	(align-regexp begin end "\\(\\s-*\\)=" 1 1))
+
+; LocalWords:  ReplaceGarbageChars

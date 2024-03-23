@@ -35,4 +35,10 @@
 (eval-after-load 'elfeed-search
 	'(define-key elfeed-search-mode-map (kbd "s") 'elfeed-toggle-star))
 
+(defun hundred-times-better (entry)
+	(let* ((original (elfeed-deref (elfeed-entry-content entry)))
+	(replace (replace-regexp-in-string "#38;" "" original)))
+	(setf (elfeed-entry-content entry) (elfeed-ref replace))))
+;(add-hook 'elfeed-new-entry-hook #'hundred-times-better)
+
 ; LocalWords:  elfeed
