@@ -226,7 +226,6 @@
 
 ;; remove unneeded messages and buffers
 (setq inhibit-startup-message t)	; 'About Emacs'
-(setq initial-scratch-message nil)	; Makes *scratch* empty
 (add-hook 'minibuffer-exit-hook		; Removes *Completions* buffer when done
 	(lambda () (let ((buffer "*Completions*")) (and (get-buffer buffer) (kill-buffer buffer)))) )
 
@@ -259,7 +258,10 @@
 (setq enable-recursive-minibuffers t)
 
 ;; clean-up old buffers
-(midnight-mode +1)
+;(midnight-mode +1)
+
+;; *scratch*
+(setq initial-scratch-message nil)	; Makes *scratch* empty
 
 ;; Tramp
 (setq
@@ -269,7 +271,7 @@
 	tramp-auto-save-directory  	(concat user-emacs-directory "var/tramp/auto-save/")
 	tramp-persistency-file-name	(concat user-emacs-directory "var/tramp/persistency"))
 
-(defvar trampbackground "misty rose")
+(defvar trampbackground "mint cream")
 (defun checker-tramp-file-hook ()
 	(when (file-remote-p buffer-file-name)
 	(face-remap-add-relative 'default :background trampbackground)))
@@ -282,6 +284,13 @@
 	(when (file-remote-p default-directory)
 	(face-remap-add-relative 'default :background trampbackground)))
 (add-hook 'shell-mode-hook 'checker-tramp-shell-hook)
+
+;; Temporary solution to Tramp LF bug
+(add-hook 'after-save-hook 'buf-to-LF)
+(defun buf-to-LF()
+	(interactive)
+	(set-buffer-file-coding-system 'utf-8-unix)
+	(set-buffer-modified-p nil))
 
 
 ;; frames
@@ -794,7 +803,8 @@
 (unless *w32*
 	(dolist (hook '(text-mode-hook markdown-mode-hook))
 	(add-hook hook (lambda () (flyspell-mode 1))))
-	(add-hook 'prog-mode-hook 'flyspell-prog-mode))
+	;(add-hook 'prog-mode-hook 'flyspell-prog-mode)
+	)
 
 (dolist (hook '(change-log-mode-hook log-edit-mode-hook))
 	(add-hook hook (lambda () (flyspell-mode -1))))
@@ -1093,6 +1103,9 @@
 (bind-key "<f7>"	'ispell-buffer)
 (bind-key "<f8>"	'list-bookmarks)
 
+(bind-key "C-`" 'scratch-buffer)
+(bind-key "C-!" 'shell)
+
 (bind-key "M-<f1>" 'my/emacs-help)
 (bind-key "M-<f2>" 'describe-personal-keybindings)
 (bind-key "M-<f3>" 'shortdoc)
@@ -1100,7 +1113,7 @@
 (bind-key "M-Q"		'unfill-paragraph)
 
 (bind-key "C-M-;"	'eval-r) (defun eval-r (b e) (interactive "r")(eval-region b e)(deactivate-mark))
-(bind-key "C-M-Y"	'undo-yank)
+(bind-key "C-M-y"	'undo-yank)
 
 (bind-key "C-c a a"	'org-agenda) (when *mac*
 (bind-key "C-c a d"	'daily-agenda) (defun daily-agenda () (interactive)(find-file org-agenda-file)))
@@ -1109,7 +1122,6 @@
 (bind-key "C-c b m" 'new-markdown-buffer)
 (bind-key "C-c b n" 'new-empty-buffer)
 (bind-key "C-c b o" 'new-org-buffer)
-(bind-key "C-c b s" 'scratch-buffer)
 (which-key-add-key-based-replacements "C-c b" "buffers")
 
 (bind-key "C-c c"	'calendar)
@@ -1157,15 +1169,13 @@
 (bind-key "C-x c" 'kill-current-buffer)
 
 (bind-key "C-x x k"	'kill-other-buffers)
-(bind-key "C-x x l" 'buf-to-LF)(defun buf-to-LF()(interactive)(set-buffer-file-coding-system 'utf-8-unix))
+(bind-key "C-x x l" 'buf-to-LF)
 (bind-key "C-x x r"	'rename-file-and-buffer)
 (bind-key "C-x x v" 'view-text-file-as-info-manual)
 (bind-key "C-x x w" 'preview-html)(defun preview-html()(interactive)(shr-render-buffer (current-buffer)))
 
 (which-key-add-key-based-replacements "C-x 8" "key translations")
 (which-key-add-key-based-replacements "C-x 8 e" "emojis")
-
-(bind-key "C-x !"	'shell)
 
 
 ;; Aliases
@@ -1174,8 +1184,7 @@
 (defalias 'flv 'add-file-local-variable)
 (defalias 'cr 'customize-rogue)
 (defalias 'la 'list-abbrevs)
-(defalias 'lc 'list-colors-display)
-(defalias 'lp 'my/list-packages)
+(defalias 'lp 'list-packages)
 (defalias 'recs 'recover-session)
 (defalias 'tl 'toggle-truncate-lines)
 (defalias 'undefun 'fmakunbound)
