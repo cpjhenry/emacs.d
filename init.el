@@ -262,6 +262,8 @@
 
 ;; *scratch*
 (setq initial-scratch-message nil)	; Makes *scratch* empty
+(use-package autoscratch
+	:config (setq initial-major-mode 'autoscratch-mode))
 
 ;; Tramp
 (setq
