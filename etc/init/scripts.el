@@ -1,6 +1,6 @@
 ;; execute bash scripts
 
-(defun daily-info () "Daily information."
+(defun di () "Daily information."
 	(interactive)
 	(let ((buf (generate-new-buffer "*daily-info*")))
 	(shell-command "di-mode" buf)

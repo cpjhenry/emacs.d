@@ -1,5 +1,10 @@
 ;; text functions
 
+(defun buf-to-LF()
+	(interactive)
+	(set-buffer-file-coding-system 'utf-8-unix)
+	(set-buffer-modified-p nil))
+
 (defun insert-tab-char ()
 	"Insert a tab char. (ASCII 9, \t)"
 	(interactive)
@@ -182,10 +187,34 @@ like \\[yank-pop] does, but in the opposite direction."
   (interactive "p")
   (yank-pop (- arg)))
 
+;; https://speechcode.com/blog/narrow-to-focus/
+(defun narrow-to-focus (start end)
+"If the region is active, narrow to region, marking it (and only
+it) for the future.  If the mark is not active, narrow to the
+region that was the most recent focus."
+	(interactive "r")
+	(cond ((use-region-p)
+	(remove-overlays (point-min) (point-max) 'focus t)
+	(let ((overlay (make-overlay start end)))
+		(overlay-put overlay 'focus t)
+		(narrow-to-region start end)))
+	(t (let ((focus
+		(seq-find (lambda (o) (overlay-get o 'focus))
+		(overlays-in (point-min) (point-max)))))
+	(when focus
+		(narrow-to-region (overlay-start focus)
+		(overlay-end focus)))))))
+	;(define-key global-map "\C-xnf" 'narrow-to-focus)
+
+;; eww functions
+
+(defun eww-reddit-redirect (url)
+	"Redirect reddit.com to old.reddit.com automatically."
+	(replace-regexp-in-string "https://www.reddit.com" "https://old.reddit.com" url))
+	(setq eww-url-transformers '(eww-remove-tracking eww-reddit-redirect))
+
 ;; prog-mode functions
 
 (defun align-equals (begin end)
 	(interactive "r")
 	(align-regexp begin end "\\(\\s-*\\)=" 1 1))
-
-; LocalWords:  ReplaceGarbageChars

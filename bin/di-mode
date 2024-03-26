@@ -7,7 +7,7 @@ cond_source $HOME/.bash_routines
 
 di
 echo
-icer -mb |sed '$s/$/\n/'
+icer -b |sed '$s/$/\n/'
 calt |sed '$s/$/\n/'
 ruled 32
 alert -f

@@ -80,13 +80,13 @@
 ;	auto-package-update-hide-results t)
 ;	(auto-package-update-maybe))
 
-(use-package quelpa
-	:config (setq quelpa-verbose nil))
-(unless (package-installed-p 'quelpa-use-package)
-	(quelpa '(quelpa-use-package
-   :fetcher git
-   :url "https://github.com/quelpa/quelpa-use-package.git")))
-(require 'quelpa-use-package)
+;(use-package quelpa
+;	:config (setq quelpa-verbose nil))
+;(unless (package-installed-p 'quelpa-use-package)
+;	(quelpa '(quelpa-use-package
+;   :fetcher git
+;   :url "https://github.com/quelpa/quelpa-use-package.git")))
+;(require 'quelpa-use-package)
 
 ;(load "init/straight")
 
@@ -114,7 +114,9 @@
 	frame-inhibit-implied-resize t
 	frame-resize-pixelwise t
 	frame-title-format nil
+	goto-address-mail-face 'default
 	help-clean-buttons t
+	help-enable-variable-value-editing t
 	ibuffer-expert t
 	inhibit-compacting-font-caches t
 	inhibit-default-init t
@@ -133,26 +135,16 @@
 	save-abbrevs 'silent
 	search-default-mode 'char-fold-to-regexp ; cafe = café
 	sentence-end-double-space nil
+	shell-kill-buffer-on-exit t
 	show-paren-style 'parenthesis
 	trash-directory "~/.Trash"
 	use-dialog-box nil
 	use-file-dialog nil
+	use-short-answers t
 	view-read-only t				; turn on view mode when buffer is read-only
 	visual-line-fringe-indicators '(nil right-curly-arrow) )
 
-(if (>= emacs-major-version 28)
-	(setq use-short-answers t)
-	(defalias 'yes-or-no-p 'y-or-n-p))
-
-(when (>= emacs-major-version 28) (setq
-	goto-address-mail-face 'default
-	shell-kill-buffer-on-exit t))
-
-(when (< emacs-major-version 28)
-	(defalias 'show-paren-local-mode 'show-paren-mode))
-
-(when (>= emacs-major-version 29) (setq
-	help-enable-variable-value-editing t))
+(when (< emacs-major-version 28) (defalias 'show-paren-local-mode 'show-paren-mode))
 
 ;; files
 (setq
@@ -236,7 +228,8 @@
 
 ;; Revert buffers when the underlying file has changed
 (setq global-auto-revert-non-file-buffers t) ; Dired, etc.
-(global-auto-revert-mode)
+;; FIXME - Conflict with broken Tramp
+;(global-auto-revert-mode)
 
 ;; automatically save buffers associated with files on buffer or window switch
 (defadvice switch-to-buffer (before save-buffer-now activate)
@@ -287,12 +280,8 @@
 	(face-remap-add-relative 'default :background trampbackground)))
 (add-hook 'shell-mode-hook 'checker-tramp-shell-hook)
 
-;; Temporary solution to Tramp LF bug
-(add-hook 'after-save-hook 'buf-to-LF)
-(defun buf-to-LF()
-	(interactive)
-	(set-buffer-file-coding-system 'utf-8-unix)
-	(set-buffer-modified-p nil))
+;; Temporary HACK / Tramp LF bug
+;(add-hook 'after-save-hook 'buf-to-LF)
 
 
 ;; frames
@@ -429,8 +418,7 @@
 			(mode . gnus-summary-mode)
 			(mode . gnus-article-mode)
 			(name . "^\\.bbdb$")
-			(name . "^\\.newsrc-dribble")))
-		))))
+			(name . "^\\.newsrc-dribble"))) ))))
 
 (require 'ibuf-ext)
 (add-to-list 'ibuffer-never-show-predicates "^\\*Messages\\*")
@@ -475,11 +463,7 @@
 
 	calendar-christian-all-holidays-flag t
 	calendar-chinese-all-holidays-flag t
-	holiday-general-holidays nil
-	holiday-bahai-holidays nil
-	;holiday-hebrew-holidays nil
-	;holiday-islamic-holidays nil
-	)
+	holiday-general-holidays nil)
 
 
 ;; print functions
@@ -1099,11 +1083,11 @@
 
 
 ;; Shortcuts
+(defalias 'which-key-alias 'which-key-add-key-based-replacements)
 
-(bind-key "<f5>"	'toggle-fill-column)
 (bind-key "<f6>"	'toggle-fill-column-center)
-(bind-key "<f7>"	'ispell-buffer)
 (bind-key "<f8>"	'list-bookmarks)
+(global-set-key (kbd "<f10>") 'buf-to-LF) ; HACK
 
 (bind-key "C-`" 'scratch-buffer)
 (bind-key "C-!" 'shell)
@@ -1119,19 +1103,19 @@
 
 (bind-key "C-c a a"	'org-agenda) (when *mac*
 (bind-key "C-c a d"	'daily-agenda) (defun daily-agenda () (interactive)(find-file org-agenda-file)))
-(which-key-add-key-based-replacements "C-c a" "org agenda")
+(which-key-alias "C-c a" "org agenda")
 
 (bind-key "C-c b m" 'new-markdown-buffer)
 (bind-key "C-c b n" 'new-empty-buffer)
 (bind-key "C-c b o" 'new-org-buffer)
-(which-key-add-key-based-replacements "C-c b" "buffers")
+(which-key-alias "C-c b" "buffers")
 
 (bind-key "C-c c"	'calendar)
 
 (bind-key "C-c d SPC" 'display-current-time)
 (bind-key "C-c d c"	'insert-date)
 (bind-key "C-c d i"	'insert-iso-date)
-(which-key-add-key-based-replacements "C-c d" "dates")
+(which-key-alias "C-c d" "dates")
 
 (bind-key "C-c g"	'elpher) ; gopher / gemini
 
@@ -1143,7 +1127,7 @@
 (bind-key "C-c o k" 'org-cliplink)
 (bind-key "C-c o l"	'org-store-link)
 (bind-key "C-c o t" 'org-toggle-link-display)
-(which-key-add-key-based-replacements "C-c o" "org")
+(which-key-alias "C-c o" "org")
 
 (bind-key "C-c p"	'markdown-preview-file)
 (bind-key "C-c s"	'dictionary-search)
@@ -1153,17 +1137,18 @@
 (bind-key "C-c x d" 'delete-duplicate-lines)
 (bind-key "C-c x f" 'toggle-fill-column)
 (bind-key "C-c x g" 'replace-garbage-chars)
-(bind-key "C-c x l" 'lorem-ipsum-insert-paragraphs)
+(bind-key "C-c x i" 'lorem-ipsum-insert-paragraphs)
+(bind-key "C-c x l" 'toggle-truncate-lines)
 (bind-key "C-c x n"	'number-paragraphs)
 (bind-key "C-c x q"	'replace-smart-quotes)
 (bind-key "C-c x t" 'delete-trailing-whitespace)
 (bind-key "C-c x w" 'delete-whitespace-rectangle)
-(which-key-add-key-based-replacements "C-c x" "text")
+(which-key-alias "C-c x" "text")
 
 (global-set-key (kbd "C-c 8 c") (kbd "✓"))
 (global-set-key (kbd "C-c 8 n") (kbd "№"))
 (global-set-key (kbd "C-c 8 p") (kbd "¶"))
-(which-key-add-key-based-replacements "C-c 8" "key translations")
+(which-key-alias "C-c 8" "key translations")
 
 (bind-key "C-c C-r" 'sudo-edit)
 
@@ -1176,21 +1161,18 @@
 (bind-key "C-x x v" 'view-text-file-as-info-manual)
 (bind-key "C-x x w" 'preview-html)(defun preview-html()(interactive)(shr-render-buffer (current-buffer)))
 
-(which-key-add-key-based-replacements "C-x 8" "key translations")
-(which-key-add-key-based-replacements "C-x 8 e" "emojis")
+(which-key-alias "C-x 8" "key translations")
+(which-key-alias "C-x 8 e" "emojis")
 
 
 ;; Aliases
-(defalias 'di 'daily-info)
 (defalias 'doe 'toggle-debug-on-error)
 (defalias 'flv 'add-file-local-variable)
 (defalias 'cr 'customize-rogue)
 (defalias 'la 'list-abbrevs)
 (defalias 'lp 'list-packages)
 (defalias 'recs 'recover-session)
-(defalias 'tl 'toggle-truncate-lines)
 (defalias 'undefun 'fmakunbound)
-(defalias 'which-key-alias 'which-key-add-key-based-replacements)
 
 (defalias 'arm 'auto-revert-mode)
 (defalias 'art 'auto-revert-tail-mode)
