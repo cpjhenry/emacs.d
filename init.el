@@ -42,10 +42,6 @@
 		w32-apps-modifier 'hyper)
 	(message "Running on Windows."))
 
-;(when (display-graphic-p)
-;(add-to-list 'default-frame-alist '(background-color . "Ivory")))
-;(add-to-list 'default-frame-alist '(fullscreen . maximized))
-
 (setq
 	user-full-name "cpj"
 	user-mail-address "cn914@ncf.ca"
@@ -131,6 +127,7 @@
 	pop-up-frames nil
 	recenter-positions '(top)		; top middle bottom
 	require-final-newline nil
+	revert-buffer-quick-short-answers t
 	ring-bell-function 'ignore
 	save-abbrevs 'silent
 	search-default-mode 'char-fold-to-regexp ; cafe = café
@@ -142,7 +139,7 @@
 	use-file-dialog nil
 	use-short-answers t
 	view-read-only t				; turn on view mode when buffer is read-only
-	visual-line-fringe-indicators '(nil right-curly-arrow) )
+	visual-line-fringe-indicators '(nil right-curly-arrow))
 
 (when (< emacs-major-version 28) (defalias 'show-paren-local-mode 'show-paren-mode))
 
@@ -1098,11 +1095,13 @@
 
 (bind-key "M-Q"		'unfill-paragraph)
 
-(bind-key "C-M-;"	'eval-r) (defun eval-r (b e) (interactive "r")(eval-region b e)(deactivate-mark))
+(bind-key "C-M-;"	'eval-r)
+	(defun eval-r (b e) (interactive "r")(eval-region b e)(deactivate-mark))
 (bind-key "C-M-y"	'undo-yank)
 
 (bind-key "C-c a a"	'org-agenda) (when *mac*
-(bind-key "C-c a d"	'daily-agenda) (defun daily-agenda () (interactive)(find-file org-agenda-file)))
+(bind-key "C-c a d"	'daily-agenda)
+	(defun daily-agenda () (interactive)(find-file org-agenda-file)))
 (which-key-alias "C-c a" "org agenda")
 
 (bind-key "C-c b m" 'new-markdown-buffer)
@@ -1159,7 +1158,8 @@
 (bind-key "C-x x l" 'buf-to-LF)
 (bind-key "C-x x r"	'rename-file-and-buffer)
 (bind-key "C-x x v" 'view-text-file-as-info-manual)
-(bind-key "C-x x w" 'preview-html)(defun preview-html()(interactive)(shr-render-buffer (current-buffer)))
+(bind-key "C-x x w" 'preview-html)
+	(defun preview-html()(interactive)(shr-render-buffer (current-buffer)))
 
 (which-key-alias "C-x 8" "key translations")
 (which-key-alias "C-x 8 e" "emojis")
@@ -1199,10 +1199,3 @@
 	(setq default-directory "c:/Users/henrypa/OneDrive - City of Ottawa/")
 	(bind-key "C-c a o"	'office.org)
 	(defun office.org ()(interactive)(find-file (concat default-directory "!.org"))) )
-
-; LocalWords:  LocalWords Inconsolata natasha elfeed rc keymap SX tls
-; LocalWords:  el icomplete init pdfexport filesandbuffers RSS Lorem
-; LocalWords:  Gopherspace ipsum Monospace Consolas MidnightBlue sexp
-; LocalWords:  bashrc defun modeline waterfox comfiness ibuffer Eww
-; LocalWords:  RET quelpa café remotehost fido hebrew islamic henrypa
-; LocalWords:  melpa vers defs eshell persistency url ido Ibuffer

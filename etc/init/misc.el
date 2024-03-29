@@ -2203,5 +2203,3 @@ LIQUID MEASURE CONVERSION
 +---------+-----------+-----------+-----------+------------+-----------+-----------+")
 
 (kf-gen-displayer measurements "Units of measurement." "*measurements*")
-
-; LocalWords:  un sexp cheatsheet HHPC ROPT

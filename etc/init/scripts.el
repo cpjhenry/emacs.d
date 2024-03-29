@@ -7,7 +7,7 @@
 	(switch-to-buffer buf)
 	(form-feed-mode)))
 
-(defun gcal () "Daily tasks"
+(defun gc () "Daily tasks"
 	(interactive)
 	(setq-local buf (generate-new-buffer "*gcal*"))
 	(shell-command "gcal-mode" buf))
@@ -27,7 +27,8 @@
 	(let ((buf (generate-new-buffer "*Virgo*")))
 	(shell-command "fw -u" buf)
 	(switch-to-buffer buf)
-	(text-mode))
+	(text-mode)
+	(end-of-buffer))
 
 	(let ((buf (generate-new-buffer "*Aries*")))
 	(shell-command "fw -uf aries" buf)
@@ -35,7 +36,8 @@
 	(text-mode)
 	(ispell-buffer)
 	(kill-ring-save (point-min) (point-max))
-	(kill-buffer buf)))
+	(kill-buffer buf)
+	(message "Forecast saved to clipboard.")))
 
 (defun az () "Monthly Forecast"
 	(interactive)

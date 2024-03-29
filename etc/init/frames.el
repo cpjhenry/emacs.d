@@ -1,4 +1,8 @@
 ;; Frame functions
+;(when (display-graphic-p)
+;(add-to-list 'default-frame-alist '(background-color . "Ivory")))
+;(add-to-list 'default-frame-alist '(fullscreen . maximized))
+
 `(defvar kill-frame-when-buffer-killed-buffer-list
   '("*RefTeX Select*" "*Help*" "*Popup Help*")
   "Buffer names for which the containing frame should be
