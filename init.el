@@ -24,14 +24,26 @@
 		mac-right-command-modifier 'alt	; Alt
 		mac-right-option-modifier nil)	; pass-thru
 
-	(global-set-key (kbd "s-c") 'kill-ring-save)	; ⌘-c = Copy
-	(global-set-key (kbd "s-x") 'kill-region) 		; ⌘-x = Cut
-	(global-set-key (kbd "s-v") 'yank)				; ⌘-v = Paste
-	(global-set-key (kbd "s-a") 'mark-whole-buffer)	; ⌘-a = Select all
-	(global-set-key (kbd "s-z") 'undo)				; ⌘-z = Undo
+	(global-set-key (kbd "s-c") 'ns-copy-including-secondary)	; ⌘-c = Copy
+	(global-set-key (kbd "s-x") 'kill-region) 					; ⌘-x = Cut
+	(global-set-key (kbd "s-v") 'yank)							; ⌘-v = Paste
+	(global-set-key (kbd "s-y") 'ns-paste-secondary)
 
+	(global-set-key (kbd "s-a") 'mark-whole-buffer)
+	(global-set-key (kbd "s-E") 'edit-abbrevs)
+	(global-set-key (kbd "s-h") 'ns-do-hide-emacs)
+	(global-set-key (kbd "s-k") 'kill-current-buffer)
+	(global-set-key (kbd "s-l") 'goto-line)
+	(global-set-key (kbd "s-o")	'find-file)
+	(global-set-key (kbd "s-S")	'write-file)
 	(global-set-key (kbd "s-s") 'save-buffer)
-	(global-set-key (kbd "s-w") 'delete-frame))
+	(global-set-key (kbd "s-u") 'revert-buffer)
+	(global-set-key (kbd "s-w") 'delete-frame)
+	(global-set-key (kbd "s-z") 'undo)
+
+	(dolist (key '("s-C" "s-D" "s-d" "s-e" "s-F" "s-f" "s-g" "s-j"
+		"s-L" "s-M" "s-m" "s-n" "s-p" "s-q" "s-t"))
+		(global-unset-key (kbd key))))
 
 (when *gnu* (add-to-list 'default-frame-alist '(font . "Monospace 17")) )
 
@@ -83,8 +95,6 @@
 ;   :fetcher git
 ;   :url "https://github.com/quelpa/quelpa-use-package.git")))
 ;(require 'quelpa-use-package)
-
-;(load "init/straight")
 
 ;; settings
 (set-language-environment 'utf-8)
@@ -172,7 +182,7 @@
 	:config (gcmh-mode 1)
 	:diminish)
 
-;; path
+;; path (required for 'railwaycat' edition)
 (load "init/exec-path")
 
 
@@ -210,9 +220,6 @@
 	(define-key Info-mode-map (kbd "<left>" )	'Info-history-back)
 	(define-key Info-mode-map (kbd "<right>")	'Info-history-forward))
 
-(easy-menu-add-item  nil '("Buffers") ["Increase text size" text-scale-increase :help "Change text scale"])
-(easy-menu-add-item  nil '("Buffers") ["Decrease text size" text-scale-decrease :help "Change text scale"])
-
 ;; remove unneeded messages and buffers
 (setq inhibit-startup-message t)	; 'About Emacs'
 (add-hook 'minibuffer-exit-hook		; Removes *Completions* buffer when done
@@ -247,9 +254,6 @@
 
 (setq enable-recursive-minibuffers t)
 
-;; clean-up old buffers
-;(midnight-mode +1)
-
 ;; *scratch*
 (setq initial-scratch-message nil)	; Makes *scratch* empty
 (use-package autoscratch
@@ -276,9 +280,6 @@
 	(when (file-remote-p default-directory)
 	(face-remap-add-relative 'default :background trampbackground)))
 (add-hook 'shell-mode-hook 'checker-tramp-shell-hook)
-
-;; Temporary HACK / Tramp LF bug
-;(add-hook 'after-save-hook 'buf-to-LF)
 
 
 ;; frames
@@ -644,8 +645,8 @@
 	rmail-nonignored-headers nil
 
 	rmail-secondary-file-directory	(concat user-emacs-directory "var/")
-	rmail-default-file			(concat rmail-secondary-file-directory "XMAIL")
-	rmail-file-name				(concat rmail-secondary-file-directory "RMAIL"))
+	rmail-default-file				(concat rmail-secondary-file-directory "XMAIL")
+	rmail-file-name					(concat rmail-secondary-file-directory "RMAIL"))
 	(add-hook 'rmail-show-message-hook 'goto-address-mode)
 	(add-hook 'rmail-quit-hook 'kill-current-buffer)
 
@@ -1059,13 +1060,6 @@
 
 ;; Darwin overrides
 (when *mac*
-	(global-set-key   (kbd "s-o")	'find-file)
-	(global-set-key   (kbd "s-S")	'write-file)
-
-	;; minimize, new frame, quit, set-font
-	(dolist (key '("s-m" "s-n" "s-q" "s-t"))
-	(global-unset-key (kbd key)))
-
 	(when (display-graphic-p)
 	(dolist (key '("<f10>" "S-<f10>" "C-<f10>" "M-<f10>"))
 	(global-unset-key (kbd key))) ))
@@ -1084,7 +1078,6 @@
 
 (bind-key "<f6>"	'toggle-fill-column-center)
 (bind-key "<f8>"	'list-bookmarks)
-(global-set-key (kbd "<f10>") 'buf-to-LF) ; HACK
 
 (bind-key "C-`" 'scratch-buffer)
 (bind-key "C-!" 'shell)
