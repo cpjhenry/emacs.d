@@ -137,6 +137,7 @@
 	pop-up-frames nil
 	recenter-positions '(top)		; top middle bottom
 	require-final-newline nil
+	resize-mini-windows t
 	revert-buffer-quick-short-answers t
 	ring-bell-function 'ignore
 	save-abbrevs 'silent
@@ -991,10 +992,10 @@
 ;; M-<prior>	'scroll-other-window-down
 ;; M-<next>		'scroll-other-window
 
-(global-set-key (kbd "M-<left>") (lambda()(interactive)(backward-paragraph)(recenter-top-bottom)))
-(global-set-key (kbd "M-<right>")(lambda()(interactive)(forward-paragraph)(recenter-top-bottom)))
-(global-set-key (kbd "M-<up>")   (lambda()(interactive)(backward-page)(recenter-top-bottom)))
-(global-set-key (kbd "M-<down>") (lambda()(interactive)(forward-page) (recenter-top-bottom)))
+(global-set-key (kbd "M-<up>")   (lambda()(interactive)(backward-paragraph)(recenter-top-bottom)))
+(global-set-key (kbd "M-<down>") (lambda()(interactive)(forward-paragraph)(recenter-top-bottom)))
+(global-set-key (kbd "M-<left>") (lambda()(interactive)(backward-page)(recenter-top-bottom)))
+(global-set-key (kbd "M-<right>")(lambda()(interactive)(forward-page) (recenter-top-bottom)))
 
 (global-set-key (kbd "<swipe-left>")  'mac-next-buffer)
 (global-set-key (kbd "<swipe-right>") 'mac-previous-buffer)
@@ -1079,8 +1080,8 @@
 (bind-key "<f6>"	'toggle-fill-column-center)
 (bind-key "<f8>"	'list-bookmarks)
 
-(bind-key "C-`" 'scratch-buffer)
-(bind-key "C-!" 'shell)
+(bind-key "C-`" 	'scratch-buffer)
+(bind-key "C-!" 	'shell)
 
 (bind-key "M-<f1>" 'my/emacs-help)
 (bind-key "M-<f2>" 'describe-personal-keybindings)
@@ -1152,7 +1153,7 @@
 (bind-key "C-x x r"	'rename-file-and-buffer)
 (bind-key "C-x x v" 'view-text-file-as-info-manual)
 (bind-key "C-x x w" 'preview-html)
-	(defun preview-html()(interactive)(shr-render-buffer (current-buffer)))
+	(defun preview-html () (interactive)(shr-render-buffer (current-buffer)))
 
 (which-key-alias "C-x 8" "key translations")
 (which-key-alias "C-x 8 e" "emojis")
@@ -1191,4 +1192,4 @@
 (when *w32*
 	(setq default-directory "c:/Users/henrypa/OneDrive - City of Ottawa/")
 	(bind-key "C-c a o"	'office.org)
-	(defun office.org ()(interactive)(find-file (concat default-directory "!.org"))) )
+	(defun office.org () (interactive)(find-file (concat default-directory "!.org"))))

@@ -3,9 +3,7 @@
 (defun di () "Daily information."
 	(interactive)
 	(let ((buf (generate-new-buffer "*daily-info*")))
-	(shell-command "di-mode" buf)
-	(switch-to-buffer buf)
-	(form-feed-mode)))
+	(async-shell-command "di-mode" buf)))
 
 (defun gc () "Daily tasks"
 	(interactive)
@@ -47,5 +45,3 @@
 	(markdown-preview)
 	(kill-buffer buf)
 	(kill-buffer "*markdown-output*")))
-
-; LocalWords:  buf di az fw wx gcal uf aries
