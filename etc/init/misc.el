@@ -2180,7 +2180,7 @@ MASS
 1 oz.				=	2 shekels
 
 
-LIQUID MEASURE CONVERSION
+IMPERIAL LIQUID MEASURES
 
 +---------+-----------+-----------+-----------+------------+-----------+-----------+
 |         |           |           |           | 1/2 fl oz  |   1 tbsp  |   3 tsp   |
@@ -2200,6 +2200,26 @@ LIQUID MEASURE CONVERSION
 | 1/2 gal |   2 qt    |   4 pt    |    8 cups |  64 fl oz  |           |           |
 +---------+-----------+-----------+-----------+------------+-----------+-----------+
 | 1 gal   |   4 qt    |   8 pt    |   16 cups | 128 fl oz  |           |           |
-+---------+-----------+-----------+-----------+------------+-----------+-----------+")
++---------+-----------+-----------+-----------+------------+-----------+-----------+
+
+
+CANADIAN MEASUREMENTS
+
+| Imperial      | Symbol | CA     | UK                  | US                  |
+|---------------|--------|--------|---------------------|---------------------|
+| pint          | pt     |        | 20 fl oz   | 568 ml | 16 fl oz   | 473 ml |
+| cup           | c      | 250 ml | 10 fl oz   | 284 ml | 8  fl oz   | 237 ml |
+| tumbler       |        |        | 6.6 fl oz  | 190 ml | 8  fl oz   | 235 ml |
+|               |        |        |            |        |            |        |
+| 60            |        | 1.75 L | 62 fl oz   |        | 59 fl oz   |        |
+| 40            |        | 1.14 L | 40 fl oz   |        | 39 fl oz   |        |
+| bottle (26)   |        | 750 ml | 26 fl oz   |        | 25 fl oz   |        |
+| soft drink    |        | 284 ml | 15.5 fl oz | 440 ml | 20 fl oz   | 591 ml |
+| mickey        |        | 375 ml | 13.2 fl oz | 390 ml | 12.7 fl oz | 380 ml |
+| beer          |        | 341 ml | 12 fl oz   | 341 ml | 12 fl oz   | 355 ml |
+| wineglass     | wgf    |        |            |        | 2 fl oz    |  59 ml |
+| teacup (gill) | tcf    |        | 5 fl oz    | 142 ml | 4 fl oz    | 118 ml |
+| shot          | jig    |        | 1.5 fl oz  |  43 ml | 1.5 fl oz  |  44 ml |
+")
 
 (kf-gen-displayer measurements "Units of measurement." "*measurements*")

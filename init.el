@@ -134,7 +134,7 @@
 	max-lisp-eval-depth 65536
 	ns-use-native-fullscreen t
 	pop-up-windows nil
-	pop-up-frames nil
+	;pop-up-frames nil
 	recenter-positions '(top)		; top middle bottom
 	require-final-newline nil
 	resize-mini-windows t
@@ -189,15 +189,14 @@
 
 ;; buffers
 (load "init/filesandbuffers")
+(require 'formfeed-hline)
+(formfeed-hline-mode)
 
 (add-hook 'before-save-hook 'time-stamp)
 (add-hook 'doc-view-mode-hook 'auto-revert-mode)
-(add-hook 'emacs-news-view-mode-hook (lambda()
-	(form-feed-mode) ))
 (add-hook 'help-mode-hook (lambda ()
-	(form-feed-mode)
-	(goto-address-mode)
-	(setq-local font-lock-keywords-only t)))
+	(setq-local font-lock-keywords-only t)
+	(goto-address-mode)))
 (add-hook 'pdf-view-mode-hook 'auto-revert-mode)
 (remove-hook 'file-name-at-point-functions 'ffap-guess-file-name-at-point)
 
@@ -268,7 +267,7 @@
 	tramp-auto-save-directory  	(concat user-emacs-directory "var/tramp/auto-save/")
 	tramp-persistency-file-name	(concat user-emacs-directory "var/tramp/persistency"))
 
-(defvar trampbackground "mint cream")
+(defvar trampbackground "linen")
 (defun checker-tramp-file-hook ()
 	(when (file-remote-p buffer-file-name)
 	(face-remap-add-relative 'default :background trampbackground)))
@@ -595,10 +594,10 @@
 		(setq-default lorem-ipsum-sentence-separator " ")
 		(easy-menu-add-item  nil '("edit") ["Lorem-ipsum" lorem-ipsum-insert-paragraphs :help "Insert..."]))
 
-(use-package form-feed ; ^L
-	:config
-		(global-form-feed-mode)
-	:diminish)
+;; (use-package form-feed ; ^L
+;; 	:config
+;; 		(global-form-feed-mode)
+;; 	:diminish)
 
 (use-package ssh)
 

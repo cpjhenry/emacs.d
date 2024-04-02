@@ -86,7 +86,12 @@
 	(replace-string "Ç" "'" nil (point-min) (point-max))
 	(replace-string "È" "\"" nil (point-min) (point-max))
 	(replace-string "é" "e" nil (point-min) (point-max)) ;; &eacute;
-	(replace-string "ó" "-" nil (point-min) (point-max)) ))
+	(replace-string "ó" "-" nil (point-min) (point-max))
+
+	;; mine
+	(replace-string "•" "-" nil (point-min) (point-max))
+	(replace-string "&#38;" "&" nil (point-min) (point-max))
+	(message "Garbage in, garbage out.") ))
 
 ;; https://emacs.stackexchange.com/questions/51629/add-paragraph-numbers
 (defun number-paragraphs (&optional takefirst)
