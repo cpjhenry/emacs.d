@@ -810,8 +810,8 @@
 
 
 ;; Org-mode
-(use-package org
-	:config (setq
+(require 'org)
+(setq
 	org-directory "~/Documents/org"
 	org-agenda-file (concat org-directory "/daily.org")
 	org-agenda-files (list org-agenda-file)
@@ -823,7 +823,7 @@
 
 	org-catch-invisible-edits 'smart
 	org-ctrl-k-protect-subtree t
-	org-ellipsis "."
+	org-ellipsis "+"
 	org-enable-priority-commands nil
 	org-export-preserve-breaks t
 	org-export-with-toc nil
@@ -904,20 +904,6 @@
 		"* TODO %(org-cliplink-capture) \n  SCHEDULED: %t\n" :empty-lines 1)
 	)) ; set
 
-	(define-key org-mode-map (kbd "C-<") 'org-backward-heading-same-level)
-	(define-key org-mode-map (kbd "C->") 'org-forward-heading-same-level)
-	(define-key org-mode-map (kbd "A-<left>" ) 'outline-up-heading)
-	(define-key org-mode-map (kbd "A-<right>") (lambda()(interactive)(org-end-of-subtree)))
-	(define-key org-mode-map (kbd "C-c '") (lambda()(interactive)(org-edit-special)(visual-fill-column-mode -1)))
-
-	(add-hook 'org-agenda-finalize-hook 'delete-other-windows)
-
-	(add-hook 'org-mode-hook (lambda ()
-		(org-autolist-mode)
-		(prettify-symbols-mode)
-		(visual-fill-column-mode -1) ))
-	) ; use-package org
-
 (use-package org-autolist ; pressing "Return" will insert a new list item automatically
 	:diminish "AL")
 
@@ -949,6 +935,19 @@
 		(which-key-add-key-based-replacements "C-c n" "org-roam")
 		(org-roam-setup)
 		(org-roam-db-autosync-mode)))
+
+(define-key org-mode-map (kbd "C-<") 'org-backward-heading-same-level)
+(define-key org-mode-map (kbd "C->") 'org-forward-heading-same-level)
+(define-key org-mode-map (kbd "A-<left>" ) 'outline-up-heading)
+(define-key org-mode-map (kbd "A-<right>") (lambda()(interactive)(org-end-of-subtree)))
+(define-key org-mode-map (kbd "C-c '") (lambda()(interactive)(org-edit-special)(visual-fill-column-mode -1)))
+
+(add-hook 'org-agenda-finalize-hook 'delete-other-windows)
+
+(add-hook 'org-mode-hook (lambda ()
+	;(org-autolist-mode)
+	;(prettify-symbols-mode)
+	(visual-fill-column-mode -1) ))
 
 (load "init/org") ; org-mode functions
 

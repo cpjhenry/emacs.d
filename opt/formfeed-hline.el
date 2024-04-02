@@ -186,10 +186,10 @@ a new width and/or height."
       (let* ((table      (formfeed-hline--window-display-table window))
              (old-dashes (if table
                              ;; -3 for "^L\n" added to dashes
-                             (- (length (aref table ?\f)) 7) ; (pjh) -4 more for line nos.
+                             (- (length (aref table ?\f)) 10) ; (pjh) -4 more for line nos.
                            0))
              ;; -3 for ^L and blank at right
-             (dashes     (max 0 (- (window-width window) 7))))  ; (pjh) -4 more for line nos.
+             (dashes     (max 0 (- (window-width window) 10))))  ; (pjh) -4 more for line nos.
         (when (/= dashes old-dashes)
           ;; (message "change dashes %S to %S on %s" old-dashes dashes window)
 
