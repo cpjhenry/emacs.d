@@ -52,6 +52,7 @@
 	(message "Smart quotes replaced."))
 
 ;; https://www.emacswiki.org/emacs/ReplaceGarbageChars
+;; FIXME scan only region if exists...
 (defun replace-garbage-chars ()
 	"Replace goofy MS and other garbage characters with Latin1 equivalents."
 	(interactive) (save-excursion				;save the current point
@@ -59,6 +60,7 @@
 	(replace-string "“" "\"" nil (point-min) (point-max))
 	(replace-string "’" "'" nil (point-min) (point-max))
 	(replace-string "“" "\"" nil (point-min) (point-max))
+	(replace-string "”" "\"" nil (point-min) (point-max))
 	(replace-string "—" "--" nil (point-min) (point-max)) ; multi-byte
 	(replace-string "" "'" nil (point-min) (point-max))
 	(replace-string "" "'" nil (point-min) (point-max))

@@ -823,7 +823,8 @@
 
 	org-catch-invisible-edits 'smart
 	org-ctrl-k-protect-subtree t
-	org-ellipsis "+"
+	;org-cycle-separator-lines -1		; show all blank lines between headings
+	org-ellipsis "$"
 	org-enable-priority-commands nil
 	org-export-preserve-breaks t
 	org-export-with-toc nil
@@ -859,50 +860,30 @@
     ("+" (:strike-through t)))
 
 	org-agenda-custom-commands '(
-	("P" "Project List" (
-		(tags "PROJECT")))
-	("O" "Office" (
-		(agenda)
-		(tags-todo "OFFICE")))
-	("W" "Weekly Plan" (
-		(agenda)
-		(todo "TODO")
-		(tags "PROJECT")))
-	("H" "Home NA Lists" (
-		(agenda)
-		(tags-todo "HOME")
-		(tags-todo "COMPUTER"))))
+	("P" "Project List"	((tags "PROJECT")))
+	("O" "Office" 		((agenda)(tags-todo "OFFICE")))
+	("W" "Weekly Plan"	((agenda)(todo "TODO")(tags "PROJECT")))
+	("H" "Home NA Lists"((agenda)(tags-todo "HOME")(tags-todo "COMPUTER"))))
 
 	org-capture-templates '(
 	("c" "Cookbook" entry (file "~/Documents/org/cookbook.org")
    		"%(org-chef-get-recipe-from-url)" :empty-lines 1)
 	("m" "Manual Cookbook" entry (file "~/Documents/org/cookbook.org")
-		"* %^{Recipe title: }\n
-		:PROPERTIES:\n
-		:source-url:\n
-		:servings:\n
-		:prep-time:\n
-		:cook-time:\n
-		:ready-in:\n
-		:END:\n
-		** Ingredients\n
-		%?\n
-		** Directions\n\n")
+		"* %^{Recipe title: }\n:PROPERTIES:\n:source-url:\n:servings:\n:prep-time:\n
+		:cook-time:\n:ready-in:\n:END:\n** Ingredients\n%?\n** Directions\n\n")
 
 	;; https://benadha.com/notes/how-i-manage-my-reading-list-with-org-mode/
-	("i" "📥 Inbox" entry (file "~/Documents/org/inbox.org")
-		"* %?\n  %i\n" :prepend t)
-	("j" "📔 Journal" entry (file+datetree "~/Documents/org/journal.org")
-		"* %? %^G\nEntered on %U\n  %i\n")
-	("b" "📑 Bookmark" entry (file "~/Documents/org/bookmarks.org")
-		"* %? %^g\n  %i\n" :prepend t)
+	("i" "📥 Inbox" entry (file "~/Documents/org/inbox.org") "* %?\n  %i\n" :prepend t)
+	("j" "📔 Journal" entry (file+datetree "~/Documents/org/journal.org") "* %? %^G\nEntered on %U\n  %i\n")
+	("b" "📑 Bookmark" entry (file "~/Documents/org/bookmarks.org") "* %? %^g\n  %i\n" :prepend t)
 	("s" "🛒 Shopping List" entry (file+headline "~/Documents/org/shoppinglist.org" "SHOPPING LIST")
 		"* TODO %?\n  %i\n" :prepend t)
 
 	;; https://github.com/rexim/org-cliplink
 	("K" "Cliplink capture task" entry (file "")
 		"* TODO %(org-cliplink-capture) \n  SCHEDULED: %t\n" :empty-lines 1)
-	)) ; set
+	) ; capture templates
+	) ; set
 
 (use-package org-autolist ; pressing "Return" will insert a new list item automatically
 	:diminish "AL")
@@ -913,16 +894,11 @@
 
 (use-package org-d20)
 
-;; (use-package org-modern
-;; 	:config
-;; 	(with-eval-after-load 'org (global-org-modern-mode)))
-
 (when *mac* (use-package org-mac-link))
 
 (when *natasha* (use-package org-roam
 	:ensure t
-	:custom
-		(org-roam-directory (file-truename (concat org-directory "/Roam/")))
+	:custom (org-roam-directory (file-truename (concat org-directory "/Roam/")))
 	:bind (
 		("C-c n l" . org-roam-buffer-toggle)
 		("C-c n f" . org-roam-node-find)
@@ -945,8 +921,9 @@
 (add-hook 'org-agenda-finalize-hook 'delete-other-windows)
 
 (add-hook 'org-mode-hook (lambda ()
-	;(org-autolist-mode)
-	;(prettify-symbols-mode)
+	(org-autolist-mode)
+	(prettify-symbols-mode)
+	(org-no-ellipsis-in-headlines)
 	(visual-fill-column-mode -1) ))
 
 (load "init/org") ; org-mode functions
@@ -1076,6 +1053,7 @@
 (defalias 'which-key-alias 'which-key-add-key-based-replacements)
 
 (bind-key "<f6>"	'toggle-fill-column-center)
+(bind-key "<f7>"	'flyspell-buffer)
 (bind-key "<f8>"	'list-bookmarks)
 
 (bind-key "C-`" 	'scratch-buffer)
@@ -1087,14 +1065,11 @@
 
 (bind-key "M-Q"		'unfill-paragraph)
 
-(bind-key "C-M-;"	'eval-r)
-	(defun eval-r (b e) (interactive "r")(eval-region b e)(deactivate-mark))
+(bind-key "C-M-;"	'eval-r) (defun eval-r (b e) (interactive "r")(eval-region b e)(deactivate-mark))
 (bind-key "C-M-y"	'undo-yank)
 
-(bind-key "C-c a a"	'org-agenda) (when *mac*
-(bind-key "C-c a d"	'daily-agenda)
-	(defun daily-agenda () (interactive)(find-file org-agenda-file)))
-(which-key-alias "C-c a" "org agenda")
+(bind-key "C-c a"	'org-agenda) (when *mac*
+(bind-key "C-c z"	'daily-agenda) (defun daily-agenda () (interactive)(find-file org-agenda-file)))
 
 (bind-key "C-c b m" 'new-markdown-buffer)
 (bind-key "C-c b n" 'new-empty-buffer)
@@ -1131,7 +1106,6 @@
 (bind-key "C-c x i" 'lorem-ipsum-insert-paragraphs)
 (bind-key "C-c x l" 'toggle-truncate-lines)
 (bind-key "C-c x n"	'number-paragraphs)
-(bind-key "C-c x q"	'replace-smart-quotes)
 (bind-key "C-c x t" 'delete-trailing-whitespace)
 (bind-key "C-c x w" 'delete-whitespace-rectangle)
 (which-key-alias "C-c x" "text")
@@ -1165,6 +1139,7 @@
 (defalias 'lp 'list-packages)
 (defalias 'recs 'recover-session)
 (defalias 'undefun 'fmakunbound)
+(defalias 'unset 'makunbound)
 
 (defalias 'arm 'auto-revert-mode)
 (defalias 'art 'auto-revert-tail-mode)
