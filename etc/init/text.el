@@ -92,6 +92,7 @@
 
 	;; mine
 	(replace-string "•" "-" nil (point-min) (point-max))
+	(replace-string "…" "..." nil (point-min) (point-max))
 	(replace-string "&#38;" "&" nil (point-min) (point-max))
 	(message "Garbage in, garbage out.") ))
 
