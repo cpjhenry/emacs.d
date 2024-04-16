@@ -5,6 +5,7 @@
 cond_source() { [ -f $1 ] && . $1; }
 cond_source $HOME/.bash_routines
 
+gcalcli --lineart=ascii calw
 di
 echo
 icer -b |sed '$s/$/\n/'

@@ -542,6 +542,7 @@
 
 (require 'eww)
 (define-key eww-mode-map (kbd "<left>") 'eww-back-url)
+(define-key eww-mode-map (kbd "<right>") 'eww-forward-url)
 (define-key eww-bookmark-mode-map (kbd "w")	'eww)
 (setq
 	browse-url-browser-function 'eww-browse-url
@@ -593,11 +594,6 @@
 	:config
 		(setq-default lorem-ipsum-sentence-separator " ")
 		(easy-menu-add-item  nil '("edit") ["Lorem-ipsum" lorem-ipsum-insert-paragraphs :help "Insert..."]))
-
-;; (use-package form-feed ; ^L
-;; 	:config
-;; 		(global-form-feed-mode)
-;; 	:diminish)
 
 (use-package ssh)
 
@@ -762,6 +758,7 @@
 
 (load "init/text") ; text functions
 
+;; prog-mode
 (add-hook 'prog-mode-hook (lambda()
 	(setq show-trailing-whitespace t)
 	(abbrev-mode)
@@ -771,6 +768,9 @@
 	(goto-address-prog-mode)
 	(prettify-symbols-mode)
 	(show-paren-local-mode)))
+
+;; bash
+(add-to-list 'auto-mode-alist '("\\.bash*" . sh-mode))
 
 
 ;; spell checking
@@ -803,10 +803,10 @@
 (eval-after-load "flyspell" '(progn
 	(define-key flyspell-mouse-map [down-mouse-3] #'flyspell-correct-word)))
 
-(defun my/list-packages ()
-	(interactive)
-	(unless (ispell-process-status) (ispell-start-process))
-	(list-packages))
+;(defun my/list-packages ()
+;	(interactive)
+;	(unless (ispell-process-status) (ispell-start-process))
+;	(list-packages))
 
 
 ;; Org-mode
@@ -1069,7 +1069,7 @@
 (bind-key "C-M-y"	'undo-yank)
 
 (bind-key "C-c a"	'org-agenda) (when *mac*
-(bind-key "C-c z"	'daily-agenda) (defun daily-agenda () (interactive)(find-file org-agenda-file)))
+(bind-key "C-c z"	'my/agenda) (defun my/agenda () (interactive)(find-file org-agenda-file)))
 
 (bind-key "C-c b m" 'new-markdown-buffer)
 (bind-key "C-c b n" 'new-empty-buffer)
@@ -1162,7 +1162,6 @@
 (defalias 'ds 'desktop-save)
 
 ;; Work-specific
-(when *w32*
-	(setq default-directory "c:/Users/henrypa/OneDrive - City of Ottawa/")
-	(bind-key "C-c a o"	'office.org)
-	(defun office.org () (interactive)(find-file (concat default-directory "!.org"))))
+(when *w32* (setq
+	default-directory "c:/Users/henrypa/OneDrive - City of Ottawa/"
+	org-agenda-file (concat default-directory "!.org")))
