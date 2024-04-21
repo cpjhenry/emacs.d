@@ -380,16 +380,6 @@
 ;; https://www.emacswiki.org/emacs/IbufferMode
 (require 'ibuffer)
 (defalias 'list-buffers 'ibuffer) ; always use Ibuffer
-(define-key ibuffer-mode-map (kbd "q")		'kill-current-buffer)
-(define-key ibuffer-mode-map (kbd "<up>")	'ibuffer-previous-line)
-(define-key ibuffer-mode-map (kbd "<down>")	'ibuffer-next-line)
-(define-key ibuffer-mode-map (kbd "<left>") 'ibuffer-previous-header)
-(define-key ibuffer-mode-map (kbd "<right>")'ibuffer-next-header)
-(define-key ibuffer-mode-map (kbd "<return>")(lambda()(interactive)(ibuffer-visit-buffer)
-	(let ((buffer "*Ibuffer*")) (and (get-buffer buffer) (kill-buffer buffer))) ))
-(add-hook 'ibuffer-mode-hook (lambda()
-	(ibuffer-switch-to-saved-filter-groups "home")
-	(ibuffer-update nil t) ))
 
 (setq
 	ibuffer-hidden-filter-groups (list "Helm" "*Internal*")
@@ -418,6 +408,17 @@
 			(name . "^\\.bbdb$")
 			(name . "^\\.newsrc-dribble"))) ))))
 
+(define-key ibuffer-mode-map (kbd "q")		'kill-current-buffer)
+(define-key ibuffer-mode-map (kbd "<up>")	'ibuffer-previous-line)
+(define-key ibuffer-mode-map (kbd "<down>")	'ibuffer-next-line)
+(define-key ibuffer-mode-map (kbd "<left>") 'ibuffer-previous-header)
+(define-key ibuffer-mode-map (kbd "<right>")'ibuffer-next-header)
+(define-key ibuffer-mode-map (kbd "<return>")(lambda()(interactive)(ibuffer-visit-buffer)
+	(let ((buffer "*Ibuffer*")) (and (get-buffer buffer) (kill-buffer buffer))) ))
+(add-hook 'ibuffer-mode-hook (lambda()
+	(ibuffer-switch-to-saved-filter-groups "home")
+	(ibuffer-update nil t) ))
+
 (require 'ibuf-ext)
 (add-to-list 'ibuffer-never-show-predicates "^\\*Messages\\*")
 (add-to-list 'ibuffer-never-show-predicates "^\\*Shell Command Output\\*")
@@ -426,6 +427,29 @@
 
 ;; calendar
 (load "init/calendar")
+(setq
+	diary-file "~/Documents/diary"
+
+	diary-display-function 'diary-simple-display
+	diary-list-include-blanks t
+	diary-show-holidays-flag t
+
+	calendar-date-style 'iso
+	calendar-mark-diary-entries-flag t
+	calendar-mark-holidays-flag t
+	calendar-setup 'one-frame
+	calendar-view-diary-initially-flag nil
+	calendar-view-holidays-initially-flag nil
+
+	calendar-month-header '(propertize
+		(format "%s %d" (calendar-month-name month) year)
+		'font-lock-face 'calendar-month-header)
+	world-clock-time-format "%a %e %b %R %Z"
+
+	calendar-christian-all-holidays-flag t
+	calendar-chinese-all-holidays-flag t
+	holiday-general-holidays nil)
+
 (advice-add 'calendar-exit :before #'save-diary-before-calendar-exit)
 (add-hook 'calendar-mode-hook (lambda()
 	(local-set-key (kbd "?") (lambda() (interactive)(info "(emacs)Calendar/Diary")
@@ -444,24 +468,6 @@
 	(local-set-key (kbd "q") 'kill-current-buffer) ))
 (add-hook 'special-mode-hook (lambda()
 	(local-set-key (kbd "q") 'kill-current-buffer) ))
-
-(setq
-	diary-file "~/Documents/diary"
-	diary-list-includes-blanks t
-	diary-show-holidays-flag nil
-
-	calendar-date-style 'iso
-	calendar-mark-holidays-flag t
-	calendar-view-holidays-initially-flag nil
-	calendar-mark-diary-entries-flag t
-	calendar-month-header '(propertize
-		(format "%s %d" (calendar-month-name month) year)
-		'font-lock-face 'calendar-month-header)
-	world-clock-time-format "%a %e %b %R %Z"
-
-	calendar-christian-all-holidays-flag t
-	calendar-chinese-all-holidays-flag t
-	holiday-general-holidays nil)
 
 
 ;; print functions
