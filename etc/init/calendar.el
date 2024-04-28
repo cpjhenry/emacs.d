@@ -1,4 +1,4 @@
-;; calendar settings
+;; calendar settings / functions
 
 (setq holiday-local-holidays '( ; National / Provincial Holidays and Commemorations
 	(holiday-fixed 01 01  "New Year's Day")
@@ -72,3 +72,39 @@
 
 (defun calendar-world-clock () (interactive)
 	(world-clock)(next-window-any-frame)(fit-window-to-buffer))
+
+(defun alt-clean-equal-signs ()
+	"This function makes lines of = signs invisible."
+	(goto-char (point-min))
+	(let ((state buffer-read-only))
+		(when state (setq buffer-read-only nil))
+		(while (not (eobp)) (search-forward-regexp "^=+$" nil 'move)
+		(add-text-properties (match-beginning 0) (match-end 0) '(invisible t)))
+		(when state (setq buffer-read-only t))))
+
+(defun diary-sunrise ()
+	(let ((dss (diary-sunrise-sunset)))
+	(with-temp-buffer
+	(insert dss)
+	(goto-char (point-min))
+	(while (re-search-forward " ([^)]*)" nil t)
+	(replace-match "" nil nil))
+	(goto-char (point-min))
+	(search-forward ",")
+	(buffer-substring (point-min) (match-beginning 0)))))
+
+(defun diary-sunset ()
+	(let ((dss (diary-sunrise-sunset)) start end)
+	(with-temp-buffer
+	(insert dss)
+	(goto-char (point-min))
+	(while (re-search-forward " ([^)]*)" nil t)
+	(replace-match "" nil nil))
+	(goto-char (point-min))
+	(search-forward ", ")
+	(setq start (match-end 0))
+	(search-forward " at")
+	(setq end (match-beginning 0))
+	(goto-char start)
+	(capitalize-word 1)
+	(buffer-substring start end))))

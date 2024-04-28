@@ -6,8 +6,7 @@ cond_source() { [ -f $1 ] && . $1; }
 cond_source $HOME/.bash_routines
 
 gcalcli --lineart=ascii --nocolor --calendar=cpjh --calendar=Holidays calw
-#gcal --date-format=%K -w
-#echo
+echo
 di
 echo
 icer -b |sed '$s/$/\n/'

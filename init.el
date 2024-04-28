@@ -149,7 +149,7 @@
 	use-dialog-box nil
 	use-file-dialog nil
 	use-short-answers t
-	view-read-only t				; turn on view mode when buffer is read-only
+	view-read-only nil				; turn on view mode when buffer is read-only
 	visual-line-fringe-indicators '(nil right-curly-arrow))
 
 (when (< emacs-major-version 28) (defalias 'show-paren-local-mode 'show-paren-mode))
@@ -203,8 +203,8 @@
 ;; eval-after-loads are run once, before mode hooks
 ;; mode-hooks execute once for every buffer in which the mode is enabled
 
-(with-eval-after-load 'doc-view-mode
-	(define-key doc-view-mode-map (kbd "q") 	'kill-current-buffer) )
+(with-eval-after-load 'doc-view-mode  (define-key doc-view-mode-map (kbd "q") 'kill-current-buffer))
+(with-eval-after-load 'view-mode-hook (define-key view-mode-map (kbd "q") 'kill-current-buffer))
 (with-eval-after-load 'emacs-news-mode
 	(define-key emacs-news-view-mode-map (kbd "<left>")
 		(lambda()(interactive)(outline-previous-heading)(recenter-top-bottom)))
@@ -391,9 +391,10 @@
 			(name . "\\.el") ))
 		("Markdown" (name . "\\.md"))
 		("Org" (name . "\\.org"))
-		("planner" (or
-			(name . "^\\*Calendar\\*$")
-			(name . "^diary$")
+		("Planner" (or
+			(mode . calendar-mode)
+			(mode . diary-mode)
+			(mode . diary-fancy-display-mode)
 			(name . "^\\*Org Agenda\\*")))
 		;("perl" (mode . cperl-mode))
 		;("erc" (mode . erc-mode))
@@ -430,12 +431,12 @@
 (setq
 	diary-file "~/Documents/diary"
 
-	diary-display-function 'diary-simple-display
+	diary-display-function 'diary-fancy-display
 	diary-list-include-blanks t
 	diary-show-holidays-flag t
 
 	calendar-date-style 'iso
-	calendar-mark-diary-entries-flag t
+	calendar-mark-diary-entries-flag nil
 	calendar-mark-holidays-flag t
 	calendar-setup 'one-frame
 	calendar-view-diary-initially-flag nil
@@ -452,6 +453,7 @@
 
 (advice-add 'calendar-exit :before #'save-diary-before-calendar-exit)
 (add-hook 'calendar-mode-hook (lambda()
+	(local-set-key (kbd "m") nil) ; don't allow marking of diary entries
 	(local-set-key (kbd "?") (lambda() (interactive)(info "(emacs)Calendar/Diary")
 		(delete-other-windows)(calendar-exit 'kill)
 		(local-set-key (kbd "q") (lambda() (interactive)(kill-current-buffer)(calendar))) ))
@@ -461,11 +463,15 @@
 	(local-set-key (kbd "y") 'calendar-holidays)
 	(easy-menu-add-item nil '("Holidays") ["Holidays this year" calendar-holidays :help "Holidays"])
 	(easy-menu-add-item nil '("Sun/Moon") ["World clock" calendar-world-clock :help "World clock"])))
+
+(advice-add 'diary-fancy-display :after (lambda() (view-mode -1)))
 (add-hook 'diary-list-entries-hook 'diary-sort-entries t)
 (add-hook 'diary-mode-hook (lambda()
 	(local-set-key (kbd "C-c C-q") 'kill-current-buffer) ))
 (add-hook 'diary-fancy-display-mode-hook (lambda()
-	(local-set-key (kbd "q") 'kill-current-buffer) ))
+	(local-set-key (kbd "q") 'kill-current-buffer)
+	(alt-clean-equal-signs)))
+
 (add-hook 'special-mode-hook (lambda()
 	(local-set-key (kbd "q") 'kill-current-buffer) ))
 
@@ -1113,6 +1119,7 @@
 (bind-key "C-c x l" 'toggle-truncate-lines)
 (bind-key "C-c x n"	'number-paragraphs)
 (bind-key "C-c x t" 'delete-trailing-whitespace)
+(bind-key "C-c x v" 'add-file-local-variable)
 (bind-key "C-c x w" 'delete-whitespace-rectangle)
 (which-key-alias "C-c x" "text")
 
@@ -1139,7 +1146,6 @@
 
 ;; Aliases
 (defalias 'doe 'toggle-debug-on-error)
-(defalias 'flv 'add-file-local-variable)
 (defalias 'cr 'customize-rogue)
 (defalias 'la 'list-abbrevs)
 (defalias 'lp 'list-packages)
