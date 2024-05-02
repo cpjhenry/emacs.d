@@ -26,7 +26,7 @@
 	(end-of-buffer))
 
 	(let ((buf (generate-new-buffer "*Aries*")))
-	(shell-command "fw -uf aries" buf)
+	(shell-command "fw -uf aries |perl -p -e 'chomp if eof'" buf)
 	(switch-to-buffer buf)
 	(text-mode)
 	(ispell-buffer)
