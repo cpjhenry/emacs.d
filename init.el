@@ -130,6 +130,7 @@
 	kill-read-only-ok t
 	kill-ring-max 512
 	kill-whole-line t
+	Man-notify-method 'pushy
 	mark-ring-max most-positive-fixnum
 	max-lisp-eval-depth 65536
 	ns-use-native-fullscreen t
@@ -479,10 +480,12 @@
 ;; print functions
 (load "init/page-dimensions")
 (define-key global-map [menu-bar file print] nil)
-(bind-key "M-p a"  	'print-to-a5-printer)
-(bind-key "M-p b"	'ps-print-buffer)
-(bind-key "M-p r"  	'print-to-receipt-printer)
-(bind-key "M-p s"	'spool-to-enscript)
+(bind-key "M-p a"  	'fill-to-a5-printer)
+(bind-key "M-p r"  	'fill-to-receipt-printer)
+
+(bind-key "M-p b"	'ps-print-buffer-or-region)
+	(defun ps-print-buffer-or-region () (interactive)
+	(ps-print-region (point-min) (point-max)))
 (bind-key "M-p p" 	'print-buffer-or-region)
 	(defun print-buffer-or-region () (interactive)
 	(print-region (point-min) (point-max)))

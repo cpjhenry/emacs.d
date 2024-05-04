@@ -13,7 +13,7 @@
 	(interactive "r")
 	(shell-command-on-region b e enscript))
 
-(defun print-to-receipt-printer ()
+(defun fill-to-receipt-printer ()
 	"Re-formats and sends text in current buffer to POS printer."
 	(interactive)
 	(copy-current-buffer-to-temp-buffer)
@@ -23,7 +23,7 @@
 	(spool-to-enscript)
 	(kill-current-buffer))
 
-(defun print-to-a5-printer ()
+(defun fill-to-a5-printer ()
 	"Re-formats and sends text in current buffer to a5 printer."
 	(interactive)
 	(copy-current-buffer-to-temp-buffer)
