@@ -1955,6 +1955,7 @@ column, then prepend asterisk + space and postpend colon + space."
 C-x 8 …					Emacs alt keys
 
 M-X						extended command (buffer)
+C-M-i					completion at point
 
 C-TAB | C-x ← | →		switch buffer
 C-k | C-S-DEL			kill eol | line
@@ -1968,7 +1969,7 @@ M-|						pipe region
 M-:						evaluate (interactive)
 C-M-;					evaluate region
 C-u 0 C-M-\\   			remove indent
-C-c d | C-c D			insert date
+C-c d					insert date(s)
 C-u C-x r N				number lines
 C-l						re-centre top
 C-M-l					reposition window

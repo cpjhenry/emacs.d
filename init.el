@@ -477,18 +477,40 @@
 	(local-set-key (kbd "q") 'kill-current-buffer) ))
 
 
-;; print functions
+;; print functions FIXME
 (load "init/page-dimensions")
 (define-key global-map [menu-bar file print] nil)
 (bind-key "M-p a"  	'fill-to-a5-printer)
 (bind-key "M-p r"  	'fill-to-receipt-printer)
 
-(bind-key "M-p b"	'ps-print-buffer-or-region)
-	(defun ps-print-buffer-or-region () (interactive)
-	(ps-print-region (point-min) (point-max)))
+;; (bind-key "M-p P"	'ps-print-buffer-or-region)
+;; 	(defun ps-print-buffer-or-region (&optional b e) (interactive "r")
+;; 	(ps-print-region b e))
 (bind-key "M-p p" 	'print-buffer-or-region)
 	(defun print-buffer-or-region () (interactive)
-	(print-region (point-min) (point-max)))
+	(setq
+	printer-name "Brother_HL_L2370DW"
+	lpr-switches '("-o media=a5 -o cpi=12 -o lpi=8")
+	lpr-page-header-switches '("-t"))
+
+	(let ((beg (point-min)) (end (point-max)))
+		(when (region-active-p)
+			(setq beg (region-beginning))
+			(setq end (region-end)))
+	(print-region beg end)))
+
+;; EXAMPLE USING PREFIX [HACK]
+;; (defun kf-checkbox (parg)
+;;   "Insert a checkbox.
+;; With one prefix arg, insert a checked checkbox.
+;; With two prefix args, insert an x'ed checkbox."
+;;   (interactive "P")
+;;   (let ((prefix (car parg)))
+;;     (cond
+;;      ((not prefix)  (insert ?☐)) ; 9744
+;;      ((= prefix 4)  (insert ?☑)) ; 9745
+;;      ((= prefix 16) (insert ?☒)) ; 9746
+;;      (t (error "What do you want me to put in that checkbox?")))))
 
 (when *mac* (setq
 	printer-name "Munbyn_ITPP047"
@@ -825,7 +847,16 @@
 
 
 ;; Org-mode
-(require 'org)
+(setq-default
+	org-startup-indented nil
+	;; #+STARTUP: indent
+	;; #+STARTUP: noindent
+	org-pretty-entities t
+	org-use-sub-superscripts "{}"
+	org-hide-emphasis-markers t
+	org-startup-with-inline-images t
+	org-image-actual-width '(300))
+
 (setq
 	org-directory "~/Documents/org"
 	org-agenda-file (concat org-directory "/daily.org")
@@ -841,13 +872,11 @@
 	;org-cycle-separator-lines -1		; show all blank lines between headings
 	org-ellipsis "$"
 	org-enable-priority-commands nil
-	org-export-preserve-breaks t
-	org-export-with-toc nil
 	org-footnote-auto-adjust t
+	org-list-allow-alphabetical t
 	org-log-done t						; 'CLOSED' logging
 	org-log-repeat nil
 	org-log-state-notes-into-drawer nil
-	org-pretty-entities t
 	org-special-ctrl-a/e t
 	org-support-shift-select t
 
@@ -858,13 +887,22 @@
 	org-agenda-todo-ignore-deadlines t
 	org-agenda-todo-ignore-scheduled t
 
+	org-export-date-timestamp-format "%Y-%m-%d"
+	org-export-preserve-breaks t
+	org-export-with-author nil
+	org-export-with-date nil
+	org-export-with-toc nil
+
+	org-ascii-text-width 50
+	org-ascii-inner-margin 2
+	org-ascii-quote-margin 4
+	org-ascii-headline-spacing '(0 . 1))
+
+(setq
 	org-tags-exclude-from-inheritance '("PROJECT")
-
 	org-todo-keywords '((sequence "TODO" "DONE"))
-
 	org-todo-keyword-faces '(
 	("INPROGRESS" . (:foreground "blue" :weight bold)) ) ; add in-progress keyword
-
 	org-emphasis-alist '(
 	("*" bold)
 	("**" bold)
@@ -900,6 +938,10 @@
 	) ; capture templates
 	) ; set
 
+(require 'org)
+
+(use-package org-appear :hook (org-mode . org-appear-mode))
+
 (use-package org-autolist ; pressing "Return" will insert a new list item automatically
 	:diminish "AL")
 
@@ -908,6 +950,14 @@
 (use-package org-cliplink) ; insert org-mode links from the clipboard
 
 (use-package org-d20)
+
+(use-package org-modern
+	:hook
+	(org-mode . global-org-modern-mode)
+	:custom
+	(org-modern-keyword nil)
+	(org-modern-checkbox nil)
+	(org-modern-table nil))
 
 (when *mac* (use-package org-mac-link))
 
@@ -944,6 +994,7 @@
 (load "init/org") ; org-mode functions
 
 ;; fix table.el error
+;; https://github.com/doomemacs/doomemacs/issues/6980
 (defun myfunc/check_table_p (oldfunc) (funcall oldfunc t))
 (advice-add 'org-at-table-p :around 'myfunc/check_table_p)
 
@@ -1041,6 +1092,8 @@
 (global-set-key (kbd "TAB")		'self-insert-command)
 
 (global-set-key (kbd "A-<return>")(kbd "M-<return>"))
+
+(global-set-key (kbd "s-1")(kbd "C-x 1"))
 
 ;; avoid accidental exits
 ;(global-unset-key (kbd "C-x C-c"))

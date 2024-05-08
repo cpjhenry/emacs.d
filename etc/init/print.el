@@ -44,3 +44,14 @@
 	(shell-command cmd)
 	(shell-command "rm tmp.ps")
 	(message (concat "File printed in : "(buffer-name) ".pdf")))
+
+;; https://www.emacswiki.org/emacs/PrintingBdfFonts
+(defadvice ps-do-despool (before ps-2-ps activate)
+   "we apply the ps2ps command to the postscript buffer just before printing"
+   (if (or (not (boundp 'ps-spool-buffer))
+           (not (symbol-value 'ps-spool-buffer)))
+       (message "No spooled PostScript to print")
+    (save-excursion
+     (set-buffer ps-spool-buffer)
+     (shell-command-on-region
+        (point-min) (point-max) "ps2ps - -" nil t "*Message*"))))
