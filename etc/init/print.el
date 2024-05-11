@@ -1,5 +1,9 @@
 ;; PRINT functions
 
+;; (bind-key "M-p P"	'ps-print-buffer-or-region)
+;; 	(defun ps-print-buffer-or-region (&optional b e) (interactive "r")
+;; 	(ps-print-region b e))
+
 (setq enscript "enscript -cqB")
 ;; https://stackoverflow.com/questions/15869131/emacs-shell-command-on-buffer (adapted)
 (defun spool-to-enscript ()

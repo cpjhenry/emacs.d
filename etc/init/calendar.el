@@ -21,7 +21,7 @@
 	(holiday-fixed 04 06  "Tartan Day")
 	(holiday-fixed 04 09  "Vimy Ridge Day")
 	(holiday-fixed 06 21  "Indigenous Peoples Day")
-	(holiday-fixed 06 24  "Midsummer Day")
+	;(holiday-fixed 06 24  "Midsummer Day") ; prefer floating date (Saturday following Summer Solstice)
 	(holiday-fixed 09 30  "Truth and Reconciliation")
 	(holiday-fixed 12 11  "Statute of Westminster")))
 

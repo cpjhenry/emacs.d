@@ -4,6 +4,7 @@
 
 cond_source() { [ -f $1 ] && . $1; }
 cond_source $HOME/.bash_routines
+export GCAL="--resource-file=nil --exclude-fixed-dates-list-title --suppress-fixed-dates-list-separator"
 
 if [ "$(gcal -U)" != "" ]; then gcal -U |sed 's/^/- /'
 else echo "Nothing today."; fi

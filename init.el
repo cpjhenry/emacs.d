@@ -483,9 +483,6 @@
 (bind-key "M-p a"  	'fill-to-a5-printer)
 (bind-key "M-p r"  	'fill-to-receipt-printer)
 
-;; (bind-key "M-p P"	'ps-print-buffer-or-region)
-;; 	(defun ps-print-buffer-or-region (&optional b e) (interactive "r")
-;; 	(ps-print-region b e))
 (bind-key "M-p p" 	'print-buffer-or-region)
 	(defun print-buffer-or-region () (interactive)
 	(setq
@@ -631,6 +628,9 @@
 	:config
 		(setq-default lorem-ipsum-sentence-separator " ")
 		(easy-menu-add-item  nil '("edit") ["Lorem-ipsum" lorem-ipsum-insert-paragraphs :help "Insert..."]))
+
+(use-package nov ; Read ePub files
+	:init (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode)))
 
 (use-package ssh)
 
