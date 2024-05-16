@@ -41,6 +41,8 @@
 	(global-set-key (kbd "s-w") 'delete-frame)
 	(global-set-key (kbd "s-z") 'undo)
 
+	(global-set-key (kbd "s-1")(kbd "C-x 1"))
+
 	(dolist (key '("s-C" "s-D" "s-d" "s-e" "s-F" "s-f" "s-g" "s-j"
 		"s-L" "s-M" "s-m" "s-n" "s-p" "s-q" "s-t"))
 		(global-unset-key (kbd key))))
@@ -396,8 +398,8 @@
 			(mode . calendar-mode)
 			(mode . diary-mode)
 			(mode . diary-fancy-display-mode)
-			(name . "^\\*Org Agenda\\*")))
-		;("perl" (mode . cperl-mode))
+			(name . "^\\*Org Agenda\\*")
+			(name . "^calendar@*")))
 		;("erc" (mode . erc-mode))
 		("Eww"   (mode . eww-mode))
 		("gnus" (or
@@ -477,66 +479,16 @@
 	(local-set-key (kbd "q") 'kill-current-buffer) ))
 
 
-;; print functions FIXME
+;; print functions
 (load "init/page-dimensions")
 (define-key global-map [menu-bar file print] nil)
-(bind-key "M-p a"  	'fill-to-a5-printer)
-(bind-key "M-p r"  	'fill-to-receipt-printer)
+(setq lpr-page-header-switches '("-t"))
+
+(bind-key "M-p f a" 'fill-to-a5-printer)
+(bind-key "M-p f r"	'fill-to-receipt-printer)
+(which-key-alias "M-p f" "fill buffer")
 
 (bind-key "M-p p" 	'print-buffer-or-region)
-	(defun print-buffer-or-region () (interactive)
-	(setq
-	printer-name "Brother_HL_L2370DW"
-	lpr-switches '("-o media=a5 -o cpi=12 -o lpi=8")
-	lpr-page-header-switches '("-t"))
-
-	(let ((beg (point-min)) (end (point-max)))
-		(when (region-active-p)
-			(setq beg (region-beginning))
-			(setq end (region-end)))
-	(print-region beg end)))
-
-;; EXAMPLE USING PREFIX [HACK]
-;; (defun kf-checkbox (parg)
-;;   "Insert a checkbox.
-;; With one prefix arg, insert a checked checkbox.
-;; With two prefix args, insert an x'ed checkbox."
-;;   (interactive "P")
-;;   (let ((prefix (car parg)))
-;;     (cond
-;;      ((not prefix)  (insert ?☐)) ; 9744
-;;      ((= prefix 4)  (insert ?☑)) ; 9745
-;;      ((= prefix 16) (insert ?☒)) ; 9746
-;;      (t (error "What do you want me to put in that checkbox?")))))
-
-(when *mac* (setq
-	printer-name "Munbyn_ITPP047"
-	lpr-switches '("-o cpi=12 -o lpi=8 -o print-quality=4")
-	lpr-page-header-switches '("-t")
-
-	ps-printer-name "Brother_HL_L2370DW"
-	ps-lpr-switches '("-o media=a5")
-	ps-paper-type 'a5
-
-	ps-font-size 12
-	ps-font-family 'Courier
-	ps-footer-font-family 'Courier
-	ps-print-color-p nil
-	ps-print-header nil
-
-	ps-print-footer t
-	ps-print-footer-frame nil
-	ps-footer-lines 1
-	ps-right-footer nil
-	ps-left-footer (list (concat
-	"{pagenumberstring dup stringwidth pop"
-	" 2 div PrintWidth 2 div exch sub 0 rmoveto}"))
-
-	ps-top-margin 42
-	ps-bottom-margin 14
-	ps-left-margin 28
-	ps-right-margin 28))
-
 (load "init/print")
 
 
@@ -939,10 +891,13 @@
 	) ; set
 
 (require 'org)
+(require 'ox-md)
 
-(use-package org-appear :hook (org-mode . org-appear-mode))
+(use-package org-appear
+	:hook (org-mode . org-appear-mode))
 
 (use-package org-autolist ; pressing "Return" will insert a new list item automatically
+	:hook (org-mode . org-autolist-mode)
 	:diminish "AL")
 
 (use-package org-chef :ensure t)
@@ -952,9 +907,9 @@
 (use-package org-d20)
 
 (use-package org-modern
-	:hook
-	(org-mode . global-org-modern-mode)
+	:hook (org-mode . global-org-modern-mode)
 	:custom
+	(org-modern-fold-stars nil)
 	(org-modern-keyword nil)
 	(org-modern-checkbox nil)
 	(org-modern-table nil))
@@ -986,7 +941,6 @@
 (add-hook 'org-agenda-finalize-hook 'delete-other-windows)
 
 (add-hook 'org-mode-hook (lambda ()
-	(org-autolist-mode)
 	(prettify-symbols-mode)
 	(org-no-ellipsis-in-headlines)
 	(visual-fill-column-mode -1) ))
@@ -1092,8 +1046,6 @@
 (global-set-key (kbd "TAB")		'self-insert-command)
 
 (global-set-key (kbd "A-<return>")(kbd "M-<return>"))
-
-(global-set-key (kbd "s-1")(kbd "C-x 1"))
 
 ;; avoid accidental exits
 ;(global-unset-key (kbd "C-x C-c"))
