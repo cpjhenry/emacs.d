@@ -11,6 +11,11 @@ di
 echo
 icer -b |sed '$s/$/\n/'
 calt |sed '$s/$/\n/'
+
+TMW=$(date -d tomorrow +%Y%m%d)
+TMW=$((gcalt %$TMW --suppress-date-part; ind -d+1day -Po; calendar -W0 -t$TMW |cut -f2) |sed 's/^/- /')
+[ "$TMW" ] && echo -e "Tomorrow:\n$TMW"
+
 ruled 32
 alert -f
 # echo

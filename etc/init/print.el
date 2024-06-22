@@ -25,7 +25,10 @@
 	ps-right-margin 28))
 
 (defun print-buffer-or-region (parg)
-	"Print buffer or region. With no prefix, set a5 printer. With one prefix arg, set POS printer."
+"Print buffer or region.
+
+- With no prefix, use a5 printer.
+- With one prefix arg, use POS printer."
 	(interactive "P")
 	(let ((prefix (car parg))) (cond
 		((not prefix)(setq
@@ -33,8 +36,8 @@
 			lpr-switches '("-o media=a5 -o cpi=12 -o lpi=8")))
 		((= prefix 4)(setq
 			printer-name "Munbyn_ITPP047"
-			lpr-switches '("-o media=pos80 cpi=12 -o lpi=8 -o print-quality=4")))
-	))
+			lpr-switches '("-o media=pos80 cpi=13 -o lpi=9")))
+		))
 	(let ((beg (point-min)) (end (point-max)))
 	(when (region-active-p)
 		(setq beg (region-beginning))

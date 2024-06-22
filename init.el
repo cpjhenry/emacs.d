@@ -132,6 +132,7 @@
 	kill-read-only-ok t
 	kill-ring-max 512
 	kill-whole-line t
+	ls-lisp-use-localized-time-format t
 	Man-notify-method 'pushy
 	mark-ring-max most-positive-fixnum
 	max-lisp-eval-depth 65536
@@ -290,15 +291,16 @@
 (when (featurep 'ns)
 	(defun ns-raise-emacs ()
 	"Raise Emacs."
-	(ns-do-applescript "tell application \"Emacs\" to activate"))
+	(ns-do-applescript "tell application \"Emacs\" to activate")
+	(toggle-frame-maximized))
 
 	(defun ns-raise-emacs-with-frame (frame)
 	"Raise Emacs and select the provided frame."
 	(with-selected-frame frame
 	(when (display-graphic-p)
 	(ns-raise-emacs))))
-
 	(add-hook 'after-make-frame-functions 'ns-raise-emacs-with-frame)
+
 	(when (display-graphic-p) (ns-raise-emacs)))
 
 ;; add Hyper- keys (C-M-s-…) to terminal frames (iTerm2)
@@ -486,7 +488,6 @@
 
 (bind-key "M-p f a" 'fill-to-a5-printer)
 (bind-key "M-p f r"	'fill-to-receipt-printer)
-(which-key-alias "M-p f" "fill buffer")
 
 (bind-key "M-p p" 	'print-buffer-or-region)
 (load "init/print")
@@ -659,8 +660,8 @@
 		(define-key elfeed-search-mode-map (kbd "m") 'elfeed-mail-todo)
 		(define-key elfeed-show-mode-map (kbd "TAB") 'shr-next-link)
 		(define-key elfeed-show-mode-map (kbd "SPC") 'scroll-up-half)
-		(define-key elfeed-show-mode-map (kbd "A-<up>"  ) 'backward-paragraph)
-		(define-key elfeed-show-mode-map (kbd "A-<down>") 'forward-paragraph)
+		;; (define-key elfeed-show-mode-map (kbd "A-<up>"  ) 'backward-paragraph)
+		;; (define-key elfeed-show-mode-map (kbd "A-<down>") 'forward-paragraph)
 
 		;; (use-package elfeed-org
 		;; 	:config (setq
@@ -691,7 +692,8 @@
 (when *mac*
 	;(load "init/deft")	; note functions (bound to <f7>)
 	;(load "init/sn")	; simplenote	 (bound to <f8>)
-	)
+	(use-package mac-pseudo-daemon
+		:config (mac-pseudo-daemon-mode)))
 
 (when *gnu*
 	(setq	browse-url-secondary-browser-function 'browse-url-generic
@@ -709,6 +711,7 @@
 	(goto-address-mode)
 	(visual-line-mode)))
 (add-hook 'fill-nobreak-predicate #'fill-french-nobreak-p)
+(define-key text-mode-map (kbd "C-M-i") nil)
 
 (use-package visual-fill-column
 	:config (setq visual-fill-column-fringes-outside-margins nil)
@@ -767,6 +770,7 @@
 	flyspell-doublon-as-error-flag nil
 	flyspell-issue-welcome-flag nil
 	flyspell-issue-message-flag nil
+	flyspell-use-meta-tab nil
 	ispell-dictionary "canadian"
 	ispell-extra-args '("--sug-mode=ultra")
 	ispell-list-command "--list"	; correct command
@@ -790,12 +794,8 @@
 		(flyspell-lazy-mode 1))
 
 (eval-after-load "flyspell" '(progn
-	(define-key flyspell-mouse-map [down-mouse-3] #'flyspell-correct-word)))
-
-;(defun my/list-packages ()
-;	(interactive)
-;	(unless (ispell-process-status) (ispell-start-process))
-;	(list-packages))
+	(define-key flyspell-mouse-map [down-mouse-3] #'flyspell-correct-word)
+	(define-key flyspell-mode-map (kbd "C-M-TAB") 'flyspell-auto-correct-word)))
 
 
 ;; Org-mode
@@ -992,9 +992,6 @@
 (global-set-key (kbd "M-<left>") (lambda()(interactive)(backward-page)(recenter-top-bottom)))
 (global-set-key (kbd "M-<right>")(lambda()(interactive)(forward-page) (recenter-top-bottom)))
 
-(global-set-key (kbd "<swipe-left>")  'mac-next-buffer)
-(global-set-key (kbd "<swipe-right>") 'mac-previous-buffer)
-
 ;; scroll settings
 (setq
 	auto-window-vscroll nil
@@ -1019,6 +1016,13 @@
 ;(use-package disable-mouse)
 ;(global-disable-mouse-mode)
 ;(mouse-avoidance-mode banish)
+(when *mac*
+	;; https://lmno.lol/alvaro/hey-mouse-dont-mess-with-my-emacs-font-size
+	(global-set-key (kbd "<pinch>") 'ignore)
+	(global-set-key (kbd "<C-wheel-up>") 'ignore)
+	(global-set-key (kbd "<C-wheel-down>") 'ignore)
+	(global-set-key (kbd "<swipe-left>")  'mac-next-buffer)
+	(global-set-key (kbd "<swipe-right>") 'mac-previous-buffer))
 
 
 ;; window navigation
@@ -1065,6 +1069,7 @@
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'upcase-region 'disabled nil)	; C-x C-u
 (put 'downcase-region 'disabled nil); C-x C-l
+(put 'help-fns-edit-variable 'disabled nil); e
 (put 'narrow-to-region 'disabled nil) ; C-x n n
 (put 'suspend-frame 'disabled t)	; C-z / C-x C-z
 
@@ -1084,6 +1089,7 @@
 (bind-key "M-<f3>" 'shortdoc)
 
 (bind-key "M-Q"		'unfill-paragraph)
+(which-key-alias "M-p f" "fill buffer")
 
 (bind-key "C-M-;"	'eval-r) (defun eval-r (b e) (interactive "r")(eval-region b e)(deactivate-mark))
 (bind-key "C-M-y"	'undo-yank)

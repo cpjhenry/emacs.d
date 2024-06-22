@@ -36,9 +36,15 @@
 
 (defun az () "Monthly Forecast"
 	(interactive)
+
 	(let ((buf (generate-new-buffer "*az*")))
 	(shell-command "az -u" buf)
 	(switch-to-buffer buf)
 	(markdown-preview)
 	(kill-buffer buf)
-	(kill-buffer "*markdown-output*")))
+	(kill-buffer "*markdown-output*"))
+
+	;; (with-output-to-temp-buffer "*az*" HACK
+	;; 	(shell-command "az -u")
+	;; 	(markdown-preview))
+	)

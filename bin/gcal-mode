@@ -1,5 +1,5 @@
 #!/bin/bash
-# Weather back-end for Emacs
+# Calendar back-end for Emacs
 # 2024-01-13
 
 cond_source() { [ -f $1 ] && . $1; }
