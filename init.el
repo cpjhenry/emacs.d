@@ -308,6 +308,9 @@
 	(unless (display-graphic-p) (cl-loop for char from ?a to ?z do
 	(define-key input-decode-map (format "\e[1;P%c" char) (kbd (format "H-%c" char)))))))
 
+;; start Emacs server
+(when *mac* (use-package mac-pseudo-daemon :config (mac-pseudo-daemon-mode)(server-start)))
+
 
 ;; mode line
 (use-package doom-modeline
@@ -692,8 +695,7 @@
 (when *mac*
 	;(load "init/deft")	; note functions (bound to <f7>)
 	;(load "init/sn")	; simplenote	 (bound to <f8>)
-	(use-package mac-pseudo-daemon
-		:config (mac-pseudo-daemon-mode)))
+	)
 
 (when *gnu*
 	(setq	browse-url-secondary-browser-function 'browse-url-generic
