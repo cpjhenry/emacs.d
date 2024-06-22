@@ -299,9 +299,7 @@
 	(with-selected-frame frame
 		(when (display-graphic-p)
 			(ns-raise-emacs))))
-	(add-hook 'after-make-frame-functions 'ns-raise-emacs-with-frame)
-
-	(when (display-graphic-p) (ns-raise-emacs)))
+	(add-hook 'after-make-frame-functions 'ns-raise-emacs-with-frame))
 
 ;; add Hyper- keys (C-M-s-…) to terminal frames (iTerm2)
 (add-hook 'server-after-make-frame-hook (lambda() (interactive)
@@ -309,7 +307,7 @@
 	(define-key input-decode-map (format "\e[1;P%c" char) (kbd (format "H-%c" char)))))))
 
 ;; start Emacs server
-(when *mac* (use-package mac-pseudo-daemon :config (mac-pseudo-daemon-mode)(server-start)))
+(when *mac* (use-package mac-pseudo-daemon :config (mac-pseudo-daemon-mode) (server-start)))
 
 
 ;; mode line

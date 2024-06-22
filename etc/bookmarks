@@ -11,11 +11,11 @@
  (info-node . "Projects")
  (handler . Info-bookmark-jump))
 ("org-capture-last-stored"
- (filename . "~/Documents/org/Roam/20240123080204-.org")
- (front-context-string)
- (rear-context-string . "e: Fourth Test\n\n")
- (position . 90)
- (last-modified 26031 47530 155326 0))
+ (filename . "~/Documents/org/cookbook.org")
+ (front-context-string . "* Jamie&#39;s Sw")
+ (rear-context-string)
+ (position . 2)
+ (last-modified 26231 8727 598164 0))
 ("2023-05-10 - Six years of gopher"
  (position . 684)
  (location . "gemini://zaibatsu.circumlunar.space/users/solderpunk/gemlog/six-years-of-gopher.gmi")

@@ -100,6 +100,7 @@
 	(replace-string "•" "-" nil (point-min) (point-max))
 	(replace-string "…" "..." nil (point-min) (point-max))
 	(replace-string "&#38;" "&" nil (point-min) (point-max))
+	(replace-string "&#39;" "'" nil (point-min) (point-max))
 	(message "Garbage in, garbage out.") ))
 
 ;; https://emacs.stackexchange.com/questions/51629/add-paragraph-numbers
