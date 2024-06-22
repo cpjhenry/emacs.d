@@ -9,12 +9,12 @@ gcalcli --lineart=ascii --nocolor --calendar=cpjh --calendar=Holidays calw
 echo
 di
 echo
-icer -b |sed '$s/$/\n/'
+icer -b
 calt |sed '$s/$/\n/'
 
 TMW=$(date -d tomorrow +%Y%m%d)
-TMW=$((gcalt %$TMW --suppress-date-part; ind -d+1day -Po; calendar -W0 -t$TMW |cut -f2) |sed 's/^/- /')
-[ "$TMW" ] && echo -e "Tomorrow:\n$TMW"
+TMW=$((gcalt -U %$TMW; ind -d+1 -Po; calendar -W0 -t$TMW |cut -f2) |sed 's/^/- /')
+[ "$TMW" ] && echo -e "Tomorrow:\n$TMW" |sed '$s/$/\n/'
 
 ruled 32
 alert -f
