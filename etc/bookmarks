@@ -12,10 +12,10 @@
  (handler . Info-bookmark-jump))
 ("org-capture-last-stored"
  (filename . "~/Documents/org/cookbook.org")
- (front-context-string . "* Jamie&#39;s Sw")
- (rear-context-string)
- (position . 2)
- (last-modified 26231 8727 598164 0))
+ (front-context-string . "* Grilled Potato")
+ (rear-context-string . "out 10 minutes.\n")
+ (position . 678)
+ (last-modified 26232 14686 845381 0))
 ("2023-05-10 - Six years of gopher"
  (position . 684)
  (location . "gemini://zaibatsu.circumlunar.space/users/solderpunk/gemlog/six-years-of-gopher.gmi")

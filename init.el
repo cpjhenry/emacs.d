@@ -874,8 +874,7 @@
 	("c" "Cookbook" entry (file "~/Documents/org/cookbook.org")
    		"%(org-chef-get-recipe-from-url)" :empty-lines 1)
 	("m" "Manual Cookbook" entry (file "~/Documents/org/cookbook.org")
-		"* %^{Recipe title: }\n:PROPERTIES:\n:source-url:\n:servings:\n:prep-time:\n
-		:cook-time:\n:ready-in:\n:END:\n** Ingredients\n%?\n** Directions\n\n")
+		"* %^{Recipe title: }\n:PROPERTIES:\n:source-url:\n:servings:\n:prep-time:\n:cook-time:\n:ready-in:\n:END:\n** Ingredients\n%?\n** Directions\n%?\n** Notes\n\n")
 
 	;; https://benadha.com/notes/how-i-manage-my-reading-list-with-org-mode/
 	("i" "📥 Inbox" entry (file "~/Documents/org/inbox.org") "* %?\n  %i\n" :prepend t)
