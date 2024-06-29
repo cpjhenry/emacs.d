@@ -291,14 +291,12 @@
 (when (featurep 'ns)
 	(defun ns-raise-emacs ()
 	"Raise Emacs."
-		(ns-do-applescript "tell application \"Emacs\" to activate")
-		(toggle-frame-maximized))
+		(ns-do-applescript "tell application \"Emacs\" to activate"))
 
 	(defun ns-raise-emacs-with-frame (frame)
 	"Raise Emacs and select the provided frame."
-	(with-selected-frame frame
-		(when (display-graphic-p)
-			(ns-raise-emacs))))
+		(with-selected-frame frame
+		(when (display-graphic-p) (ns-raise-emacs) (toggle-frame-maximized))))
 	(add-hook 'after-make-frame-functions 'ns-raise-emacs-with-frame))
 
 ;; add Hyper- keys (C-M-s-…) to terminal frames (iTerm2)
@@ -535,6 +533,7 @@
 (setq
 	browse-url-browser-function 'eww-browse-url
 	eww-bookmarks-directory (concat user-emacs-directory "etc/")
+	eww-auto-rename-buffer t
 	shr-use-colors nil
 	shr-use-fonts nil
 	shr-bullet "• "
@@ -545,6 +544,7 @@
 	shr-indentation 2	; Left-side margin
 	shr-width nil)		; Fold text for comfiness
 (url-setup-privacy-info)
+(add-hook 'eww-after-render-hook 'eww-readable) ;; default to 'readable-mode'
 
 (use-package ace-link
 	:config
@@ -955,13 +955,15 @@
 ;; sundry
 (load "init/misc")
 (load "init/scripts" 'noerror)
+(define-key shell-mode-map (kbd "M-r") nil)
 
 (load "init/pdfexport")
 (eval-after-load 'latex-mode
 	'(define-key latex-mode-map (kbd "C-c r") 'latex-compile-and-update-other-buffer))
 (eval-after-load 'markdown-mode
 	'(define-key markdown-mode-map (kbd "C-c r") 'md-compile-and-update-other-buffer))
-(define-key org-mode-map (kbd "C-c o r") 'org-compile-latex-and-update-other-buffer)
+(eval-after-load 'org-mode
+	'(define-key org-mode-map (kbd "C-c o r") 'org-compile-latex-and-update-other-buffer))
 
 (add-to-list 'safe-local-variable-values '(org-log-done))
 (add-to-list 'safe-local-variable-values '(truncate-lines . -1))

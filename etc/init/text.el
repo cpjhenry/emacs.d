@@ -47,6 +47,13 @@
 	(interactive "r")
 	(flush-lines "^\\s-*$" start end nil))
 
+(defun delete-duplicate-words ()
+	"Delete duplicate words via `query-replace-regexp'."
+	(interactive nil text-mode)
+	(save-excursion
+		(goto-char (point-min))
+		(query-replace-regexp "\\(\\b\\w+\\b\\)\\W+\\1\\b" "\\1")))
+
 (defun replace-smart-quotes (beg end)
 	"Replace 'smart quotes' in buffer or region with ASCII quotes."
 	(interactive "r")
