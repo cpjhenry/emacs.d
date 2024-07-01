@@ -1,6 +1,27 @@
+;; https://www.emacswiki.org/emacs/DisabledCommands
+
+(defun enable-all-commands ()
+"Enable all commands, reporting on which were disabled."
+	(interactive)
+	(with-output-to-temp-buffer "*Commands that were disabled*"
+	(mapatoms (function (lambda (symbol)
+		(when (get symbol 'disabled)
+			(put symbol 'disabled nil)
+			(prin1 symbol)
+			(princ "\n")))))))
+
+(defun enable-me (&rest args)
+"Called when a disabled command is executed. Enable it and re-execute it."
+	(put this-command 'disabled nil)
+	(message "You typed %s.  %s was disabled.  It ain't no more."
+	(key-description (this-command-keys)) this-command)
+	(sit-for 0)
+	(call-interactively this-command))
+
+
 ;; https://svn.red-bean.com/repos/kfogel/trunk/.emacs
 
-;;; Setting modes based on filenames:
+;; Setting modes based on filenames:
 (add-to-list 'auto-mode-alist '("\\.mnu$" . food-menu-mode))
 (add-to-list 'auto-mode-alist '("\\.pl$" . perl-mode))
 (add-to-list 'auto-mode-alist '("\\.py$" . python-mode))

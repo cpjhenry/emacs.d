@@ -137,6 +137,7 @@
 	mark-ring-max most-positive-fixnum
 	max-lisp-eval-depth 65536
 	ns-use-native-fullscreen t
+	package-archive-column-width 1
 	pop-up-windows nil
 	;pop-up-frames nil
 	recenter-positions '(top)		; top middle bottom
@@ -307,6 +308,7 @@
 
 ;; start Emacs server
 (when *mac* (use-package mac-pseudo-daemon :config (mac-pseudo-daemon-mode) (server-start)))
+(add-hook 'kill-emacs-hook 'mac-pseudo-daemon-mode)
 
 
 ;; mode line
@@ -553,7 +555,7 @@
 	:config
 		(setq w3m-bookmark-file (concat user-emacs-directory "etc/w3m-bookmarks.html"))
 		(autoload 'w3m-browse-url "w3m" "Ask a WWW browser to show a URL." t)
-		(define-key w3m-mode-map (kbd "<left>") 'w3m-view-previous-page))
+	:bind (:map w3m-mode-map ("<left>" . w3m-view-previous-page)))
 
 (use-package flycheck)
 
@@ -763,9 +765,6 @@
 ;; bash
 (add-to-list 'auto-mode-alist '("\\.bash*" . sh-mode))
 
-;; Tex
-(add-hook 'tex-mode-hook (lambda () (setq ispell-parser 'tex)))
-
 
 ;; spell checking
 (setq
@@ -800,6 +799,9 @@
 (use-package flyspell-correct
 	:after flyspell
 	:bind (:map flyspell-mode-map ("C-;" . flyspell-correct-wrapper)))
+
+;; Tex
+(add-hook 'tex-mode-hook (lambda () (setq ispell-parser 'tex)))
 
 
 ;; Org-mode
@@ -1073,11 +1075,16 @@
 
 
 ;; Disabled keys
+;(setq disabled-command-function 'enable-me)
+
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'upcase-region 'disabled nil)	; C-x C-u
 (put 'downcase-region 'disabled nil); C-x C-l
-(put 'help-fns-edit-variable 'disabled nil); e
 (put 'narrow-to-region 'disabled nil) ; C-x n n
+
+;; https://lists.gnu.org/archive/html/bug-gnu-emacs/2024-02/msg01410.html
+(with-eval-after-load 'help-fns (put 'help-fns-edit-variable 'disabled nil))
+
 (put 'suspend-frame 'disabled t)	; C-z / C-x C-z
 
 
