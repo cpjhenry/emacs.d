@@ -1955,22 +1955,18 @@ column, then prepend asterisk + space and postpend colon + space."
 C-x 8 …					Emacs alt keys
 
 M-X						extended command (buffer)
-C-M-i					completion at point
+M-TAB					completion at point
 
 C-TAB | C-x ← | →		switch buffer
 C-k | C-S-DEL			kill eol | line
-C-DEL | C-BS 	 		kill word ← →
+C-DEL | (fn)-C-BS 		kill word ← →
 C-g						abort action
 C-s | C-r				search forward | back
 C-z						undo
 C-x h					select all text
 M-q | M-S-q				fill | un-fill paragraph
 M-|						pipe region
-M-:						evaluate (interactive)
-C-M-;					evaluate region
-C-u 0 C-M-\\   			remove indent
-C-c d					insert date(s)
-C-u C-x r N				number lines
+M-;						comment (do-what-I-mean)
 C-l						re-centre top
 C-M-l					reposition window
 M-r						move to top
@@ -1979,10 +1975,17 @@ C-x a g					define abbreviation
 C-x n n	| C-x n w		narrow | widen buffer
 C-x x g					revert buffer (quickly)
 C-x x t					toggle truncated lines
-C-x C-e					evaluate last standard expression (sexp)
 C-x C-q					toggle read-only mode
+
 C-q C-l      			<FF>
 C-x [ | C-x ]			<FF> bk | fwd
+
+M-:						evaluate (interactive)
+C-M-;					evaluate region
+C-x C-e					evaluate last standard expression (sexp)
+
+C-u 0 C-M-\\   			remove indent
+C-u C-x r N				number lines
 
 
 ORG-MODE

@@ -11,7 +11,7 @@
 	(interactive)
 	(let ((buf (generate-new-buffer "untitled")))
 		(switch-to-buffer buf)
-		;(funcall (and default-major-mode))
+		(funcall (and default-major-mode))
 		(setq buffer-offer-save t) ))
 
 (defun new-markdown-buffer ()

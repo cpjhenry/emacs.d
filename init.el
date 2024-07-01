@@ -207,8 +207,8 @@
 ;; eval-after-loads are run once, before mode hooks
 ;; mode-hooks execute once for every buffer in which the mode is enabled
 
-(with-eval-after-load 'doc-view-mode  (define-key doc-view-mode-map (kbd "q") 'kill-current-buffer))
-(with-eval-after-load 'view-mode-hook (define-key view-mode-map (kbd "q") 'kill-current-buffer))
+(with-eval-after-load 'doc-view-mode (define-key doc-view-mode-map (kbd "q") 'kill-current-buffer))
+(with-eval-after-load 'view-mode (define-key view-mode-map (kbd "q") 'kill-current-buffer))
 (with-eval-after-load 'emacs-news-mode
 	(define-key emacs-news-view-mode-map (kbd "<left>")
 		(lambda()(interactive)(outline-previous-heading)(recenter-top-bottom)))
@@ -260,8 +260,9 @@
 
 ;; *scratch*
 (setq initial-scratch-message nil)	; Makes *scratch* empty
-(use-package autoscratch
-	:config (setq initial-major-mode 'autoscratch-mode))
+
+;; (use-package autoscratch
+;; 	:config (setq initial-major-mode 'autoscratch-mode))
 
 ;; Tramp
 (setq
@@ -271,18 +272,18 @@
 	tramp-auto-save-directory  	(concat user-emacs-directory "var/tramp/auto-save/")
 	tramp-persistency-file-name	(concat user-emacs-directory "var/tramp/persistency"))
 
-(defvar trampbackground "linen")
+(defvar remote-tramp-bg "linen")
 (defun checker-tramp-file-hook ()
 	(when (file-remote-p buffer-file-name)
-	(face-remap-add-relative 'default :background trampbackground)))
+	(face-remap-add-relative 'default :background remote-tramp-bg)))
 (add-hook 'find-file-hook 'checker-tramp-file-hook)
 (defun checker-tramp-dired-hook ()
 	(when (file-remote-p dired-directory)
-	(face-remap-add-relative 'default :background trampbackground)))
+	(face-remap-add-relative 'default :background remote-tramp-bg)))
 (add-hook 'dired-after-readin-hook 'checker-tramp-dired-hook)
 (defun checker-tramp-shell-hook ()
 	(when (file-remote-p default-directory)
-	(face-remap-add-relative 'default :background trampbackground)))
+	(face-remap-add-relative 'default :background remote-tramp-bg)))
 (add-hook 'shell-mode-hook 'checker-tramp-shell-hook)
 
 
@@ -546,9 +547,7 @@
 (url-setup-privacy-info)
 (add-hook 'eww-after-render-hook 'eww-readable) ;; default to 'readable-mode'
 
-(use-package ace-link
-	:config
-		(ace-link-setup-default))
+(use-package ace-link :config (ace-link-setup-default))
 
 (use-package w3m
 	:config
@@ -693,7 +692,8 @@
 (when *mac*
 	;(load "init/deft")	; note functions (bound to <f7>)
 	;(load "init/sn")	; simplenote	 (bound to <f8>)
-	)
+
+	(use-package osx-location :config (osx-location-watch)))
 
 (when *gnu*
 	(setq	browse-url-secondary-browser-function 'browse-url-generic
@@ -764,6 +764,9 @@
 ;; bash
 (add-to-list 'auto-mode-alist '("\\.bash*" . sh-mode))
 
+;; Tex
+(add-hook 'tex-mode-hook (lambda () (setq ispell-parser 'tex)))
+
 
 ;; spell checking
 (setq
@@ -777,14 +780,16 @@
 	ispell-program-name "aspell"	; spell checker
 	ispell-silently-savep t)   		; save personal list automatically
 
+(with-eval-after-load 'flyspell (define-key flyspell-mouse-map [down-mouse-3] #'flyspell-correct-word))
+
 (unless *w32*
 	(dolist (hook '(text-mode-hook markdown-mode-hook))
-	(add-hook hook (lambda () (flyspell-mode 1))))
+	(add-hook hook (lambda() (flyspell-mode 1))))
 	;(add-hook 'prog-mode-hook 'flyspell-prog-mode)
 	)
 
 (dolist (hook '(change-log-mode-hook log-edit-mode-hook))
-	(add-hook hook (lambda () (flyspell-mode -1))))
+	(add-hook hook (lambda() (flyspell-mode -1))))
 
 (use-package flyspell-lazy
 	:after flyspell
@@ -793,9 +798,9 @@
 		flyspell-lazy-window-idle-seconds 3)
 		(flyspell-lazy-mode 1))
 
-(eval-after-load "flyspell" '(progn
-	(define-key flyspell-mouse-map [down-mouse-3] #'flyspell-correct-word)
-	(define-key flyspell-mode-map (kbd "C-M-TAB") 'flyspell-auto-correct-word)))
+(use-package flyspell-correct
+	:after flyspell
+	:bind (:map flyspell-mode-map ("C-;" . flyspell-correct-wrapper)))
 
 
 ;; Org-mode
@@ -1123,7 +1128,7 @@
 (which-key-alias "C-c o" "org")
 
 (bind-key "C-c p"	'markdown-preview-file)
-(bind-key "C-c s"	'dictionary-search)
+(bind-key "C-c q"	'dictionary-search)
 (bind-key "C-c w"	'eww-list-bookmarks) ; www
 
 (bind-key "C-c x b"	'flush-blank-lines)
@@ -1146,10 +1151,16 @@
 (bind-key "C-c C-r" 'sudo-edit)
 
 ;; Ctrl-x (buffer functions)
+(which-key-alias "C-x a" "abbrev")
+(which-key-alias "C-x n" "narrow")
+(which-key-alias "C-x p" "project")
+(which-key-alias "C-x r" "registers")
+
 (bind-key "C-x c" 'kill-current-buffer)
 
 (bind-key "C-x x k"	'kill-other-buffers)
 (bind-key "C-x x l" 'buf-to-LF)
+(bind-key "C-x x m" 'move-buffer-file)
 (bind-key "C-x x r"	'rename-file-and-buffer)
 (bind-key "C-x x v" 'view-text-file-as-info-manual)
 (bind-key "C-x x w" 'preview-html)
