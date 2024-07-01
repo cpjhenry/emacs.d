@@ -692,8 +692,7 @@
 (when *mac*
 	;(load "init/deft")	; note functions (bound to <f7>)
 	;(load "init/sn")	; simplenote	 (bound to <f8>)
-
-	(use-package osx-location :config (osx-location-watch)))
+)
 
 (when *gnu*
 	(setq	browse-url-secondary-browser-function 'browse-url-generic
@@ -897,7 +896,7 @@
 (require 'org)
 (require 'ox-md)
 
-(use-package org-appear
+(use-package org-appear ; automatic visibility toggling of Org elements depending on cursor position
 	:hook (org-mode . org-appear-mode))
 
 (use-package org-autolist ; pressing "Return" will insert a new list item automatically
@@ -910,7 +909,7 @@
 
 (use-package org-d20)
 
-(use-package org-modern
+(use-package org-modern ; add some styling to your Org buffer
 	:hook (org-mode . global-org-modern-mode)
 	:custom
 	(org-modern-fold-stars nil)
@@ -918,7 +917,9 @@
 	(org-modern-checkbox nil)
 	(org-modern-table nil))
 
-(when *mac* (use-package org-mac-link))
+(when *mac* (use-package org-mac-link ; grab links from various mac apps
+	:config
+	(define-key org-mode-map (kbd "C-c o g") 'org-mac-link-get-link)))
 
 (when *natasha* (use-package org-roam
 	:ensure t
