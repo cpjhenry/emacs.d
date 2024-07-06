@@ -11,11 +11,12 @@ alert -f
 echo
 di
 
-TODAY=$(icer -b; calt)
-[ "$TODAY" ] && echo -e "\n$TODAY\n"
+TODAY=$(ssh bullwinkle "/usr/local/bin/icalBuddy -nc -df '%RD' -po title,datetime \
+	-ic Birthdays eventsFrom:yesterday to:today+14" |
+	sed -e "s/\'s Birthday//;s/ (age.*)//;s/, today//;s/ from now//";
+	calt)
+[ "$TODAY" ] && echo -e "\n$TODAY"
 
 TMW=$(date -d tomorrow +%Y%m%d)
 TMW=$((gcalt -U %$TMW; ind -d+1 -Po; calendar -W0 -t$TMW |cut -f2) |sed 's/^/- /')
-[ "$TMW" ] && echo -e "Tomorrow:\n$TMW"
-
-exit 0
+[ "$TMW" ] && echo -e "\nTomorrow:\n$TMW" || :
