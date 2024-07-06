@@ -190,7 +190,7 @@
 
 ;; path
 (if (string-equal emacs-edition "railwaycat") (load "init/exec-path"))
-(if (string-equal emacs-edition "emacs-plus") (message "Running emacs-plus."))
+(message "Running '%s'." emacs-edition)
 
 
 ;; buffers
