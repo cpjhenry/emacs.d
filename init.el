@@ -189,7 +189,8 @@
 	:diminish)
 
 ;; path (required for 'railwaycat' edition)
-(load "init/exec-path")
+(if (string-equal emacs-edition "railwaycat") (load "init/exec-path"))
+(if (string-equal emacs-edition "emacs-plus") (message "Running emacs-plus."))
 
 
 ;; buffers
@@ -308,6 +309,7 @@
 
 ;; start Emacs server
 (when *mac* (use-package mac-pseudo-daemon :config (mac-pseudo-daemon-mode) (server-start)))
+(if server-process (message "Server started."))
 
 
 ;; mode line
