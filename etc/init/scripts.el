@@ -2,7 +2,7 @@
 
 (defun di () "Daily information."
 	(interactive)
-	(async-shell-command "di-mode" "*daily-info*")
+	(shell-command "di-mode&" "*daily-info*")
 	(diary-list-entries (calendar-current-date) diary-number-of-entries))
 
 (defun gc () "Daily tasks"
@@ -36,7 +36,6 @@
 
 (defun az () "Monthly Forecast"
 	(interactive)
-
 	(let ((buf (generate-new-buffer "*az*")))
 	(shell-command "az -u" buf)
 	(switch-to-buffer buf)
@@ -44,7 +43,7 @@
 	(kill-buffer buf)
 	(kill-buffer "*markdown-output*"))
 
-	;; (with-output-to-temp-buffer "*az*" HACK
-	;; 	(shell-command "az -u")
-	;; 	(markdown-preview))
+	;; (with-output-to-temp-buffer "*az*" ; HACK
+	;; 	(shell-command "az -u"))
+	;; 	(markdown-preview)
 	)

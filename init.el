@@ -140,7 +140,7 @@
 	package-archive-column-width 1
 	pop-up-windows nil
 	;pop-up-frames nil
-	recenter-positions '(top)		; top middle bottom
+	recenter-positions '(top) ; top middle bottom
 	require-final-newline nil
 	resize-mini-windows t
 	revert-buffer-quick-short-answers t
@@ -302,13 +302,12 @@
 	(add-hook 'after-make-frame-functions 'ns-raise-emacs-with-frame))
 
 ;; add Hyper- keys (C-M-s-…) to terminal frames (iTerm2)
-(add-hook 'server-after-make-frame-hook (lambda() (interactive)
+(add-hook 'server-after-make-frame-hook (lambda()
 	(unless (display-graphic-p) (cl-loop for char from ?a to ?z do
 	(define-key input-decode-map (format "\e[1;P%c" char) (kbd (format "H-%c" char)))))))
 
 ;; start Emacs server
 (when *mac* (use-package mac-pseudo-daemon :config (mac-pseudo-daemon-mode) (server-start)))
-(add-hook 'kill-emacs-hook 'mac-pseudo-daemon-mode)
 
 
 ;; mode line
@@ -498,6 +497,12 @@
 ;; Initialize packages
 (use-package diminish)
 
+(use-package which-key
+	:config
+		(which-key-mode)
+		(defalias 'which-key-alias 'which-key-add-key-based-replacements)
+	:diminish)
+
 ;; (use-package bookmark+
 ;; 	:quelpa (bookmark+ :fetcher wiki :files (
 ;; 		"bookmark+.el"
@@ -522,17 +527,15 @@
 		(defun elpher-up () (interactive)(backward-paragraph)(recenter-top-bottom))
 		(defun elpher-down () (interactive)(forward-paragraph)(recenter-top-bottom))
 
+		(define-key elpher-mode-map (kbd "A-<left>") 'elpher-back)
+		(define-key elpher-mode-map (kbd "A-<right>") 'elpher-down)
+
 		(add-hook 'elpher-mode-hook (lambda () (setq-local
 			left-margin-width 10
 			gnutls-verify-error nil)
-			(set-window-buffer nil (current-buffer))
-			(local-set-key (kbd "<left>") 'elpher-back)
-			(local-set-key (kbd "<right>") 'elpher-down))))
+			(set-window-buffer nil (current-buffer)))))
 
 (require 'eww)
-(define-key eww-mode-map (kbd "<left>") 'eww-back-url)
-(define-key eww-mode-map (kbd "<right>") 'eww-forward-url)
-(define-key eww-bookmark-mode-map (kbd "w")	'eww)
 (setq
 	browse-url-browser-function 'eww-browse-url
 	eww-bookmarks-directory (concat user-emacs-directory "etc/")
@@ -546,6 +549,11 @@
 
 	shr-indentation 2	; Left-side margin
 	shr-width nil)		; Fold text for comfiness
+
+(define-key eww-mode-map (kbd "A-<left>") 'eww-back-url)
+(define-key eww-mode-map (kbd "A-<right>") 'eww-forward-url)
+(define-key eww-bookmark-mode-map (kbd "w")	'eww)
+
 (url-setup-privacy-info)
 (add-hook 'eww-after-render-hook 'eww-readable) ;; default to 'readable-mode'
 
@@ -564,7 +572,7 @@
 (use-package google-this
 	:config
 		(google-this-mode)
-		(which-key-add-key-based-replacements "C-c /" "google-this")
+		(which-key-alias "C-c /" "google-this")
 	:diminish)
 
 (use-package hl-todo
@@ -592,11 +600,6 @@
 (use-package typo) ; minor mode for typographic editing
 
 (use-package visible-mark)
-
-(use-package which-key
-	:config
-		(which-key-mode)
-	:diminish)
 
 ;; Diminish built-in modes
 (diminish 'abbrev-mode)
@@ -694,7 +697,7 @@
 (when *mac*
 	;(load "init/deft")	; note functions (bound to <f7>)
 	;(load "init/sn")	; simplenote	 (bound to <f8>)
-)
+	)
 
 (when *gnu*
 	(setq	browse-url-secondary-browser-function 'browse-url-generic
@@ -880,7 +883,7 @@
 	("c" "Cookbook" entry (file "~/Documents/org/cookbook.org")
    		"%(org-chef-get-recipe-from-url)" :empty-lines 1)
 	("m" "Manual Cookbook" entry (file "~/Documents/org/cookbook.org")
-		"* %^{Recipe title: }\n:PROPERTIES:\n:source-url:\n:servings:\n:prep-time:\n:cook-time:\n:ready-in:\n:END:\n** Ingredients\n%?\n** Directions\n%?\n** Notes\n\n")
+		"* %^{Recipe title: }\n:PROPERTIES:\n:source-url:\n:servings:\n:prep-time:\n:cook-time:\n:ready-in:\n:END:\n** Ingredients\n%?\n** Directions\n\n\n** Notes\n\n")
 
 	;; https://benadha.com/notes/how-i-manage-my-reading-list-with-org-mode/
 	("i" "📥 Inbox" entry (file "~/Documents/org/inbox.org") "* %?\n  %i\n" :prepend t)
@@ -935,7 +938,7 @@
 		;; Dailies
 		("C-c n j" . org-roam-dailies-capture-today))
 	:config
-		(which-key-add-key-based-replacements "C-c n" "org-roam")
+		(which-key-alias "C-c n" "org-roam")
 		(org-roam-setup)
 		(org-roam-db-autosync-mode)))
 
@@ -1001,12 +1004,14 @@
 (global-set-key (kbd "M-<left>") (lambda()(interactive)(backward-page)(recenter-top-bottom)))
 (global-set-key (kbd "M-<right>")(lambda()(interactive)(forward-page) (recenter-top-bottom)))
 
+
 ;; scroll settings
 (setq
 	auto-window-vscroll nil
+	next-screen-context-lines 0
 	scroll-conservatively 10000
 	scroll-margin 0
-	scroll-preserve-screen-position 1
+	scroll-preserve-screen-position t
 	scroll-step 0)
 (global-set-key (kbd "C-<") 'scroll-left)
 (global-set-key (kbd "C->") 'scroll-right)
@@ -1024,7 +1029,9 @@
 ;; https://github.com/purcell/disable-mouse
 ;(use-package disable-mouse)
 ;(global-disable-mouse-mode)
-;(mouse-avoidance-mode banish)
+
+(mouse-avoidance-mode 'banish)
+
 (when *mac*
 	;; https://lmno.lol/alvaro/hey-mouse-dont-mess-with-my-emacs-font-size
 	(global-set-key (kbd "<pinch>") 'ignore)
@@ -1049,6 +1056,7 @@
 
 ;; alternate keys
 (bind-key "C-S-k"	'kill-whole-line)
+(bind-key "C-x S-u" 'undo-redo)
 
 (global-set-key (kbd "C-s")		'isearch-forward-regexp)
 (global-set-key (kbd "C-r")		'isearch-backward-regexp)
@@ -1070,8 +1078,15 @@
 ;; Darwin overrides
 (when *mac*
 	(when (display-graphic-p)
-	(dolist (key '("<f10>" "S-<f10>" "C-<f10>" "M-<f10>"))
-	(global-unset-key (kbd key))) ))
+	(dolist (key '("<f10>" "S-<f10>" "C-<f10>")); "M-<f10>"))
+	(global-unset-key (kbd key))))
+
+	(global-set-key (kbd "C-x C-c") (lambda() (interactive)
+		(if mac-pseudo-daemon-mode (mac-pseudo-daemon-mode -1))
+		(save-buffers-kill-terminal)
+		(which-key-alias "C-x C-c" "save-buffers-kill-terminal")))
+
+	(bind-key "s-M-z" 'undo-redo))
 
 
 ;; Disabled keys
@@ -1089,7 +1104,6 @@
 
 
 ;; Shortcuts
-(defalias 'which-key-alias 'which-key-add-key-based-replacements)
 
 (bind-key "<f6>"	'toggle-fill-column-center)
 (bind-key "<f7>"	'flyspell-buffer)

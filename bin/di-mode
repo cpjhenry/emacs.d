@@ -7,19 +7,15 @@ cond_source $HOME/.bash_routines
 
 gcalcli --lineart=ascii --nocolor --calendar=cpjh --calendar=Holidays calw
 echo
-di
+alert -f
 echo
-icer -b
-calt |sed '$s/$/\n/'
+di
+
+TODAY=$(icer -b; calt)
+[ "$TODAY" ] && echo -e "\n$TODAY\n"
 
 TMW=$(date -d tomorrow +%Y%m%d)
 TMW=$((gcalt -U %$TMW; ind -d+1 -Po; calendar -W0 -t$TMW |cut -f2) |sed 's/^/- /')
-[ "$TMW" ] && echo -e "Tomorrow:\n$TMW" |sed '$s/$/\n/'
+[ "$TMW" ] && echo -e "Tomorrow:\n$TMW"
 
-ruled 32
-alert -f
-# echo
-# ruled 32
-# date +%B
-# echo
-# calm |sed "s/ $(date +%b)//"
+exit 0
