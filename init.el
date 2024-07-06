@@ -188,7 +188,7 @@
 	:config (gcmh-mode 1)
 	:diminish)
 
-;; path (required for 'railwaycat' edition)
+;; path
 (if (string-equal emacs-edition "railwaycat") (load "init/exec-path"))
 (if (string-equal emacs-edition "emacs-plus") (load "init/exec-path"))
 

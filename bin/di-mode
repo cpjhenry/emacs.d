@@ -11,9 +11,9 @@ alert -f
 echo
 di
 
-TODAY=$(ssh bullwinkle "/usr/local/bin/icalBuddy -nc -df '%RD' -po title,datetime \
-	-ic Birthdays eventsFrom:yesterday to:today+14" |
-	sed -e "s/\'s Birthday//;s/ (age.*)//;s/, today//;s/ from now//";
+TODAY=$(ssh bullwinkle "/usr/local/bin/icalBuddy -nc -df '%RD' \
+	-ic Birthdays eventsFrom:yesterday to:today+14" 2>/dev/null |
+	sed -e "s/'s Birthday//;s/ (age.*)//;s/, today//;s/ from now//";
 	calt)
 [ "$TODAY" ] && echo -e "\n$TODAY"
 
