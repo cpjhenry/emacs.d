@@ -1003,7 +1003,7 @@
 ;; <next>		'scroll-up-command
 
 (global-set-key (kbd "C-<home>" ) 'beginning-of-buffer)
-(global-set-key (kbd "C-<end>"  ) 'end-of-buffer)
+(global-set-key (kbd "C-<end>"  ) (lambda()(interactive)(end-of-buffer)(recenter -1)))
 (global-set-key (kbd "C-<prior>") 'scroll-down-line)
 (global-set-key (kbd "C-<next>" ) 'scroll-up-line)
 
@@ -1096,9 +1096,8 @@
 
 	(global-set-key (kbd "C-x C-c") (lambda() (interactive)
 		(if mac-pseudo-daemon-mode (mac-pseudo-daemon-mode -1))
-		(save-buffers-kill-terminal)
-		(which-key-alias "C-x C-c" "save-buffers-kill-terminal")))
-
+		(save-buffers-kill-terminal)))
+		(which-key-alias "C-x C-c" "save-buffers-kill-terminal")
 	(bind-key "s-M-z" 'undo-redo))
 
 
