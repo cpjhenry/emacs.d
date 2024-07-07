@@ -183,14 +183,25 @@
 	(require 'backup-each-save)
 	(add-hook 'after-save-hook 'backup-each-save))
 
+;; path
+(message "Running '%s'." emacs-edition)
+(use-package exec-path-from-shell)
+;; A known problem with GUI Emacs on MacOS: it runs in an isolated environment, so envvars will be
+;; wrong. That includes the PATH Emacs picks up. `exec-path-from-shell' fixes this. This is slow and
+;; benefits greatly from compilation.
+
+(setq exec-path
+	(or (eval-when-compile
+   	(when (require 'exec-path-from-shell nil t)
+		(setq exec-path-from-shell-check-startup-files nil)
+		(nconc exec-path-from-shell-variables '("PATH" "MANPATH" "LC_TYPE" "LC_ALL" "LANG" ))
+		(exec-path-from-shell-initialize) exec-path))
+		exec-path))
+
 ;; garbage collection
 (use-package gcmh
 	:config (gcmh-mode 1)
 	:diminish)
-
-;; path
-(if (string-equal emacs-edition "railwaycat") (load "init/exec-path"))
-(message "Running '%s'." emacs-edition)
 
 
 ;; buffers
@@ -210,7 +221,6 @@
 ;; mode-hooks execute once for every buffer in which the mode is enabled
 
 (with-eval-after-load 'doc-view-mode (define-key doc-view-mode-map (kbd "q") 'kill-current-buffer))
-(with-eval-after-load 'view-mode (define-key view-mode-map (kbd "q") 'kill-current-buffer))
 (with-eval-after-load 'emacs-news-mode
 	(define-key emacs-news-view-mode-map (kbd "<left>")
 		(lambda()(interactive)(outline-previous-heading)(recenter-top-bottom)))
@@ -225,6 +235,7 @@
 	(define-key Info-mode-map (kbd "q")			'kill-current-buffer)
 	(define-key Info-mode-map (kbd "<left>" )	'Info-history-back)
 	(define-key Info-mode-map (kbd "<right>")	'Info-history-forward))
+(with-eval-after-load 'view (define-key view-mode-map (kbd "q") 'View-kill-and-leave))
 
 ;; remove unneeded messages and buffers
 (setq inhibit-startup-message t)	; 'About Emacs'

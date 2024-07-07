@@ -2,20 +2,24 @@
 
 (defun di () "Daily information."
 	(interactive)
-	(shell-command "di-mode&" "*daily-info*")
-	(diary-list-entries (calendar-current-date) diary-number-of-entries))
+	(let ((buf (generate-new-buffer "*daily-info*")))
+	(shell-command "di-mode&" buf)
+	(switch-to-buffer buf)
+	(view-mode)
+	(diary-list-entries (calendar-current-date) diary-number-of-entries)))
 
-(defun gc () "Daily tasks"
+(defun cm () "Print version of monthly calendar."
 	(interactive)
-	(shell-command "gcal-mode" "*gcal*"))
+	(let ((buf (generate-new-buffer "*calm(p)*")))
+	(shell-command "cm-mode" buf)
+	(switch-to-buffer buf)
+	(view-mode)))
 
-(defun cm () "Print version of monthly calendar"
+(defun wx () "Local weather."
 	(interactive)
-	(shell-command "calm-mode" "*calm(p)*"))
-
-(defun wx () "Weather"
-	(interactive)
-	(shell-command "wx-mode" "*wx*"))
+	(let ((buf (generate-new-buffer "*wx*")))
+	(shell-command "wx-mode" buf)
+	(kill-buffer buf)))
 
 (defun fw () "Weekly Forecast"
 	(interactive)
@@ -43,4 +47,5 @@
 	(switch-to-buffer buf)
 	(markdown-preview output)
 	(kill-buffer buf)
-	(kill-buffer output)))
+	(kill-buffer output)
+	))
