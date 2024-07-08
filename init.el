@@ -580,7 +580,8 @@
 		(easy-menu-add-item  nil '("edit") ["Lorem-ipsum" lorem-ipsum-insert-paragraphs :help "Insert..."]))
 
 (use-package nov ; Read ePub files
-	:init (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode)))
+	:init (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
+	:config (setq nov-save-place-file "~/.emacs.d/var/nov-places"))
 
 (use-package ssh)
 
