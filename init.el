@@ -152,6 +152,7 @@
 	bookmark-default-file	   	(concat user-emacs-directory "etc/bookmarks")
 	eshell-aliases-file			(concat user-emacs-directory "etc/eshell/aliases")
 	eshell-directory-name  		(concat user-emacs-directory "var/eshell/")
+	nsm-settings-file			(concat user-emacs-directory "var/network-security.data")
 	request-storage-directory  	(concat user-emacs-directory "var/request/storage/")
 	url-cache-directory			(concat user-emacs-directory "var/url/cache/")
 	url-configuration-directory	(concat user-emacs-directory "var/url/configuration/") )
@@ -581,7 +582,7 @@
 
 (use-package nov ; Read ePub files
 	:init (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
-	:config (setq nov-save-place-file "~/.emacs.d/var/nov-places"))
+	:config (setq nov-save-place-file (concat user-emacs-directory "var/nov-places")))
 
 (use-package ssh)
 
@@ -916,7 +917,9 @@
 
 (when *natasha* (use-package org-roam
 	:ensure t
-	:custom (org-roam-directory (file-truename (concat org-directory "/Roam/")))
+	:custom
+		(org-roam-db-location (concat user-emacs-directory "var/org-roam.db"))
+		(org-roam-directory (file-truename (concat org-directory "/Roam/")))
 	:bind (
 		("C-c n l" . org-roam-buffer-toggle)
 		("C-c n f" . org-roam-node-find)
