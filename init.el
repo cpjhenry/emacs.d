@@ -334,6 +334,7 @@
 (require 'ido)
 (ido-mode t)
 (setq
+	ido-save-directory-list-file (concat user-emacs-directory "var/ido.last")
 	ido-enable-flex-matching t
 	ido-show-dot-for-dired nil)
 (define-key (cdr ido-minor-mode-map-entry) [remap write-file] nil); turn off C-x C-w remapping
