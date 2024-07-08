@@ -12,8 +12,8 @@
 (defconst *w32* (eq system-type 'windows-nt))
 
 (defconst system-short-name (car (split-string (system-name) "\\.")) "Hostname of local machine.")
-(defconst *bullwinkle*	(string-equal system-short-name "bullwinkle"))
-(defconst *natasha*		(string-equal system-short-name "natasha"))
+(defconst *bullwinkle*		(string-equal system-short-name "bullwinkle"))
+(defconst *natasha*			(string-equal system-short-name "natasha"))
 
 (when *mac* (add-to-list 'default-frame-alist '(font . "Inconsolata 21"))
 	(setq
@@ -83,20 +83,6 @@
 (setf
 	use-package-always-ensure t
 	use-package-verbose t)
-
-;(use-package auto-package-update
-;	:config (setq
-;	auto-package-update-delete-old-versions t
-;	auto-package-update-hide-results t)
-;	(auto-package-update-maybe))
-
-;(use-package quelpa
-;	:config (setq quelpa-verbose nil))
-;(unless (package-installed-p 'quelpa-use-package)
-;	(quelpa '(quelpa-use-package
-;   :fetcher git
-;   :url "https://github.com/quelpa/quelpa-use-package.git")))
-;(require 'quelpa-use-package)
 
 ;; settings
 (set-language-environment 'utf-8)
@@ -184,19 +170,9 @@
 	(add-hook 'after-save-hook 'backup-each-save))
 
 ;; path
-(message "Running '%s'." emacs-edition)
+(if emacs-edition (message "Running '%s'." emacs-edition))
 (use-package exec-path-from-shell)
-;; A known problem with GUI Emacs on MacOS: it runs in an isolated environment, so envvars will be
-;; wrong. That includes the PATH Emacs picks up. `exec-path-from-shell' fixes this. This is slow and
-;; benefits greatly from compilation.
-
-(setq exec-path
-	(or (eval-when-compile
-   	(when (require 'exec-path-from-shell nil t)
-		(setq exec-path-from-shell-check-startup-files nil)
-		(nconc exec-path-from-shell-variables '("PATH" "MANPATH" "LC_TYPE" "LC_ALL" "LANG" ))
-		(exec-path-from-shell-initialize) exec-path))
-		exec-path))
+(when (memq window-system '(mac ns x)) (exec-path-from-shell-initialize))
 
 ;; garbage collection
 (use-package gcmh
@@ -211,7 +187,7 @@
 
 (add-hook 'before-save-hook 'time-stamp)
 (add-hook 'doc-view-mode-hook 'auto-revert-mode)
-(add-hook 'help-mode-hook (lambda ()
+(add-hook 'help-mode-hook (lambda()
 	(setq-local font-lock-keywords-only t)
 	(goto-address-mode)))
 (add-hook 'pdf-view-mode-hook 'auto-revert-mode)
@@ -220,7 +196,8 @@
 ;; eval-after-loads are run once, before mode hooks
 ;; mode-hooks execute once for every buffer in which the mode is enabled
 
-(with-eval-after-load 'doc-view-mode (define-key doc-view-mode-map (kbd "q") 'kill-current-buffer))
+(with-eval-after-load 'doc-view-mode
+	(define-key doc-view-mode-map (kbd "q")		'kill-current-buffer))
 (with-eval-after-load 'emacs-news-mode
 	(define-key emacs-news-view-mode-map (kbd "<left>")
 		(lambda()(interactive)(outline-previous-heading)(recenter-top-bottom)))
@@ -228,19 +205,20 @@
 		(lambda()(interactive)(outline-next-heading)(recenter-top-bottom))) )
 (with-eval-after-load 'help-mode
 	(define-key help-mode-map (kbd "q")			'kill-current-buffer)
-	(define-key help-mode-map (kbd "<left>")	'help-go-back)
-	(define-key help-mode-map (kbd "<right>")	'help-go-forward)
+	(define-key help-mode-map (kbd "A-<left>")	'help-go-back)
+	(define-key help-mode-map (kbd "A-<right>")	'help-go-forward)
 	(define-key help-mode-map (kbd "M-RET")		'goto-address-at-point))
 (with-eval-after-load 'Info-mode
 	(define-key Info-mode-map (kbd "q")			'kill-current-buffer)
-	(define-key Info-mode-map (kbd "<left>" )	'Info-history-back)
-	(define-key Info-mode-map (kbd "<right>")	'Info-history-forward))
-(with-eval-after-load 'view (define-key view-mode-map (kbd "q") 'View-kill-and-leave))
+	(define-key Info-mode-map (kbd "A-<left>" )	'Info-history-back)
+	(define-key Info-mode-map (kbd "A-<right>")	'Info-history-forward))
+(with-eval-after-load 'view
+	(define-key view-mode-map (kbd "q")			'View-kill-and-leave))
 
 ;; remove unneeded messages and buffers
 (setq inhibit-startup-message t)	; 'About Emacs'
 (add-hook 'minibuffer-exit-hook		; Removes *Completions* buffer when done
-	(lambda () (let ((buffer "*Completions*")) (and (get-buffer buffer) (kill-buffer buffer)))) )
+	(lambda() (let ((buffer "*Completions*")) (and (get-buffer buffer) (kill-buffer buffer)))) )
 
 ;; opening multiple files
 (setq inhibit-startup-buffer-menu t) ; Don't show *Buffer list*
@@ -249,8 +227,7 @@
 
 ;; Revert buffers when the underlying file has changed
 (setq global-auto-revert-non-file-buffers t) ; Dired, etc.
-;; FIXME - Conflict with broken Tramp
-;(global-auto-revert-mode)
+(global-auto-revert-mode)
 
 ;; automatically save buffers associated with files on buffer or window switch
 (defadvice switch-to-buffer (before save-buffer-now activate)
@@ -267,15 +244,12 @@
 	(when buffer-file-name (save-buffer)))
 
 ;; automatically save buffers associated with files on frame (app) switch
-(add-hook 'focus-out-hook (lambda () (save-some-buffers t)))
+(add-hook 'focus-out-hook (lambda() (save-some-buffers t)))
 
 (setq enable-recursive-minibuffers t)
 
 ;; *scratch*
 (setq initial-scratch-message nil)	; Makes *scratch* empty
-
-;; (use-package autoscratch
-;; 	:config (setq initial-major-mode 'autoscratch-mode))
 
 ;; Tramp
 (setq
@@ -313,14 +287,14 @@
 		(when (display-graphic-p) (ns-raise-emacs) (toggle-frame-maximized))))
 	(add-hook 'after-make-frame-functions 'ns-raise-emacs-with-frame))
 
+;; start Emacs server
+(when *mac* (use-package mac-pseudo-daemon :config (mac-pseudo-daemon-mode) (server-start)))
+(if server-process (message "Server started."))
+
 ;; add Hyper- keys (C-M-s-…) to terminal frames (iTerm2)
 (add-hook 'server-after-make-frame-hook (lambda()
 	(unless (display-graphic-p) (cl-loop for char from ?a to ?z do
 	(define-key input-decode-map (format "\e[1;P%c" char) (kbd (format "H-%c" char)))))))
-
-;; start Emacs server
-(when *mac* (use-package mac-pseudo-daemon :config (mac-pseudo-daemon-mode) (server-start)))
-(if server-process (message "Server started."))
 
 
 ;; mode line
@@ -457,7 +431,7 @@
 	calendar-date-style 'iso
 	calendar-mark-diary-entries-flag nil
 	calendar-mark-holidays-flag t
-	calendar-setup 'one-frame
+	calendar-setup nil; one-frame
 	calendar-view-diary-initially-flag nil
 	calendar-view-holidays-initially-flag nil
 
@@ -543,7 +517,7 @@
 		(define-key elpher-mode-map (kbd "A-<left>") 'elpher-back)
 		(define-key elpher-mode-map (kbd "A-<right>") 'elpher-down)
 
-		(add-hook 'elpher-mode-hook (lambda () (setq-local
+		(add-hook 'elpher-mode-hook (lambda() (setq-local
 			left-margin-width 10
 			gnutls-verify-error nil)
 			(set-window-buffer nil (current-buffer)))))
@@ -723,7 +697,7 @@
 
 
 ;; Emacs Text and Markdown modes
-(add-hook 'text-mode-hook (lambda ()
+(add-hook 'text-mode-hook (lambda()
 	(abbrev-mode)
 	(goto-address-mode)
 	(visual-line-mode)))
@@ -743,7 +717,7 @@
 ;; fix html-mode
 (add-to-list 'auto-mode-alist '("\\.html$" . html-mode))
 (delete '("\\.html$" . text-mode) auto-mode-alist)
-(add-hook 'html-mode-hook (lambda ()
+(add-hook 'html-mode-hook (lambda()
 	(visual-line-mode -1)
 	(visual-fill-column-mode -1)
 	(toggle-truncate-lines 1)))
@@ -817,7 +791,7 @@
 	:bind (:map flyspell-mode-map ("C-;" . flyspell-correct-wrapper)))
 
 ;; Tex
-(add-hook 'tex-mode-hook (lambda () (setq ispell-parser 'tex)))
+(add-hook 'tex-mode-hook (lambda() (setq ispell-parser 'tex)))
 
 
 ;; Org-mode
@@ -935,9 +909,9 @@
 	(org-modern-checkbox nil)
 	(org-modern-table nil))
 
-(when *mac* (use-package org-mac-link ; grab links from various mac apps
-	:config
-	(define-key org-mode-map (kbd "C-c o g") 'org-mac-link-get-link)))
+;; (when *mac* (use-package org-mac-link ; grab links from various mac apps
+;; 	:config
+;; 	(define-key org-mode-map (kbd "C-c o g") 'org-mac-link-get-link)))
 
 (when *natasha* (use-package org-roam
 	:ensure t
@@ -963,7 +937,7 @@
 
 (add-hook 'org-agenda-finalize-hook 'delete-other-windows)
 
-(add-hook 'org-mode-hook (lambda ()
+(add-hook 'org-mode-hook (lambda()
 	(prettify-symbols-mode)
 	(org-no-ellipsis-in-headlines)
 	(visual-fill-column-mode -1) ))
