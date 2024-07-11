@@ -26,7 +26,7 @@
 	(let ((buf (generate-new-buffer "*Virgo*")))
 	(shell-command "fw -u" buf)
 	(switch-to-buffer buf)
-	(text-mode)
+	(text-mode)(view-mode)
 	(end-of-buffer))
 
 	(let ((buf (generate-new-buffer "*Aries*")))
@@ -47,5 +47,4 @@
 	(switch-to-buffer buf)
 	(markdown-preview output)
 	(kill-buffer buf)
-	(kill-buffer output)
-	))
+	(kill-buffer output)))

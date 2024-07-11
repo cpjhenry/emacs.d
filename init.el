@@ -1,7 +1,6 @@
 ;;; Emacs configuration / cpjh
 
 ;; Initialize terminal
-(toggle-frame-maximized)
 (delete-selection-mode 1)
 (electric-indent-mode -1)
 (show-paren-mode -1)
@@ -45,7 +44,9 @@
 
 	(dolist (key '("s-C" "s-D" "s-d" "s-e" "s-F" "s-f" "s-g" "s-j"
 		"s-L" "s-M" "s-m" "s-n" "s-p" "s-q" "s-t"))
-		(global-unset-key (kbd key))))
+		(global-unset-key (kbd key)))
+
+	(toggle-frame-maximized))
 
 (when *gnu* (add-to-list 'default-frame-alist '(font . "Monospace 17")) )
 
@@ -171,9 +172,9 @@
 	(add-hook 'after-save-hook 'backup-each-save))
 
 ;; path
-(if emacs-edition (message "Running '%s'." emacs-edition))
-(use-package exec-path-from-shell)
-(when (memq window-system '(mac ns x)) (exec-path-from-shell-initialize))
+(if (boundp 'emacs-edition) (message "Running '%s'." emacs-edition))
+(if *mac* (use-package exec-path-from-shell
+	:config (exec-path-from-shell-initialize)))
 
 ;; garbage collection
 (use-package gcmh
@@ -188,9 +189,7 @@
 
 (add-hook 'before-save-hook 'time-stamp)
 (add-hook 'doc-view-mode-hook 'auto-revert-mode)
-(add-hook 'help-mode-hook (lambda()
-	(setq-local font-lock-keywords-only t)
-	(goto-address-mode)))
+(add-hook 'help-mode-hook (lambda() (setq-local font-lock-keywords-only t) (goto-address-mode)))
 (add-hook 'pdf-view-mode-hook 'auto-revert-mode)
 (remove-hook 'file-name-at-point-functions 'ffap-guess-file-name-at-point)
 
@@ -201,9 +200,9 @@
 	(define-key doc-view-mode-map (kbd "q")		'kill-current-buffer))
 (with-eval-after-load 'emacs-news-mode
 	(define-key emacs-news-view-mode-map (kbd "<left>")
-		(lambda()(interactive)(outline-previous-heading)(recenter-top-bottom)))
+	(lambda()(interactive)(outline-previous-heading)(recenter-top-bottom)))
 	(define-key emacs-news-view-mode-map (kbd "<right>")
-		(lambda()(interactive)(outline-next-heading)(recenter-top-bottom))) )
+	(lambda()(interactive)(outline-next-heading)(recenter-top-bottom))))
 (with-eval-after-load 'help-mode
 	(define-key help-mode-map (kbd "q")			'kill-current-buffer)
 	(define-key help-mode-map (kbd "A-<left>")	'help-go-back)
@@ -285,12 +284,16 @@
 	(defun ns-raise-emacs-with-frame (frame)
 	"Raise Emacs and select the provided frame."
 		(with-selected-frame frame
-		(when (display-graphic-p) (ns-raise-emacs) (toggle-frame-maximized))))
+		(when (display-graphic-p)
+			(ns-raise-emacs)
+			(toggle-frame-maximized))))
 	(add-hook 'after-make-frame-functions 'ns-raise-emacs-with-frame))
 
 ;; start Emacs server
-(when *mac* (use-package mac-pseudo-daemon :config (mac-pseudo-daemon-mode) (server-start)))
-(if server-process (message "Server started."))
+(when *mac* (use-package mac-pseudo-daemon
+	:config	(mac-pseudo-daemon-mode)
+			(server-start))
+	(if (boundp 'server-process) (message "Server started.")))
 
 ;; add Hyper- keys (C-M-s-…) to terminal frames (iTerm2)
 (add-hook 'server-after-make-frame-hook (lambda()
@@ -410,10 +413,10 @@
 (define-key ibuffer-mode-map (kbd "<left>") 'ibuffer-previous-header)
 (define-key ibuffer-mode-map (kbd "<right>")'ibuffer-next-header)
 (define-key ibuffer-mode-map (kbd "<return>")(lambda()(interactive)(ibuffer-visit-buffer)
-	(let ((buffer "*Ibuffer*")) (and (get-buffer buffer) (kill-buffer buffer))) ))
+	(let ((buffer "*Ibuffer*")) (and (get-buffer buffer) (kill-buffer buffer)))))
 (add-hook 'ibuffer-mode-hook (lambda()
 	(ibuffer-switch-to-saved-filter-groups "home")
-	(ibuffer-update nil t) ))
+	(ibuffer-update nil t)))
 
 (require 'ibuf-ext)
 (add-to-list 'ibuffer-never-show-predicates "^\\*Messages\\*")
@@ -491,18 +494,6 @@
 		(which-key-mode)
 		(defalias 'which-key-alias 'which-key-add-key-based-replacements)
 	:diminish)
-
-;; (use-package bookmark+
-;; 	:quelpa (bookmark+ :fetcher wiki :files (
-;; 		"bookmark+.el"
-;; 		"bookmark+-mac.el"
-;; 		"bookmark+-bmu.el"
-;; 		"bookmark+-1.el"
-;; 		"bookmark+-key.el"
-;; 		"bookmark+-lit.el"
-;; 		"bookmark+-doc.el"
-;; 		"bookmark+-chg.el"))
-;; 	:defer 2)
 
 (use-package elpher
 	:config
@@ -699,7 +690,7 @@
 	:config (pdf-tools-install :no-query) ))
 
 
-;; Emacs Text and Markdown modes
+;; Emacs Text, Prog, and Markdown modes
 (add-hook 'text-mode-hook (lambda()
 	(abbrev-mode)
 	(goto-address-mode)
@@ -707,15 +698,24 @@
 (add-hook 'fill-nobreak-predicate #'fill-french-nobreak-p)
 (define-key text-mode-map (kbd "C-M-i") nil)
 
-(use-package visual-fill-column
-	:config (setq visual-fill-column-fringes-outside-margins nil)
-
+(use-package visual-fill-column :config
+	(setq visual-fill-column-fringes-outside-margins nil)
 	(advice-add 'text-scale-adjust :after #'visual-fill-column-adjust)
-	(add-hook 'visual-line-mode-hook 'visual-fill-column-mode)
-	(add-hook 'prog-mode-hook (lambda() (visual-fill-column-mode -1))))
+	(add-hook 'visual-line-mode-hook 'visual-fill-column-mode))
 
 (use-package adaptive-wrap)
 	(add-hook 'visual-line-mode-hook 'adaptive-wrap-prefix-mode)
+
+;; prog-mode
+(add-hook 'prog-mode-hook (lambda()
+	(setq show-trailing-whitespace t)
+	(abbrev-mode)
+	(when (not (equal major-mode 'lisp-interaction-mode)) ;(memq major-mode (list 'lisp-interaction-mode))
+		(display-line-numbers-mode))
+	(goto-address-prog-mode)
+	(prettify-symbols-mode)
+	(show-paren-local-mode)
+	(visual-fill-column-mode -1)))
 
 ;; fix html-mode
 (add-to-list 'auto-mode-alist '("\\.html$" . html-mode))
@@ -725,6 +725,7 @@
 	(visual-fill-column-mode -1)
 	(toggle-truncate-lines 1)))
 
+;; Markdown
 (use-package markdown-mode
 	:mode
 		(("README\\.md\\'" . gfm-mode)
@@ -743,20 +744,6 @@
 (use-package markdown-preview-mode)
 
 (load "init/text") ; text functions
-
-;; prog-mode
-(add-hook 'prog-mode-hook (lambda()
-	(setq show-trailing-whitespace t)
-	(abbrev-mode)
-	(when (not (memq major-mode
-		(list 'lisp-interaction-mode)))
-		(display-line-numbers-mode))
-	(goto-address-prog-mode)
-	(prettify-symbols-mode)
-	(show-paren-local-mode)))
-
-;; bash
-(add-to-list 'auto-mode-alist '("\\.bash*" . sh-mode))
 
 
 ;; spell checking
@@ -779,7 +766,7 @@
 	;(add-hook 'prog-mode-hook 'flyspell-prog-mode)
 	)
 
-(dolist (hook '(change-log-mode-hook log-edit-mode-hook))
+(dolist (hook '(change-log-mode-hook emacs-news-mode-hook log-edit-mode-hook))
 	(add-hook hook (lambda() (flyspell-mode -1))))
 
 (use-package flyspell-lazy
@@ -814,6 +801,7 @@
 	org-agenda-files (list org-agenda-file)
 	org-agenda-text-search-extra-files '(agenda-archives)
 	org-default-notes-file (concat org-directory "/notes.org")
+	org-id-locations-file (concat user-emacs-directory "var/org-id-locations")
 
 	org-startup-folded 'content			; folded children content all
 	org-startup-shrink-all-tables t
@@ -871,9 +859,9 @@
 
 	org-capture-templates '(
 	("c" "Cookbook" entry (file "~/Documents/org/cookbook.org")
-   		"%(org-chef-get-recipe-from-url)" :empty-lines 1)
+	"%(org-chef-get-recipe-from-url)" :empty-lines 1)
 	("m" "Manual Cookbook" entry (file "~/Documents/org/cookbook.org")
-		"* %^{Recipe title: }\n:PROPERTIES:\n:source-url:\n:servings:\n:prep-time:\n:cook-time:\n:ready-in:\n:END:\n** Ingredients\n%?\n** Directions\n\n\n** Notes\n\n")
+	"* %^{Recipe title: }\n:PROPERTIES:\n:source-url:\n:servings:\n:prep-time:\n:cook-time:\n:ready-in:\n:END:\n** Ingredients\n%?\n** Directions\n\n\n** Notes\n\n")
 
 	;; https://benadha.com/notes/how-i-manage-my-reading-list-with-org-mode/
 	("i" "📥 Inbox" entry (file "~/Documents/org/inbox.org") "* %?\n  %i\n" :prepend t)
@@ -898,11 +886,7 @@
 	:hook (org-mode . org-autolist-mode)
 	:diminish "AL")
 
-(use-package org-chef :ensure t)
-
 (use-package org-cliplink) ; insert org-mode links from the clipboard
-
-(use-package org-d20)
 
 (use-package org-modern ; add some styling to your Org buffer
 	:hook (org-mode . global-org-modern-mode)
@@ -916,7 +900,10 @@
 ;; 	:config
 ;; 	(define-key org-mode-map (kbd "C-c o g") 'org-mac-link-get-link)))
 
-(when *natasha* (use-package org-roam
+(when *natasha*
+	(use-package org-chef :ensure t)
+	(use-package org-d20)
+	(use-package org-roam
 	:ensure t
 	:custom
 		(org-roam-db-location (concat user-emacs-directory "var/org-roam.db"))
@@ -930,9 +917,9 @@
 		;; Dailies
 		("C-c n j" . org-roam-dailies-capture-today))
 	:config
-		(which-key-alias "C-c n" "org-roam")
 		(org-roam-setup)
-		(org-roam-db-autosync-mode)))
+		(org-roam-db-autosync-mode))
+		(which-key-alias "C-c n" "org-roam"))
 
 (define-key org-mode-map (kbd "C-<") 'org-backward-heading-same-level)
 (define-key org-mode-map (kbd "C->") 'org-forward-heading-same-level)
@@ -958,8 +945,12 @@
 ;; sundry
 (load "init/misc")
 (load "init/scripts" 'noerror)
+
+;; bash
+(add-to-list 'auto-mode-alist '("\\.bash*" . sh-mode))
 (define-key shell-mode-map (kbd "M-r") nil)
 
+;; pdf-export
 (load "init/pdfexport")
 (eval-after-load 'latex-mode
 	'(define-key latex-mode-map (kbd "C-c r") 'latex-compile-and-update-other-buffer))
@@ -967,9 +958,6 @@
 	'(define-key markdown-mode-map (kbd "C-c r") 'md-compile-and-update-other-buffer))
 (eval-after-load 'org-mode
 	'(define-key org-mode-map (kbd "C-c o r") 'org-compile-latex-and-update-other-buffer))
-
-(add-to-list 'safe-local-variable-values '(org-log-done))
-(add-to-list 'safe-local-variable-values '(truncate-lines . -1))
 
 
 ;; arrow keys (Darwin)
@@ -994,7 +982,7 @@
 (global-set-key (kbd "M-<up>")   (lambda()(interactive)(backward-paragraph)(recenter-top-bottom)))
 (global-set-key (kbd "M-<down>") (lambda()(interactive)(forward-paragraph)(recenter-top-bottom)))
 (global-set-key (kbd "M-<left>") (lambda()(interactive)(backward-page)(recenter-top-bottom)))
-(global-set-key (kbd "M-<right>")(lambda()(interactive)(forward-page) (recenter-top-bottom)))
+(global-set-key (kbd "M-<right>")(lambda()(interactive)(forward-page)(recenter-top-bottom)))
 
 
 ;; scroll settings
@@ -1080,18 +1068,22 @@
 	(bind-key "s-M-z" 'undo-redo))
 
 
-;; Disabled keys
+;; Disabled functions
 ;(setq disabled-command-function 'enable-me)
 
 (put 'dired-find-alternate-file 'disabled nil)
-(put 'upcase-region 'disabled nil)	; C-x C-u
-(put 'downcase-region 'disabled nil); C-x C-l
+(put 'upcase-region 'disabled nil) ; C-x C-u
+(put 'downcase-region 'disabled nil) ; C-x C-l
 (put 'narrow-to-region 'disabled nil) ; C-x n n
 
 ;; https://lists.gnu.org/archive/html/bug-gnu-emacs/2024-02/msg01410.html
 (with-eval-after-load 'help-fns (put 'help-fns-edit-variable 'disabled nil))
 
-(put 'suspend-frame 'disabled t)	; C-z / C-x C-z
+(put 'suspend-frame 'disabled t) ; C-z / C-x C-z
+
+;; Safe local variables
+(add-to-list 'safe-local-variable-values '(org-log-done))
+(add-to-list 'safe-local-variable-values '(truncate-lines . -1))
 
 
 ;; Shortcuts
@@ -1131,6 +1123,7 @@
 (bind-key "C-c g"	'elpher) ; gopher / gemini
 
 (bind-key "C-c m"	'menu-bar-read-mail)
+(which-key-alias "C-c m" "read-mail")
 ;(bind-key "C-c n"	'newsticker-show-news)
 
 (bind-key "C-c o a" 'org-archive-subtree-default)
