@@ -227,7 +227,6 @@
 
 ;; Revert buffers when the underlying file has changed
 (setq global-auto-revert-non-file-buffers t) ; Dired, etc.
-(global-auto-revert-mode)
 
 ;; automatically save buffers associated with files on buffer or window switch
 (defadvice switch-to-buffer (before save-buffer-now activate)
