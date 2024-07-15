@@ -392,6 +392,7 @@
 			(mode . calendar-mode)
 			(mode . diary-mode)
 			(mode . diary-fancy-display-mode)
+			(name . "^\\*daily-info\\*")
 			(name . "^\\*Org Agenda\\*")
 			(name . "^calendar@*")))
 		;("erc" (mode . erc-mode))
@@ -920,10 +921,11 @@
 		(org-roam-db-autosync-mode))
 		(which-key-alias "C-c n" "org-roam"))
 
-(define-key org-mode-map (kbd "C-<") 'org-backward-heading-same-level)
-(define-key org-mode-map (kbd "C->") 'org-forward-heading-same-level)
+(define-key org-mode-map (kbd "M-[") 'org-backward-heading-same-level)
+(define-key org-mode-map (kbd "M-]") 'org-forward-heading-same-level)
 (define-key org-mode-map (kbd "A-<left>" ) 'outline-up-heading)
 (define-key org-mode-map (kbd "A-<right>") (lambda()(interactive)(org-end-of-subtree)))
+	;; interactive b/c original function is not interactive (I know, right?)
 (define-key org-mode-map (kbd "C-c '") (lambda()(interactive)(org-edit-special)(visual-fill-column-mode -1)))
 
 (add-hook 'org-agenda-finalize-hook 'delete-other-windows)
