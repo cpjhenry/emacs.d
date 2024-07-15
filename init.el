@@ -153,8 +153,14 @@
 	bookmark-default-file	   	(concat user-emacs-directory "etc/bookmarks")
 	eshell-aliases-file			(concat user-emacs-directory "etc/eshell/aliases")
 	eshell-directory-name  		(concat user-emacs-directory "var/eshell/")
+	multisession-directory		(concat user-emacs-directory "var/multisession")
 	nsm-settings-file			(concat user-emacs-directory "var/network-security.data")
 	request-storage-directory  	(concat user-emacs-directory "var/request/storage/")
+
+	transient-history-file		(concat user-emacs-directory "var/transient/history.el")
+	transient-levels-file		(concat user-emacs-directory "var/transient/levels.el")
+	transient-values-file		(concat user-emacs-directory "var/transient/values.el")
+
 	url-cache-directory			(concat user-emacs-directory "var/url/cache/")
 	url-configuration-directory	(concat user-emacs-directory "var/url/configuration/") )
 
