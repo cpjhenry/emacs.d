@@ -220,6 +220,8 @@
 	(define-key Info-mode-map (kbd "q")			'kill-current-buffer)
 	(define-key Info-mode-map (kbd "A-<left>" )	'Info-history-back)
 	(define-key Info-mode-map (kbd "A-<right>")	'Info-history-forward))
+(with-eval-after-load 'man
+	(define-key Man-mode-map (kbd "q")			'kill-current-buffer))
 (with-eval-after-load 'view
 	(define-key view-mode-map (kbd "q")			'View-kill-and-leave))
 
@@ -470,10 +472,8 @@
 (advice-add 'calendar-exit :before #'save-diary-before-calendar-exit)
 (advice-add 'calendar-goto-info-node :after (lambda (&rest r) (calendar-exit-kill) (delete-other-windows)))
 
-(easy-menu-add-item calendar-mode-map '(menu-bar holidays)
-	["Yearly Holidays" calendar-holidays])
-(easy-menu-add-item calendar-mode-map '(menu-bar goto)
-	["World clock" calendar-world-clock :help "World clock"] "Beginning of Week")
+(easy-menu-add-item calendar-mode-map '(menu-bar holidays) ["Yearly Holidays" calendar-holidays])
+(easy-menu-add-item calendar-mode-map '(menu-bar goto) ["World clock" calendar-world-clock :help "World clock"] "Beginning of Week")
 
 (add-hook 'diary-list-entries-hook 'diary-sort-entries t)
 (add-hook 'diary-fancy-display-mode-hook 'alt-clean-equal-signs)
@@ -503,7 +503,7 @@
 (use-package elpher
 	:config
 		(setq elpher-bookmarks-file (concat user-emacs-directory "var/elpher-bookmarks"))
-		(easy-menu-add-item  nil '("tools") ["Gopher" elpher :help "Browse Gopherspace"] 'browse-web)
+		(easy-menu-add-item  global-map '(menu-bar tools) ["Gopher" elpher :help "Browse Gopherspace"] 'browse-web)
 
 		(defun elpher:eww-browse-url (original url &optional new-window) "Handle gemini links."
 			(cond ((string-match-p "\\`\\(gemini\\|gopher\\)://" url) (elpher-go url))
@@ -640,7 +640,7 @@
 			elfeed-use-curl t)
 
 		(eval-after-load 'elfeed `(make-directory ,(concat user-emacs-directory "var/elfeed/") t))
-		(easy-menu-add-item  nil '("tools") ["Read RSS Feeds" elfeed :help "Read RSS Feeds"] "Read Mail")
+		(easy-menu-add-item  global-map '(menu-bar tools) ["Read RSS Feeds" elfeed :help "Read RSS Feeds"] "Read Mail")
 
 		(bind-key "C-c f" 'elfeed)
 		(define-key elfeed-search-mode-map (kbd "q") (lambda()(interactive)(kill-current-buffer)
