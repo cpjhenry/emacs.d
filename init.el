@@ -191,11 +191,13 @@
 ;; buffers
 (load "init/filesandbuffers")
 (require 'formfeed-hline)
-(formfeed-hline-mode)
+(if (featurep 'formfeed-hline) (formfeed-hline-mode))
 
 (add-hook 'before-save-hook 'time-stamp)
 (add-hook 'doc-view-mode-hook 'auto-revert-mode)
-(add-hook 'help-mode-hook (lambda() (setq-local font-lock-keywords-only t) (goto-address-mode)))
+(add-hook 'help-mode-hook (lambda()
+	(setq-local font-lock-keywords-only t)
+	(goto-address-mode)))
 (add-hook 'pdf-view-mode-hook 'auto-revert-mode)
 (remove-hook 'file-name-at-point-functions 'ffap-guess-file-name-at-point)
 
@@ -214,7 +216,7 @@
 	(define-key help-mode-map (kbd "A-<left>")	'help-go-back)
 	(define-key help-mode-map (kbd "A-<right>")	'help-go-forward)
 	(define-key help-mode-map (kbd "M-RET")		'goto-address-at-point))
-(with-eval-after-load 'Info-mode
+(with-eval-after-load 'info
 	(define-key Info-mode-map (kbd "q")			'kill-current-buffer)
 	(define-key Info-mode-map (kbd "A-<left>" )	'Info-history-back)
 	(define-key Info-mode-map (kbd "A-<right>")	'Info-history-forward))
@@ -340,7 +342,7 @@
 ;; IDO
 ;; https://www.emacswiki.org/emacs/InteractivelyDoThings
 (require 'ido)
-(ido-mode t)
+(if (featurep 'ido) (ido-mode t))
 (setq
 	ido-save-directory-list-file (concat user-emacs-directory "var/ido.last")
 	ido-enable-flex-matching t
@@ -362,7 +364,6 @@
 (global-set-key (kbd "C-x C-d")	'ido-dired)
 
 ;; Dired
-(add-hook 'dired-mode-hook (lambda()(dired-omit-mode 1)))
 (with-eval-after-load 'dired
 	(require 'dired-x)
 	(unless *w32* (setq dired-kill-when-opening-new-dired-buffer t))
@@ -374,10 +375,11 @@
 		ls-lisp-use-string-collate nil
 		ls-lisp-use-insert-directory-program nil
 		ls-lisp-ignore-case 't)
-	(define-key dired-mode-map (kbd "q")	'kill-dired-buffers)
-	(define-key dired-mode-map (kbd "o")	'dired-find-file-ow)
+	(define-key dired-mode-map (kbd "q") 'kill-dired-buffers)
+	(define-key dired-mode-map (kbd "o") 'dired-find-file-ow)
 	(defun dired-find-file-ow() (interactive)(dired-find-file-other-window)(delete-other-windows))
-	(defalias 'dired-find-file				'dired-find-alternate-file))
+	(defalias 'dired-find-file 'dired-find-alternate-file))
+(add-hook 'dired-mode-hook (lambda()(dired-omit-mode 1)))
 
 ;; Ibuffer
 ;; https://www.emacswiki.org/emacs/IbufferMode
@@ -431,6 +433,8 @@
 
 
 ;; calendar
+(require 'calendar)
+(require 'diary-lib)
 (load "init/calendar")
 (setq
 	diary-file "~/Documents/diary"
@@ -455,29 +459,24 @@
 	calendar-chinese-all-holidays-flag t
 	holiday-general-holidays nil)
 
+(define-key calendar-mode-map (kbd "m") nil) ; don't allow marking of diary entries
+(define-key calendar-mode-map (kbd "q") 'calendar-exit-kill)
+(define-key calendar-mode-map (kbd "w") 'calendar-world-clock)
+(define-key calendar-mode-map (kbd "y") 'calendar-holidays)
+
+(define-key diary-mode-map (kbd "C-c C-q") 'kill-current-buffer)
+(define-key diary-fancy-display-mode-map (kbd "q") 'kill-current-buffer)
+
 (advice-add 'calendar-exit :before #'save-diary-before-calendar-exit)
-(add-hook 'calendar-mode-hook (lambda()
-	(local-set-key (kbd "m") nil) ; don't allow marking of diary entries
-	(local-set-key (kbd "?") (lambda() (interactive)(info "(emacs)Calendar/Diary")
-		(delete-other-windows)(calendar-exit 'kill)
-		(local-set-key (kbd "q") (lambda() (interactive)(kill-current-buffer)(calendar))) ))
-	(local-set-key (kbd "q") (lambda() (interactive)(calendar-exit 'kill)
-		(let ((buffer "*wclock*"))(and (get-buffer buffer) (kill-buffer buffer))) ))
-	(local-set-key (kbd "w") 'calendar-world-clock)
-	(local-set-key (kbd "y") 'calendar-holidays)
-	(easy-menu-add-item nil '("Holidays") ["Holidays this year" calendar-holidays :help "Holidays"])
-	(easy-menu-add-item nil '("Sun/Moon") ["World clock" calendar-world-clock :help "World clock"])))
+(advice-add 'calendar-goto-info-node :after (lambda (&rest r) (calendar-exit-kill) (delete-other-windows)))
 
-(advice-add 'diary-fancy-display :after (lambda() (view-mode -1)))
+(easy-menu-add-item calendar-mode-map '(menu-bar holidays)
+	["Yearly Holidays" calendar-holidays])
+(easy-menu-add-item calendar-mode-map '(menu-bar goto)
+	["World clock" calendar-world-clock :help "World clock"] "Beginning of Week")
+
 (add-hook 'diary-list-entries-hook 'diary-sort-entries t)
-(add-hook 'diary-mode-hook (lambda()
-	(local-set-key (kbd "C-c C-q") 'kill-current-buffer) ))
-(add-hook 'diary-fancy-display-mode-hook (lambda()
-	(local-set-key (kbd "q") 'kill-current-buffer)
-	(alt-clean-equal-signs)))
-
-(add-hook 'special-mode-hook (lambda()
-	(local-set-key (kbd "q") 'kill-current-buffer) ))
+(add-hook 'diary-fancy-display-mode-hook 'alt-clean-equal-signs)
 
 
 ;; print functions
@@ -504,7 +503,7 @@
 (use-package elpher
 	:config
 		(setq elpher-bookmarks-file (concat user-emacs-directory "var/elpher-bookmarks"))
-		(easy-menu-add-item  nil '("tools") ["Gopher" elpher :help "Browse Gopherspace"] "Browse the Web...")
+		(easy-menu-add-item  nil '("tools") ["Gopher" elpher :help "Browse Gopherspace"] 'browse-web)
 
 		(defun elpher:eww-browse-url (original url &optional new-window) "Handle gemini links."
 			(cond ((string-match-p "\\`\\(gemini\\|gopher\\)://" url) (elpher-go url))
@@ -641,7 +640,7 @@
 			elfeed-use-curl t)
 
 		(eval-after-load 'elfeed `(make-directory ,(concat user-emacs-directory "var/elfeed/") t))
-		(easy-menu-add-item  nil '("tools") ["Read Web Feeds" elfeed :help "Read RSS feeds"] "Read Mail")
+		(easy-menu-add-item  nil '("tools") ["Read RSS Feeds" elfeed :help "Read RSS Feeds"] "Read Mail")
 
 		(bind-key "C-c f" 'elfeed)
 		(define-key elfeed-search-mode-map (kbd "q") (lambda()(interactive)(kill-current-buffer)
@@ -652,8 +651,6 @@
 		(define-key elfeed-search-mode-map (kbd "m") 'elfeed-mail-todo)
 		(define-key elfeed-show-mode-map (kbd "TAB") 'shr-next-link)
 		(define-key elfeed-show-mode-map (kbd "SPC") 'scroll-up-half)
-		;; (define-key elfeed-show-mode-map (kbd "A-<up>"  ) 'backward-paragraph)
-		;; (define-key elfeed-show-mode-map (kbd "A-<down>") 'forward-paragraph)
 
 		;; (use-package elfeed-org
 		;; 	:config (setq
@@ -915,23 +912,21 @@
 		(org-roam-db-location (concat user-emacs-directory "var/org-roam.db"))
 		(org-roam-directory (file-truename (concat org-directory "/Roam/")))
 	:bind (
-		("C-c n l" . org-roam-buffer-toggle)
-		("C-c n f" . org-roam-node-find)
-		("C-c n g" . org-roam-graph)
-		("C-c n i" . org-roam-node-insert)
-		("C-c n c" . org-roam-capture)
-		;; Dailies
-		("C-c n j" . org-roam-dailies-capture-today))
+		("C-c r l" . org-roam-buffer-toggle)
+		("C-c r f" . org-roam-node-find)
+		("C-c r g" . org-roam-graph)
+		("C-c r i" . org-roam-node-insert)
+		("C-c r c" . org-roam-capture)
+		("C-c r j" . org-roam-dailies-capture-today))
 	:config
 		(org-roam-setup)
 		(org-roam-db-autosync-mode))
-		(which-key-alias "C-c n" "org-roam"))
+		(which-key-alias "C-c r" "org-roam"))
 
 (define-key org-mode-map (kbd "M-[") 'org-backward-heading-same-level)
 (define-key org-mode-map (kbd "M-]") 'org-forward-heading-same-level)
 (define-key org-mode-map (kbd "A-<left>" ) 'outline-up-heading)
 (define-key org-mode-map (kbd "A-<right>") (lambda()(interactive)(org-end-of-subtree)))
-	;; interactive b/c original function is not interactive (I know, right?)
 (define-key org-mode-map (kbd "C-c '") (lambda()(interactive)(org-edit-special)(visual-fill-column-mode -1)))
 
 (add-hook 'org-agenda-finalize-hook 'delete-other-windows)
@@ -1004,9 +999,6 @@
 (global-set-key (kbd "C->") 'scroll-right)
 
 ;; half-scroll
-(defun window-half-height ()(max 1 (/ (1- (window-height (selected-window))) 2)))
-(defun scroll-up-half ()	(interactive) (scroll-up (window-half-height)))
-(defun scroll-down-half ()	(interactive) (scroll-down (window-half-height)))
 (global-set-key [next] 'scroll-up-half)
 (global-set-key [prior] 'scroll-down-half)
 (global-set-key (kbd "A-<down>") 'scroll-up-half)
@@ -1102,18 +1094,19 @@
 (bind-key "C-`" 	'scratch-buffer)
 (bind-key "C-!" 	'shell)
 
-(bind-key "M-<f1>" 'my/emacs-help)
-(bind-key "M-<f2>" 'describe-personal-keybindings)
-(bind-key "M-<f3>" 'shortdoc)
+(bind-key "M-<f1>"	'my/emacs-help)
+(bind-key "M-<f2>"	'describe-personal-keybindings)
+(bind-key "M-<f3>"	'shortdoc)
 
 (bind-key "M-Q"		'unfill-paragraph)
 (which-key-alias "M-p f" "fill buffer")
 
-(bind-key "C-M-;"	'eval-r) (defun eval-r (b e) (interactive "r")(eval-region b e)(deactivate-mark))
+(bind-key "C-M-;"	'eval-r)
 (bind-key "C-M-y"	'undo-yank)
 
-(bind-key "C-c a"	'org-agenda) (when *mac*
-(bind-key "C-c z"	'my/agenda) (defun my/agenda () (interactive)(find-file org-agenda-file)))
+(bind-key "C-c a"	'org-agenda)
+(when *mac*
+(bind-key "C-c z"	'my/agenda))
 
 (bind-key "C-c b m" 'new-markdown-buffer)
 (bind-key "C-c b n" 'new-empty-buffer)
@@ -1161,8 +1154,6 @@
 (global-set-key (kbd "C-c 8 p") (kbd "¶"))
 (which-key-alias "C-c 8" "key translations")
 
-(bind-key "C-c C-r" 'sudo-edit)
-
 ;; Ctrl-x (buffer functions)
 (which-key-alias "C-x a" "abbrev")
 (which-key-alias "C-x n" "narrow")
@@ -1177,7 +1168,6 @@
 (bind-key "C-x x r"	'rename-file-and-buffer)
 (bind-key "C-x x v" 'view-text-file-as-info-manual)
 (bind-key "C-x x w" 'preview-html)
-	(defun preview-html () (interactive)(shr-render-buffer (current-buffer)))
 
 (which-key-alias "C-x 8" "key translations")
 (which-key-alias "C-x 8 e" "emojis")
@@ -1216,3 +1206,7 @@
 (when *w32* (setq
 	default-directory "c:/Users/henrypa/OneDrive - City of Ottawa/"
 	org-agenda-file (concat default-directory "!.org")))
+
+;; Local Variables:
+;; truncate-lines: -1
+;; End:

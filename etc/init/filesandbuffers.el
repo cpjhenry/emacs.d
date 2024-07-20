@@ -102,6 +102,19 @@
     (remove-hook 'window-size-change-functions 'dynamic-fill-column-set-var t)
     (remove-hook 'buffer-list-update-hook 'dynamic-fill-column-buffer-list-change t)))
 
+(defun preview-html ()
+	(interactive)
+	(shr-render-buffer (current-buffer)))
+
+(defun eval-r (b e)
+	(interactive "r")
+	(eval-region b e)
+	(deactivate-mark))
+
+(defun my/agenda ()
+	(interactive)
+	(find-file org-agenda-file))
+
 
 ;; DIRED functions
 
@@ -217,3 +230,9 @@
 	(find-file file wildcards))
 	(add-hook 'ibuffer-mode-hook (lambda ()
 		(define-key ibuffer-mode-map (kbd "C-x C-f") 'ibuffer-ido-find-file)) )
+
+
+;; scrolling
+(defun window-half-height ()(max 1 (/ (1- (window-height (selected-window))) 2)))
+(defun scroll-up-half ()	(interactive) (scroll-up (window-half-height)))
+(defun scroll-down-half ()	(interactive) (scroll-down (window-half-height)))

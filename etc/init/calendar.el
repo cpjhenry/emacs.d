@@ -58,6 +58,11 @@
 	("NZ" "Wellington")
 	))
 
+(defun calendar-exit-kill ()
+	(interactive)
+	(calendar-exit 'kill)
+	(let ((buffer "*wclock*"))(and (get-buffer buffer) (kill-buffer buffer))))
+
 (defun save-diary-before-calendar-exit (_)
 	(let ((diary-buffer (get-file-buffer diary-file)))
     	(or (not diary-buffer)

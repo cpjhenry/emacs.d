@@ -2,49 +2,45 @@
 
 (defun di () "Daily information."
 	(interactive)
-	(let ((buf (generate-new-buffer "*daily-info*")))
-	(shell-command "di-mode&" buf)
-	(switch-to-buffer buf)
+	(switch-to-buffer "*daily-info*")
+	(shell-command "di-mode&" (current-buffer))
 	(view-mode)
-	(diary-list-entries (calendar-current-date) diary-number-of-entries)))
+
+	(diary-list-entries (calendar-current-date) diary-number-of-entries)
+	(kill-buffer "diary"))
 
 (defun cm () "Print version of monthly calendar."
 	(interactive)
-	(let ((buf (generate-new-buffer "*calm(p)*")))
-	(shell-command "cm-mode" buf)
-	(switch-to-buffer buf)
-	(view-mode)))
+	(switch-to-buffer "*calm(p)*")
+	(shell-command "cm-mode" (current-buffer))
+	(view-mode))
 
 (defun wx () "Local weather."
 	(interactive)
-	(let ((buf (generate-new-buffer "*wx*")))
-	(shell-command "wx-mode" buf)
-	(kill-buffer buf)))
+	(shell-command "wx-mode"))
 
 (defun fw () "Weekly Forecast"
 	(interactive)
-	(let ((buf (generate-new-buffer "*Virgo*")))
-	(shell-command "fw -u" buf)
-	(switch-to-buffer buf)
-	(text-mode)(view-mode)
-	(end-of-buffer))
+	(switch-to-buffer "*Virgo*")
+	(shell-command "fw -u" (current-buffer))
+	(text-mode)
+	(view-mode)
+	(end-of-buffer)
 
-	(let ((buf (generate-new-buffer "*Aries*")))
-	(shell-command "fw -uf aries |perl -p -e 'chomp if eof'" buf)
-	(switch-to-buffer buf)
+	(switch-to-buffer "*Aries*")
+	(shell-command "fw -uf aries |perl -p -e 'chomp if eof'" (current-buffer))
 	(text-mode)
 	(ispell-buffer)
 	(kill-ring-save (point-min) (point-max))
-	(kill-buffer buf)
-	(message "Forecast saved to clipboard.")))
+	(kill-buffer (current-buffer))
+	(message "Forecast saved to clipboard."))
 
 (defun az () "Monthly Forecast"
 	(interactive)
-	(let (
-		(buf (generate-new-buffer (make-temp-name "")))
+	(let ((buf (make-temp-name ""))
 		(output "Monthly Forecast"))
-	(shell-command "az -u" buf)
 	(switch-to-buffer buf)
+	(shell-command "az -u" buf)
 	(markdown-preview output)
 	(kill-buffer buf)
 	(kill-buffer output)))
