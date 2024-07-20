@@ -481,14 +481,15 @@
 
 ;; print functions
 (load "init/page-dimensions")
-(define-key global-map [menu-bar file print] nil)
+(load "init/print")
+
 (setq lpr-page-header-switches '("-t"))
+(define-key global-map [menu-bar file print] nil)
 
 (bind-key "M-p f a" 'fill-to-a5-printer)
 (bind-key "M-p f r"	'fill-to-receipt-printer)
 
 (bind-key "M-p p" 	'print-buffer-or-region)
-(load "init/print")
 
 
 ;; Initialize packages
