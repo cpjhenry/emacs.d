@@ -236,3 +236,108 @@
 (defun window-half-height ()(max 1 (/ (1- (window-height (selected-window))) 2)))
 (defun scroll-up-half ()	(interactive) (scroll-up (window-half-height)))
 (defun scroll-down-half ()	(interactive) (scroll-down (window-half-height)))
+
+
+;; https://vishesh.github.io/emacs/editors/2023/01/25/lean-emacs-config.html
+;; (see bindings for: "C-a" "C-w" "M-w" "M-j")
+
+(defun back-to-indentation-or-beginning-of-line ()
+  "Moves cursor to beginning of line, taking indentation into account."
+  (interactive)
+  (if (= (point) (save-excursion (back-to-indentation) (point)))
+      (beginning-of-line)
+    (back-to-indentation)))
+
+(defun match-paren (&optional arg)
+  "Go to the matching parenthesis character if one is adjacent to point."
+  (interactive "^p")
+  (cond ((looking-at "\\s(") (forward-sexp arg))
+        ((looking-back "\\s)" 1) (backward-sexp arg))
+        ;; Now, try to succeed from inside of a bracket
+        ((looking-at "\\s)") (forward-char) (backward-sexp arg))
+        ((looking-back "\\s(" 1) (backward-char) (forward-sexp arg))))
+
+(defun kill-region-or-backward-word ()
+"If the region is active and non-empty, call `kill-region'.
+Otherwise, call `backward-kill-word'."
+  (interactive)
+  (call-interactively
+   (if (use-region-p) 'kill-region 'backward-kill-word)))
+
+(defun kill-region-or-thing-at-point (beg end)
+  "If a region is active kill it, or kill the thing (word/symbol) at point."
+  (interactive "r")
+  (unless (region-active-p)
+    (save-excursion
+      (setq beg (re-search-backward "\\_<" nil t))
+      (setq end (re-search-forward "\\_>" nil t))))
+  (kill-ring-save beg end))
+
+(defun match-paren (&optional arg)
+  "Go to the matching parenthesis character if one is adjacent to point."
+  (interactive "^p")
+  (cond ((looking-at "\\s(") (forward-sexp arg))
+        ((looking-back "\\s)" 1) (backward-sexp arg))
+        ;; Now, try to succeed from inside of a bracket
+        ((looking-at "\\s)") (forward-char) (backward-sexp arg))
+        ((looking-back "\\s(" 1) (backward-char) (forward-sexp arg))))
+
+(defun open-line-below ()
+  "Starts a new line below the current line."
+  (interactive)
+  (move-end-of-line 1)
+  (newline)
+  (indent-according-to-mode))
+
+(defun open-line-above ()
+  "Starts a new line above the current line."
+  (interactive)
+  (move-beginning-of-line 1)
+  (newline)
+  (forward-line -1)
+  (indent-according-to-mode))
+
+(defun grep-completing-read ()
+"Execute grep/ripgrep search using `completing-read'."
+	(interactive)
+	(let* ((default-term (if (region-active-p)
+			(substring-no-properties (buffer-substring (mark) (point)))
+			(thing-at-point 'symbol)))
+		(term (read-string "search for: " default-term))
+		(execute-search (lambda (term) (if (executable-find "rg")
+			(process-lines "rg" "--line-number" term)
+			(process-lines "git" "grep" "-niH" "-e" term))))
+		(results (funcall execute-search term))
+		(line-list (split-string (completing-read "results: " results) ":"))
+		(rfile (car line-list))
+		(rlnum (string-to-number (car (cdr line-list)))))
+	(find-file rfile)
+	(goto-line rlnum)
+	(recenter)))
+
+(defun fast-file-view-mode ()
+  "Makes the buffer readonly and disables fontlock and other bells and
+whistles for faster viewing."
+  (interactive)
+  (setq buffer-read-only t)
+  (buffer-disable-undo)
+  (fundamental-mode)
+  (font-lock-mode -1)
+  (when (boundp 'anzu-mode) (anzu-mode -1)))
+
+(defun large-find-file-hook ()
+  "If a file is over a given size, make the buffer read only."
+  (when (> (buffer-size) (* 1024 1024))
+    (fast-file-view-mode)))
+
+;; https://www.emacswiki.org/emacs/DeletingWhitespace
+(defun whack-whitespace (arg)
+"Delete all white space from point to the next word. With prefix ARG
+delete across newlines as well. The only danger in this is that you
+don't have to actually be at the end of a word to make it work. It
+skips over to the next whitespace and then whacks it all to the next
+word."
+(interactive "P")
+      (let ((regexp (if arg "[ \t\n]+" "[ \t]+")))
+        (re-search-forward regexp nil t)
+        (replace-match "" nil nil)))
