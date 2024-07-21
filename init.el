@@ -201,18 +201,18 @@
 (add-hook 'pdf-view-mode-hook 'auto-revert-mode)
 (remove-hook 'file-name-at-point-functions 'ffap-guess-file-name-at-point)
 
+;; Modes derived from special-mode will pick-up this directive
+(define-key special-mode-map (kbd "q") 'kill-current-buffer)
+
 ;; eval-after-loads are run once, before mode hooks
 ;; mode-hooks execute once for every buffer in which the mode is enabled
 
-(with-eval-after-load 'doc-view-mode
-	(define-key doc-view-mode-map (kbd "q")		'kill-current-buffer))
 (with-eval-after-load 'emacs-news-mode
 	(define-key emacs-news-view-mode-map (kbd "<left>")
 	(lambda()(interactive)(outline-previous-heading)(recenter-top-bottom)))
 	(define-key emacs-news-view-mode-map (kbd "<right>")
 	(lambda()(interactive)(outline-next-heading)(recenter-top-bottom))))
 (with-eval-after-load 'help-mode
-	(define-key help-mode-map (kbd "q")			'kill-current-buffer)
 	(define-key help-mode-map (kbd "A-<left>")	'help-go-back)
 	(define-key help-mode-map (kbd "A-<right>")	'help-go-forward)
 	(define-key help-mode-map (kbd "M-RET")		'goto-address-at-point))
@@ -220,8 +220,6 @@
 	(define-key Info-mode-map (kbd "q")			'kill-current-buffer)
 	(define-key Info-mode-map (kbd "A-<left>" )	'Info-history-back)
 	(define-key Info-mode-map (kbd "A-<right>")	'Info-history-forward))
-(with-eval-after-load 'man
-	(define-key Man-mode-map (kbd "q")			'kill-current-buffer))
 (with-eval-after-load 'view
 	(define-key view-mode-map (kbd "q")			'View-kill-and-leave))
 
@@ -417,7 +415,6 @@
 			(name . "^\\.bbdb$")
 			(name . "^\\.newsrc-dribble"))) ))))
 
-(define-key ibuffer-mode-map (kbd "q")		'kill-current-buffer)
 (define-key ibuffer-mode-map (kbd "<up>")	'ibuffer-previous-line)
 (define-key ibuffer-mode-map (kbd "<down>")	'ibuffer-next-line)
 (define-key ibuffer-mode-map (kbd "<left>") 'ibuffer-previous-header)
@@ -465,18 +462,19 @@
 (define-key calendar-mode-map (kbd "q") 'calendar-exit-kill)
 (define-key calendar-mode-map (kbd "w") 'calendar-world-clock)
 (define-key calendar-mode-map (kbd "y") 'calendar-holidays)
-
 (define-key diary-mode-map (kbd "C-c C-q") 'kill-current-buffer)
-(define-key diary-fancy-display-mode-map (kbd "q") 'kill-current-buffer)
 
 (advice-add 'calendar-exit :before #'save-diary-before-calendar-exit)
 (advice-add 'calendar-goto-info-node :after (lambda (&rest r) (calendar-exit-kill) (delete-other-windows)))
 
-(easy-menu-add-item calendar-mode-map '(menu-bar holidays) ["Yearly Holidays" calendar-holidays])
-(easy-menu-add-item calendar-mode-map '(menu-bar goto) ["World clock" calendar-world-clock :help "World clock"] "Beginning of Week")
+(easy-menu-add-item calendar-mode-map '(menu-bar holidays)
+	["Yearly Holidays" calendar-holidays])
+(easy-menu-add-item calendar-mode-map '(menu-bar goto)
+	["World clock" calendar-world-clock :help "World clock"] "Beginning of Week")
 
 (add-hook 'diary-list-entries-hook 'diary-sort-entries t)
 (add-hook 'diary-fancy-display-mode-hook 'alt-clean-equal-signs)
+(add-to-list 'auto-mode-alist '("diary" . diary-mode))
 
 
 ;; print functions
@@ -504,7 +502,8 @@
 (use-package elpher
 	:config
 		(setq elpher-bookmarks-file (concat user-emacs-directory "var/elpher-bookmarks"))
-		(easy-menu-add-item  global-map '(menu-bar tools) ["Gopher" elpher :help "Browse Gopherspace"] 'browse-web)
+		(easy-menu-add-item  global-map '(menu-bar tools)
+			["Gopher" elpher :help "Browse Gopherspace"] 'browse-web)
 
 		(defun elpher:eww-browse-url (original url &optional new-window) "Handle gemini links."
 			(cond ((string-match-p "\\`\\(gemini\\|gopher\\)://" url) (elpher-go url))
@@ -516,9 +515,10 @@
 		(define-key elpher-mode-map (kbd "A-<left>") 'elpher-back)
 		(define-key elpher-mode-map (kbd "A-<right>") 'elpher-down)
 
-		(add-hook 'elpher-mode-hook (lambda() (setq-local
-			left-margin-width 10
-			gnutls-verify-error nil)
+		(add-hook 'elpher-mode-hook (lambda()
+			(setq-local
+				left-margin-width 10
+				gnutls-verify-error nil)
 			(set-window-buffer nil (current-buffer)))))
 
 (require 'eww)
@@ -545,11 +545,11 @@
 
 (use-package ace-link :config (ace-link-setup-default))
 
-(use-package w3m
-	:config
-		(setq w3m-bookmark-file (concat user-emacs-directory "etc/w3m-bookmarks.html"))
-		(autoload 'w3m-browse-url "w3m" "Ask a WWW browser to show a URL." t)
-	:bind (:map w3m-mode-map ("<left>" . w3m-view-previous-page)))
+;; (use-package w3m
+;; 	:config
+;; 		(setq w3m-bookmark-file (concat user-emacs-directory "etc/w3m-bookmarks.html"))
+;; 		(autoload 'w3m-browse-url "w3m" "Ask a WWW browser to show a URL." t)
+;; 	:bind (:map w3m-mode-map ("<left>" . w3m-view-previous-page)))
 
 (use-package flycheck)
 
@@ -576,7 +576,8 @@
 (use-package lorem-ipsum
 	:config
 		(setq-default lorem-ipsum-sentence-separator " ")
-		(easy-menu-add-item  nil '("edit") ["Lorem-ipsum" lorem-ipsum-insert-paragraphs :help "Insert..."]))
+		(easy-menu-add-item  nil '("edit")
+			["Lorem-ipsum" lorem-ipsum-insert-paragraphs :help "Insert..."]))
 
 (use-package nov ; Read ePub files
 	:init (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
@@ -596,7 +597,6 @@
 
 ;; Configure specific machines
 (when *natasha* (setq
-	;browse-url-browser-function 'w3m-browse-url
 	browse-url-secondary-browser-function 'browse-url-generic
 	;browse-url-generic-program "/Applications/Firefox.app/Contents/MacOS/firefox"
 	browse-url-generic-program "/Applications/Waterfox.app/Contents/MacOS/waterfox")
@@ -631,7 +631,15 @@
 	(add-hook 'message-mode-hook (lambda()
 	(local-set-key (kbd "A-<return>") 'message-send-and-exit) ))
 
+	;; RSS
 	(use-package elfeed
+		:bind (("C-c f" . elfeed)
+			:map elfeed-search-mode-map
+			("/" . elfeed-search-live-filter)
+			("m" . elfeed-mail-todo)
+			:map elfeed-show-mode-map
+			("TAB" . shr-next-link)
+			("SPC" . scroll-up-half))
 		:config	(setq
 			elfeed-db-directory (concat user-emacs-directory "var/elfeed/db/")
 	   		elfeed-enclosure-default-dir (concat user-emacs-directory "var/elfeed/enclosures/")
@@ -640,48 +648,23 @@
 			elfeed-sort-order 'ascending
 			elfeed-use-curl t)
 
-		(eval-after-load 'elfeed `(make-directory ,(concat user-emacs-directory "var/elfeed/") t))
-		(easy-menu-add-item  global-map '(menu-bar tools) ["Read RSS Feeds" elfeed :help "Read RSS Feeds"] "Read Mail")
+		(advice-add 'elfeed-search-quit-window :override
+			(lambda() "Save the database, kill elfeed buffers." (interactive)
+				(elfeed-db-save)
+				(kill-current-buffer)
+				(let ((buffer "*elfeed-log*")) (and (get-buffer buffer) (kill-buffer buffer)))))
 
-		(bind-key "C-c f" 'elfeed)
-		(define-key elfeed-search-mode-map (kbd "q") (lambda()(interactive)(kill-current-buffer)
-			(let ((buffer "*elfeed-log*")) (and (get-buffer buffer) (kill-buffer buffer)))
-			(let ((buffer "*sent mail to cn*")) (and (get-buffer buffer) (kill-buffer buffer)))))
-		(define-key elfeed-search-mode-map (kbd "/") 'elfeed-search-live-filter)
-		(define-key elfeed-search-mode-map (kbd "s") nil)
-		(define-key elfeed-search-mode-map (kbd "m") 'elfeed-mail-todo)
-		(define-key elfeed-show-mode-map (kbd "TAB") 'shr-next-link)
-		(define-key elfeed-show-mode-map (kbd "SPC") 'scroll-up-half)
+		(eval-after-load 'elfeed `(make-directory ,(concat user-emacs-directory "var/elfeed/") t))
+		(easy-menu-add-item  global-map '(menu-bar tools)
+			["Read RSS Feeds" elfeed :help "Read RSS Feeds"] "Read Mail")
 
 		;; (use-package elfeed-org
 		;; 	:config (setq
 		;; 		rmh-elfeed-org-files (list (concat user-emacs-directory "etc/rc/elfeed.org")))
 		;; 	(elfeed-org))
 
-		(use-package elfeed-summary)
-
 		(load "rc/feeds" 'noerror 'nomessage)	; feeds
-		(load "init/elfeed"))					; routines
-
-	;; Stack Exchange
-	(use-package sx
-		:config
-			(bind-keys
-			:prefix "C-c S"
-			:prefix-map my-sx-map
-			:prefix-docstring "Global keymap for SX."
-				("q" . sx-tab-all-questions)
-				("i" . sx-inbox)
-				("o" . sx-open-link)
-				("u" . sx-tab-unanswered-my-tags)
-				("a" . sx-ask)
-				("s" . sx-search))
-			(setq sx-cache-directory (concat user-emacs-directory "var/sx")))
-	)
-
-(when *mac*
-	;(load "init/deft")	; note functions (bound to <f7>)
-	;(load "init/sn")	; simplenote	 (bound to <f8>)
+		(load "init/elfeedroutines"))			; routines
 	)
 
 (when *gnu*
@@ -702,19 +685,20 @@
 (add-hook 'fill-nobreak-predicate #'fill-french-nobreak-p)
 (define-key text-mode-map (kbd "C-M-i") nil)
 
-(use-package visual-fill-column :config
-	(setq visual-fill-column-fringes-outside-margins nil)
-	(advice-add 'text-scale-adjust :after #'visual-fill-column-adjust)
-	(add-hook 'visual-line-mode-hook 'visual-fill-column-mode))
+(use-package visual-fill-column
+	:config (setq visual-fill-column-fringes-outside-margins nil)
+			(advice-add 'text-scale-adjust :after #'visual-fill-column-adjust)
+	:hook	(visual-line-mode . visual-fill-column-mode))
 
-(use-package adaptive-wrap)
-	(add-hook 'visual-line-mode-hook 'adaptive-wrap-prefix-mode)
+(use-package adaptive-wrap
+	:hook	(visual-line-mode . adaptive-wrap-prefix-mode))
 
 ;; prog-mode
 (add-hook 'prog-mode-hook (lambda()
 	(setq show-trailing-whitespace t)
 	(abbrev-mode)
-	(when (not (equal major-mode 'lisp-interaction-mode)) ;(memq major-mode (list 'lisp-interaction-mode))
+	(when (not (equal major-mode 'lisp-interaction-mode))
+		;(memq major-mode (list 'lisp-interaction-mode))
 		(display-line-numbers-mode))
 	(goto-address-prog-mode)
 	(prettify-symbols-mode)
@@ -770,6 +754,7 @@
 	;(add-hook 'prog-mode-hook 'flyspell-prog-mode)
 	)
 
+;; turn-off flyspell-mode for these modes
 (dolist (hook '(change-log-mode-hook emacs-news-mode-hook log-edit-mode-hook))
 	(add-hook hook (lambda() (flyspell-mode -1))))
 
@@ -966,6 +951,7 @@
 ;; arrow keys (Darwin)
 ;; <home>  is fn-left	<end>  is fn-right
 ;; <prior> is fn-up		<next> is fn-down
+(defalias 'b-o-l 'beginning-of-line)
 
 (global-set-key (kbd "<home>"   ) 'move-beginning-of-line)
 (global-set-key (kbd "<end>"    ) 'move-end-of-line)
@@ -984,8 +970,8 @@
 
 (global-set-key (kbd "M-<up>")   (lambda()(interactive)(backward-paragraph)(recenter-top-bottom)))
 (global-set-key (kbd "M-<down>") (lambda()(interactive)(forward-paragraph)(recenter-top-bottom)))
-(global-set-key (kbd "M-<left>") (lambda()(interactive)(backward-page)(recenter-top-bottom)))
-(global-set-key (kbd "M-<right>")(lambda()(interactive)(forward-page)(recenter-top-bottom)))
+(global-set-key (kbd "M-<left>") (lambda()(interactive)(backward-page)(recenter-top-bottom)(b-o-l)))
+(global-set-key (kbd "M-<right>")(lambda()(interactive)(next-line)(forward-page)(recenter-top-bottom)(b-o-l)))
 
 
 ;; scroll settings
