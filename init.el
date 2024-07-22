@@ -703,7 +703,7 @@
 
 ;; prog-mode
 (add-hook 'prog-mode-hook (lambda()
-	(setq	show-trailing-whitespace t)
+	(setq show-trailing-whitespace t)
 	(abbrev-mode)
 	(when (not (equal major-mode 'lisp-interaction-mode))
 		;(memq major-mode (list 'lisp-interaction-mode))
@@ -712,6 +712,7 @@
 	(prettify-symbols-mode)
 	(show-paren-local-mode)
 	(visual-fill-column-mode -1)))
+(add-hook 'emacs-lisp-mode-hook (lambda() (setq tab-width 8)))
 
 ;; fix html-mode
 (add-to-list 'auto-mode-alist '("\\.html$" . html-mode))
@@ -1215,5 +1216,4 @@
 
 ;; Local Variables:
 ;; truncate-lines: -1
-;; tab-width: 8
 ;; End:
