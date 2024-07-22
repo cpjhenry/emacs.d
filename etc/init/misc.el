@@ -29,11 +29,9 @@
 (add-to-list 'auto-mode-alist '("\\.cgi$" . perl-mode))
 (add-to-list 'auto-mode-alist '("\\.sgml$" . text-mode))
 (add-to-list 'auto-mode-alist '("\\.ss$" . scheme-mode))
-(add-to-list 'auto-mode-alist '("\\.s?html?\\'" . text-mode))
 (add-to-list 'auto-mode-alist '("\\.scm$" . scheme-mode))
 (add-to-list 'auto-mode-alist '("logv\\.out$" . kf-changelog-mode))
 (add-to-list 'auto-mode-alist '("\\.patch$" . text-mode))
-(add-to-list 'auto-mode-alist '("\\.html$" . text-mode))
 
 
 ;;; On-demand help panels for obscure topics. ;;;

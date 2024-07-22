@@ -238,6 +238,15 @@
 (defun scroll-down-half ()	(interactive) (scroll-down (window-half-height)))
 
 
+;; web browsing
+(defun elpher:eww-browse-url (original url &optional new-window) "Handle gemini links."
+	(cond ((string-match-p "\\`\\(gemini\\|gopher\\)://" url) (elpher-go url))
+		(t (funcall original url new-window))))
+
+(defun elpher-up () (interactive)(backward-paragraph)(recenter-top-bottom))
+(defun elpher-down () (interactive)(forward-paragraph)(recenter-top-bottom))
+
+
 ;; https://vishesh.github.io/emacs/editors/2023/01/25/lean-emacs-config.html
 ;; (see bindings for: "C-a" "C-w" "M-w" "M-j")
 

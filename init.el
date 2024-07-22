@@ -109,6 +109,7 @@
 	frame-inhibit-implied-resize t
 	frame-resize-pixelwise t
 	frame-title-format nil
+	gnutls-verify-error nil
 	goto-address-mail-face 'default
 	help-clean-buttons t
 	help-enable-variable-value-editing t
@@ -304,8 +305,7 @@
 
 ;; start Emacs server
 (when *mac* (use-package mac-pseudo-daemon
-	:config	(mac-pseudo-daemon-mode)
-		(server-start))
+	:config	(mac-pseudo-daemon-mode) (server-start))
 	(if (boundp 'server-process) (message "Server started.")))
 
 ;; add Hyper- keys (C-M-s-…) to terminal frames (iTerm2)
@@ -357,7 +357,7 @@
 ;(icomplete-mode) ; IDO for M-x
 ;(fido-mode) ; makes complete act like IDO mode
 
-(use-package ido-sort-mtime :config	(ido-sort-mtime-mode 1))
+(use-package ido-sort-mtime :config (ido-sort-mtime-mode 1))
 
 (add-to-list 'ido-ignore-buffers "*Messages*")
 (add-to-list 'ido-ignore-buffers "*Shell Command Output*")
@@ -381,6 +381,7 @@
 		ls-lisp-use-string-collate nil
 		ls-lisp-use-insert-directory-program nil
 		ls-lisp-ignore-case 't)
+
 	(define-key dired-mode-map (kbd "q") 'kill-dired-buffers)
 	(define-key dired-mode-map (kbd "o") 'dired-find-file-ow)
 	(defun dired-find-file-ow() (interactive)(dired-find-file-other-window)(delete-other-windows))
@@ -510,21 +511,12 @@
 		(setq elpher-bookmarks-file (concat user-emacs-directory "var/elpher-bookmarks"))
 		(easy-menu-add-item  global-map '(menu-bar tools)
 			["Gopher" elpher :help "Browse Gopherspace"] 'browse-web)
-
-		(defun elpher:eww-browse-url (original url &optional new-window) "Handle gemini links."
-			(cond ((string-match-p "\\`\\(gemini\\|gopher\\)://" url) (elpher-go url))
-			(t (funcall original url new-window))))
 		(advice-add 'eww-browse-url :around 'elpher:eww-browse-url)
-
-		(defun elpher-up () (interactive)(backward-paragraph)(recenter-top-bottom))
-		(defun elpher-down () (interactive)(forward-paragraph)(recenter-top-bottom))
 		(define-key elpher-mode-map (kbd "A-<left>") 'elpher-back)
 		(define-key elpher-mode-map (kbd "A-<right>") 'elpher-down)
 
 		(add-hook 'elpher-mode-hook (lambda()
-			(setq-local
-				left-margin-width 10
-				gnutls-verify-error nil)
+			(setq-local left-margin-width 10)
 			(set-window-buffer nil (current-buffer)))))
 
 (require 'eww)
@@ -549,7 +541,7 @@
 (url-setup-privacy-info)
 (add-hook 'eww-after-render-hook 'eww-readable) ;; default to 'readable-mode'
 
-(use-package ace-link :config (ace-link-setup-default))
+(use-package ace-link :config (ace-link-setup-default)) ;; alternative to tabbing
 
 ;; (use-package w3m
 ;;	:config
@@ -580,8 +572,7 @@
 		("DEPRECATED" font-lock-doc-face bold) )))
 
 (use-package lorem-ipsum
-	:config
-		(setq-default lorem-ipsum-sentence-separator " ")
+	:config (setq-default lorem-ipsum-sentence-separator " ")
 		(easy-menu-add-item  nil '("edit")
 			["Lorem-ipsum" lorem-ipsum-insert-paragraphs :help "Insert..."]))
 
@@ -664,10 +655,10 @@
 		(easy-menu-add-item  global-map '(menu-bar tools)
 			["Read RSS Feeds" elfeed :help "Read RSS Feeds"] "Read Mail")
 
-		(use-package elfeed-org
-			:config (setq
-			rmh-elfeed-org-files (list (concat user-emacs-directory "etc/rc/elfeed.org")))
-			(elfeed-org))
+		;; (use-package elfeed-org
+		;; 	:config (setq
+		;; 	rmh-elfeed-org-files (list (concat user-emacs-directory "etc/rc/elfeed.org")))
+		;; 	(elfeed-org))
 
 		(load "rc/feeds" 'noerror 'nomessage)	; feeds
 		(load "init/elfeedroutines"))		; routines
@@ -706,7 +697,6 @@
 	(setq show-trailing-whitespace t)
 	(abbrev-mode)
 	(when (not (equal major-mode 'lisp-interaction-mode))
-		;(memq major-mode (list 'lisp-interaction-mode))
 		(display-line-numbers-mode))
 	(goto-address-prog-mode)
 	(prettify-symbols-mode)
@@ -716,7 +706,6 @@
 
 ;; fix html-mode
 (add-to-list 'auto-mode-alist '("\\.html$" . html-mode))
-(delete '("\\.html$" . text-mode) auto-mode-alist)
 (add-hook 'html-mode-hook (lambda()
 	(visual-line-mode -1)
 	(visual-fill-column-mode -1)
@@ -762,8 +751,7 @@
 (with-eval-after-load 'flyspell (define-key flyspell-mouse-map [down-mouse-3] #'flyspell-correct-word))
 
 ;; turn-on flyspell-mode for these modes
-(unless *w32*
-	(dolist (hook '(text-mode-hook markdown-mode-hook))
+(unless *w32* (dolist (hook '(text-mode-hook markdown-mode-hook))
 	(add-hook hook (lambda() (flyspell-mode 1))))
 	(add-hook 'emacs-lisp-mode-hook 'flyspell-prog-mode)
 	)
@@ -1105,7 +1093,7 @@
 (bind-key "C-M-;"	'eval-r)
 (bind-key "C-M-y"	'undo-yank)
 
-;; Ctrl-c -- personal keybindings
+;; Ctrl-c (personal keybindings)
 (bind-key "C-c a"	'org-agenda)
 (when *mac*
 (bind-key "C-c z"	'my/agenda))
@@ -1167,7 +1155,7 @@
 (bind-key "C-x x r"	'rename-file-and-buffer)
 (bind-key "C-x x v"	'view-text-file-as-info-manual)
 (bind-key "C-x x w"	'preview-html)
-
+(which-key-alias "C-x x" "buffers")
 
 (which-key-alias "C-x 8" "key translations")
 (which-key-alias "C-x 8 e" "emojis")
@@ -1176,7 +1164,6 @@
 (which-key-alias "C-x p" "project")
 (which-key-alias "C-x r" "registers")
 (which-key-alias "C-x w" "windows")
-(which-key-alias "C-x x" "buffers")
 
 
 ;; Aliases
@@ -1217,3 +1204,5 @@
 ;; Local Variables:
 ;; truncate-lines: -1
 ;; End:
+
+; LocalWords:  canadian sug aspell memq
