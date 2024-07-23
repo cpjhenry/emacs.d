@@ -55,6 +55,19 @@
 	(read-shell-command "Shell command on buffer: ")))
 
 
+;; macOS frame functions
+(defun ns-raise-emacs ()
+"Raise Emacs."
+	(ns-do-applescript "tell application \"Emacs\" to activate"))
+
+(defun ns-raise-emacs-with-frame (frame)
+"Raise Emacs and select the provided frame."
+	(with-selected-frame frame
+	(when (display-graphic-p)
+		(ns-raise-emacs)
+		(toggle-frame-maximized))))
+
+
 ;; misc. functions
 
 (defun set-window-width (n)

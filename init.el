@@ -58,8 +58,7 @@
 	w32-apps-modifier 'hyper)
 	(message "Running on Windows."))
 
-(setq
-	user-full-name "cpj"
+(setq	user-full-name "cpj"
 	user-mail-address "cn914@ncf.ca"
 	calendar-latitude 45.3
 	calendar-longitude -75.7
@@ -82,8 +81,7 @@
 	(unless (package-installed-p 'use-package)
 	(package-install 'use-package)))
 (require 'use-package)
-(setf
-	use-package-always-ensure t
+(setf	use-package-always-ensure t
 	use-package-verbose t)
 
 ;; settings
@@ -93,8 +91,8 @@
 	standard-indent 4
 	help-window-select t
 	indicate-empty-lines t)
-(setq
-	default-major-mode 'text-mode
+
+(setq	default-major-mode 'text-mode
 
 	ad-redefinition-action 'accept
 	async-shell-command-buffer 'new-buffer
@@ -151,8 +149,7 @@
 (when (< emacs-major-version 28) (defalias 'show-paren-local-mode 'show-paren-mode))
 
 ;; files
-(setq
-	abbrev-file-name		(concat user-emacs-directory "etc/abbrev_defs")
+(setq	abbrev-file-name		(concat user-emacs-directory "etc/abbrev_defs")
 	auto-save-list-file-prefix	(concat user-emacs-directory "var/auto-save/sessions/")
 	bookmark-default-file		(concat user-emacs-directory "etc/bookmarks")
 	eshell-aliases-file		(concat user-emacs-directory "etc/eshell/aliases")
@@ -172,13 +169,11 @@
 (setq custom-file (concat user-emacs-directory "custom.el"))
 
 ;; backups
-(setq
-	auto-save-default nil
+(setq	auto-save-default nil
 	backup-by-copying t
 	make-backup-files nil)
 
-(unless *w32*
-	(require 'backup-each-save)
+(unless *w32* (require 'backup-each-save)
 	(add-hook 'after-save-hook 'backup-each-save))
 
 ;; path
@@ -266,8 +261,7 @@
 (setq initial-scratch-message nil)	; Makes *scratch* empty
 
 ;; Tramp
-(setq
-	tramp-default-method "ssh"
+(setq	tramp-default-method "ssh"
 	tramp-syntax 'simplified	; C-x C-f /remotehost:filename
 
 	tramp-auto-save-directory	(concat user-emacs-directory "var/tramp/auto-save/")
@@ -290,22 +284,12 @@
 
 ;; frames
 ;; https://korewanetadesu.com/emacs-on-os-x.html
-(when (featurep 'ns)
-	(defun ns-raise-emacs ()
-	"Raise Emacs."
-		(ns-do-applescript "tell application \"Emacs\" to activate"))
-
-	(defun ns-raise-emacs-with-frame (frame)
-	"Raise Emacs and select the provided frame."
-		(with-selected-frame frame
-		(when (display-graphic-p)
-			(ns-raise-emacs)
-			(toggle-frame-maximized))))
-	(add-hook 'after-make-frame-functions 'ns-raise-emacs-with-frame))
+(when (featurep 'ns) (add-hook 'after-make-frame-functions 'ns-raise-emacs-with-frame))
 
 ;; start Emacs server
-(when *mac* (use-package mac-pseudo-daemon
-	:config	(mac-pseudo-daemon-mode) (server-start))
+(when *mac*
+	(use-package mac-pseudo-daemon :config (mac-pseudo-daemon-mode))
+	(server-start)
 	(if (boundp 'server-process) (message "Server started.")))
 
 ;; add Hyper- keys (C-M-s-…) to terminal frames (iTerm2)
@@ -326,8 +310,7 @@
 		(unless (display-graphic-p) (setq doom-modeline-icon nil))
 	(use-package nerd-icons))
 
-(setq
-	battery-mode-line-format "%p%% "
+(setq	battery-mode-line-format "%p%% "
 	display-time-24hr-format t
 	display-time-default-load-average nil
 	mode-line-compact nil
@@ -348,8 +331,7 @@
 ;; https://www.emacswiki.org/emacs/InteractivelyDoThings
 (require 'ido)
 (if (featurep 'ido) (ido-mode t))
-(setq
-	ido-save-directory-list-file (concat user-emacs-directory "var/ido.last")
+(setq	ido-save-directory-list-file (concat user-emacs-directory "var/ido.last")
 	ido-enable-flex-matching t
 	ido-show-dot-for-dired nil)
 (define-key (cdr ido-minor-mode-map-entry) [remap write-file] nil); turn off C-x C-w remapping
@@ -377,8 +359,7 @@
 		"\\|^INDEX$\\|-t\\.tex$\\|\\.DS_Store$\\|\\.localized$")
 		dired-omit-verbose nil)
 	(require 'ls-lisp)
-	(setq
-		ls-lisp-use-string-collate nil
+	(setq	ls-lisp-use-string-collate nil
 		ls-lisp-use-insert-directory-program nil
 		ls-lisp-ignore-case 't)
 
@@ -393,8 +374,7 @@
 (require 'ibuffer)
 (defalias 'list-buffers 'ibuffer) ; always use Ibuffer
 
-(setq
-	ibuffer-hidden-filter-groups (list "Helm" "*Internal*")
+(setq	ibuffer-hidden-filter-groups (list "Helm" "*Internal*")
 	ibuffer-saved-filter-groups (quote (("home"
 		("Dired" (mode . dired-mode) )
 		("Emacs" (or
@@ -442,8 +422,7 @@
 (require 'calendar)
 (require 'diary-lib)
 (load "init/calendar")
-(setq
-	diary-file "~/Documents/diary"
+(setq	diary-file "~/Documents/diary"
 
 	diary-display-function 'diary-fancy-display
 	diary-list-include-blanks t
@@ -520,8 +499,7 @@
 			(set-window-buffer nil (current-buffer)))))
 
 (require 'eww)
-(setq
-	browse-url-browser-function 'eww-browse-url
+(setq	browse-url-browser-function 'eww-browse-url
 	eww-bookmarks-directory (concat user-emacs-directory "etc/")
 	eww-auto-rename-buffer t
 	shr-use-colors nil
@@ -737,8 +715,7 @@
 
 
 ;; spell checking
-(setq
-	flyspell-doublon-as-error-flag nil
+(setq	flyspell-doublon-as-error-flag nil
 	flyspell-issue-welcome-flag nil
 	flyspell-issue-message-flag nil
 	flyspell-use-meta-tab nil
@@ -753,8 +730,7 @@
 ;; turn-on flyspell-mode for these modes
 (unless *w32* (dolist (hook '(text-mode-hook markdown-mode-hook))
 	(add-hook hook (lambda() (flyspell-mode 1))))
-	(add-hook 'emacs-lisp-mode-hook 'flyspell-prog-mode)
-	)
+	(add-hook 'emacs-lisp-mode-hook 'flyspell-prog-mode))
 
 ;; turn-off flyspell-mode for these modes
 (dolist (hook '(change-log-mode-hook emacs-news-mode-hook log-edit-mode-hook))
@@ -786,8 +762,7 @@
 	org-startup-with-inline-images t
 	org-image-actual-width '(300))
 
-(setq
-	org-directory "~/Documents/org"
+(setq	org-directory "~/Documents/org"
 	org-agenda-file (concat org-directory "/daily.org")
 	org-agenda-files (list org-agenda-file)
 	org-agenda-text-search-extra-files '(agenda-archives)
@@ -828,8 +803,7 @@
 	org-ascii-quote-margin 4
 	org-ascii-headline-spacing '(0 . 1))
 
-(setq
-	org-tags-exclude-from-inheritance '("PROJECT")
+(setq	org-tags-exclude-from-inheritance '("PROJECT")
 	org-todo-keywords '((sequence "TODO" "DONE"))
 	org-todo-keyword-faces '(
 	("INPROGRESS" . (:foreground "blue" :weight bold)) ) ; add in-progress keyword
@@ -894,18 +868,15 @@
 	(use-package org-d20)
 	(use-package org-roam
 	:ensure t
-	:custom
-		(org-roam-db-location (concat user-emacs-directory "var/org-roam.db"))
+	:custom	(org-roam-db-location (concat user-emacs-directory "var/org-roam.db"))
 		(org-roam-directory (file-truename (concat org-directory "/Roam/")))
-	:bind (
-		("C-c r l" . org-roam-buffer-toggle)
+	:bind (	("C-c r l" . org-roam-buffer-toggle)
 		("C-c r f" . org-roam-node-find)
 		("C-c r g" . org-roam-graph)
 		("C-c r i" . org-roam-node-insert)
 		("C-c r c" . org-roam-capture)
 		("C-c r j" . org-roam-dailies-capture-today))
-	:config
-		(org-roam-setup)
+	:config	(org-roam-setup)
 		(org-roam-db-autosync-mode))
 		(which-key-alias "C-c r" "org-roam"))
 
@@ -972,8 +943,7 @@
 
 
 ;; scroll settings
-(setq
-	auto-window-vscroll nil
+(setq	auto-window-vscroll nil
 	next-screen-context-lines 0
 	scroll-conservatively 10000
 	scroll-margin 0
@@ -1205,4 +1175,4 @@
 ;; truncate-lines: -1
 ;; End:
 
-; LocalWords:  canadian sug aspell memq
+; LocalWords:  canadian sug aspell memq eval RET
