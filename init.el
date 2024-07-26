@@ -146,8 +146,6 @@
 	view-read-only nil ; turn on view mode when buffer is read-only
 	visual-line-fringe-indicators '(nil right-curly-arrow))
 
-(when (< emacs-major-version 28) (defalias 'show-paren-local-mode 'show-paren-mode))
-
 ;; files
 (setq	abbrev-file-name		(concat user-emacs-directory "etc/abbrev_defs")
 	auto-save-list-file-prefix	(concat user-emacs-directory "var/auto-save/sessions/")
@@ -319,6 +317,7 @@
 (column-number-mode)
 (display-battery-mode)
 (display-time-mode -1)
+(load "rc/mm")
 
 ;; Startup time
 (defun efs/display-startup-time ()
@@ -680,7 +679,12 @@
 	(prettify-symbols-mode)
 	(show-paren-local-mode)
 	(visual-fill-column-mode -1)))
+
 (add-hook 'emacs-lisp-mode-hook (lambda() (setq tab-width 8)))
+
+;; bash
+(add-to-list 'auto-mode-alist '("\\.bash*" . sh-mode))
+(define-key shell-mode-map (kbd "M-r") nil)
 
 ;; fix html-mode
 (add-to-list 'auto-mode-alist '("\\.html$" . html-mode))
@@ -792,16 +796,24 @@
 	org-agenda-todo-ignore-deadlines t
 	org-agenda-todo-ignore-scheduled t
 
-	org-export-date-timestamp-format "%Y-%m-%d"
-	org-export-preserve-breaks t
 	org-export-with-author nil
 	org-export-with-date nil
 	org-export-with-toc nil
 
+	org-export-with-broken-links t
+	org-export-preserve-breaks t
+
+	org-export-with-timestamps t
+	org-export-time-stamp-file nil
+	org-export-date-timestamp-format "%Y-%m-%d"
+
 	org-ascii-text-width 50
 	org-ascii-inner-margin 2
 	org-ascii-quote-margin 4
-	org-ascii-headline-spacing '(0 . 1))
+	org-ascii-headline-spacing '(0 . 1)
+
+	org-md-headline-style 'atx)
+
 
 (setq	org-tags-exclude-from-inheritance '("PROJECT")
 	org-todo-keywords '((sequence "TODO" "DONE"))
@@ -903,11 +915,9 @@
 
 ;; sundry
 (load "init/misc")
+(load "init/kfhelp")
+(load "init/cpjhelp")
 (load "init/scripts" 'noerror)
-
-;; bash
-(add-to-list 'auto-mode-alist '("\\.bash*" . sh-mode))
-(define-key shell-mode-map (kbd "M-r") nil)
 
 ;; pdf-export
 (load "init/pdfexport")
@@ -1175,4 +1185,8 @@
 ;; truncate-lines: -1
 ;; End:
 
-; LocalWords:  canadian sug aspell memq eval RET
+; LocalWords:  canadian sug aspell memq eval RET kfhelppanels init FN
+; LocalWords:  pdfexport melpa vers tls dg defs eshell multisession
+; LocalWords:  persistency ido Ibuffer elfeed rc rmh elfeedroutines
+; LocalWords:  esr md noindent nEntered shoppinglist Cliplink el kbd
+; LocalWords:  INPROGRESS kfhelp
