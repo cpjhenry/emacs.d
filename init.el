@@ -520,12 +520,6 @@
 
 (use-package ace-link :config (ace-link-setup-default)) ;; alternative to tabbing
 
-;; (use-package w3m
-;;	:config
-;;		(setq w3m-bookmark-file (concat user-emacs-directory "etc/w3m-bookmarks.html"))
-;;		(autoload 'w3m-browse-url "w3m" "Ask a WWW browser to show a URL." t)
-;;	:bind (:map w3m-mode-map ("<left>" . w3m-view-previous-page)))
-
 (use-package flycheck)
 
 (use-package free-keys :defer t)
@@ -570,10 +564,9 @@
 
 
 ;; Configure specific machines
-(when *natasha* (setq
-	browse-url-secondary-browser-function 'browse-url-generic
-	;browse-url-generic-program "/Applications/Firefox.app/Contents/MacOS/firefox"
-	browse-url-generic-program "/Applications/Waterfox.app/Contents/MacOS/waterfox")
+(when *natasha*
+	;; (setq	browse-url-secondary-browser-function 'browse-url-generic
+	;; 	browse-url-generic-program "/Applications/Waterfox.app/Contents/MacOS/waterfox")
 
 	;; Mail / News
 	(require 'rmail) (setq
@@ -607,7 +600,7 @@
 
 	;; RSS
 	(use-package elfeed
-		:bind (("C-c f" . elfeed)
+		:bind (	("C-c f" . elfeed)
 			:map elfeed-search-mode-map
 			("/" . elfeed-search-live-filter)
 			("m" . elfeed-mail-todo)
@@ -639,7 +632,22 @@
 
 		(load "rc/feeds" 'noerror 'nomessage)	; feeds
 		(load "init/elfeedroutines"))		; routines
-	)
+
+	;; Web
+	(use-package w3m
+		:config (setq
+			browse-url-browser-function 'w3m-browse-url
+			w3m-bookmark-file (concat user-emacs-directory "etc/w3m-bookmarks.html")
+			w3m-default-save-directory "~/Downloads")
+			(autoload 'w3m-browse-url "w3m" "Ask a WWW browser to show a URL." t)
+			(require 'mime-w3m)
+		:bind ( ("C-x m" . browse-url-at-point)
+			:map w3m-mode-map
+			("<left>" . w3m-view-previous-page)
+			("&" . macosx-open-url)))
+	(defun macosx-open-url ()
+		(interactive)
+		(browse-url-default-macosx-browser w3m-current-url)))
 
 (when *gnu*
 	(setq	browse-url-secondary-browser-function 'browse-url-generic
@@ -894,8 +902,8 @@
 
 (define-key org-mode-map (kbd "M-[") 'org-backward-heading-same-level)
 (define-key org-mode-map (kbd "M-]") 'org-forward-heading-same-level)
-(define-key org-mode-map (kbd "A-<left>" ) 'outline-up-heading)
-(define-key org-mode-map (kbd "A-<right>") (lambda()(interactive)(org-end-of-subtree)))
+(define-key org-mode-map (kbd "C-M-<left>" ) 'outline-up-heading)
+(define-key org-mode-map (kbd "C-M-<right>") (lambda()(interactive)(org-end-of-subtree)))
 (define-key org-mode-map (kbd "C-c '") (lambda()(interactive)(org-edit-special)(visual-fill-column-mode -1)))
 
 (add-hook 'org-agenda-finalize-hook 'delete-other-windows)
@@ -1189,4 +1197,4 @@
 ; LocalWords:  pdfexport melpa vers tls dg defs eshell multisession
 ; LocalWords:  persistency ido Ibuffer elfeed rc rmh elfeedroutines
 ; LocalWords:  esr md noindent nEntered shoppinglist Cliplink el kbd
-; LocalWords:  INPROGRESS kfhelp
+; LocalWords:  INPROGRESS kfhelp setq xm
