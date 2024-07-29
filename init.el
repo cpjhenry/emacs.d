@@ -644,10 +644,12 @@
 		:bind ( ("C-x m" . browse-url-at-point)
 			:map w3m-mode-map
 			("<left>" . w3m-view-previous-page)
-			("&" . macosx-open-url)))
-	(defun macosx-open-url ()
-		(interactive)
-		(browse-url-default-macosx-browser w3m-current-url)))
+			("&" . macosx-open-url)
+			("Q" . my/w3m-quit)
+			("R" . tsa/w3m-toggle-readability)
+			("M-o" . ace-link-w3m)))
+	(add-to-list 'w3m-filter-configuration '(t "Make page readable" ".*" tsa/readability)))
+	(load "init/w3m-routines.el")
 
 (when *gnu*
 	(setq	browse-url-secondary-browser-function 'browse-url-generic
@@ -1197,4 +1199,4 @@
 ; LocalWords:  pdfexport melpa vers tls dg defs eshell multisession
 ; LocalWords:  persistency ido Ibuffer elfeed rc rmh elfeedroutines
 ; LocalWords:  esr md noindent nEntered shoppinglist Cliplink el kbd
-; LocalWords:  INPROGRESS kfhelp setq xm
+; LocalWords:  INPROGRESS kfhelp setq xm readabilizing JS dev
