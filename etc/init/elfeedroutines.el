@@ -42,4 +42,10 @@
 	(setf (elfeed-entry-content entry) (elfeed-ref replace))))
 ;(add-hook 'elfeed-new-entry-hook #'hundred-times-better)
 
+(advice-add 'elfeed-search-quit-window :override
+	(lambda() "Save the database, kill elfeed buffers." (interactive)
+	(elfeed-db-save)
+	(kill-current-buffer)
+	(let ((buffer "*elfeed-log*")) (and (get-buffer buffer) (kill-buffer buffer)))))
+
 ; LocalWords:  elfeed

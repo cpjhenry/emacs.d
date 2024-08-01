@@ -3,6 +3,7 @@
 (defun macosx-open-url ()
 	(interactive)
 	(browse-url-default-macosx-browser w3m-current-url))
+
 (defun my/w3m-quit ()
 	(interactive)
 	(w3m-quit 'FORCE))
@@ -14,6 +15,7 @@
 	(erase-buffer)
 	(insert (shell-command-to-string (concat "curl -s " url
 	" 2>/dev/null |readability 2>/dev/null " url))))
+
 (defun tsa/w3m-toggle-readability (&arg) "Toggle readability and reload the current page"
 	(interactive "P")
 	(w3m-toggle-filtering nil) ;; switch filtering on...

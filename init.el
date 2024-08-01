@@ -171,18 +171,14 @@
 	backup-by-copying t
 	make-backup-files nil)
 
-(unless *w32* (require 'backup-each-save)
-	(add-hook 'after-save-hook 'backup-each-save))
+(unless *w32* (require 'backup-each-save) (add-hook 'after-save-hook 'backup-each-save))
 
 ;; path
 (if (boundp 'emacs-edition) (message "Running '%s'." emacs-edition))
-(if *mac* (use-package exec-path-from-shell
-	:config (exec-path-from-shell-initialize)))
+(if *mac* (use-package exec-path-from-shell :config (exec-path-from-shell-initialize)))
 
 ;; garbage collection
-(use-package gcmh
-	:config (gcmh-mode 1)
-	:diminish)
+(use-package gcmh :config (gcmh-mode 1))
 
 
 ;; buffers
@@ -284,16 +280,16 @@
 ;; https://korewanetadesu.com/emacs-on-os-x.html
 (when (featurep 'ns) (add-hook 'after-make-frame-functions 'ns-raise-emacs-with-frame))
 
-;; start Emacs server
 (when *mac*
+	;; start Emacs server
 	(use-package mac-pseudo-daemon :config (mac-pseudo-daemon-mode))
 	(server-start)
-	(if (boundp 'server-process) (message "Server started.")))
+	(if (boundp 'server-process) (message "Server started."))
 
-;; add Hyper- keys (C-M-s-…) to terminal frames (iTerm2)
-(add-hook 'server-after-make-frame-hook (lambda()
+	;; add Hyper- keys (C-M-s-…) to terminal frames (iTerm2)
+	(add-hook 'server-after-make-frame-hook (lambda()
 	(unless (display-graphic-p) (cl-loop for char from ?a to ?z do
-	(define-key input-decode-map (format "\e[1;P%c" char) (kbd (format "H-%c" char)))))))
+	(define-key input-decode-map (format "\e[1;P%c" char) (kbd (format "H-%c" char))))))))
 
 
 ;; mode line
@@ -317,7 +313,7 @@
 (column-number-mode)
 (display-battery-mode)
 (display-time-mode -1)
-(load "rc/mm")
+(load "rc/mm" 'noerror)
 
 ;; Startup time
 (defun efs/display-startup-time ()
@@ -476,19 +472,15 @@
 
 
 ;; Initialize packages
-(use-package diminish)
-
 (use-package which-key
 	:config
 		(which-key-mode)
-		(defalias 'which-key-alias 'which-key-add-key-based-replacements)
-	:diminish)
+		(defalias 'which-key-alias 'which-key-add-key-based-replacements))
 
 (use-package elpher
-	:config
-		(setq elpher-bookmarks-file (concat user-emacs-directory "var/elpher-bookmarks"))
-		(easy-menu-add-item  global-map '(menu-bar tools)
-			["Gopher" elpher :help "Browse Gopherspace"] 'browse-web)
+	:init	(easy-menu-add-item global-map '(menu-bar tools)
+		["Gopher" elpher :help "Browse Gopherspace"] 'browse-web)
+	:config	(setq elpher-bookmarks-file (concat user-emacs-directory "var/elpher-bookmarks"))
 		(advice-add 'eww-browse-url :around 'elpher:eww-browse-url)
 		(define-key elpher-mode-map (kbd "A-<left>") 'elpher-back)
 		(define-key elpher-mode-map (kbd "A-<right>") 'elpher-down)
@@ -498,43 +490,40 @@
 			(set-window-buffer nil (current-buffer)))))
 
 (require 'eww)
-(setq	browse-url-browser-function 'eww-browse-url
-	eww-bookmarks-directory (concat user-emacs-directory "etc/")
-	eww-auto-rename-buffer t
-	shr-use-colors nil
-	shr-use-fonts nil
-	shr-bullet "• "
-	shr-folding-mode t
-	eww-search-prefix "https://duckduckgo.com/html?q="
-	url-privacy-level '(email agent lastloc)
+	(setq	browse-url-browser-function 'eww-browse-url
+		eww-bookmarks-directory (concat user-emacs-directory "etc/")
+		eww-auto-rename-buffer t
+		shr-use-colors nil
+		shr-use-fonts nil
+		shr-bullet "• "
+		shr-folding-mode t
+		eww-search-prefix "https://duckduckgo.com/html?q="
+		url-privacy-level '(email agent lastloc)
 
-	shr-indentation 2	; Left-side margin
-	shr-width nil)		; Fold text for comfiness
+		shr-indentation 2	; Left-side margin
+		shr-width nil)		; Fold text for comfiness
 
-(define-key eww-mode-map (kbd "A-<left>") 'eww-back-url)
-(define-key eww-mode-map (kbd "A-<right>") 'eww-forward-url)
-(define-key eww-bookmark-mode-map (kbd "w") 'eww)
+	(define-key eww-mode-map (kbd "A-<left>") 'eww-back-url)
+	(define-key eww-mode-map (kbd "A-<right>") 'eww-forward-url)
+	(define-key eww-bookmark-mode-map (kbd "w") 'eww)
 
-(url-setup-privacy-info)
-(add-hook 'eww-after-render-hook 'eww-readable) ;; default to 'readable-mode'
+	(url-setup-privacy-info)
+	(add-hook 'eww-after-render-hook 'eww-readable) ;; default to 'readable-mode'
 
-(use-package ace-link :config (ace-link-setup-default)) ;; alternative to tabbing
+	(use-package ace-link :config (ace-link-setup-default)) ;; alternative to tabbing
 
 (use-package flycheck)
 
 (use-package free-keys :defer t)
 
 (use-package google-this
-	:config
-		(google-this-mode)
-		(which-key-alias "C-c /" "google-this")
-	:diminish)
+	:config	(google-this-mode)
+		(which-key-alias "C-c /" "google-this"))
 
 (use-package hl-todo
-    :hook
-		(prog-mode . hl-todo-mode)
+    :hook	(prog-mode . hl-todo-mode)
 		(emacs-lisp-mode . hl-todo-mode)
-    :config (setq hl-todo-keyword-faces `(
+    :config	(setq hl-todo-keyword-faces `(
 		("TODO"       warning bold)
 		("FIXME"      error bold)
 		("HACK"       font-lock-constant-face bold)
@@ -543,9 +532,9 @@
 		("DEPRECATED" font-lock-doc-face bold) )))
 
 (use-package lorem-ipsum
-	:config (setq-default lorem-ipsum-sentence-separator " ")
-		(easy-menu-add-item  nil '("edit")
-			["Lorem-ipsum" lorem-ipsum-insert-paragraphs :help "Insert..."]))
+	:init	(easy-menu-add-item global-map '(menu-bar edit)
+		["Lorem-ipsum" lorem-ipsum-insert-paragraphs :help "Insert..."])
+	:config (setq-default lorem-ipsum-sentence-separator " "))
 
 (use-package nov ; Read ePub files
 	:init (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
@@ -556,11 +545,6 @@
 (use-package typo) ; minor mode for typographic editing
 
 (use-package visible-mark)
-
-;; Diminish built-in modes
-(diminish 'abbrev-mode)
-(diminish 'eldoc-mode "Ed")
-(diminish 'visual-line-mode "VLM")
 
 
 ;; Configure specific machines
@@ -592,14 +576,15 @@
 	rmail-secondary-file-directory	(concat user-emacs-directory "var/")
 	rmail-default-file		(concat rmail-secondary-file-directory "XMAIL")
 	rmail-file-name			(concat rmail-secondary-file-directory "RMAIL"))
+
 	(add-hook 'rmail-show-message-hook 'goto-address-mode)
 	(add-hook 'rmail-quit-hook 'kill-current-buffer)
-
-	(add-hook 'message-mode-hook (lambda()
-	(local-set-key (kbd "A-<return>") 'message-send-and-exit) ))
+	(add-hook 'message-mode-hook (lambda() (local-set-key (kbd "A-<return>") 'message-send-and-exit)))
 
 	;; RSS
 	(use-package elfeed
+		:init	(easy-menu-add-item global-map '(menu-bar tools)
+			["Read RSS Feeds" elfeed :help "Read RSS Feeds"] "Read Mail")
 		:bind (	("C-c f" . elfeed)
 			:map elfeed-search-mode-map
 			("/" . elfeed-search-live-filter)
@@ -615,41 +600,32 @@
 			elfeed-sort-order 'ascending
 			elfeed-use-curl t)
 
-		(advice-add 'elfeed-search-quit-window :override
-			(lambda() "Save the database, kill elfeed buffers." (interactive)
-			(elfeed-db-save)
-			(kill-current-buffer)
-			(let ((buffer "*elfeed-log*")) (and (get-buffer buffer) (kill-buffer buffer)))))
-
 		(eval-after-load 'elfeed `(make-directory ,(concat user-emacs-directory "var/elfeed/") t))
-		(easy-menu-add-item  global-map '(menu-bar tools)
-			["Read RSS Feeds" elfeed :help "Read RSS Feeds"] "Read Mail")
-
-		;; (use-package elfeed-org
-		;; 	:config (setq
-		;; 	rmh-elfeed-org-files (list (concat user-emacs-directory "etc/rc/elfeed.org")))
-		;; 	(elfeed-org))
+		(advice-add 'elfeed-search-update--force :after (lambda() (goto-char (point-min))))
 
 		(load "rc/feeds" 'noerror 'nomessage)	; feeds
 		(load "init/elfeedroutines"))		; routines
 
 	;; Web
 	(use-package w3m
-		:config (setq
-			browse-url-browser-function 'w3m-browse-url
-			w3m-bookmark-file (concat user-emacs-directory "etc/w3m-bookmarks.html")
-			w3m-default-save-directory "~/Downloads")
-			(autoload 'w3m-browse-url "w3m" "Ask a WWW browser to show a URL." t)
-			(require 'mime-w3m)
+		:init	(setq browse-url-browser-function 'w3m-browse-url)
 		:bind ( ("C-x m" . browse-url-at-point)
 			:map w3m-mode-map
 			("<left>" . w3m-view-previous-page)
 			("&" . macosx-open-url)
 			("Q" . my/w3m-quit)
 			("R" . tsa/w3m-toggle-readability)
-			("M-o" . ace-link-w3m)))
-	(add-to-list 'w3m-filter-configuration '(t "Make page readable" ".*" tsa/readability)))
-	(load "init/w3m-routines.el")
+			("M-o" . ace-link-w3m))
+		:config (setq
+			w3m-bookmark-file (concat user-emacs-directory "etc/w3m-bookmarks.html")
+			w3m-confirm-leaving-secure-page nil
+			w3m-default-save-directory "~/Downloads")
+			(autoload 'w3m-browse-url "w3m" "Ask a WWW browser to show a URL." t)
+			(require 'mime-w3m)
+
+		(load "init/w3m-routines.el")
+		(require 'w3m-filter)
+		(add-to-list 'w3m-filter-configuration '(t "Make page readable" ".*" tsa/readability))))
 
 (when *gnu*
 	(setq	browse-url-secondary-browser-function 'browse-url-generic
@@ -868,8 +844,7 @@
 	:hook (org-mode . org-appear-mode))
 
 (use-package org-autolist ; pressing "Return" will insert a new list item automatically
-	:hook (org-mode . org-autolist-mode)
-	:diminish "AL")
+	:hook (org-mode . org-autolist-mode))
 
 (use-package org-cliplink) ; insert org-mode links from the clipboard
 
@@ -1122,7 +1097,7 @@
 (bind-key "C-c x b"	'flush-blank-lines)
 (bind-key "C-c x d"	'delete-duplicate-lines)
 (bind-key "C-c x g"	'replace-garbage-chars)
-(bind-key "C-c x i"	'lorem-ipsum-insert-paragraphs)
+(bind-key "C-c x l"	'lorem-ipsum-insert-paragraphs)
 (bind-key "C-c x n"	'number-paragraphs)
 
 (bind-key "C-c x r"	'whitespace-cleanup-region)
@@ -1199,4 +1174,5 @@
 ; LocalWords:  pdfexport melpa vers tls dg defs eshell multisession
 ; LocalWords:  persistency ido Ibuffer elfeed rc rmh elfeedroutines
 ; LocalWords:  esr md noindent nEntered shoppinglist Cliplink el kbd
-; LocalWords:  INPROGRESS kfhelp setq xm readabilizing JS dev
+; LocalWords:  INPROGRESS kfhelp setq xm readabilizing JS dev Lorem
+; LocalWords:  Gopherspace filesandbuffers ipsum ePub epub
