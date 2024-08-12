@@ -2,22 +2,22 @@
 
 ;; org links
 (require 'ol)
-(org-link-set-parameters ; link type: gemini://host/index.gmi
-	"gemini"
+(org-link-set-parameters "gemini" ; gemini://host/index.gmi
 	:follow (lambda (path) (elpher-go (concat "gemini:" path)))
 	:face '(:foreground "turquoise" :weight bold)
 	:display 'full)
 
-(org-link-set-parameters ; link type: gopher
-	"gopher"
+(org-link-set-parameters "gopher"
 	:follow (lambda (path) (elpher-go (concat "gopher:" path)))
 	:face '(:foreground "blue" :weight bold)
 	:display 'full)
 
-(org-link-set-parameters "man" ; links to man pages in Org mode
+;; Support for links to man pages in Org mode
+;; https://orgmode.org/manual/Adding-Hyperlink-Types.html
+(org-link-set-parameters "man" ; [[man:printf][The printf manual]]
 	:follow #'org-man-open
-    :export #'org-man-export
-    :store #'org-man-store-link)
+	:export #'org-man-export
+	:store #'org-man-store-link)
 
 (defcustom org-man-command 'man
 	"The Emacs command to be used to display a man page."
@@ -25,7 +25,7 @@
 	:type '(choice (const man) (const woman)))
 
 (defun org-man-open (path _)
-	"Visit the manpage on PATH.
+	"Visit the man page on PATH.
 	PATH should be a topic that can be thrown at the man command."
 	(funcall org-man-command path))
 
@@ -34,12 +34,12 @@
 	(when (memq major-mode '(Man-mode woman-mode))
 		;; This is a man page, we do make this link.
 		(let* ((page (org-man-get-page-name))
-					 (link (concat "man:" page))
-					 (description (format "Man page for %s" page)))
+			(link (concat "man:" page))
+			(description (format "Man page for %s" page)))
 			(org-link-store-props
-			 :type "man"
-			 :link link
-			 :description description))))
+			:type "man"
+			:link link
+			:description description))))
 
 (defun org-man-get-page-name ()
 	"Extract the page name from the buffer name."

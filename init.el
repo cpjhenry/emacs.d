@@ -192,6 +192,7 @@
 	(setq-local font-lock-keywords-only t)
 	(goto-address-mode)))
 (add-hook 'pdf-view-mode-hook 'auto-revert-mode)
+(add-hook 'shell-mode-hook 'goto-address-mode)
 (remove-hook 'file-name-at-point-functions 'ffap-guess-file-name-at-point)
 
 ;; Modes derived from special-mode will pick-up this directive
@@ -803,8 +804,7 @@
 
 (setq	org-tags-exclude-from-inheritance '("PROJECT")
 	org-todo-keywords '((sequence "TODO" "DONE"))
-	org-todo-keyword-faces '(
-	("INPROGRESS" . (:foreground "blue" :weight bold)) ) ; add in-progress keyword
+	org-todo-keyword-faces '(("INPROGRESS" . (:foreground "blue" :weight bold)) )
 	org-emphasis-alist '(
 	("*" bold)
 	("**" bold)
@@ -854,7 +854,8 @@
 		(org-modern-fold-stars nil)
 		(org-modern-keyword nil)
 		(org-modern-checkbox nil)
-		(org-modern-table nil))
+		(org-modern-table nil)
+		(org-modern-tag nil))
 
 ;; (when *mac* (use-package org-mac-link ; grab links from various mac apps
 ;;	:config
