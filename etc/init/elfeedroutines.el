@@ -14,12 +14,11 @@
 	(interactive "sTodo: ")
 	(compose-mail-other-window user-mail-address text)
 	(mail-text)
-	(if body
-		(insert body))
-	(message-send-and-exit) )
+	(if body (insert body))
+	(message-send-and-exit))
 
 (defun elfeed-mail-todo (&optional use-generic-p)
-	"Mail this to myself for later reading"
+	"Mail this to myself for later reading."
 	(interactive "P")
 	(let ((entries (elfeed-search-selected)))
 		(cl-loop for entry in entries
@@ -27,7 +26,8 @@
 			when (elfeed-entry-title entry)
 			do (todo it (elfeed-entry-link entry)))
 		(mapc #'elfeed-search-update-entry entries)
-		(unless (use-region-p) (forward-line)))
+		;(unless (use-region-p) (forward-line))
+		)
 	(delete-other-windows))
 
 ;; https://pragmaticemacs.wordpress.com/2016/09/16/star-and-unstar-articles-in-elfeed/
@@ -46,6 +46,7 @@
 	(lambda() "Save the database, kill elfeed buffers." (interactive)
 	(elfeed-db-save)
 	(kill-current-buffer)
-	(let ((buffer "*elfeed-log*")) (and (get-buffer buffer) (kill-buffer buffer)))))
+	(let ((buffer "*elfeed-log*")) (and (get-buffer buffer) (kill-buffer buffer)))
+))
 
 ; LocalWords:  elfeed

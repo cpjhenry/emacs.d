@@ -87,6 +87,8 @@
 ;; settings
 (set-language-environment 'utf-8)
 (setq-default
+	initial-major-mode 'fundamental-mode
+
 	tab-width 4
 	standard-indent 4
 	help-window-select t
@@ -122,6 +124,7 @@
 	Man-notify-method 'pushy
 	mark-ring-max most-positive-fixnum
 	max-lisp-eval-depth 65536
+	message-kill-buffer-on-exit t
 	package-archive-column-width 1
 	pop-up-windows nil
 	;pop-up-frames nil
