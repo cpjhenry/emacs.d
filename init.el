@@ -288,13 +288,16 @@
 (when *mac*
 	;; start Emacs server
 	(use-package mac-pseudo-daemon :config (mac-pseudo-daemon-mode))
-	(server-start)
-	(if (boundp 'server-process) (message "Server started."))
+	(if (not (boundp 'server-process)) (server-start))
+	(if (boundp 'server-process) (message "Server running."))
 
 	;; add Hyper- keys (C-M-s-…) to terminal frames (iTerm2)
 	(add-hook 'server-after-make-frame-hook (lambda()
-	(unless (display-graphic-p) (cl-loop for char from ?a to ?z do
-	(define-key input-decode-map (format "\e[1;P%c" char) (kbd (format "H-%c" char))))))))
+		;; (unless (display-graphic-p)
+
+		;; TODO add C-M-s translations for display-graphic
+		(cl-loop for char from ?a to ?z do
+		(define-key input-decode-map (format "\e[1;P%c" char) (kbd (format "H-%c" char)))))))
 
 
 ;; mode line
