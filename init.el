@@ -1,4 +1,4 @@
-;;; Emacs configuration / cpjh
+;;; Emacs configuration / cpjh -*- no-byte-compile: t; lexical-binding: t; -*-
 
 ;; Initialize terminal
 (delete-selection-mode 1)
@@ -95,6 +95,7 @@
 	indicate-empty-lines t)
 
 (setq	default-major-mode 'text-mode
+	default-input-method nil
 
 	ad-redefinition-action 'accept
 	async-shell-command-buffer 'new-buffer
@@ -205,9 +206,9 @@
 ;; mode-hooks execute once for every buffer in which the mode is enabled
 
 (with-eval-after-load 'emacs-news-mode
-	(define-key emacs-news-view-mode-map (kbd "<left>")
+	(define-key emacs-news-view-mode-map (kbd "A-<left>")
 	(lambda()(interactive)(outline-previous-heading)(recenter-top-bottom)))
-	(define-key emacs-news-view-mode-map (kbd "<right>")
+	(define-key emacs-news-view-mode-map (kbd "A-<right>")
 	(lambda()(interactive)(outline-next-heading)(recenter-top-bottom))))
 (with-eval-after-load 'help-mode
 	(define-key help-mode-map (kbd "A-<left>")	'help-go-back)
@@ -301,11 +302,12 @@
 	:ensure t
 	:hook	(after-init . doom-modeline-mode)
 	:config (setq
-		doom-modeline-buffer-modification-icon nil
 		doom-modeline-column-zero-based nil
 		doom-modeline-enable-word-count t
 		doom-modeline-continuous-word-count-modes '(markdown-mode gfm-mode org-mode text-mode))
+
 		(unless (display-graphic-p) (setq doom-modeline-icon nil))
+		doom-modeline-buffer-modification-icon nil
 	(use-package nerd-icons))
 
 (setq	battery-mode-line-format "%p%% "
@@ -723,8 +725,8 @@
 
 ;; turn-on flyspell-mode for these modes
 (unless *w32* (dolist (hook '(text-mode-hook markdown-mode-hook))
-	(add-hook hook (lambda() (flyspell-mode 1))))
-	(add-hook 'emacs-lisp-mode-hook 'flyspell-prog-mode))
+	(add-hook hook (lambda() (flyspell-mode 1)))) )
+	;; (add-hook 'emacs-lisp-mode-hook 'flyspell-prog-mode)
 
 ;; turn-off flyspell-mode for these modes
 (dolist (hook '(change-log-mode-hook emacs-news-mode-hook log-edit-mode-hook))
