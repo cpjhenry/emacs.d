@@ -608,7 +608,7 @@
 		(advice-add 'elfeed-search-update--force :after (lambda() (goto-char (point-min))))
 
 		(load "rc/feeds" 'noerror 'nomessage)	; feeds
-		(load "init/elfeedroutines"))		; routines
+		(load "init/elfeed-routines"))		; routines
 
 	;; Web
 	(use-package w3m
@@ -676,7 +676,7 @@
 (add-to-list 'auto-mode-alist '("\\.bash*" . sh-mode))
 (define-key shell-mode-map (kbd "M-r") nil)
 
-;; fix html-mode
+;; html
 (add-to-list 'auto-mode-alist '("\\.html$" . html-mode))
 (add-hook 'html-mode-hook (lambda()
 	(visual-line-mode -1)
@@ -918,7 +918,6 @@
 ;; arrow keys (Darwin)
 ;; <home>  is fn-left	<end>  is fn-right
 ;; <prior> is fn-up	<next> is fn-down
-(defalias 'b-o-l 'beginning-of-line)
 
 (global-set-key (kbd "<home>") 'move-beginning-of-line)
 (global-set-key (kbd "<end>" ) 'move-end-of-line)
@@ -935,10 +934,15 @@
 ;; M-<prior>		'scroll-other-window-down
 ;; M-<next>		'scroll-other-window
 
+(defalias 'b-o-l 'beginning-of-line)
 (global-set-key (kbd "M-<up>")   (lambda()(interactive)(backward-paragraph)(recenter-top-bottom)))
 (global-set-key (kbd "M-<down>") (lambda()(interactive)(forward-paragraph)(recenter-top-bottom)))
 (global-set-key (kbd "M-<left>") (lambda()(interactive)(backward-page)(recenter-top-bottom)(b-o-l)))
 (global-set-key (kbd "M-<right>")(lambda()(interactive)(next-line)(forward-page)(recenter-top-bottom)(b-o-l)))
+
+(when *mac*
+	(global-set-key (kbd "s-<up>") (kbd "<prior>"))
+	(global-set-key (kbd "s-<down>") (kbd "<next>")))
 
 
 ;; scroll settings
@@ -975,10 +979,10 @@
 
 ;; window navigation
 (when (fboundp 'windmove-default-keybindings)
-	(global-set-key (kbd "s-<up>")	'windmove-up)
-	(global-set-key (kbd "s-<down>") 'windmove-down)
-	(global-set-key (kbd "s-<right>") 'windmove-right)
-	(global-set-key (kbd "s-<left>") 'windmove-left))
+(global-set-key (kbd "C-c <left>")  'windmove-left)
+(global-set-key (kbd "C-c <right>") 'windmove-right)
+(global-set-key (kbd "C-c <up>")    'windmove-up)
+(global-set-key (kbd "C-c <down>")  'windmove-down))
 
 ; tweaking window sizes
 (global-set-key (kbd "C-{") 'shrink-window-horizontally)
@@ -1003,7 +1007,7 @@
 (global-set-key (kbd "<f12>")	'list-buffers)
 (global-set-key (kbd "TAB")	'self-insert-command)
 
-(global-set-key (kbd "A-<return>")(kbd "M-<return>"))
+(global-set-key (kbd "A-<return>") (kbd "M-<return>"))
 
 ;; avoid accidental exits
 ;(global-unset-key (kbd "C-x C-c"))
@@ -1015,7 +1019,7 @@
 ;; Darwin overrides
 (when *mac*
 	(when (display-graphic-p)
-	(dolist (key '("<f10>" "S-<f10>" "C-<f10>")); "M-<f10>"))
+	(dolist (key '("S-<f10>" "C-<f10>")); "<f10>" "M-<f10>"))
 	(global-unset-key (kbd key))))
 
 	(global-set-key (kbd "C-x C-c") (lambda() (interactive)

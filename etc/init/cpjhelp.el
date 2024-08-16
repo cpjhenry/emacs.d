@@ -279,6 +279,29 @@ CANADIAN MEASUREMENTS
 
 (kf-gen-displayer measurements "Units of measurement." "*measurements*")
 
+(defconst vt-escapes
+"vt sequences:
+
+<esc>[1~    - Home     <esc>[16~   -          <esc>[31~   - F17
+<esc>[2~    - Insert   <esc>[17~   - F6       <esc>[32~   - F18
+<esc>[3~    - Delete   <esc>[18~   - F7       <esc>[33~   - F19
+<esc>[4~    - End      <esc>[19~   - F8       <esc>[34~   - F20
+<esc>[5~    - PgUp     <esc>[20~   - F9       <esc>[35~   -
+<esc>[6~    - PgDn     <esc>[21~   - F10
+<esc>[7~    - Home     <esc>[22~   -
+<esc>[8~    - End      <esc>[23~   - F11
+<esc>[9~    -          <esc>[24~   - F12
+<esc>[10~   - F0       <esc>[25~   - F13
+<esc>[11~   - F1       <esc>[26~   - F14
+<esc>[12~   - F2       <esc>[27~   -
+<esc>[13~   - F3       <esc>[28~   - F15
+<esc>[14~   - F4       <esc>[29~   - F16
+<esc>[15~   - F5       <esc>[30~   -")
+
+(kf-gen-displayer vt-escapes "vt terminal escape sequences" "*vt sequences*")
+
 ;; Local Variables:
 ;; tab-width: 4
 ;; End:
+
+; LocalWords:  esc
