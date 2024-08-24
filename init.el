@@ -477,6 +477,7 @@
 (bind-key "M-p f a" 'fill-to-a5-printer)
 (bind-key "M-p f r" 'fill-to-receipt-printer)
 
+(bind-key "M-p e" 'enscript)
 (bind-key "M-p p" 'print-buffer-or-region)
 
 
@@ -562,7 +563,8 @@
 	;; 	browse-url-generic-program "/Applications/Waterfox.app/Contents/MacOS/waterfox")
 
 	;; Mail / News
-	(require 'rmail) (setq
+	(require 'rmail)
+	(setq
 	rmail-primary-inbox-list '("imaps://cn914@mail.ncf.ca")
 	rmail-movemail-variant-in-use 'mailutils
 	rmail-remote-password-required t
@@ -605,6 +607,8 @@
 			elfeed-db-directory (concat user-emacs-directory "var/elfeed/db/")
 			elfeed-enclosure-default-dir (concat user-emacs-directory "var/elfeed/enclosures/")
 			elfeed-score-score-file (concat user-emacs-directory "etc/elfeed/score/score.el")
+
+			elfeed-log-level 'error
 			elfeed-show-truncate-long-urls nil
 			elfeed-sort-order 'ascending
 			elfeed-use-curl t)
@@ -634,7 +638,8 @@
 
 		(load "init/w3m-routines.el")
 		(require 'w3m-filter)
-		(add-to-list 'w3m-filter-configuration '(t "Make page readable" ".*" tsa/readability))))
+		;(add-to-list 'w3m-filter-configuration '(t "Make page readable" ".*" tsa/readability))
+		))
 
 (when *gnu*
 	(setq	browse-url-secondary-browser-function 'browse-url-generic
@@ -926,8 +931,8 @@
 
 (global-set-key (kbd "<home>") 'move-beginning-of-line)
 (global-set-key (kbd "<end>" ) 'move-end-of-line)
-;; <prior>		'scroll-down-command
-;; <next>		'scroll-up-command
+(global-set-key (kbd "A-<left>") [home])
+(global-set-key (kbd "A-<right>") [end])
 
 (global-set-key (kbd "C-<home>" ) 'beginning-of-buffer)
 (global-set-key (kbd "C-<end>"  ) (lambda()(interactive)(end-of-buffer)(recenter -1)))
@@ -945,10 +950,6 @@
 (global-set-key (kbd "M-<left>") (lambda()(interactive)(backward-page)(recenter-top-bottom)(b-o-l)))
 (global-set-key (kbd "M-<right>")(lambda()(interactive)(next-line)(forward-page)(recenter-top-bottom)(b-o-l)))
 
-(when *mac*
-	(global-set-key (kbd "s-<up>") (kbd "<prior>"))
-	(global-set-key (kbd "s-<down>") (kbd "<next>")))
-
 
 ;; scroll settings
 (setq	auto-window-vscroll nil
@@ -961,10 +962,13 @@
 (global-set-key (kbd "C->") 'scroll-right)
 
 ;; half-scroll
-(global-set-key [next] 'scroll-up-half)
 (global-set-key [prior] 'scroll-down-half)
-(global-set-key (kbd "A-<down>") 'scroll-up-half)
-(global-set-key (kbd "A-<up>") 'scroll-down-half)
+(global-set-key [next] 'scroll-up-half)
+(global-set-key (kbd "A-<up>") [prior])
+(global-set-key (kbd "A-<down>") [next])
+(when *mac*
+	(global-set-key (kbd "s-<up>") [prior])
+	(global-set-key (kbd "s-<down>") [next]))
 
 ;; mouse
 ;; https://github.com/purcell/disable-mouse
@@ -977,9 +981,7 @@
 	;; https://lmno.lol/alvaro/hey-mouse-dont-mess-with-my-emacs-font-size
 	(global-set-key (kbd "<pinch>") 'ignore)
 	(global-set-key (kbd "<C-wheel-up>") 'ignore)
-	(global-set-key (kbd "<C-wheel-down>") 'ignore)
-	(global-set-key (kbd "<swipe-left>")  'mac-next-buffer)
-	(global-set-key (kbd "<swipe-right>") 'mac-previous-buffer))
+	(global-set-key (kbd "<C-wheel-down>") 'ignore))
 
 
 ;; window navigation
@@ -1022,9 +1024,8 @@
 (global-unset-key (kbd "C-x C-z"))
 
 ;; Darwin overrides
-(when *mac*
-	(when (display-graphic-p)
-	(dolist (key '("S-<f10>" "C-<f10>")); "<f10>" "M-<f10>"))
+(when *mac* (when (display-graphic-p)
+	(dolist (key '("C-<f10>")); "<f10>" "S-<f10>" "M-<f10>"))
 	(global-unset-key (kbd key))))
 
 	(global-set-key (kbd "C-x C-c") (lambda() (interactive)
@@ -1032,6 +1033,9 @@
 		(save-buffers-kill-terminal)))
 		(which-key-alias "C-x C-c" "save-buffers-kill-terminal")
 	(bind-key "s-M-z" 'undo-redo))
+
+;; quit cleanly
+(global-set-key (kbd "C-c C-g") 'keyboard-quit)
 
 
 ;; Disabled functions
