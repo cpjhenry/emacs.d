@@ -468,7 +468,6 @@
 
 
 ;; print functions
-(load "init/page-dimensions")
 (load "init/print")
 
 (setq lpr-page-header-switches '("-t"))
@@ -632,13 +631,14 @@
 		:config (setq
 			w3m-bookmark-file (concat user-emacs-directory "etc/w3m-bookmarks.html")
 			w3m-confirm-leaving-secure-page nil
-			w3m-default-save-directory "~/Downloads")
+			w3m-default-save-directory "~/Downloads"
+			w3m-use-filter nil)
 			(autoload 'w3m-browse-url "w3m" "Ask a WWW browser to show a URL." t)
 			(require 'mime-w3m)
 
 		(load "init/w3m-routines.el")
 		(require 'w3m-filter)
-		;(add-to-list 'w3m-filter-configuration '(t "Make page readable" ".*" tsa/readability))
+		(add-to-list 'w3m-filter-configuration '(t "Make page readable" ".*" tsa/readability))
 		))
 
 (when *gnu*
@@ -1016,6 +1016,9 @@
 
 (global-set-key (kbd "A-<return>") (kbd "M-<return>"))
 
+;; extended commands (alternates)
+;(global-set-key (kbd "C-x C-m") 'execute-extended-command)
+
 ;; avoid accidental exits
 ;(global-unset-key (kbd "C-x C-c"))
 ;(global-set-key (kbd "C-x C-c c") 'save-buffers-kill-terminal)
@@ -1036,6 +1039,7 @@
 
 ;; quit cleanly
 (global-set-key (kbd "C-c C-g") 'keyboard-quit)
+(global-set-key (kbd "C-x C-g") 'keyboard-quit)
 
 
 ;; Disabled functions

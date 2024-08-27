@@ -1,5 +1,18 @@
 ;; PRINT functions
 
+(setq ps-page-dimensions-database '(
+	(a4 595 842 "A4")
+	(a5 420 595 "A5")
+	(b4 709 1001 "B4")
+	(b5 499 709 "B5")
+	(pos80 204.0 595.0 "POS-80")
+	(letter 612.0 792.0 "Letter")
+	(legal 612.0 1008.0 "Legal")
+	(tabloid 792.0 1224.0 "Tabloid")
+	(ledger 1224.0 792.0 "Ledger")
+	(statement 396.0 612.0 "Statement")
+	(executive 540.0 720.0 "Executive")))
+
 (when *mac* (setq
 	ps-printer-name "Brother_HL_L2370DW"
 	ps-lpr-switches '("-o media=a5")
