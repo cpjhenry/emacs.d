@@ -30,7 +30,7 @@
 		(org-mode)
 		(setq buffer-offer-save t) ))
 
-(defun copy-current-buffer-to-temp-buffer ()
+(defun copy-current-to-temp-buffer ()
 	"Copy the current buffer or region, create temp buffer, paste it there."
 	(interactive)
 	(let ((beg (point-min)) (end (point-max)))
@@ -197,31 +197,30 @@
 	"Move backwards ARG lines, wrapping around the list if necessary."
 	(interactive "P")
 	(or arg (setq arg 1))
-	(let (err1 err2)
-		(while (> arg 0)
-			(cl-decf arg)
-			(setq err1 (ibuffer-advance-motion -1)
-				  err2 (if (not (get-text-property (point) 'ibuffer-title)) t
-			(goto-char (point-max))
-			(beginning-of-line)
-			(ibuffer-skip-properties '(ibuffer-summary ibuffer-filter-group-name) -1)
-			nil)))
-	(and err1 err2)))
+	(let (err1 err2) (while (> arg 0)
+		(cl-decf arg)
+		(setq   err1 (ibuffer-advance-motion -1)
+			err2 (if (not (get-text-property (point) 'ibuffer-title)) t
+				(goto-char (point-max))
+				(beginning-of-line)
+				(ibuffer-skip-properties '(ibuffer-summary ibuffer-filter-group-name) -1)
+					nil)))
+		(and err1 err2)))
 
 (defun ibuffer-next-line (&optional arg)
 	"Move forward ARG lines, wrapping around the list if necessary."
 	(interactive "P")
 	(or arg (setq arg 1))
-	(let (err1 err2)
-		(while (> arg 0)
-			(cl-decf arg)
-			(setq err1 (ibuffer-advance-motion 1)
-				  err2 (if (not (get-text-property (point) 'ibuffer-summary)) t
-			(goto-char (point-min))
-			(beginning-of-line)
-			(ibuffer-skip-properties '(ibuffer-summary ibuffer-filter-group-name ibuffer-title) 1)
-			nil)))
-	(and err1 err2)))
+	(let (err1 err2) (while (> arg 0)
+		(cl-decf arg)
+		(setq   err1 (ibuffer-advance-motion 1)
+			err2 (if (not (get-text-property (point) 'ibuffer-summary)) t
+				(goto-char (point-min))
+				(beginning-of-line)
+				(ibuffer-skip-properties '(ibuffer-summary ibuffer-filter-group-name
+					ibuffer-title) 1)
+					nil)))
+		(and err1 err2)))
 
 (defun ibuffer-next-header ()
 	(interactive)

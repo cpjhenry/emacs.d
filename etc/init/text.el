@@ -38,9 +38,8 @@
 	"Run Marked on the current file and revert the buffer"
 	(interactive)
 	(shell-command (format "open -a /Applications/Marked\\ 2.app %s"
-		(shell-quote-argument (buffer-file-name)) ))
-	(let ((buffer "*Shell Command Output*")) (and (get-buffer buffer)
-		(kill-buffer buffer))) )
+		(shell-quote-argument (buffer-file-name)))
+		nil nil))
 
 (defun flush-blank-lines (start end)
 	"Remove blank lines in a buffer."
@@ -61,7 +60,8 @@
 		("\x201C" . "\"")
 		("\x201D" . "\"")
 		("\x2018" . "'")
-		("\x2019" . "'") ) nil beg end)
+		("\x2019" . "'"))
+		nil beg end)
 	(message "Smart quotes replaced."))
 
 ;; https://www.emacswiki.org/emacs/ReplaceGarbageChars
@@ -69,8 +69,8 @@
 (defun replace-garbage-chars ()
 	"Replace goofy MS and other garbage characters with Latin1 equivalents."
 	(interactive) (save-excursion				;save the current point
-	(replace-string "΄" "\"" nil (point-min) (point-max))
-	(replace-string "“" "\"" nil (point-min) (point-max))
+	(replace-string "΄" "'" nil (point-min) (point-max))
+	(replace-string "‘" "'" nil (point-min) (point-max))
 	(replace-string "’" "'" nil (point-min) (point-max))
 	(replace-string "“" "\"" nil (point-min) (point-max))
 	(replace-string "”" "\"" nil (point-min) (point-max))
@@ -105,9 +105,11 @@
 
 	;; mine
 	(replace-string "•" "-" nil (point-min) (point-max))
+	(replace-string "–" "--" nil (point-min) (point-max))
 	(replace-string "…" "..." nil (point-min) (point-max))
 	(replace-string "&#38;" "&" nil (point-min) (point-max))
 	(replace-string "&#39;" "'" nil (point-min) (point-max))
+
 	(message "Garbage in, garbage out.") ))
 
 ;; https://emacs.stackexchange.com/questions/51629/add-paragraph-numbers
@@ -226,7 +228,6 @@ region that was the most recent focus."
 	(when focus
 		(narrow-to-region (overlay-start focus)
 		(overlay-end focus)))))))
-	;(define-key global-map "\C-xnf" 'narrow-to-focus)
 
 ;; eww functions
 

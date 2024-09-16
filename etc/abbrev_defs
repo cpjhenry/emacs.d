@@ -6,3 +6,26 @@
     ("svb" "Si vales, bene est; ego valeo." nil :count 5)
    ))
 
+(define-abbrev-table 'markdown-mode-abbrev-table
+  '(
+    ("talkauthor" "Paul J Henry MM RAM FRC
+Goodwood Lodge
+№ 159 AF&AM GRC" nil :count 2)
+   ))
+
+(define-abbrev-table 'org-mode-abbrev-table
+  '(
+    ("latexcompactlist" "# Compacted lists
+#+LaTeX_HEADER: \\usepackage[inline]{enumitem}
+#+LaTeX_HEADER: \\setlist{nosep}" nil :count 0)
+    ("latexheaders" "#+LATEX_CLASS_OPTIONS: [a5paper,12pt]
+#+LATEX_HEADER: \\usepackage[AUTO]{inputenc}
+#+LATEX_HEADER: \\usepackage[margin=0.5in]{geometry}
+#+LATEX_HEADER: \\setlength\\parindent{0pt}
+#+LATEX_HEADER: \\usepackage[T1]{fontenc}
+#+LATEX_HEADER: \\usepackage[urw-garamond]{mathdesign}
+#+LATEX_HEADER: \\usepackage{lmodern}
+#+LATEX_HEADER: \\usepackage{courier}
+#+LATEX_HEADER: \\linespread{1.0609}" nil :count 1)
+   ))
+

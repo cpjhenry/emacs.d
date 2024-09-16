@@ -5,8 +5,8 @@
 cond_source() { [ -f $1 ] && . $1; }
 cond_source $HOME/.bash_routines
 
-gcalcli --lineart=ascii --nocolor --calendar=cpjh --calendar=Holidays calw
-echo
+[ $(which gcalcli) ] && gcalcli --lineart=ascii --nocolor --calendar=cpjh --calendar=Holidays calw && echo
+
 alert -f
 echo
 di

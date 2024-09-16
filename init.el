@@ -58,13 +58,6 @@
 	w32-apps-modifier 'hyper)
 	(message "Running on Windows."))
 
-(setq	user-full-name "cpj"
-	user-mail-address "cn914@ncf.ca"
-	calendar-latitude 45.3
-	calendar-longitude -75.7
-	calendar-location-name "Ottawa"
-	maidenhead "FN25dg")
-
 ;; Add directories to load-path
 (add-to-list 'load-path (expand-file-name "etc" user-emacs-directory))
 (add-to-list 'load-path (expand-file-name "opt" user-emacs-directory))
@@ -86,6 +79,7 @@
 
 ;; settings
 (set-language-environment 'utf-8)
+
 (setq-default
 	initial-major-mode 'fundamental-mode
 
@@ -179,7 +173,17 @@
 
 ;; path
 (if (boundp 'emacs-edition) (message "Running '%s'." emacs-edition))
-(if *mac* (use-package exec-path-from-shell :config (exec-path-from-shell-initialize)))
+(if *mac* (use-package exec-path-from-shell
+	:custom
+		(shell-file-name "/usr/local/bin/bash"
+		"This is necessary because some Emacs installs overwrite this variable.")
+		(exec-path-from-shell-variables '("PATH" "MANPATH" "PKG_CONFIG_PATH")
+		"This adds PKG_CONFIG_PATH to the list of variables to grab.")
+	:init
+		(exec-path-from-shell-initialize)))
+
+;; whoami
+(load "rc/me" 'noerror)
 
 ;; garbage collection
 (use-package gcmh :config (gcmh-mode 1))
@@ -207,19 +211,24 @@
 
 (with-eval-after-load 'emacs-news-mode
 	(define-key emacs-news-view-mode-map (kbd "A-<left>")
-	(lambda()(interactive)(outline-previous-heading)(recenter-top-bottom)))
+		(lambda()(interactive)(outline-previous-heading)(recenter-top-bottom)))
 	(define-key emacs-news-view-mode-map (kbd "A-<right>")
-	(lambda()(interactive)(outline-next-heading)(recenter-top-bottom))))
-(with-eval-after-load 'help-mode
-	(define-key help-mode-map (kbd "A-<left>")	'help-go-back)
-	(define-key help-mode-map (kbd "A-<right>")	'help-go-forward)
-	(define-key help-mode-map (kbd "M-RET")		'goto-address-at-point))
-(with-eval-after-load 'info
-	(define-key Info-mode-map (kbd "q")		'kill-current-buffer)
-	(define-key Info-mode-map (kbd "A-<left>" )	'Info-history-back)
-	(define-key Info-mode-map (kbd "A-<right>")	'Info-history-forward))
+		(lambda()(interactive)(outline-next-heading)(recenter-top-bottom))))
 (with-eval-after-load 'view
-	(define-key view-mode-map (kbd "q")		'View-kill-and-leave))
+	(define-key view-mode-map (kbd "q")	'View-kill-and-leave))
+
+; 'help-mode
+(define-key help-mode-map (kbd "A-<left>")	'help-go-back)
+(define-key help-mode-map (kbd "A-<right>")	'help-go-forward)
+(define-key help-mode-map (kbd "M-RET")		'goto-address-at-point)
+
+; 'info
+(define-key Info-mode-map (kbd "q")		'kill-current-buffer)
+(define-key Info-mode-map (kbd "A-<left>" )	'Info-history-back)
+(define-key Info-mode-map (kbd "A-<right>")	'Info-history-forward)
+
+; 'messages-buffer-mode
+(define-key messages-buffer-mode-map (kbd "q")	'bury-buffer)
 
 ;; remove unneeded messages and buffers
 (setq inhibit-startup-message t)	; 'About Emacs'
@@ -381,23 +390,23 @@
 (setq	ibuffer-hidden-filter-groups (list "Helm" "*Internal*")
 	ibuffer-saved-filter-groups (quote (("home"
 		("Dired" (mode . dired-mode) )
-		("Emacs" (or
-			(name . "^\\*scratch\\*$")
+		("Emacs" (or (name . "^\\*scratch\\*$")
 			(name . "^\\*Messages\\*$")
-			(name . "\\.el") ))
+			(name . "\\.el")))
+		("Text" (or (name . "\\.txt")
+			(name . "\\.text")))
 		("Markdown" (name . "\\.md"))
 		("Org" (name . "\\.org"))
-		("Planner" (or
-			(mode . calendar-mode)
+		("Planner" (or (mode . calendar-mode)
 			(mode . diary-mode)
 			(mode . diary-fancy-display-mode)
 			(name . "^\\*daily-info\\*")
 			(name . "^\\*Org Agenda\\*")
+			(name . "^\\*Virgo\\*")
 			(name . "^calendar@*")))
 		;("erc" (mode . erc-mode))
 		("Eww"   (mode . eww-mode))
-		("gnus" (or
-			(mode . message-mode)
+		("gnus" (or (mode . message-mode)
 			(mode . bbdb-mode)
 			(mode . mail-mode)
 			(mode . gnus-group-mode)
@@ -467,23 +476,9 @@
 (add-to-list 'auto-mode-alist '("diary" . diary-mode))
 
 
-;; print functions
-(load "init/print")
-
-(setq lpr-page-header-switches '("-t"))
-(define-key global-map [menu-bar file print] nil)
-
-(bind-key "M-p f a" 'fill-to-a5-printer)
-(bind-key "M-p f r" 'fill-to-receipt-printer)
-
-(bind-key "M-p e" 'enscript)
-(bind-key "M-p p" 'print-buffer-or-region)
-
-
 ;; Initialize packages
 (use-package which-key
-	:config
-		(which-key-mode)
+	:config (which-key-mode)
 		(defalias 'which-key-alias 'which-key-add-key-based-replacements))
 
 (use-package elpher
@@ -650,11 +645,27 @@
 	:magic ("%PDF" . pdf-view-mode)
 	:config (pdf-tools-install :no-query) ))
 
+;; TODO Review : replace code above?
+;; https://jonathanabennett.github.io/blog/2019/05/29/writing-academic-papers-with-org-mode/
+;; (use-package pdf-tools
+;;    :pin manual ;; manually update
+;;    :config
+;;    ;; initialise
+;;    (pdf-tools-install)
+;;    ;; open pdfs scaled to fit width
+;;    (setq-default pdf-view-display-size 'fit-width)
+;;    ;; use normal isearch
+;;    (define-key pdf-view-mode-map (kbd "C-s") 'isearch-forward)
+;;    :custom
+;;    (pdf-annot-activate-created-annotations t "automatically annotate highlights"))
+
 
 ;; Emacs Text, Prog, and Markdown modes
+(require 'table)
 (add-hook 'text-mode-hook (lambda()
 	(abbrev-mode)
 	(goto-address-mode)
+	(table-recognize)
 	(visual-line-mode)))
 (add-hook 'fill-nobreak-predicate #'fill-french-nobreak-p)
 (define-key text-mode-map (kbd "C-M-i") nil)
@@ -711,9 +722,9 @@
 		markdown-enable-prefix-prompts nil
 		markdown-italic-underscore t
 		markdown-unordered-list-item-prefix "* ")
-		(add-to-list 'markdown-uri-types "gemini"))
-
-(use-package markdown-preview-mode)
+	(add-to-list 'markdown-uri-types "gemini")
+	(define-key markdown-mode-map (kbd "M-p") nil)
+	(use-package markdown-preview-mode))
 
 (load "init/text") ; text functions
 
@@ -755,6 +766,19 @@
 (add-hook 'tex-mode-hook (lambda() (setq ispell-parser 'tex)))
 
 
+;; print functions
+(load "init/print")
+
+(setq lpr-page-header-switches '("-t"))
+(define-key global-map [menu-bar file print] nil)
+
+(bind-key "M-p f" 'fill-to-printer)
+
+(bind-key "M-p e" 'enscript)
+(bind-key "M-p r" 'print-buffer-or-region)
+(bind-key "M-p s" 'ps-print-buffer-or-region)
+
+
 ;; Org-mode
 (setq-default
 	org-startup-indented nil
@@ -787,7 +811,7 @@
 	org-log-repeat nil
 	org-log-state-notes-into-drawer nil
 	org-special-ctrl-a/e t
-	org-support-shift-select t
+	org-support-shift-select 'always
 
 	org-agenda-include-diary nil
 	org-agenda-skip-deadline-if-done t
@@ -796,17 +820,6 @@
 	org-agenda-todo-ignore-deadlines t
 	org-agenda-todo-ignore-scheduled t
 
-	org-export-with-author nil
-	org-export-with-date nil
-	org-export-with-toc nil
-
-	org-export-with-broken-links t
-	org-export-preserve-breaks t
-
-	org-export-with-timestamps t
-	org-export-time-stamp-file nil
-	org-export-date-timestamp-format "%Y-%m-%d"
-
 	org-ascii-text-width 50
 	org-ascii-inner-margin 2
 	org-ascii-quote-margin 4
@@ -814,6 +827,42 @@
 
 	org-md-headline-style 'atx)
 
+(setq 	org-export-with-author t
+	org-export-with-date t
+	org-export-with-toc nil
+
+	org-export-with-broken-links t
+	org-export-preserve-breaks t
+
+	org-export-with-timestamps t
+	org-export-time-stamp-file t
+	org-export-date-timestamp-format "%Y-%m-%d"
+
+	org-src-fontify-natively t
+
+	org-latex-compiler "xelatex"
+	org-latex-pdf-process (list
+		(concat "latexmk -" org-latex-compiler " -recorder -synctex=1 -bibtex-cond %b"))
+
+	org-latex-classes '(
+	("article" "\\documentclass{article}"
+	 ("\\section{%s}" . "\\section*{%s}")
+	 ("\\subsection{%s}" . "\\subsection*{%s}")
+	 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+	 ("\\paragraph{%s}" . "\\paragraph*{%s}")
+	 ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))
+	("report" "\\documentclass{report}"
+	 ("\\part{%s}" . "\\part*{%s}")
+	 ("\\chapter{%s}" . "\\chapter*{%s}")
+	 ("\\section{%s}" . "\\section*{%s}")
+	 ("\\subsection{%s}" . "\\subsection*{%s}")
+	 ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))
+	("book" "\\documentclass{book}"
+	 ("\\part{%s}" . "\\part*{%s}")
+	 ("\\chapter{%s}" . "\\chapter*{%s}")
+	 ("\\section{%s}" . "\\section*{%s}")
+	 ("\\subsection{%s}" . "\\subsection*{%s}")
+	 ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))))
 
 (setq	org-tags-exclude-from-inheritance '("PROJECT")
 	org-todo-keywords '((sequence "TODO" "DONE"))
@@ -832,6 +881,19 @@
 	("O" "Office"		((agenda)(tags-todo "OFFICE")))
 	("W" "Weekly Plan"	((agenda)(todo "TODO")(tags "PROJECT")))
 	("H" "Home NA Lists"((agenda)(tags-todo "HOME")(tags-todo "COMPUTER"))))
+
+	org-latex-default-packages-alist '(
+		("" "graphicx" t)
+        	("" "grffile" t)
+        	("" "longtable" nil)
+        	("" "wrapfig" nil)
+        	("" "rotating" nil)
+        	("normalem" "ulem" t)
+        	("" "amsmath" t)
+        	("" "textcomp" t)
+        	("" "amssymb" t)
+        	("" "capt-of" nil)
+        	("" "hyperref" nil))
 
 	org-capture-templates '(
 	("c" "Cookbook" entry (file "~/Documents/org/cookbook.org")
@@ -870,6 +932,8 @@
 		(org-modern-table nil)
 		(org-modern-tag nil))
 
+(use-package ox-report) ; export your org file to minutes report PDF file
+
 ;; (when *mac* (use-package org-mac-link ; grab links from various mac apps
 ;;	:config
 ;;	(define-key org-mode-map (kbd "C-c o g") 'org-mac-link-get-link)))
@@ -895,6 +959,9 @@
 (define-key org-mode-map (kbd "M-]") 'org-forward-heading-same-level)
 (define-key org-mode-map (kbd "C-M-<left>" ) 'outline-up-heading)
 (define-key org-mode-map (kbd "C-M-<right>") (lambda()(interactive)(org-end-of-subtree)))
+(define-key org-mode-map (kbd "S-s-<left>")  (lambda()(interactive)(org-call-with-arg 'org-todo 'left)))
+(define-key org-mode-map (kbd "S-s-<right>") (lambda()(interactive)(org-call-with-arg 'org-todo 'right)))
+
 (define-key org-mode-map (kbd "C-c '") (lambda()(interactive)(org-edit-special)(visual-fill-column-mode -1)))
 
 (add-hook 'org-agenda-finalize-hook 'delete-other-windows)
@@ -1008,8 +1075,8 @@
 
 (global-set-key (kbd "C-s")	'isearch-forward-regexp)
 (global-set-key (kbd "C-r")	'isearch-backward-regexp)
-(global-set-key (kbd "C-M-s")	'isearch-forward)
-(global-set-key (kbd "C-M-r")	'isearch-backward)
+(global-set-key (kbd "M-s s")	'isearch-forward)
+(global-set-key (kbd "M-s r")	'isearch-backward)
 
 (global-set-key (kbd "<f12>")	'list-buffers)
 (global-set-key (kbd "TAB")	'self-insert-command)
@@ -1041,6 +1108,9 @@
 (global-set-key (kbd "C-c C-g") 'keyboard-quit)
 (global-set-key (kbd "C-x C-g") 'keyboard-quit)
 
+;; unbind C-M-? keys
+;; FIXME
+
 
 ;; Disabled functions
 ;(setq disabled-command-function 'enable-me)
@@ -1063,11 +1133,11 @@
 ;; Shortcuts
 
 (bind-key "<f6>"	'toggle-fill-column-center)
-(bind-key "<f7>"	'flyspell-buffer)
+(bind-key "<f7>"	'ispell-buffer)
 (bind-key "<f8>"	'list-bookmarks)
 
 (bind-key "C-`"		'scratch-buffer)
-(bind-key "C-!"		'shell)
+(bind-key "C-<escape>"	'shell)
 
 (bind-key "M-<f1>"	'my/emacs-help)
 (bind-key "M-<f2>"	'describe-personal-keybindings)
@@ -1132,6 +1202,7 @@
 
 ;; Ctrl-x (buffer functions)
 (bind-key "C-x c"	'kill-current-buffer)
+(bind-key "C-x n f"	'narrow-to-focus)
 
 (bind-key "C-x x L"	'buf-to-LF)
 (bind-key "C-x x c"	'toggle-fill-column)
