@@ -77,6 +77,10 @@
 (setf	use-package-always-ensure t
 	use-package-verbose t)
 
+;; what and who am I
+(if (boundp 'emacs-edition) (message "Running '%s'." emacs-edition))
+(load "rc/me" 'noerror)
+
 ;; settings
 (set-language-environment 'utf-8)
 
@@ -172,7 +176,6 @@
 (unless *w32* (require 'backup-each-save) (add-hook 'after-save-hook 'backup-each-save))
 
 ;; path
-(if (boundp 'emacs-edition) (message "Running '%s'." emacs-edition))
 (if *mac* (use-package exec-path-from-shell
 	:custom
 		(shell-file-name "/usr/local/bin/bash"
@@ -181,9 +184,6 @@
 		"This adds PKG_CONFIG_PATH to the list of variables to grab.")
 	:init
 		(exec-path-from-shell-initialize)))
-
-;; whoami
-(load "rc/me" 'noerror)
 
 ;; garbage collection
 (use-package gcmh :config (gcmh-mode 1))
@@ -316,10 +316,8 @@
 	:config (setq
 		doom-modeline-column-zero-based nil
 		doom-modeline-enable-word-count t
-		doom-modeline-continuous-word-count-modes '(markdown-mode gfm-mode org-mode text-mode))
-
-		(unless (display-graphic-p) (setq doom-modeline-icon nil))
-		doom-modeline-buffer-modification-icon nil
+		doom-modeline-continuous-word-count-modes '(markdown-mode gfm-mode org-mode text-mode)
+		doom-modeline-icon nil)
 	(use-package nerd-icons))
 
 (setq	battery-mode-line-format "%p%% "
@@ -397,6 +395,7 @@
 			(name . "\\.text")))
 		("Markdown" (name . "\\.md"))
 		("Org" (name . "\\.org"))
+		("TeX" (name . "\\.tex"))
 		("Planner" (or (mode . calendar-mode)
 			(mode . diary-mode)
 			(mode . diary-fancy-display-mode)
@@ -429,6 +428,7 @@
 (add-to-list 'ibuffer-never-show-predicates "^\\*Messages\\*")
 (add-to-list 'ibuffer-never-show-predicates "^\\*Shell Command Output\\*")
 (add-to-list 'ibuffer-never-show-predicates "^\\*tramp/")
+(add-to-list 'ibuffer-never-show-predicates "^\\*Latex Preview Pane Welcome\\*")
 
 
 ;; calendar
@@ -696,6 +696,7 @@
 ;; bash
 (add-to-list 'auto-mode-alist '("\\.bash*" . sh-mode))
 (define-key shell-mode-map (kbd "M-r") nil)
+(define-key shell-mode-map (kbd "M-p") nil)
 
 ;; html
 (add-to-list 'auto-mode-alist '("\\.html$" . html-mode))
@@ -727,6 +728,37 @@
 	(use-package markdown-preview-mode))
 
 (load "init/text") ; text functions
+
+
+;; TeX
+(setq latex-run-command "xelatex")
+
+(use-package tex
+	:ensure auctex
+	:hook
+		(LaTeX-mode . prettify-symbols-mode)
+		;(LaTeX-mode . LaTeX-math-mode)
+		(LaTeX-mode . turn-on-reftex)
+	:config (setq
+		font-latex-fontify-sectioning 'color
+		TeX-auto-save t
+		prettify-symbols-unprettify-at-point 'right-edge
+		preview-locating-previews-message nil
+		preview-protect-point t
+		preview-leave-open-previews-visible t
+		TeX-parse-self t)
+	(use-package latex-extra
+		:hook (LaTeX-mode . latex-extra-mode))
+	;; (use-package preview-auto)
+	(use-package latex-preview-pane
+		;:hook (LaTeX-mode . latex-preview-pane-mode)
+		:config
+		(setq message-latex-preview-pane-welcome "")
+		(define-key latex-preview-pane-mode-map (kbd "M-p") nil)
+		(define-key latex-preview-pane-mode-map (kbd "M-P") nil)))
+
+(require 'reftex)
+(add-hook 'latex-mode-hook 'turn-on-reftex)   ; Emacs latex mode
 
 
 ;; spell checking
@@ -773,8 +805,11 @@
 (define-key global-map [menu-bar file print] nil)
 
 (bind-key "M-p f" 'fill-to-printer)
+	(which-key-alias "M-p f" "fill buffer")
 
 (bind-key "M-p e" 'enscript)
+(bind-key "M-p E" (lambda()(interactive) (enscript '(4)) (kill-buffer)))
+	(which-key-alias "M-p E" "enscript (folded)")
 (bind-key "M-p r" 'print-buffer-or-region)
 (bind-key "M-p s" 'ps-print-buffer-or-region)
 
@@ -862,7 +897,20 @@
 	 ("\\chapter{%s}" . "\\chapter*{%s}")
 	 ("\\section{%s}" . "\\section*{%s}")
 	 ("\\subsection{%s}" . "\\subsection*{%s}")
-	 ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))))
+	 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")))
+
+	org-latex-default-packages-alist '(
+		("" "graphicx" t)
+        	("" "grffile" t)
+        	("" "longtable" nil)
+        	("" "wrapfig" nil)
+        	("" "rotating" nil)
+        	("normalem" "ulem" t)
+        	("" "amsmath" t)
+        	("" "textcomp" t)
+        	("" "amssymb" t)
+        	("" "capt-of" nil)
+        	("" "hyperref" nil)))
 
 (setq	org-tags-exclude-from-inheritance '("PROJECT")
 	org-todo-keywords '((sequence "TODO" "DONE"))
@@ -881,19 +929,6 @@
 	("O" "Office"		((agenda)(tags-todo "OFFICE")))
 	("W" "Weekly Plan"	((agenda)(todo "TODO")(tags "PROJECT")))
 	("H" "Home NA Lists"((agenda)(tags-todo "HOME")(tags-todo "COMPUTER"))))
-
-	org-latex-default-packages-alist '(
-		("" "graphicx" t)
-        	("" "grffile" t)
-        	("" "longtable" nil)
-        	("" "wrapfig" nil)
-        	("" "rotating" nil)
-        	("normalem" "ulem" t)
-        	("" "amsmath" t)
-        	("" "textcomp" t)
-        	("" "amssymb" t)
-        	("" "capt-of" nil)
-        	("" "hyperref" nil))
 
 	org-capture-templates '(
 	("c" "Cookbook" entry (file "~/Documents/org/cookbook.org")
@@ -1144,7 +1179,6 @@
 (bind-key "M-<f3>"	'shortdoc)
 
 (bind-key "M-Q"		'unfill-paragraph)
-(which-key-alias "M-p f" "fill buffer")
 
 (bind-key "C-M-;"	'eval-r)
 (bind-key "C-M-y"	'undo-yank)

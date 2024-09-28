@@ -1,9 +1,21 @@
 ;;-*-coding: utf-8;-*-
+(define-abbrev-table 'emacs-lisp-mode-abbrev-table
+  '(
+    ("advicename" "'((name . \"test\"))" nil :count 0)
+   ))
+
 (define-abbrev-table 'global-abbrev-table
   '(
     ("spd" "Salutem plurimam dicit." nil :count 3)
     ("sqpd" "Salutem quam plurimam dicit." nil :count 0)
     ("svb" "Si vales, bene est; ego valeo." nil :count 5)
+   ))
+
+(define-abbrev-table 'latex-mode-abbrev-table
+  '(
+    ("myheaders" "\\documentclass[14pt,a5paper]{extarticle}
+\\usepackage[margin=0.5in,bottom=0.75in]{geometry}
+\\setlength\\parindent{0pt}" nil :count 2)
    ))
 
 (define-abbrev-table 'markdown-mode-abbrev-table
@@ -15,17 +27,16 @@ Goodwood Lodge
 
 (define-abbrev-table 'org-mode-abbrev-table
   '(
-    ("latexcompactlist" "# Compacted lists
-#+LaTeX_HEADER: \\usepackage[inline]{enumitem}
-#+LaTeX_HEADER: \\setlist{nosep}" nil :count 0)
-    ("latexheaders" "#+LATEX_CLASS_OPTIONS: [a5paper,12pt]
-#+LATEX_HEADER: \\usepackage[AUTO]{inputenc}
-#+LATEX_HEADER: \\usepackage[margin=0.5in]{geometry}
+    ("myheaders" ":HEADERS:
+#+OPTIONS: num:nil
+#+LATEX_CLASS_OPTIONS: [a5paper,12pt]
+#+LATEX_HEADER: \\usepackage[margin=0.5in,bottom=0.75in]{geometry}
+#+LATEX_HEADER: \\renewcommand{\\thefootnote}{\\fnsymbol{footnote}}
 #+LATEX_HEADER: \\setlength\\parindent{0pt}
-#+LATEX_HEADER: \\usepackage[T1]{fontenc}
-#+LATEX_HEADER: \\usepackage[urw-garamond]{mathdesign}
-#+LATEX_HEADER: \\usepackage{lmodern}
-#+LATEX_HEADER: \\usepackage{courier}
-#+LATEX_HEADER: \\linespread{1.0609}" nil :count 1)
+#+LATEX_HEADER: \\setlength\\parskip{5pt}
+#+LATEX_HEADER: \\usepackage{enumitem}
+#+LATEX_HEADER: \\setlist{topsep=0pt, leftmargin=*}
+#+LATEX_HEADER: \\raggedright
+:END:" nil :count 0)
    ))
 

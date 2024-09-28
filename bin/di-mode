@@ -20,3 +20,6 @@ TODAY=$(ssh bullwinkle "/usr/local/bin/icalBuddy -nc -df '%RD' \
 TMW=$(date -d tomorrow +%Y%m%d)
 TMW=$((gcalt -U %$TMW; ind -d+1 -Po; calendar -W0 -t$TMW |cut -f2) |sed 's/^/- /')
 [ "$TMW" ] && echo -e "\nTomorrow:\n$TMW" || :
+
+echo
+cbc |fold -s50
