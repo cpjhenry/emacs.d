@@ -126,7 +126,7 @@
 	message-kill-buffer-on-exit t
 	package-archive-column-width 1
 	pop-up-windows nil
-	;pop-up-frames nil
+	pop-up-frames nil
 	recenter-positions '(top) ; top middle bottom
 	require-final-newline nil
 	resize-mini-windows t
@@ -210,38 +210,39 @@
 ;; mode-hooks execute once for every buffer in which the mode is enabled
 
 (with-eval-after-load 'emacs-news-mode
-	(define-key emacs-news-view-mode-map (kbd "A-<left>")
-		(lambda()(interactive)(outline-previous-heading)(recenter-top-bottom)))
-	(define-key emacs-news-view-mode-map (kbd "A-<right>")
-		(lambda()(interactive)(outline-next-heading)(recenter-top-bottom))))
-(with-eval-after-load 'view
-	(define-key view-mode-map (kbd "q")	'View-kill-and-leave))
+(define-key emacs-news-view-mode-map (kbd "A-<left>") 'my/outline-previous-heading)
+(define-key emacs-news-view-mode-map (kbd "A-<right>") 'my/outline-next-heading)
 
-; 'help-mode
+(defun my/outline-previous-heading () (interactive)(outline-previous-heading)(recenter-top-bottom))
+(defun my/outline-next-heading () (interactive)(outline-next-heading)(recenter-top-bottom)))
+
+(with-eval-after-load 'help-mode
 (define-key help-mode-map (kbd "A-<left>")	'help-go-back)
 (define-key help-mode-map (kbd "A-<right>")	'help-go-forward)
-(define-key help-mode-map (kbd "M-RET")		'goto-address-at-point)
+(define-key help-mode-map (kbd "M-RET")		'goto-address-at-point))
 
-; 'info
+(with-eval-after-load 'info
 (define-key Info-mode-map (kbd "q")		'kill-current-buffer)
 (define-key Info-mode-map (kbd "A-<left>" )	'Info-history-back)
-(define-key Info-mode-map (kbd "A-<right>")	'Info-history-forward)
+(define-key Info-mode-map (kbd "A-<right>")	'Info-history-forward))
 
-; 'messages-buffer-mode
-(define-key messages-buffer-mode-map (kbd "q")	'bury-buffer)
+(with-eval-after-load 'messages-buffer-mode
+(define-key messages-buffer-mode-map (kbd "q")	'bury-buffer))
+
+(with-eval-after-load 'view
+(define-key view-mode-map (kbd "q")	'View-kill-and-leave))
 
 ;; remove unneeded messages and buffers
-(setq inhibit-startup-message t)	; 'About Emacs'
-(add-hook 'minibuffer-exit-hook		; Removes *Completions* buffer when done
+(setq inhibit-startup-message t)			; 'About Emacs'
+(add-hook 'minibuffer-exit-hook				; Removes *Completions* buffer when done
 	(lambda() (let ((buffer "*Completions*")) (and (get-buffer buffer) (kill-buffer buffer)))) )
 
 ;; opening multiple files
-(setq inhibit-startup-buffer-menu t)	; Don't show *Buffer list*
-(add-hook 'window-setup-hook		; Show only one active window
-	'delete-other-windows)
+(setq inhibit-startup-buffer-menu t)			; Don't show *Buffer list*
+(add-hook 'window-setup-hook 'delete-other-windows)	; Show only one active window
 
 ;; Revert buffers when the underlying file has changed
-(setq global-auto-revert-non-file-buffers t) ; Dired, etc.
+(setq global-auto-revert-non-file-buffers t)		; Dired, etc.
 
 ;; automatically save buffers associated with files on buffer or window switch
 (defadvice switch-to-buffer (before save-buffer-now activate)
@@ -524,6 +525,14 @@
 	:config	(google-this-mode)
 		(which-key-alias "C-c /" "google-this"))
 
+(use-package google-translate
+	:config (setq
+		google-translate-translation-directions-alist '(
+		("fr" . "en")
+		("en" . "fr")))
+	(global-set-key "\C-ct" 'google-translate-at-point)
+	(global-set-key "\C-cT" 'google-translate-smooth-translate))
+
 (use-package hl-todo
     :hook	(prog-mode . hl-todo-mode)
 		(emacs-lisp-mode . hl-todo-mode)
@@ -553,8 +562,8 @@
 
 ;; Configure specific machines
 (when *natasha*
-	;; (setq	browse-url-secondary-browser-function 'browse-url-generic
-	;; 	browse-url-generic-program "/Applications/Waterfox.app/Contents/MacOS/waterfox")
+	(setq	browse-url-secondary-browser-function 'browse-url-generic
+		browse-url-generic-program "/Applications/Waterfox.app/Contents/MacOS/waterfox")
 
 	;; Mail / News
 	(require 'rmail)
@@ -593,6 +602,7 @@
 		:bind (	("C-c f" . elfeed)
 			:map elfeed-search-mode-map
 			("/" . elfeed-search-live-filter)
+			("\\" . elfeed-search-set-filter-nil)
 			("m" . elfeed-mail-todo)
 			:map elfeed-show-mode-map
 			("TAB" . shr-next-link)
@@ -611,11 +621,15 @@
 		(advice-add 'elfeed-search-update--force :after (lambda() (goto-char (point-min))))
 
 		(load "rc/feeds" 'noerror 'nomessage)	; feeds
-		(load "init/elfeed-routines"))		; routines
+		(load "init/elfeed-routines")		; routines
+
+		(defun elfeed-search-set-filter-nil () "Reset Elfeed search filter"
+			(interactive) (elfeed-search-set-filter nil)))
 
 	;; Web
 	(use-package w3m
-		:init	(setq browse-url-browser-function 'w3m-browse-url)
+		;; let's load it, but not make it the default.
+		;; :init	(setq browse-url-browser-function 'w3m-browse-url)
 		:bind ( ("C-x m" . browse-url-at-point)
 			:map w3m-mode-map
 			("<left>" . w3m-view-previous-page)
@@ -996,6 +1010,13 @@
 (define-key org-mode-map (kbd "C-M-<right>") (lambda()(interactive)(org-end-of-subtree)))
 (define-key org-mode-map (kbd "S-s-<left>")  (lambda()(interactive)(org-call-with-arg 'org-todo 'left)))
 (define-key org-mode-map (kbd "S-s-<right>") (lambda()(interactive)(org-call-with-arg 'org-todo 'right)))
+
+;; primarily for cbc-mode, but also useful for other org files in view-mode
+(with-eval-after-load 'view
+	(define-key view-mode-map (kbd "[") 'org-previous-link)
+	(define-key view-mode-map (kbd "]") 'org-next-link)
+	;; (define-key view-mode-map (kbd "A-<return>") 'org-open-at-point)
+	)
 
 (define-key org-mode-map (kbd "C-c '") (lambda()(interactive)(org-edit-special)(visual-fill-column-mode -1)))
 

@@ -2,12 +2,22 @@
 
 (defun di () "Daily information."
 	(interactive)
+
+	(cbc)
 	(switch-to-buffer "*daily-info*")
 	(shell-command "di-mode&" (current-buffer))
 	(view-mode)
 
 	(diary-list-entries (calendar-current-date) diary-number-of-entries)
 	(kill-buffer "diary"))
+
+(defun cbc () "Today's headlines from CBC Ottawa"
+	(interactive)
+	(switch-to-buffer "*CBC*")
+	(shell-command "cbc-mode" (current-buffer))
+	(org-mode)
+	(view-mode)
+	(goto-char (point-min)))
 
 (defun cm () "Print version of monthly calendar."
 	(interactive)
