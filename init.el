@@ -205,29 +205,27 @@
 
 ;; Modes derived from special-mode will pick-up this directive
 (define-key special-mode-map (kbd "q") 'kill-current-buffer)
+(define-key messages-buffer-mode-map (kbd "q")	'bury-buffer) ; 'messages-buffer-mode
 
 ;; eval-after-loads are run once, before mode hooks
 ;; mode-hooks execute once for every buffer in which the mode is enabled
 
 (with-eval-after-load 'emacs-news-mode
-(define-key emacs-news-view-mode-map (kbd "A-<left>") 'my/outline-previous-heading)
-(define-key emacs-news-view-mode-map (kbd "A-<right>") 'my/outline-next-heading)
+	(define-key emacs-news-view-mode-map (kbd "A-<left>") 'my/outline-previous-heading)
+	(define-key emacs-news-view-mode-map (kbd "A-<right>") 'my/outline-next-heading)
 
-(defun my/outline-previous-heading () (interactive)(outline-previous-heading)(recenter-top-bottom))
-(defun my/outline-next-heading () (interactive)(outline-next-heading)(recenter-top-bottom)))
+	(defun my/outline-previous-heading () (interactive)(outline-previous-heading)(recenter-top-bottom))
+	(defun my/outline-next-heading () (interactive)(outline-next-heading)(recenter-top-bottom)))
 
 (with-eval-after-load 'help-mode
-(define-key help-mode-map (kbd "A-<left>")	'help-go-back)
-(define-key help-mode-map (kbd "A-<right>")	'help-go-forward)
-(define-key help-mode-map (kbd "M-RET")		'goto-address-at-point))
+	(define-key help-mode-map (kbd "A-<left>")	'help-go-back)
+	(define-key help-mode-map (kbd "A-<right>")	'help-go-forward)
+	(define-key help-mode-map (kbd "M-RET")		'goto-address-at-point))
 
 (with-eval-after-load 'info
-(define-key Info-mode-map (kbd "q")		'kill-current-buffer)
-(define-key Info-mode-map (kbd "A-<left>" )	'Info-history-back)
-(define-key Info-mode-map (kbd "A-<right>")	'Info-history-forward))
-
-(with-eval-after-load 'messages-buffer-mode
-(define-key messages-buffer-mode-map (kbd "q")	'bury-buffer))
+	(define-key Info-mode-map (kbd "q")		'kill-current-buffer)
+	(define-key Info-mode-map (kbd "A-<left>" )	'Info-history-back)
+	(define-key Info-mode-map (kbd "A-<right>")	'Info-history-forward))
 
 (with-eval-after-load 'view
 (define-key view-mode-map (kbd "q")	'View-kill-and-leave))
@@ -267,11 +265,11 @@
 (add-hook 'find-file-hook 'large-find-file-hook)
 
 ;; *scratch*
-(setq initial-scratch-message nil)	; Makes *scratch* empty
+(setq initial-scratch-message nil)			; Makes *scratch* empty
 
 ;; Tramp
 (setq	tramp-default-method "ssh"
-	tramp-syntax 'simplified	; C-x C-f /remotehost:filename
+	tramp-syntax 'simplified			; C-x C-f /remotehost:filename
 
 	tramp-auto-save-directory	(concat user-emacs-directory "var/tramp/auto-save/")
 	tramp-persistency-file-name	(concat user-emacs-directory "var/tramp/persistency"))
@@ -1015,8 +1013,7 @@
 (with-eval-after-load 'view
 	(define-key view-mode-map (kbd "[") 'org-previous-link)
 	(define-key view-mode-map (kbd "]") 'org-next-link)
-	;; (define-key view-mode-map (kbd "A-<return>") 'org-open-at-point)
-	)
+	(define-key view-mode-map (kbd "A-<return>") 'org-open-at-point))
 
 (define-key org-mode-map (kbd "C-c '") (lambda()(interactive)(org-edit-special)(visual-fill-column-mode -1)))
 
