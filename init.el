@@ -67,7 +67,7 @@
 (setq gnutls-algorithm-priority "normal:-vers-tls1.3")
 (require 'package)
 (package-initialize)
-(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+;(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 (unless package-archive-contents (package-refresh-contents))
 
 (unless (>= emacs-major-version 29)
@@ -76,6 +76,12 @@
 (require 'use-package)
 (setf	use-package-always-ensure t
 	use-package-verbose t)
+
+;; See https://github.com/slotThe/vc-use-package
+;; TODO: remove when vc-use-package is merged.
+(unless (>= emacs-major-version 30)
+	(when (and (not (package-installed-p 'vc-use-package)) (fboundp 'package-vc-install))
+	(package-vc-install "https://github.com/slotThe/vc-use-package")))
 
 ;; what and who am I
 (if (boundp 'emacs-edition) (message "Running '%s'." emacs-edition))
@@ -553,9 +559,9 @@
 
 (use-package ssh)
 
-(use-package typo) ; minor mode for typographic editing
+(use-package visible-mark) ; make the mark visible
 
-(use-package visible-mark)
+(use-package xkcd)
 
 
 ;; Configure specific machines
@@ -690,7 +696,9 @@
 (use-package adaptive-wrap
 	:hook	(visual-line-mode . adaptive-wrap-prefix-mode))
 
-(use-package hl-sentence)
+(use-package hl-sentence) ; highlight current sentence
+
+(use-package typo) ; minor mode for typographic editing
 
 ;; prog-mode
 (add-hook 'prog-mode-hook (lambda()
@@ -1092,9 +1100,10 @@
 
 ;; mouse
 ;; https://github.com/purcell/disable-mouse
+(setq	mouse-yank-at-point t)
+
 ;(use-package disable-mouse)
 ;(global-disable-mouse-mode)
-
 (mouse-avoidance-mode 'banish)
 
 (when *mac*
@@ -1163,6 +1172,11 @@
 
 ;; unbind C-M-? keys
 ;; FIXME
+
+;; Disable the "numeric argument". Prefer universal argument (C-u) prefix.
+(dolist (prefix '("C-" "M-" "C-M-"))
+	(keymap-global-unset (concat prefix "-"))
+	(dotimes (i 10) (keymap-global-unset (concat prefix (number-to-string i)))))
 
 
 ;; Disabled functions
