@@ -67,7 +67,7 @@
 (setq gnutls-algorithm-priority "normal:-vers-tls1.3")
 (require 'package)
 (package-initialize)
-;(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 (unless package-archive-contents (package-refresh-contents))
 
 (unless (>= emacs-major-version 29)
@@ -169,7 +169,7 @@
 	transient-values-file		(concat user-emacs-directory "var/transient/values.el")
 
 	url-cache-directory		(concat user-emacs-directory "var/url/cache/")
-	url-configuration-directory	(concat user-emacs-directory "var/url/configuration/") )
+	url-configuration-directory	(concat user-emacs-directory "var/url/configuration/"))
 
 ;; custom variables
 (setq custom-file (concat user-emacs-directory "custom.el"))
@@ -502,6 +502,7 @@
 	(setq	browse-url-browser-function 'eww-browse-url
 		eww-bookmarks-directory (concat user-emacs-directory "etc/")
 		eww-auto-rename-buffer t
+		shr-inhibit-images t
 		shr-use-colors nil
 		shr-use-fonts nil
 		shr-bullet "• "
@@ -561,7 +562,10 @@
 
 (use-package visible-mark) ; make the mark visible
 
+(setq	xkcd-cache-dir    (concat user-emacs-directory "var/xkcd/")
+	xkcd-cache-latest (concat user-emacs-directory "var/xkcd/latest"))
 (use-package xkcd)
+;(advice-add 'xkcd-alt-text :after (lambda() fill-minibuffer-function nil))
 
 
 ;; Configure specific machines

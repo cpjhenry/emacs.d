@@ -54,6 +54,13 @@
 	(shell-command-on-region (point-min) (point-max)
 	(read-shell-command "Shell command on buffer: ")))
 
+;; https://emacs.stackexchange.com/questions/3116/how-to-display-a-message-in-echo-area-only
+(defun echo-and-ignore-message-buffer (message)
+	(let ((prev-msg-log-max message-log-max))
+	(unwind-protect (progn (setq message-log-max nil)
+		(message message))
+	(setq message-log-max prev-msg-log-max))))
+
 
 ;; macOS frame functions
 (defun ns-raise-emacs ()
