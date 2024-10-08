@@ -234,7 +234,7 @@
 	(define-key Info-mode-map (kbd "A-<right>")	'Info-history-forward))
 
 (with-eval-after-load 'view
-(define-key view-mode-map (kbd "q")	'View-kill-and-leave))
+	(define-key view-mode-map (kbd "q")		'View-kill-and-leave))
 
 ;; remove unneeded messages and buffers
 (setq inhibit-startup-message t)			; 'About Emacs'
@@ -863,28 +863,24 @@
 	org-ctrl-k-protect-subtree t
 	;org-cycle-separator-lines -1		; show all blank lines between headings
 	org-ellipsis "$"
-	org-enable-priority-commands nil
 	org-footnote-auto-adjust t
 	org-list-allow-alphabetical t
 	org-log-done t				; 'CLOSED' logging
 	org-log-repeat nil
 	org-log-state-notes-into-drawer nil
+	org-priority-enable-commands t
 	org-special-ctrl-a/e t
 	org-support-shift-select 'always
 
-	org-agenda-include-diary nil
+	org-auto-align-tags nil
+	org-tags-column 0)
+
+(setq	org-agenda-include-diary nil
 	org-agenda-skip-deadline-if-done t
 	org-agenda-skip-scheduled-if-done t
 	org-agenda-start-on-weekday nil
 	org-agenda-todo-ignore-deadlines t
-	org-agenda-todo-ignore-scheduled t
-
-	org-ascii-text-width 50
-	org-ascii-inner-margin 2
-	org-ascii-quote-margin 4
-	org-ascii-headline-spacing '(0 . 1)
-
-	org-md-headline-style 'atx)
+	org-agenda-todo-ignore-scheduled t)
 
 (setq 	org-export-with-author t
 	org-export-with-date t
@@ -898,6 +894,13 @@
 	org-export-date-timestamp-format "%Y-%m-%d"
 
 	org-src-fontify-natively t
+
+	org-ascii-text-width 50
+	org-ascii-inner-margin 2
+	org-ascii-quote-margin 4
+	org-ascii-headline-spacing '(0 . 1)
+
+	org-md-headline-style 'atx
 
 	org-latex-compiler "xelatex"
 	org-latex-pdf-process (list
@@ -982,14 +985,14 @@
 
 (use-package org-cliplink) ; insert org-mode links from the clipboard
 
-(use-package org-modern ; add some styling to your Org buffer
-	:hook (org-mode . global-org-modern-mode)
-	:custom
-		(org-modern-fold-stars nil)
-		(org-modern-keyword nil)
-		(org-modern-checkbox nil)
-		(org-modern-table nil)
-		(org-modern-tag nil))
+;; (use-package org-modern ; add some styling to your Org buffer
+;; 	:hook (org-mode . global-org-modern-mode)
+;; 	:custom
+;; 		(org-modern-fold-stars nil)
+;; 		(org-modern-keyword nil)
+;; 		(org-modern-checkbox nil)
+;; 		(org-modern-table nil)
+;; 		(org-modern-tag nil))
 
 (use-package ox-report) ; export your org file to minutes report PDF file
 
@@ -1018,8 +1021,10 @@
 (define-key org-mode-map (kbd "M-]") 'org-forward-heading-same-level)
 (define-key org-mode-map (kbd "C-M-<left>" ) 'outline-up-heading)
 (define-key org-mode-map (kbd "C-M-<right>") (lambda()(interactive)(org-end-of-subtree)))
-(define-key org-mode-map (kbd "S-s-<left>")  (lambda()(interactive)(org-call-with-arg 'org-todo 'left)))
-(define-key org-mode-map (kbd "S-s-<right>") (lambda()(interactive)(org-call-with-arg 'org-todo 'right)))
+(define-key org-mode-map (kbd "s-S-<left>")  (lambda()(interactive)(org-call-with-arg 'org-todo 'left)))
+(define-key org-mode-map (kbd "s-S-<right>") (lambda()(interactive)(org-call-with-arg 'org-todo 'right)))
+(define-key org-mode-map (kbd "s-S-<up>") 'org-priority-up)
+(define-key org-mode-map (kbd "s-S-<down>") 'org-priority-down)
 
 ;; primarily for cbc-mode, but also useful for other org files in view-mode
 (with-eval-after-load 'view
@@ -1033,7 +1038,7 @@
 
 (add-hook 'org-mode-hook (lambda()
 	(prettify-symbols-mode)
-	(org-no-ellipsis-in-headlines)
+	;(org-no-ellipsis-in-headlines)
 	(visual-fill-column-mode -1) ))
 
 (load "init/org") ; org-mode functions
@@ -1208,7 +1213,8 @@
 (bind-key "<f8>"	'list-bookmarks)
 
 (bind-key "C-`"		'scratch-buffer)
-(bind-key "C-<escape>"	'shell)
+(bind-key "C-<escape>"	'my/shell)
+(defun my/shell () (interactive) (setq default-directory "~") (shell))
 
 (bind-key "M-<f1>"	'my/emacs-help)
 (bind-key "M-<f2>"	'describe-personal-keybindings)

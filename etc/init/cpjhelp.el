@@ -171,7 +171,7 @@ phrase quid pro quo, literally, 'what for what'.")
 (defconst measurements
 "UNITS OF MEASURE
 
-LENGTH											AREA
+LENGTH												AREA
 12 inches			=	1 foot						144 sq. inches		=	1 square foot
 3 feet				=	1 yard						9 sq. feet			=	1 square yard
 22 yards			=	1 chain						4840 sq. yards		=	1 acre
@@ -299,6 +299,47 @@ CANADIAN MEASUREMENTS
 <esc>[15~   - F5       <esc>[30~   -")
 
 (kf-gen-displayer vt-escapes "vt terminal escape sequences" "*vt sequences*")
+
+(defconst cmkeys
+"C-M-<delete>	backward-kill-sexp
+C-M-<home>		beginning-of-defun
+C-M-<end>		end-of-defun
+C-M-<up>		backward-up-list
+C-M-<down>		down-list
+C-M-@			mark-sexp
+C-M-a			beginning-of-defun
+C-M-b			backward-sexp
+C-M-c			exit-recursive-edit
+C-M-d			down-list
+C-M-e			end-of-defun
+C-M-f			forward-sexp
+C-M-h			mark-defun
+C-M-i			complete-symbol
+C-M-j			default-indent-new-line
+C-M-k			kill-sexp
+C-M-l			reposition-window
+C-M-n			forward-list
+C-M-o			split-line
+C-M-p			backward-list
+C-M-r			isearch-backward-regexp
+C-M-s			isearch-forward-regexp
+C-M-u			backward-up-list
+C-M-v			scroll-other-window
+C-M-w			append-next-kill
+C-M-y			undo-yank
+C-M-\\			indent-region
+C-M-_			undo-redo
+C-M-SPC			mark-sexp
+C-M-%			query-replace-regexp
+C-M-,			xref-go-forward
+C-M-.			xref-find-apropos
+C-M-/			dabbrev-completion
+C-M-;			eval-r
+
+C-M-S-l			recenter-other-window
+C-M-S-v			scroll-other-window-down")
+
+(kf-gen-displayer cmkeys "C-M key bindings" "*C-M keys*")
 
 ;; Local Variables:
 ;; tab-width: 4
