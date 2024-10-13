@@ -314,7 +314,7 @@
 		(define-key input-decode-map (format "\e[1;P%c" char) (kbd (format "H-%c" char)))))))
 
 
-;; mode line
+;; modeline
 (use-package doom-modeline
 	:ensure t
 	:hook	(after-init . doom-modeline-mode)
@@ -390,7 +390,8 @@
 (require 'ibuffer)
 (defalias 'list-buffers 'ibuffer) ; always use Ibuffer
 
-(setq	ibuffer-hidden-filter-groups (list "Helm" "*Internal*")
+(setq	ibuffer-default-sorting-mode 'alphabetic
+	ibuffer-hidden-filter-groups (list "Helm" "*Internal*")
 	ibuffer-saved-filter-groups (quote (("home"
 		("Dired" (mode . dired-mode) )
 		("Emacs" (or (name . "^\\*scratch\\*$")
@@ -662,24 +663,23 @@
 	(setq	browse-url-secondary-browser-function 'browse-url-generic
 		browse-url-generic-program "firefox-esr"))
 
-(unless *w32* (use-package pdf-tools
-	:load-path  "site-lisp/pdf-tools/lisp"
-	:magic ("%PDF" . pdf-view-mode)
-	:config (pdf-tools-install :no-query) ))
+;; (unless *w32* (use-package pdf-tools
+;; 	:load-path  "site-lisp/pdf-tools/lisp"
+;; 	:magic ("%PDF" . pdf-view-mode)
+;; 	:config (pdf-tools-install :no-query) ))
 
-;; TODO Review : replace code above?
 ;; https://jonathanabennett.github.io/blog/2019/05/29/writing-academic-papers-with-org-mode/
-;; (use-package pdf-tools
-;;    :pin manual ;; manually update
-;;    :config
-;;    ;; initialise
-;;    (pdf-tools-install)
-;;    ;; open pdfs scaled to fit width
-;;    (setq-default pdf-view-display-size 'fit-width)
-;;    ;; use normal isearch
-;;    (define-key pdf-view-mode-map (kbd "C-s") 'isearch-forward)
-;;    :custom
-;;    (pdf-annot-activate-created-annotations t "automatically annotate highlights"))
+(unless *w32* (use-package pdf-tools
+   :pin manual ;; manually update
+   :config
+   ;; initialise
+   (pdf-tools-install)
+   ;; open pdfs scaled to fit width
+   (setq-default pdf-view-display-size 'fit-width)
+   ;; use normal isearch
+   (define-key pdf-view-mode-map (kbd "C-s") 'isearch-forward)
+   :custom
+   (pdf-annot-activate-created-annotations t "automatically annotate highlights")))
 
 
 ;; Emacs Text, Prog, and Markdown modes
@@ -839,6 +839,9 @@
 
 
 ;; Org-mode
+(require 'org)
+(require 'ox-md)
+
 (setq-default
 	org-startup-indented nil
 	;; #+STARTUP: indent
@@ -846,6 +849,7 @@
 	org-pretty-entities t
 	org-use-sub-superscripts "{}"
 	org-hide-emphasis-markers t
+	org-ellipsis "$"
 	org-startup-with-inline-images t
 	org-image-actual-width '(300))
 
@@ -862,13 +866,14 @@
 	org-catch-invisible-edits 'smart
 	org-ctrl-k-protect-subtree t
 	;org-cycle-separator-lines -1		; show all blank lines between headings
-	org-ellipsis "$"
 	org-footnote-auto-adjust t
+	org-footnote-define-inline t
 	org-list-allow-alphabetical t
 	org-log-done t				; 'CLOSED' logging
 	org-log-repeat nil
 	org-log-state-notes-into-drawer nil
 	org-priority-enable-commands t
+	org-src-fontify-natively t
 	org-special-ctrl-a/e t
 	org-support-shift-select 'always
 
@@ -893,8 +898,6 @@
 	org-export-time-stamp-file t
 	org-export-date-timestamp-format "%Y-%m-%d"
 
-	org-src-fontify-natively t
-
 	org-ascii-text-width 50
 	org-ascii-inner-margin 2
 	org-ascii-quote-margin 4
@@ -904,40 +907,7 @@
 
 	org-latex-compiler "xelatex"
 	org-latex-pdf-process (list
-		(concat "latexmk -" org-latex-compiler " -recorder -synctex=1 -bibtex-cond %b"))
-
-	org-latex-classes '(
-	("article" "\\documentclass{article}"
-	 ("\\section{%s}" . "\\section*{%s}")
-	 ("\\subsection{%s}" . "\\subsection*{%s}")
-	 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-	 ("\\paragraph{%s}" . "\\paragraph*{%s}")
-	 ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))
-	("report" "\\documentclass{report}"
-	 ("\\part{%s}" . "\\part*{%s}")
-	 ("\\chapter{%s}" . "\\chapter*{%s}")
-	 ("\\section{%s}" . "\\section*{%s}")
-	 ("\\subsection{%s}" . "\\subsection*{%s}")
-	 ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))
-	("book" "\\documentclass{book}"
-	 ("\\part{%s}" . "\\part*{%s}")
-	 ("\\chapter{%s}" . "\\chapter*{%s}")
-	 ("\\section{%s}" . "\\section*{%s}")
-	 ("\\subsection{%s}" . "\\subsection*{%s}")
-	 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")))
-
-	org-latex-default-packages-alist '(
-		("" "graphicx" t)
-        	("" "grffile" t)
-        	("" "longtable" nil)
-        	("" "wrapfig" nil)
-        	("" "rotating" nil)
-        	("normalem" "ulem" t)
-        	("" "amsmath" t)
-        	("" "textcomp" t)
-        	("" "amssymb" t)
-        	("" "capt-of" nil)
-        	("" "hyperref" nil)))
+		(concat "latexmk -" org-latex-compiler " -recorder -synctex=1 -bibtex-cond %b")))
 
 (setq	org-tags-exclude-from-inheritance '("PROJECT")
 	org-todo-keywords '((sequence "TODO" "DONE"))
@@ -974,8 +944,7 @@
 	) ; capture templates
 	) ; set
 
-(require 'org)
-(require 'ox-md)
+(set-face-underline 'org-ellipsis nil)
 
 (use-package org-appear ; automatic visibility toggling of Org elements depending on cursor position
 	:hook (org-mode . org-appear-mode))
@@ -1001,21 +970,20 @@
 ;;	(define-key org-mode-map (kbd "C-c o g") 'org-mac-link-get-link)))
 
 (when *natasha*
-	(use-package org-chef :ensure t)
-	(use-package org-d20)
-	(use-package org-roam
-	:ensure t
-	:custom	(org-roam-db-location (concat user-emacs-directory "var/org-roam.db"))
-		(org-roam-directory (file-truename (concat org-directory "/Roam/")))
-	:bind (	("C-c r l" . org-roam-buffer-toggle)
-		("C-c r f" . org-roam-node-find)
-		("C-c r g" . org-roam-graph)
-		("C-c r i" . org-roam-node-insert)
-		("C-c r c" . org-roam-capture)
-		("C-c r j" . org-roam-dailies-capture-today))
-	:config	(org-roam-setup)
-		(org-roam-db-autosync-mode))
-		(which-key-alias "C-c r" "org-roam"))
+	(use-package org-chef :ensure t))
+	;; (use-package org-roam
+	;; :ensure t
+	;; :custom	(org-roam-db-location (concat user-emacs-directory "var/org-roam.db"))
+	;; 	(org-roam-directory (file-truename (concat org-directory "/Roam/")))
+	;; :bind (	("C-c r l" . org-roam-buffer-toggle)
+	;; 	("C-c r f" . org-roam-node-find)
+	;; 	("C-c r g" . org-roam-graph)
+	;; 	("C-c r i" . org-roam-node-insert)
+	;; 	("C-c r c" . org-roam-capture)
+	;; 	("C-c r j" . org-roam-dailies-capture-today))
+	;; :config	(org-roam-setup)
+	;; 	(org-roam-db-autosync-mode))
+	;; 	(which-key-alias "C-c r" "org-roam"))
 
 (define-key org-mode-map (kbd "M-[") 'org-backward-heading-same-level)
 (define-key org-mode-map (kbd "M-]") 'org-forward-heading-same-level)
@@ -1165,9 +1133,10 @@
 (global-unset-key (kbd "C-x C-z"))
 
 ;; Darwin overrides
-(when *mac* (when (display-graphic-p)
-	(dolist (key '("C-<f10>")); "<f10>" "S-<f10>" "M-<f10>"))
-	(global-unset-key (kbd key))))
+(when *mac*
+	(when (display-graphic-p)
+		(dolist (key '("C-<f10>")); "<f10>" "S-<f10>" "M-<f10>"))
+		(global-unset-key (kbd key))))
 
 	(global-set-key (kbd "C-x C-c") (lambda() (interactive)
 		(if (boundp mac-pseudo-daemon-mode) (mac-pseudo-daemon-mode -1))
@@ -1211,10 +1180,11 @@
 (bind-key "<f6>"	'toggle-fill-column-center)
 (bind-key "<f7>"	'ispell-buffer)
 (bind-key "<f8>"	'list-bookmarks)
+(bind-key "M-<f11>"	'toggle-modeline)
 
 (bind-key "C-`"		'scratch-buffer)
 (bind-key "C-<escape>"	'my/shell)
-(defun my/shell () (interactive) (setq default-directory "~") (shell))
+(defun my/shell () (interactive) (let ((default-directory "~")) (shell)))
 
 (bind-key "M-<f1>"	'my/emacs-help)
 (bind-key "M-<f2>"	'describe-personal-keybindings)
@@ -1267,8 +1237,9 @@
 (bind-key "C-c x l"	'lorem-ipsum-insert-paragraphs)
 (bind-key "C-c x n"	'number-paragraphs)
 
-(bind-key "C-c x r"	'whitespace-cleanup-region)
 (bind-key "C-c x w"	'whack-whitespace)
+(bind-key "C-c x x"	'delete-whitespace-rectangle)
+(bind-key "C-c x y"	'whitespace-cleanup)
 (which-key-alias "C-c x" "text")
 
 (global-set-key (kbd "C-c 8 c") (kbd "✓"))
@@ -1328,6 +1299,8 @@
 
 (defalias 'dr 'desktop-read)
 (defalias 'ds 'desktop-save)
+
+(when *mac* (bind-key "s-i" 'my/init))
 
 ;; Work-specific
 (when *w32* (setq

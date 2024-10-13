@@ -62,6 +62,20 @@
 	(setq message-log-max prev-msg-log-max))))
 
 
+;; modeline functions
+;; https://jiewawa.me/2024/10/useful-emacs-commands-for-reading/
+(defun kill-modeline ()
+	(setq-local mode-line-format nil))
+
+(defun restore-modeline ()
+	(kill-local-variable 'mode-line-format))
+
+(defun toggle-modeline () "Toggle modeline."
+	(interactive)
+	(if (null mode-line-format) (restore-modeline)
+	(kill-modeline)))
+
+
 ;; macOS frame functions
 (defun ns-raise-emacs ()
 "Raise Emacs."
@@ -122,18 +136,23 @@
     (remove-hook 'window-size-change-functions 'dynamic-fill-column-set-var t)
     (remove-hook 'buffer-list-update-hook 'dynamic-fill-column-buffer-list-change t)))
 
-(defun preview-html ()
+(defun preview-html () "Render buffer as HTML."
 	(interactive)
 	(shr-render-buffer (current-buffer)))
 
-(defun eval-r (b e)
+(defun eval-r (b e) "Evaluate region."
 	(interactive "r")
 	(eval-region b e)
-	(deactivate-mark))
+	(deactivate-mark)
+	(message "Region evaluated."))
 
-(defun my/agenda ()
+(defun my/agenda () "Load org-agenda file."
 	(interactive)
 	(find-file org-agenda-file))
+
+(defun my/init () "Load init-file."
+	(interactive)
+	(find-file user-init-file))
 
 
 ;; DIRED functions
