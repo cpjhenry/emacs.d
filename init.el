@@ -527,6 +527,8 @@
 
 (use-package free-keys :defer t)
 
+(use-package go-mode)
+
 (use-package google-this
 	:config	(google-this-mode)
 		(which-key-alias "C-c /" "google-this"))
