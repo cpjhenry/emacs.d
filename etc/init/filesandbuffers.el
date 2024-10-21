@@ -61,6 +61,14 @@
 		(message message))
 	(setq message-log-max prev-msg-log-max))))
 
+(defun shell-other-frame ()
+  "Open a `shell' in a new frame."
+  (interactive)
+  (let ((default-directory "~")
+	(buf (shell)))
+    ;; (switch-to-buffer (other-buffer buf))
+    (switch-to-buffer-other-frame buf)))
+
 
 ;; modeline functions
 ;; https://jiewawa.me/2024/10/useful-emacs-commands-for-reading/

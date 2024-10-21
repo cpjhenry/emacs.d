@@ -371,6 +371,7 @@
 	(require 'dired-x)
 	(unless *w32* (setq dired-kill-when-opening-new-dired-buffer t))
 	(setq	dired-dwim-target t ; suggest other visible Dired buffer
+		dired-listing-switches "-aBhl  --group-directories-first"
 		dired-omit-files (concat dired-omit-files
 		"\\|^INDEX$\\|-t\\.tex$\\|\\.DS_Store$\\|\\.localized$")
 		dired-omit-verbose nil)
