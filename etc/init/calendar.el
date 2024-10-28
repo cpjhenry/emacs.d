@@ -26,7 +26,10 @@
 	(holiday-fixed 12 11  "Statute of Westminster")))
 
 (setq holiday-other-holidays '(
-	(holiday-advent -11 "Prayer & Repentance")))
+	(holiday-advent -11 "Prayer & Repentance")
+	(holiday-sexp '(if (zerop (% year 4)) (calendar-gregorian-from-absolute (1+
+		(calendar-dayname-on-or-before 1 (+ 6 (calendar-absolute-from-gregorian (list 11 1 year)))))))
+		"US Presidential Election")))
 
 (setq lunar-phase-names '(
 	"● New Moon"
@@ -64,10 +67,9 @@
 	(let ((buffer "*wclock*"))(and (get-buffer buffer) (kill-buffer buffer))))
 
 (defun save-diary-before-calendar-exit (_)
-	(let ((diary-buffer (get-file-buffer diary-file)))
-    	(or (not diary-buffer)
-			(not (buffer-modified-p diary-buffer))
-			(with-current-buffer diary-buffer (save-buffer)))))
+	(let ((diary-buffer (get-file-buffer diary-file))) (or (not diary-buffer)
+		(not (buffer-modified-p diary-buffer))
+		(with-current-buffer diary-buffer (save-buffer)))))
 
 (defun display-current-time () (interactive)
 	(message (format-time-string "%Y-%m-%d %H:%M:%S")))
@@ -113,3 +115,7 @@
 	(goto-char start)
 	(capitalize-word 1)
 	(buffer-substring start end))))
+
+;; Local Variables:
+;; truncate-lines: -1
+;; End:

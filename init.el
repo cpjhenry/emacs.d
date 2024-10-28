@@ -685,7 +685,7 @@
    (pdf-annot-activate-created-annotations t "automatically annotate highlights")))
 
 
-;; Emacs Text, Prog, and Markdown modes
+;; Text, Prog, and Markdown modes
 (require 'table)
 (add-hook 'text-mode-hook (lambda()
 	(abbrev-mode)
@@ -831,12 +831,9 @@
 (setq lpr-page-header-switches '("-t"))
 (define-key global-map [menu-bar file print] nil)
 
-(bind-key "M-p f" 'fill-to-printer)
-	(which-key-alias "M-p f" "fill buffer")
-
 (bind-key "M-p e" 'enscript)
-(bind-key "M-p E" (lambda()(interactive) (enscript '(4)) (kill-buffer)))
-	(which-key-alias "M-p E" "enscript (folded)")
+(bind-key "M-p E" (lambda()(interactive) (enscript '(4)) (kill-buffer))) (which-key-alias "M-p E" "folded")
+(bind-key "M-p f" 'fill-to-printer) (which-key-alias "M-p f" "fill buffer")
 (bind-key "M-p r" 'print-buffer-or-region)
 (bind-key "M-p s" 'ps-print-buffer-or-region)
 

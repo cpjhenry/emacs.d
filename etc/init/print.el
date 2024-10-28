@@ -91,7 +91,9 @@ Prefix fills to printer before printing."
 (defun enscript (parg)
 "Sends current buffer or region to 'enscript'. Prefix fills to printer before printing."
 	(interactive "P")
-	(let ((prefix (car parg))) (cond ((= prefix 4) (fill-to-printer '(4)))))
+	(let ((prefix (car parg))) (cond
+		((not prefix))
+		((= prefix 4) (fill-to-printer '(4)))))
 	(let ((beg (point-min)) (end (point-max)) (enscript "enscript -cqB"))
 	(when (region-active-p)
 		(setq beg (region-beginning))

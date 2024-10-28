@@ -3,7 +3,7 @@
 (defun di () "Daily information."
 	(interactive)
 
-	(cbc)
+	;(cbc)
 	(switch-to-buffer "*daily-info*")
 	(shell-command "di-mode&" (current-buffer))
 	(view-mode)
