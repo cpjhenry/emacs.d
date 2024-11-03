@@ -465,6 +465,8 @@
 	holiday-general-holidays nil)
 
 (define-key calendar-mode-map (kbd "m") nil) ; don't allow marking of diary entries
+(easy-menu-remove-item calendar-mode-map '(menu-bar diary) "Mark All")
+
 (define-key calendar-mode-map (kbd "q") 'calendar-exit-kill)
 (define-key calendar-mode-map (kbd "w") 'calendar-world-clock)
 (define-key calendar-mode-map (kbd "y") 'calendar-holidays)
@@ -658,8 +660,8 @@
 			(require 'mime-w3m)
 
 		(load "init/w3m-routines.el")
-		(require 'w3m-filter)
-		(add-to-list 'w3m-filter-configuration '(t "Make page readable" ".*" tsa/readability))
+		;; (require 'w3m-filter)
+		;; (add-to-list 'w3m-filter-configuration '(t "Make page readable" ".*" tsa/readability))
 		))
 
 (when *gnu*
