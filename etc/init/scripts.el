@@ -48,9 +48,10 @@
 (defun az () "Monthly Forecast"
 	(interactive)
 	(let ((buf (make-temp-name ""))
-		(output "Monthly Forecast"))
+	      (output "Monthly Forecast"))
 	(switch-to-buffer buf)
 	(shell-command "az -u" buf)
+	(require 'markdown-mode)
 	(markdown-preview output)
 	(kill-buffer buf)
 	(kill-buffer output)))

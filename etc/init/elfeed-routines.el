@@ -50,4 +50,8 @@
 	(let ((buffer elfeed-log-buffer-name))
 	(and (get-buffer buffer) (kill-buffer buffer)))))
 
+(defun elfeed-search-set-filter-nil () "Reset Elfeed search filter"
+	(interactive)
+	(elfeed-search-set-filter nil))
+
 ; LocalWords:  elfeed

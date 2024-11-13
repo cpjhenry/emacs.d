@@ -131,6 +131,7 @@
 	max-lisp-eval-depth 65536
 	message-kill-buffer-on-exit t
 	package-archive-column-width 1
+	page-delimiter "^[#; ]*"
 	pop-up-windows nil
 	pop-up-frames nil
 	recenter-positions '(top) ; top middle bottom
@@ -152,7 +153,8 @@
 	use-file-dialog nil
 	use-short-answers t
 	view-read-only nil ; turn on view mode when buffer is read-only
-	visual-line-fringe-indicators '(nil right-curly-arrow))
+	visual-line-fringe-indicators '(nil right-curly-arrow)
+	what-cursor-show-names t)
 
 ;; files
 (setq	abbrev-file-name		(concat user-emacs-directory "etc/abbrev_defs")
@@ -183,13 +185,11 @@
 
 ;; path
 (if *mac* (use-package exec-path-from-shell
-	:custom
-		(shell-file-name "/usr/local/bin/bash"
+	:custom	(shell-file-name "/usr/local/bin/bash"
 		"This is necessary because some Emacs installs overwrite this variable.")
 		(exec-path-from-shell-variables '("PATH" "MANPATH" "PKG_CONFIG_PATH")
 		"This adds PKG_CONFIG_PATH to the list of variables to grab.")
-	:init
-		(exec-path-from-shell-initialize)))
+	:init	(exec-path-from-shell-initialize)))
 
 ;; garbage collection
 (use-package gcmh :config (gcmh-mode 1))
@@ -217,28 +217,27 @@
 ;; mode-hooks execute once for every buffer in which the mode is enabled
 
 (with-eval-after-load 'emacs-news-mode
-	(define-key emacs-news-view-mode-map (kbd "A-<left>") 'my/outline-previous-heading)
-	(define-key emacs-news-view-mode-map (kbd "A-<right>") 'my/outline-next-heading)
-
-	(defun my/outline-previous-heading () (interactive)(outline-previous-heading)(recenter-top-bottom))
-	(defun my/outline-next-heading () (interactive)(outline-next-heading)(recenter-top-bottom)))
+	(define-key emacs-news-view-mode-map (kbd "[") 'my/outline-previous-heading)
+	(define-key emacs-news-view-mode-map (kbd "]") 'my/outline-next-heading))
 
 (with-eval-after-load 'help-mode
-	(define-key help-mode-map (kbd "A-<left>")	'help-go-back)
-	(define-key help-mode-map (kbd "A-<right>")	'help-go-forward)
-	(define-key help-mode-map (kbd "M-RET")		'goto-address-at-point))
+	(define-key help-mode-map (kbd "[")	'help-go-back)
+	(define-key help-mode-map (kbd "]")	'help-go-forward)
+	(define-key help-mode-map (kbd "M-RET")	'goto-address-at-point))
 
 (with-eval-after-load 'info
-	(define-key Info-mode-map (kbd "q")		'kill-current-buffer)
-	(define-key Info-mode-map (kbd "A-<left>" )	'Info-history-back)
-	(define-key Info-mode-map (kbd "A-<right>")	'Info-history-forward))
+	(define-key Info-mode-map (kbd "q")	'kill-current-buffer)
+	(define-key Info-mode-map (kbd "[" )	'Info-history-back)
+	(define-key Info-mode-map (kbd "]")	'Info-history-forward)
+	(define-key Info-mode-map (kbd "{")	'Info-backward-node)
+	(define-key Info-mode-map (kbd "}")	'Info-forward-node))
 
 (with-eval-after-load 'view
-	(define-key view-mode-map (kbd "q")		'View-kill-and-leave))
+	(define-key view-mode-map (kbd "q")	'View-kill-and-leave))
 
 ;; remove unneeded messages and buffers
-(setq inhibit-startup-message t)			; 'About Emacs'
-(add-hook 'minibuffer-exit-hook				; Removes *Completions* buffer when done
+(setq inhibit-startup-message t)		; 'About Emacs'
+(add-hook 'minibuffer-exit-hook			; Removes *Completions* buffer when done
 	(lambda() (let ((buffer "*Completions*")) (and (get-buffer buffer) (kill-buffer buffer)))) )
 
 ;; opening multiple files
@@ -271,11 +270,11 @@
 (add-hook 'find-file-hook 'large-find-file-hook)
 
 ;; *scratch*
-(setq initial-scratch-message nil)			; Makes *scratch* empty
+(setq initial-scratch-message nil)		; Makes *scratch* empty
 
 ;; Tramp
 (setq	tramp-default-method "ssh"
-	tramp-syntax 'simplified			; C-x C-f /remotehost:filename
+	tramp-syntax 'simplified		; C-x C-f /remotehost:filename
 
 	tramp-auto-save-directory	(concat user-emacs-directory "var/tramp/auto-save/")
 	tramp-persistency-file-name	(concat user-emacs-directory "var/tramp/persistency"))
@@ -334,7 +333,7 @@
 (column-number-mode)
 (display-battery-mode)
 (display-time-mode -1)
-(load "rc/mm" 'noerror)
+(load "rc/mm" 'noerror) ; memento-mori
 
 ;; Startup time
 (defun efs/display-startup-time ()
@@ -382,9 +381,11 @@
 
 	(define-key dired-mode-map (kbd "q") 'kill-dired-buffers)
 	(define-key dired-mode-map (kbd "o") 'dired-find-file-ow)
-	(defun dired-find-file-ow() (interactive)(dired-find-file-other-window)(delete-other-windows))
-	(defalias 'dired-find-file 'dired-find-alternate-file))
-(add-hook 'dired-mode-hook (lambda()(dired-omit-mode 1)))
+	(defalias 'dired-find-file 'dired-find-alternate-file)
+	(if (keymap-lookup dired-mode-map "% s")
+		(message "Error: %% s already defined in dired-mode-map")
+		(define-key dired-mode-map "%s" 'my-dired-substspaces))
+	(add-hook 'dired-mode-hook (lambda()(dired-omit-mode 1))))
 
 ;; Ibuffer
 ;; https://www.emacswiki.org/emacs/IbufferMode
@@ -478,7 +479,7 @@
 (easy-menu-add-item calendar-mode-map '(menu-bar holidays)
 	["Yearly Holidays" calendar-holidays])
 (easy-menu-add-item calendar-mode-map '(menu-bar goto)
-	["World clock" calendar-world-clock :help "World clock"] "Beginning of Week")
+	["World clock" calendar-world-clock] "Beginning of Week")
 
 (add-hook 'diary-list-entries-hook 'diary-sort-entries t)
 (add-hook 'diary-fancy-display-mode-hook 'alt-clean-equal-signs)
@@ -495,15 +496,16 @@
 		["Gopher" elpher :help "Browse Gopherspace"] 'browse-web)
 	:config	(setq elpher-bookmarks-file (concat user-emacs-directory "var/elpher-bookmarks"))
 		(advice-add 'eww-browse-url :around 'elpher:eww-browse-url)
-		(define-key elpher-mode-map (kbd "A-<left>") 'elpher-back)
-		(define-key elpher-mode-map (kbd "A-<right>") 'elpher-down)
+		(define-key elpher-mode-map (kbd "[") 'elpher-back)
+		(define-key elpher-mode-map (kbd "]") 'elpher-down)
 
 		(add-hook 'elpher-mode-hook (lambda()
 			(setq-local left-margin-width 10)
 			(set-window-buffer nil (current-buffer)))))
 
-(require 'eww)
-	(setq	browse-url-browser-function 'eww-browse-url
+(use-package eww
+	:config (setq
+		browse-url-browser-function 'eww-browse-url
 		eww-bookmarks-directory (concat user-emacs-directory "etc/")
 		eww-auto-rename-buffer t
 		shr-inhibit-images t
@@ -517,14 +519,14 @@
 		shr-indentation 2	; Left-side margin
 		shr-width nil)		; Fold text for comfiness
 
-	(define-key eww-mode-map (kbd "A-<left>") 'eww-back-url)
-	(define-key eww-mode-map (kbd "A-<right>") 'eww-forward-url)
+	(define-key eww-mode-map (kbd "[") 'eww-back-url)
+	(define-key eww-mode-map (kbd "]") 'eww-forward-url)
 	(define-key eww-bookmark-mode-map (kbd "w") 'eww)
 
 	(url-setup-privacy-info)
 	(add-hook 'eww-after-render-hook 'eww-readable) ;; default to 'readable-mode'
 
-	(use-package ace-link :config (ace-link-setup-default)) ;; alternative to tabbing
+	(use-package ace-link :config (ace-link-setup-default))) ;; alternative to tabbing
 
 (use-package flycheck)
 
@@ -541,8 +543,8 @@
 		google-translate-translation-directions-alist '(
 		("fr" . "en")
 		("en" . "fr")))
-	(global-set-key "\C-ct" 'google-translate-at-point)
-	(global-set-key "\C-cT" 'google-translate-smooth-translate))
+	(global-set-key (kbd "C-c t") 'google-translate-at-point)
+	(global-set-key (kbd "C-c T") 'google-translate-smooth-translate))
 
 (use-package hl-todo
     :hook	(prog-mode . hl-todo-mode)
@@ -618,9 +620,11 @@
 			("/" . elfeed-search-live-filter)
 			("\\" . elfeed-search-set-filter-nil)
 			("m" . elfeed-mail-todo)
+			("[" . beginning-of-buffer) ; top
+			("]" . end-of-buffer) ; bottom
 			:map elfeed-show-mode-map
 			("TAB" . shr-next-link)
-			("SPC" . scroll-up-half))
+			("SPC" . scroll-up-half) )
 		:config	(setq
 			elfeed-db-directory (concat user-emacs-directory "var/elfeed/db/")
 			elfeed-enclosure-default-dir (concat user-emacs-directory "var/elfeed/enclosures/")
@@ -635,10 +639,7 @@
 		(advice-add 'elfeed-search-update--force :after (lambda() (goto-char (point-min))))
 
 		(load "rc/feeds" 'noerror 'nomessage)	; feeds
-		(load "init/elfeed-routines")		; routines
-
-		(defun elfeed-search-set-filter-nil () "Reset Elfeed search filter"
-			(interactive) (elfeed-search-set-filter nil)))
+		(load "init/elfeed-routines"))		; routines
 
 	;; Web
 	(use-package w3m
@@ -667,24 +668,6 @@
 (when *gnu*
 	(setq	browse-url-secondary-browser-function 'browse-url-generic
 		browse-url-generic-program "firefox-esr"))
-
-;; (unless *w32* (use-package pdf-tools
-;; 	:load-path  "site-lisp/pdf-tools/lisp"
-;; 	:magic ("%PDF" . pdf-view-mode)
-;; 	:config (pdf-tools-install :no-query) ))
-
-;; https://jonathanabennett.github.io/blog/2019/05/29/writing-academic-papers-with-org-mode/
-(unless *w32* (use-package pdf-tools
-   :pin manual ;; manually update
-   :config
-   ;; initialise
-   (pdf-tools-install)
-   ;; open pdfs scaled to fit width
-   (setq-default pdf-view-display-size 'fit-width)
-   ;; use normal isearch
-   (define-key pdf-view-mode-map (kbd "C-s") 'isearch-forward)
-   :custom
-   (pdf-annot-activate-created-annotations t "automatically annotate highlights")))
 
 
 ;; Text, Prog, and Markdown modes
@@ -720,7 +703,7 @@
 	(show-paren-local-mode)
 	(visual-fill-column-mode -1)))
 
-(add-hook 'emacs-lisp-mode-hook (lambda() (setq tab-width 8)))
+(add-hook 'emacs-lisp-mode-hook (lambda() (setq tab-width 8 truncate-lines -1)))
 
 ;; bash
 (add-to-list 'auto-mode-alist '("\\.bash*" . sh-mode))
@@ -753,8 +736,7 @@
 		markdown-italic-underscore t
 		markdown-unordered-list-item-prefix "* ")
 	(add-to-list 'markdown-uri-types "gemini")
-	(define-key markdown-mode-map (kbd "M-p") nil)
-	(use-package markdown-preview-mode))
+	(define-key markdown-mode-map (kbd "M-p") nil))
 
 (load "init/text") ; text functions
 
@@ -1308,10 +1290,6 @@
 (when *w32* (setq
 	default-directory "c:/Users/henrypa/OneDrive - City of Ottawa/"
 	org-agenda-file (concat default-directory "!.org")))
-
-;; Local Variables:
-;; truncate-lines: -1
-;; End:
 
 ; LocalWords:  canadian sug aspell memq eval RET kfhelppanels init FN
 ; LocalWords:  pdfexport melpa vers tls dg defs eshell multisession

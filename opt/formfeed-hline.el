@@ -183,13 +183,10 @@ a new width and/or height."
   (dolist (window (window-list frame t))
     (unless (or (window-minibuffer-p window)
                 (zerop (window-width window))) ;; zero when window killed
-      (let* ((table      (formfeed-hline--window-display-table window))
-             (old-dashes (if table
-                             ;; -3 for "^L\n" added to dashes
-                             (- (length (aref table ?\f)) 10) ; (pjh) -4 more for line nos.
-                           0))
-             ;; -3 for ^L and blank at right
-             (dashes     (max 0 (- (window-width window) 10))))  ; (pjh) -4 more for line nos.
+      (let* ((table (formfeed-hline--window-display-table window))
+             (old-dashes (if table (- (length (aref table ?\f)) 8) 0)) ;; -8 for "^L\n" / linums
+             (dashes (min (- (window-width window) 8) (- 50 8)))) ;; lessor of adjusted window-width or 50
+
         (when (/= dashes old-dashes)
           ;; (message "change dashes %S to %S on %s" old-dashes dashes window)
 

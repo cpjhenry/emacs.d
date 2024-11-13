@@ -162,6 +162,16 @@
 	(interactive)
 	(find-file user-init-file))
 
+(defun my/outline-previous-heading ()
+	(interactive)
+	(outline-previous-heading)
+	(recenter-top-bottom))
+
+(defun my/outline-next-heading ()
+	(interactive)
+	(outline-next-heading)
+	(recenter-top-bottom))
+
 
 ;; DIRED functions
 
@@ -216,6 +226,21 @@
 	(after dired-after-updating-hook first () activate)
 	"Sort dired listings with directories first before adding marks."
 	(mydired-sort))
+
+(defun dired-find-file-ow()
+	(interactive)
+	(dired-find-file-other-window)
+	(delete-other-windows))
+
+;; dired extension "% s"
+;; https://social.tchncs.de/@stackeffect/113431684014013180
+(defun my-substspaces (str)
+	(subst-char-in-string ?\s ?_ str))
+
+(defun my-dired-substspaces (&optional arg)
+"Rename all marked (or next ARG) files so that spaces are replaced with underscores."
+	(interactive "P")
+	(dired-rename-non-directory #'my-substspaces "Rename by substituting spaces" arg))
 
 
 ;; iBuffer functions
