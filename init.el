@@ -562,18 +562,9 @@
 		["Lorem-ipsum" lorem-ipsum-insert-paragraphs :help "Insert..."])
 	:config (setq-default lorem-ipsum-sentence-separator " "))
 
-(use-package nov ; Read ePub files
-	:init (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
-	:config (setq nov-save-place-file (concat user-emacs-directory "var/nov-places")))
-
 (use-package ssh)
 
 (use-package visible-mark) ; make the mark visible
-
-(setq	xkcd-cache-dir    (concat user-emacs-directory "var/xkcd/")
-	xkcd-cache-latest (concat user-emacs-directory "var/xkcd/latest"))
-(use-package xkcd)
-;(advice-add 'xkcd-alt-text :after (lambda() fill-minibuffer-function nil))
 
 
 ;; Configure specific machines
@@ -660,10 +651,19 @@
 			(autoload 'w3m-browse-url "w3m" "Ask a WWW browser to show a URL." t)
 			(require 'mime-w3m)
 
-		(load "init/w3m-routines.el")
 		;; (require 'w3m-filter)
 		;; (add-to-list 'w3m-filter-configuration '(t "Make page readable" ".*" tsa/readability))
-		))
+		(load "init/w3m-routines.el"))
+
+	(use-package nov ; Read ePub files
+		:init (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
+		:config (setq nov-save-place-file (concat user-emacs-directory "var/nov-places")))
+
+	(setq	xkcd-cache-dir    (concat user-emacs-directory "var/xkcd/")
+		xkcd-cache-latest (concat user-emacs-directory "var/xkcd/latest"))
+	(use-package xkcd)
+	;(advice-add 'xkcd-alt-text :after (lambda() fill-minibuffer-function nil))
+	)
 
 (when *gnu*
 	(setq	browse-url-secondary-browser-function 'browse-url-generic
