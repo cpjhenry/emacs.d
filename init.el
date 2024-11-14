@@ -5,6 +5,7 @@
 (electric-indent-mode -1)
 (show-paren-mode -1)
 (tooltip-mode -1)
+(toggle-frame-maximized)
 
 (defconst *mac* (eq system-type 'darwin))
 (defconst *gnu* (eq system-type 'gnu/linux))
@@ -13,6 +14,15 @@
 (defconst system-short-name (car (split-string (system-name) "\\.")) "Hostname of local machine.")
 (defconst *bullwinkle* (string-equal system-short-name "bullwinkle"))
 (defconst *natasha* (string-equal system-short-name "natasha"))
+
+;; Add directories to load-path
+(add-to-list 'load-path (expand-file-name "etc" user-emacs-directory))
+(add-to-list 'load-path (expand-file-name "opt" user-emacs-directory))
+(add-to-list 'load-path (expand-file-name "var" user-emacs-directory))
+
+;; what and who am I
+(if (boundp 'emacs-edition) (message "Running '%s'." emacs-edition))
+(load "rc/me" 'noerror)
 
 (when *mac* (add-to-list 'default-frame-alist '(font . "Inconsolata 21"))
 	(setq
@@ -45,11 +55,10 @@
 
 	(dolist (key '("s-C" "s-D" "s-d" "s-e" "s-F" "s-f" "s-g" "s-j"
 		"s-L" "s-M" "s-m" "s-n" "s-p" "s-q" "s-t"))
-		(global-unset-key (kbd key)))
+		(global-unset-key (kbd key))))
 
-	(toggle-frame-maximized))
-
-(when *gnu* (add-to-list 'default-frame-alist '(font . "Monospace 17")) )
+(when *gnu* (add-to-list 'default-frame-alist '(font . "Monospace 17"))
+	(message "Running on GNU/Linux."))
 
 (when *w32* (add-to-list 'default-frame-alist '(font . "Consolas 12"))
 	(setq
@@ -57,11 +66,6 @@
 	w32-pass-lwindow-to-system nil
 	w32-apps-modifier 'hyper)
 	(message "Running on Windows."))
-
-;; Add directories to load-path
-(add-to-list 'load-path (expand-file-name "etc" user-emacs-directory))
-(add-to-list 'load-path (expand-file-name "opt" user-emacs-directory))
-(add-to-list 'load-path (expand-file-name "var" user-emacs-directory))
 
 ;; Initialize package manager
 (setq gnutls-algorithm-priority "normal:-vers-tls1.3")
@@ -79,13 +83,10 @@
 
 ;; See https://github.com/slotThe/vc-use-package
 ;; TODO: remove when vc-use-package is merged.
-(unless (>= emacs-major-version 30)
+(unless *w32* (unless (>= emacs-major-version 30)
 	(when (and (not (package-installed-p 'vc-use-package)) (fboundp 'package-vc-install))
-	(package-vc-install "https://github.com/slotThe/vc-use-package")))
-
-;; what and who am I
-(if (boundp 'emacs-edition) (message "Running '%s'." emacs-edition))
-(load "rc/me" 'noerror)
+	(package-vc-install "https://github.com/slotThe/vc-use-package"))
+	(message "'vc-use-package' check.")))
 
 ;; settings
 (set-language-environment 'utf-8)
@@ -610,12 +611,14 @@
 			:map elfeed-search-mode-map
 			("/" . elfeed-search-live-filter)
 			("\\" . elfeed-search-set-filter-nil)
-			("m" . elfeed-mail-todo)
 			("[" . beginning-of-buffer) ; top
 			("]" . end-of-buffer) ; bottom
+			("m" . elfeed-mail-todo)
 			:map elfeed-show-mode-map
+			("[" . beginning-of-buffer)
+			("]" . end-of-buffer)
 			("TAB" . shr-next-link)
-			("SPC" . scroll-up-half) )
+			("SPC" . scroll-up-half))
 		:config	(setq
 			elfeed-db-directory (concat user-emacs-directory "var/elfeed/db/")
 			elfeed-enclosure-default-dir (concat user-emacs-directory "var/elfeed/enclosures/")
@@ -661,9 +664,9 @@
 
 	(setq	xkcd-cache-dir    (concat user-emacs-directory "var/xkcd/")
 		xkcd-cache-latest (concat user-emacs-directory "var/xkcd/latest"))
-	(use-package xkcd)
-	;(advice-add 'xkcd-alt-text :after (lambda() fill-minibuffer-function nil))
-	)
+	(use-package xkcd
+		:config ;(advice-add 'xkcd-alt-text :after (lambda() fill-minibuffer-function nil))
+		))
 
 (when *gnu*
 	(setq	browse-url-secondary-browser-function 'browse-url-generic
@@ -744,7 +747,7 @@
 ;; TeX
 (setq latex-run-command "xelatex")
 
-(use-package tex
+(unless *w32* (use-package tex
 	:ensure auctex
 	:hook
 		(LaTeX-mode . prettify-symbols-mode)
@@ -766,10 +769,9 @@
 		:config
 		(setq message-latex-preview-pane-welcome "")
 		(define-key latex-preview-pane-mode-map (kbd "M-p") nil)
-		(define-key latex-preview-pane-mode-map (kbd "M-P") nil)))
-
-(require 'reftex)
-(add-hook 'latex-mode-hook 'turn-on-reftex)   ; Emacs latex mode
+		(define-key latex-preview-pane-mode-map (kbd "M-P") nil))
+	(require 'reftex)
+	(add-hook 'latex-mode-hook 'turn-on-reftex)))
 
 
 ;; spell checking
@@ -1065,7 +1067,7 @@
 
 ;(use-package disable-mouse)
 ;(global-disable-mouse-mode)
-(mouse-avoidance-mode 'banish)
+(unless *w32* (mouse-avoidance-mode 'banish))
 
 (when *mac*
 	;; https://lmno.lol/alvaro/hey-mouse-dont-mess-with-my-emacs-font-size
