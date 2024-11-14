@@ -2,8 +2,6 @@
 
 (defun di () "Daily information."
 	(interactive)
-
-	;(cbc)
 	(switch-to-buffer "*daily-info*")
 	(shell-command "di-mode&" (current-buffer))
 	(view-mode)
@@ -47,11 +45,10 @@
 
 (defun az () "Monthly Forecast"
 	(interactive)
-	(let ((buf (make-temp-name ""))
-	      (output "Monthly Forecast"))
-	(switch-to-buffer buf)
-	(shell-command "az -u" buf)
+	(let ((output "Monthly Forecast"))
+	(switch-to-buffer (make-temp-name ""))
+	(shell-command "az -u" (current-buffer))
 	(require 'markdown-mode)
 	(markdown-preview output)
-	(kill-buffer buf)
+	(kill-buffer (current-buffer))
 	(kill-buffer output)))
