@@ -65,6 +65,7 @@
 	w32-lwindow-modifier 'super
 	w32-pass-lwindow-to-system nil
 	w32-apps-modifier 'hyper)
+	(menu-bar-mode)
 	(message "Running on Windows."))
 
 ;; Initialize package manager
