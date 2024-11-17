@@ -24,6 +24,10 @@
 (if (boundp 'emacs-edition) (message "Running '%s'." emacs-edition))
 (load "rc/me" 'noerror)
 
+(when (< emacs-major-version 29)
+	(defalias 'keymap-set 'define-key)
+	(defalias 'keymap-global-set 'global-set-key))
+
 (when *mac* (add-to-list 'default-frame-alist '(font . "Inconsolata 21"))
 	(setq
 	mac-function-modifier nil
@@ -82,12 +86,7 @@
 (setf	use-package-always-ensure t
 	use-package-verbose t)
 
-;; See https://github.com/slotThe/vc-use-package
-;; TODO: remove when vc-use-package is merged.
-(unless *w32* (unless (>= emacs-major-version 30)
-	(when (and (not (package-installed-p 'vc-use-package)) (fboundp 'package-vc-install))
-	(package-vc-install "https://github.com/slotThe/vc-use-package"))
-	(message "'vc-use-package' check.")))
+;; load init/vcusepackage goes here, if needed.
 
 ;; settings
 (set-language-environment 'utf-8)
@@ -220,7 +219,9 @@
 
 (with-eval-after-load 'emacs-news-mode
 	(define-key emacs-news-view-mode-map (kbd "[") 'my/outline-previous-heading)
-	(define-key emacs-news-view-mode-map (kbd "]") 'my/outline-next-heading))
+	(define-key emacs-news-view-mode-map (kbd "]") 'my/outline-next-heading)
+	(define-key emacs-news-view-mode-map (kbd "{") 'outline-backward-same-level)
+	(define-key emacs-news-view-mode-map (kbd "}") 'outline-forward-same-level))
 
 (with-eval-after-load 'help-mode
 	(define-key help-mode-map (kbd "[")	'help-go-back)
@@ -367,6 +368,7 @@
 (global-set-key (kbd "C-<tab>") 'ido-switch-buffer)
 (global-set-key (kbd "C-x C-d")	'ido-dired)
 
+
 ;; Dired
 (with-eval-after-load 'dired
 	(require 'dired-x)
@@ -389,6 +391,7 @@
 		(define-key dired-mode-map "%s" 'my-dired-substspaces))
 	(add-hook 'dired-mode-hook (lambda()(dired-omit-mode 1))))
 
+
 ;; Ibuffer
 ;; https://www.emacswiki.org/emacs/IbufferMode
 (require 'ibuffer)
@@ -472,16 +475,16 @@
 
 (define-key calendar-mode-map (kbd "q") 'calendar-exit-kill)
 (define-key calendar-mode-map (kbd "w") 'calendar-world-clock)
-(define-key calendar-mode-map (kbd "y") 'calendar-holidays)
+(define-key calendar-mode-map (kbd "y") 'list-holidays-this-year)
 (define-key diary-mode-map (kbd "C-c C-q") 'kill-current-buffer)
 
 (advice-add 'calendar-exit :before #'save-diary-before-calendar-exit)
 (advice-add 'calendar-goto-info-node :after (lambda (&rest r) (calendar-exit-kill) (delete-other-windows)))
 
-(easy-menu-add-item calendar-mode-map '(menu-bar holidays)
-	["Yearly Holidays" calendar-holidays])
 (easy-menu-add-item calendar-mode-map '(menu-bar goto)
 	["World clock" calendar-world-clock] "Beginning of Week")
+(easy-menu-add-item calendar-mode-map '(menu-bar holidays)
+	["Yearly Holidays" list-holidays-this-year])
 
 (add-hook 'diary-list-entries-hook 'diary-sort-entries t)
 (add-hook 'diary-fancy-display-mode-hook 'alt-clean-equal-signs)
@@ -545,8 +548,9 @@
 		google-translate-translation-directions-alist '(
 		("fr" . "en")
 		("en" . "fr")))
-	(global-set-key (kbd "C-c t") 'google-translate-at-point)
-	(global-set-key (kbd "C-c T") 'google-translate-smooth-translate))
+	(global-set-key (kbd "C-c t t") 'google-translate-at-point)
+	(global-set-key (kbd "C-c t <RET>") 'google-translate-smooth-translate)
+	(which-key-alias "C-c t" "google-translate"))
 
 (use-package hl-todo
     :hook	(prog-mode . hl-todo-mode)
@@ -602,7 +606,9 @@
 
 	(add-hook 'rmail-show-message-hook 'goto-address-mode)
 	(add-hook 'rmail-quit-hook 'kill-current-buffer)
-	(add-hook 'message-mode-hook (lambda() (local-set-key (kbd "A-<return>") 'message-send-and-exit)))
+
+	(require 'message)
+	(define-key message-mode-map (kbd "A-<return>") 'message-send-and-exit)
 
 	;; RSS
 	(use-package elfeed
@@ -1107,6 +1113,7 @@
 (global-set-key (kbd "<f12>")	'list-buffers)
 (global-set-key (kbd "TAB")	'self-insert-command)
 
+(global-set-key (kbd "M-<f11>")	'toggle-modeline)
 (global-set-key (kbd "A-<return>") (kbd "M-<return>"))
 
 ;; extended commands (alternates)
@@ -1167,7 +1174,6 @@
 (bind-key "<f6>"	'toggle-fill-column-center)
 (bind-key "<f7>"	'ispell-buffer)
 (bind-key "<f8>"	'list-bookmarks)
-(bind-key "M-<f11>"	'toggle-modeline)
 
 (bind-key "C-`"		'scratch-buffer)
 (bind-key "C-<escape>"	'my/shell)

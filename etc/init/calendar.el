@@ -23,12 +23,14 @@
 	(holiday-fixed 06 21  "Indigenous Peoples Day")
 	;(holiday-fixed 06 24  "Midsummer Day") ; prefer floating date (Saturday following Summer Solstice)
 	(holiday-fixed 09 30  "Truth and Reconciliation")
+	(holiday-float 11 0 2 "Remembrance Sunday")
 	(holiday-fixed 12 11  "Statute of Westminster")))
 
 (setq holiday-other-holidays '(
 	(holiday-advent -11 "Prayer & Repentance")
 	(holiday-sexp '(if (zerop (% year 4)) (calendar-gregorian-from-absolute (1+
-		(calendar-dayname-on-or-before 1 (+ 6 (calendar-absolute-from-gregorian (list 11 1 year)))))))
+		(calendar-dayname-on-or-before 1 (+ 6 (calendar-absolute-from-gregorian
+		(list 11 1 year)))))))
 		"US Presidential Election")))
 
 (setq lunar-phase-names '(
@@ -74,11 +76,15 @@
 (defun display-current-time () (interactive)
 	(message (format-time-string "%Y-%m-%d %H:%M:%S")))
 
-(defun calendar-holidays () (interactive)
+(defun list-holidays-this-year () "Display holidays for current year."
+	(interactive)
 	(list-holidays (string-to-number (format-time-string "%Y"))))
 
-(defun calendar-world-clock () (interactive)
-	(world-clock)(next-window-any-frame)(fit-window-to-buffer))
+(defun calendar-world-clock () "Display a world clock buffer with times in various time zones."
+	(interactive)
+	(world-clock)
+	(next-window-any-frame)
+	(fit-window-to-buffer))
 
 (defun alt-clean-equal-signs ()
 	"This function makes lines of = signs invisible."
