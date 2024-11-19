@@ -195,3 +195,6 @@ If DEST, a buffer, is provided, insert the markup there."
           (goto-char next))))
     (pop-to-buffer buff)
     (goto-char (point-min))))
+
+;; https://sachachua.com/blog/2024/11/changing-org-mode-underlines-to-the-html-mark-element/
+;(with-eval-after-load 'org (setf (alist-get 'underline org-html-text-markup-alist) "<mark>%s</mark>"))
