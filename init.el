@@ -1,7 +1,7 @@
 ;;; Emacs configuration / cpjh -*- no-byte-compile: t; lexical-binding: t; -*-
 
 ;; Initialize terminal
-(delete-selection-mode 1)
+(delete-selection-mode t)
 (electric-indent-mode -1)
 (show-paren-mode -1)
 (tooltip-mode -1)
@@ -97,7 +97,8 @@
 	tab-width 4
 	standard-indent 4
 	help-window-select t
-	indicate-empty-lines t)
+	indicate-empty-lines t
+	x-stretch-cursor t)
 
 (setq	default-major-mode 'text-mode
 	default-input-method nil
@@ -111,6 +112,7 @@
 	comp-async-report-warnings-errors 'silent
 	delete-by-moving-to-trash t
 	dictionary-server "dict.org"
+	enable-remote-dir-locals t ; .dir-locals.el
 	find-file-visit-truename t
 	frame-inhibit-implied-resize t
 	frame-resize-pixelwise t
@@ -478,13 +480,13 @@
 (define-key calendar-mode-map (kbd "y") 'list-holidays-this-year)
 (define-key diary-mode-map (kbd "C-c C-q") 'kill-current-buffer)
 
-(advice-add 'calendar-exit :before #'save-diary-before-calendar-exit)
-(advice-add 'calendar-goto-info-node :after (lambda (&rest r) (calendar-exit-kill) (delete-other-windows)))
-
 (easy-menu-add-item calendar-mode-map '(menu-bar goto)
 	["World clock" calendar-world-clock] "Beginning of Week")
 (easy-menu-add-item calendar-mode-map '(menu-bar holidays)
 	["Yearly Holidays" list-holidays-this-year])
+
+(advice-add 'calendar-exit :before #'save-diary-before-calendar-exit)
+(advice-add 'calendar-goto-info-node :after (lambda (&rest r) (calendar-exit-kill) (delete-other-windows)))
 
 (add-hook 'diary-list-entries-hook 'diary-sort-entries t)
 (add-hook 'diary-fancy-display-mode-hook 'alt-clean-equal-signs)
@@ -669,11 +671,18 @@
 		:init (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
 		:config (setq nov-save-place-file (concat user-emacs-directory "var/nov-places")))
 
+	(use-package xkcd :init
 	(setq	xkcd-cache-dir    (concat user-emacs-directory "var/xkcd/")
 		xkcd-cache-latest (concat user-emacs-directory "var/xkcd/latest"))
-	(use-package xkcd
-		:config ;(advice-add 'xkcd-alt-text :after (lambda() fill-minibuffer-function nil))
-		))
+		:config
+		(defun xkcd-add-alt ()
+			(interactive)
+			(read-only-mode -1)
+			(setq-local fill-column (window-width))
+			(visual-line-mode 1)
+			(insert "\n\n" xkcd-alt "\n")
+			(read-only-mode))
+		(advice-add 'xkcd-alt-text :override 'xkcd-add-alt)))
 
 (when *gnu*
 	(setq	browse-url-secondary-browser-function 'browse-url-generic
@@ -713,6 +722,7 @@
 	(show-paren-local-mode)
 	(visual-fill-column-mode -1)))
 
+;; Emacs lisp
 (add-hook 'emacs-lisp-mode-hook (lambda() (setq tab-width 8 truncate-lines -1)))
 
 ;; bash
@@ -1216,6 +1226,7 @@
 (bind-key "C-c o c"	'org-capture)
 (bind-key "C-c o k"	'org-cliplink)
 (bind-key "C-c o l"	'org-store-link)
+(bind-key "C-c o r"	'org-mode-restart)
 (bind-key "C-c o t"	'org-toggle-link-display)
 (which-key-alias "C-c o" "org")
 
