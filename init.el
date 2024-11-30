@@ -246,6 +246,7 @@
 
 (with-eval-after-load 'view
 	(define-key view-mode-map (kbd "j")	'View-scroll-line-forward)
+	(define-key view-mode-map (kbd "k")	'View-scroll-line-backward-top)
 	(define-key view-mode-map (kbd "q")	'View-kill-and-leave))
 
 ;; remove unneeded messages and buffers
@@ -992,21 +993,7 @@
 ;;	:config
 ;;	(define-key org-mode-map (kbd "C-c o g") 'org-mac-link-get-link)))
 
-(when *natasha*
-	(use-package org-chef :ensure t))
-	;; (use-package org-roam
-	;; :ensure t
-	;; :custom	(org-roam-db-location (concat user-emacs-directory "var/org-roam.db"))
-	;; 	(org-roam-directory (file-truename (concat org-directory "/Roam/")))
-	;; :bind (	("C-c r l" . org-roam-buffer-toggle)
-	;; 	("C-c r f" . org-roam-node-find)
-	;; 	("C-c r g" . org-roam-graph)
-	;; 	("C-c r i" . org-roam-node-insert)
-	;; 	("C-c r c" . org-roam-capture)
-	;; 	("C-c r j" . org-roam-dailies-capture-today))
-	;; :config	(org-roam-setup)
-	;; 	(org-roam-db-autosync-mode))
-	;; 	(which-key-alias "C-c r" "org-roam"))
+(when *natasha* (use-package org-chef :ensure t))
 
 (define-key org-mode-map (kbd "M-[") 'org-backward-heading-same-level)
 (define-key org-mode-map (kbd "M-]") 'org-forward-heading-same-level)
@@ -1023,7 +1010,7 @@
 	(define-key view-mode-map (kbd "]") 'org-next-link)
 	(define-key view-mode-map (kbd "RET") nil))
 
-(define-key org-mode-map (kbd "C-c '") (lambda()(interactive)(org-edit-special)(visual-fill-column-mode -1)))
+(define-key org-mode-map (kbd "C-c '") 'org-edit-special-no-fill)
 
 (add-hook 'org-agenda-finalize-hook 'delete-other-windows)
 

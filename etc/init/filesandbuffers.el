@@ -172,6 +172,16 @@
 	(outline-next-heading)
 	(recenter-top-bottom))
 
+(defun View-scroll-line-backward-top () "Scroll line backward, jump to new top of screen."
+	(interactive)
+	(View-scroll-line-backward)
+	(move-to-window-line-top-bottom))
+
+(defun org-edit-special-no-fill () "Call a special editor for the element at point; turn off fill."
+	(interactive)
+	(org-edit-special)
+	(visual-fill-column-mode -1))
+
 
 ;; DIRED functions
 
@@ -304,7 +314,7 @@
 
 
 ;; scrolling
-(defun window-half-height ()(max 1 (/ (1- (window-height (selected-window))) 2)))
+(defun window-half-height ()	(max 1 (/ (1- (window-height (selected-window))) 2)))
 (defun scroll-up-half ()	(interactive) (scroll-up (window-half-height)))
 (defun scroll-down-half ()	(interactive) (scroll-down (window-half-height)))
 
@@ -314,8 +324,8 @@
 	(cond ((string-match-p "\\`\\(gemini\\|gopher\\)://" url) (elpher-go url))
 		(t (funcall original url new-window))))
 
-(defun elpher-up () (interactive)(backward-paragraph)(recenter-top-bottom))
-(defun elpher-down () (interactive)(forward-paragraph)(recenter-top-bottom))
+(defun elpher-up ()	(interactive)(backward-paragraph)(recenter-top-bottom))
+(defun elpher-down () 	(interactive)(forward-paragraph)(recenter-top-bottom))
 
 
 ;; https://vishesh.github.io/emacs/editors/2023/01/25/lean-emacs-config.html
