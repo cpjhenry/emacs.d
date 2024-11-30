@@ -245,6 +245,7 @@
 	(define-key Info-mode-map (kbd "}")	'Info-forward-node))
 
 (with-eval-after-load 'view
+	(define-key view-mode-map (kbd "j")	'View-scroll-line-forward)
 	(define-key view-mode-map (kbd "q")	'View-kill-and-leave))
 
 ;; remove unneeded messages and buffers
