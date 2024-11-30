@@ -384,5 +384,3 @@ C-M-S-v			scroll-other-window-down")
 ;; Local Variables:
 ;; tab-width: 4
 ;; End:
-
-; LocalWords:  esc
