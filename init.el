@@ -1,6 +1,7 @@
 ;;; Emacs configuration / cpjh -*- no-byte-compile: t; lexical-binding: t; -*-
 
 ;; Initialize terminal
+(blink-cursor-mode 0)
 (delete-selection-mode t)
 (electric-indent-mode -1)
 (show-paren-mode -1)
@@ -69,7 +70,7 @@
 	w32-lwindow-modifier 'super
 	w32-pass-lwindow-to-system nil
 	w32-apps-modifier 'hyper)
-	(menu-bar-mode)
+	(menu-bar-mode 1)
 	(message "Running on Windows."))
 
 ;; Initialize package manager
@@ -85,6 +86,11 @@
 (require 'use-package)
 (setf	use-package-always-ensure t
 	use-package-verbose t)
+
+(add-to-list 'display-buffer-alist '(
+	"\\`\\*\\(Warnings\\|Compile-Log\\)\\*\\'"
+	(display-buffer-no-window)
+	(allow-no-window . t)))
 
 ;; load init/vcusepackage goes here, if needed.
 
@@ -110,6 +116,7 @@
 	bookmark-sort-flag nil
 	case-fold-search t
 	comp-async-report-warnings-errors 'silent
+	cursor-in-non-selected-windows nil
 	delete-by-moving-to-trash t
 	dictionary-server "dict.org"
 	enable-remote-dir-locals t ; .dir-locals.el
@@ -570,6 +577,16 @@
 		["Lorem-ipsum" lorem-ipsum-insert-paragraphs :help "Insert..."])
 	:config (setq-default lorem-ipsum-sentence-separator " "))
 
+(use-package mistty
+	:bind ( :map mistty-prompt-map
+		("C-p" . mistty-send-key)
+		("C-n" . mistty-send-key)
+		("C-r" . mistty-send-key)
+		("M-p" . nil)
+		("M-n" . nil)
+		("M-r" . nil))
+	:config (add-hook 'mistty-after-process-end-hook 'mistty-kill-buffer))
+
 (use-package ssh)
 
 (use-package visible-mark) ; make the mark visible
@@ -671,18 +688,19 @@
 		:init (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
 		:config (setq nov-save-place-file (concat user-emacs-directory "var/nov-places")))
 
-	(use-package xkcd :init
-	(setq	xkcd-cache-dir    (concat user-emacs-directory "var/xkcd/")
-		xkcd-cache-latest (concat user-emacs-directory "var/xkcd/latest"))
-		:config
-		(defun xkcd-add-alt ()
+	(use-package xkcd
+		:init	(setq
+			xkcd-cache-dir    (concat user-emacs-directory "var/xkcd/")
+			xkcd-cache-latest (concat user-emacs-directory "var/xkcd/latest"))
+		:config (defun xkcd-add-alt (&rest r)
 			(interactive)
 			(read-only-mode -1)
-			(setq-local fill-column (window-width))
+			(setq-local cursor-type nil fill-column (window-width))
 			(visual-line-mode 1)
 			(insert "\n\n" xkcd-alt "\n")
-			(read-only-mode))
-		(advice-add 'xkcd-alt-text :override 'xkcd-add-alt)))
+			(read-only-mode t))
+		(advice-add 'xkcd-alt-text :override #'xkcd-add-alt)
+		(advice-add 'xkcd-get :after #'xkcd-add-alt)))
 
 (when *gnu*
 	(setq	browse-url-secondary-browser-function 'browse-url-generic
@@ -876,6 +894,7 @@
 	org-log-repeat nil
 	org-log-state-notes-into-drawer nil
 	org-priority-enable-commands t
+	org-return-follows-link t
 	org-src-fontify-natively t
 	org-special-ctrl-a/e t
 	org-support-shift-select 'always
@@ -1001,7 +1020,7 @@
 (with-eval-after-load 'view
 	(define-key view-mode-map (kbd "[") 'org-previous-link)
 	(define-key view-mode-map (kbd "]") 'org-next-link)
-	(define-key view-mode-map (kbd "A-<return>") 'org-open-at-point))
+	(define-key view-mode-map (kbd "RET") nil))
 
 (define-key org-mode-map (kbd "C-c '") (lambda()(interactive)(org-edit-special)(visual-fill-column-mode -1)))
 
@@ -1080,7 +1099,9 @@
 
 ;; mouse
 ;; https://github.com/purcell/disable-mouse
-(setq	mouse-yank-at-point t)
+(setq	mouse-yank-at-point t
+	mouse-wheel-progressive-speed nil
+	mouse-wheel-scroll-amount '(1))
 
 ;(use-package disable-mouse)
 ;(global-disable-mouse-mode)
@@ -1104,6 +1125,10 @@
 (global-set-key (kbd "C-{") 'shrink-window-horizontally)
 (global-set-key (kbd "C-}") 'enlarge-window-horizontally)
 (global-set-key (kbd "C-^") 'enlarge-window)
+
+;; Winner mode is a global minor mode that records the changes in the window configuration.
+;; https://www.gnu.org/software/emacs/manual/html_node/emacs/Window-Convenience.html
+;(winner-mode t)
 
 
 ;; alternate keys
@@ -1187,7 +1212,7 @@
 
 (bind-key "C-`"		'scratch-buffer)
 (bind-key "C-<escape>"	'my/shell)
-(defun my/shell () (interactive) (let ((default-directory "~")) (shell)))
+(defun my/shell () (interactive) (let ((default-directory "~")) (mistty)))
 
 (bind-key "M-<f1>"	'my/emacs-help)
 (bind-key "M-<f2>"	'describe-personal-keybindings)

@@ -341,6 +341,46 @@ C-M-S-v			scroll-other-window-down")
 
 (kf-gen-displayer cmkeys "C-M key bindings" "*C-M keys*")
 
+(defconst tencodes
+"TEN-CODES
+
+ 1   Receiving poorly                             44   Arriving on scene
+ 2   Receiving well                               45   Death or Fatality
+ 3   Stop transmission                            47   Crime in progress
+ 4   Acknowledgement                              48   Escort required (Staff, Money...)
+ 5   Relay                                        50   Accident
+ 6   Busy - standby unless urgent                 51   Tow truck needed
+ 7   Out of service                               52   Ambulance or medical assist. needed
+ 8   In service                                   56   Missing patient report
+ 9   Repeat                                       60   Subj. is negative         (not on form)
+10   Req. perm. to go on Secure Chan.             61   Subj. has record - not wanted (on form)
+11   Disregard last transmission                  62   Subject possibly wanted
+12   Unauthorized listener present                63   Subject positive hit
+13   Weather and road conditions                  64   Proceed with caution
+14   Urgent Care Response                         65   Assist re a 10-64 individual
+15   Suspicious vehicle / person                  70   Message for all units - prepare to copy
+16   Pick up prisoner at . . .                    77   Bylaw officer required
+17   On assignment                                78   Need assistance
+18   Complete assignment quickly                  80   Noise complaint
+19   Return to . . .                              87   Desk duty / dispatch / report writing
+20   What is your location?                       88   Open security doors
+21   Call . . . by telephone                      89   Close security doors
+23   Bylaw Hit List Check                         90   General Alarm (specify location)
+26   Detaining subject, expedite                  92   Person in custody
+27   Parking complaint                            93   Blockade, set up roadblock
+28   Vehicle registration information             94   Clear from blockade
+29   Check records/permit for wanted              95   Person believed dangerous
+30   Improper use of radio                        98   Confidential message(s)
+33   Emergency                                    100  Bomb threat
+35   Major crime alert                            101  Emergency Kiosk break
+36   Correct time                                 103  Coffee break
+38   Investigation alert                          105  Radio Difficulties -- standby
+41   On foot patrol                               106  Investigating insecure area
+42   Vehicle location                             107  Lot watch
+43   Fight in progress")
+
+(kf-gen-displayer tencodes "Ten-codes" "*Ten-codes*")
+
 ;; Local Variables:
 ;; tab-width: 4
 ;; End:
