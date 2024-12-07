@@ -1,7 +1,7 @@
 ;;; Emacs configuration / cpjh -*- no-byte-compile: t; lexical-binding: t; -*-
 
 ;; Initialize terminal
-(blink-cursor-mode 0)
+(blink-cursor-mode -1)
 (delete-selection-mode t)
 (electric-indent-mode -1)
 (show-paren-mode -1)
@@ -16,6 +16,9 @@
 (defconst *bullwinkle* (string-equal system-short-name "bullwinkle"))
 (defconst *natasha* (string-equal system-short-name "natasha"))
 
+(defconst EMACS29 (>= emacs-major-version 29) "Running Emacs 29 or greater.")
+(defconst EMACS30 (>= emacs-major-version 30) "Running Emacs 30 or greater.")
+
 ;; Add directories to load-path
 (add-to-list 'load-path (expand-file-name "etc" user-emacs-directory))
 (add-to-list 'load-path (expand-file-name "opt" user-emacs-directory))
@@ -25,7 +28,7 @@
 (if (boundp 'emacs-edition) (message "Running '%s'." emacs-edition))
 (load "rc/me" 'noerror)
 
-(when (< emacs-major-version 29)
+(unless EMACS29
 	(defalias 'keymap-set 'define-key)
 	(defalias 'keymap-global-set 'global-set-key))
 
@@ -80,19 +83,20 @@
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 (unless package-archive-contents (package-refresh-contents))
 
-(unless (>= emacs-major-version 29)
+(unless EMACS29
 	(unless (package-installed-p 'use-package)
 	(package-install 'use-package)))
 (require 'use-package)
 (setf	use-package-always-ensure t
-	use-package-verbose t)
+	use-package-verbose nil)
+
+;; init/vcusepackage goes here, if needed.
+(unless EMACS30 (load "init/vcusepackage"))
 
 (add-to-list 'display-buffer-alist '(
 	"\\`\\*\\(Warnings\\|Compile-Log\\)\\*\\'"
 	(display-buffer-no-window)
 	(allow-no-window . t)))
-
-;; load init/vcusepackage goes here, if needed.
 
 ;; settings
 (set-language-environment 'utf-8)
@@ -114,7 +118,6 @@
 	bookmark-save-flag 1
 	bookmark-set-fringe-mark nil
 	bookmark-sort-flag nil
-	case-fold-search t
 	comp-async-report-warnings-errors 'silent
 	cursor-in-non-selected-windows nil
 	delete-by-moving-to-trash t
@@ -140,6 +143,7 @@
 	mark-ring-max most-positive-fixnum
 	max-lisp-eval-depth 65536
 	message-kill-buffer-on-exit t
+	enable-recursive-minibuffers t
 	package-archive-column-width 1
 	page-delimiter "^[#; ]*"
 	pop-up-windows nil
@@ -164,7 +168,13 @@
 	use-short-answers t
 	view-read-only nil ; turn on view mode when buffer is read-only
 	visual-line-fringe-indicators '(nil right-curly-arrow)
-	what-cursor-show-names t)
+	what-cursor-show-names t
+
+	read-file-name-completion-ignore-case t
+	read-buffer-completion-ignore-case t
+	completion-ignore-case  t
+
+	case-fold-search t)
 
 ;; files
 (setq	abbrev-file-name		(concat user-emacs-directory "etc/abbrev_defs")
@@ -211,6 +221,17 @@
 (if (featurep 'formfeed-hline) (formfeed-hline-mode))
 
 (add-hook 'before-save-hook 'time-stamp)
+
+;; files are given +x permissions when they're saved, if they contain a valid shebang
+(add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
+
+;; remove trailing whitespace on-save
+(add-hook 'write-file-hooks 'delete-trailing-whitespace)
+
+;; Emacs really suffers when you open large files.
+(add-hook 'find-file-hook 'large-find-file-hook)
+
+;; Mode hooks
 (add-hook 'doc-view-mode-hook 'auto-revert-mode)
 (add-hook 'help-mode-hook (lambda()
 	(setq-local font-lock-keywords-only t)
@@ -278,11 +299,6 @@
 ;; automatically save buffers associated with files on frame (app) switch
 (add-hook 'focus-out-hook (lambda() (save-some-buffers t)))
 
-(setq enable-recursive-minibuffers t)
-
-;; Emacs really suffers when you open large files.
-(add-hook 'find-file-hook 'large-find-file-hook)
-
 ;; *scratch*
 (setq initial-scratch-message nil)		; Makes *scratch* empty
 
@@ -316,27 +332,17 @@
 	;; start Emacs server
 	(use-package mac-pseudo-daemon :config (mac-pseudo-daemon-mode))
 	(if (not (boundp 'server-process)) (server-start))
-	(if (boundp 'server-process) (message "Server running."))
-
-	;; add Hyper- keys (C-M-s-…) to terminal frames (iTerm2)
-	(add-hook 'server-after-make-frame-hook (lambda()
-		;; (unless (display-graphic-p)
-
-		;; TODO add C-M-s translations for display-graphic
-		(cl-loop for char from ?a to ?z do
-		(define-key input-decode-map (format "\e[1;P%c" char) (kbd (format "H-%c" char)))))))
+	(if (boundp 'server-process) (message "Server running.")))
 
 
 ;; modeline
 (use-package doom-modeline
-	:ensure t
+	:custom	(doom-modeline-column-zero-based nil)
+		(doom-modeline-enable-word-count t)
+		(doom-modeline-continuous-word-count-modes '(markdown-mode gfm-mode org-mode text-mode))
+		(doom-modeline-icon nil)
 	:hook	(after-init . doom-modeline-mode)
-	:config (setq
-		doom-modeline-column-zero-based nil
-		doom-modeline-enable-word-count t
-		doom-modeline-continuous-word-count-modes '(markdown-mode gfm-mode org-mode text-mode)
-		doom-modeline-icon nil)
-	(use-package nerd-icons))
+	:config	(use-package nerd-icons))
 
 (setq	battery-mode-line-format "%p%% "
 	display-time-24hr-format t
@@ -358,26 +364,30 @@
 
 ;; IDO
 ;; https://www.emacswiki.org/emacs/InteractivelyDoThings
-(require 'ido)
-(if (featurep 'ido) (ido-mode t))
-(setq	ido-save-directory-list-file (concat user-emacs-directory "var/ido.last")
-	ido-enable-flex-matching t
-	ido-show-dot-for-dired nil)
-(define-key (cdr ido-minor-mode-map-entry) [remap write-file] nil); turn off C-x C-w remapping
+(use-package ido
+	:ensure nil
+	:custom	(ido-save-directory-list-file (concat user-emacs-directory "var/ido.last"))
+		(ido-enable-flex-matching t)
+		(ido-show-dot-for-dired nil)
+	:config (ido-mode t)
 
-;(icomplete-mode) ; IDO for M-x
-;(fido-mode) ; makes complete act like IDO mode
+	(define-key (cdr ido-minor-mode-map-entry) [remap write-file] nil); C-x C-w remapping
+	(add-to-list 'ido-ignore-buffers "*Messages*")
+	(add-to-list 'ido-ignore-buffers "*Shell Command Output*")
+	(add-to-list 'ido-ignore-buffers "^*tramp/")
+	(add-to-list 'ido-ignore-files ".DS_Store")
+	(add-to-list 'ido-ignore-files "ido.last")
 
-(use-package ido-sort-mtime :config (ido-sort-mtime-mode 1))
+	(global-set-key (kbd "C-<tab>") 'ido-switch-buffer)
+	(global-set-key (kbd "C-x C-d")	'ido-dired)
 
-(add-to-list 'ido-ignore-buffers "*Messages*")
-(add-to-list 'ido-ignore-buffers "*Shell Command Output*")
-(add-to-list 'ido-ignore-buffers "^*tramp/")
-(add-to-list 'ido-ignore-files ".DS_Store")
-(add-to-list 'ido-ignore-files "ido.last")
+	(use-package ido-sort-mtime :config (ido-sort-mtime-mode 1)))
 
-(global-set-key (kbd "C-<tab>") 'ido-switch-buffer)
-(global-set-key (kbd "C-x C-d")	'ido-dired)
+;; M-x enhancement
+(use-package smex
+	:bind	(("M-x" . smex))
+	:custom	(smex-save-file (concat user-emacs-directory "var/smex.history"))
+	:config	(smex-initialize))
 
 
 ;; Dired
@@ -503,43 +513,52 @@
 
 
 ;; Initialize packages
+
+;; use-package directives in this order:
+;; :ensure
+;; :defer
+;; :custom
+;; :bind
+;; :hook
+;; :init
+;; :config
+
 (use-package which-key
 	:config (which-key-mode)
-		(defalias 'which-key-alias 'which-key-add-key-based-replacements))
+	(defalias 'which-key-alias 'which-key-add-key-based-replacements))
 
 (use-package elpher
+	:bind (	:map elpher-mode-map
+		("[" . elpher-back)
+		("]" . elpher-down))
 	:init	(easy-menu-add-item global-map '(menu-bar tools)
-		["Gopher" elpher :help "Browse Gopherspace"] 'browse-web)
-	:config	(setq elpher-bookmarks-file (concat user-emacs-directory "var/elpher-bookmarks"))
-		(advice-add 'eww-browse-url :around 'elpher:eww-browse-url)
-		(define-key elpher-mode-map (kbd "[") 'elpher-back)
-		(define-key elpher-mode-map (kbd "]") 'elpher-down)
-
+			["Gopher" elpher :help "Browse Gopherspace"] 'browse-web)
+	:config	(advice-add 'eww-browse-url :around 'elpher:eww-browse-url)
+		;; FIXME move to :hook
 		(add-hook 'elpher-mode-hook (lambda()
 			(setq-local left-margin-width 10)
 			(set-window-buffer nil (current-buffer)))))
 
 (use-package eww
-	:config (setq
-		browse-url-browser-function 'eww-browse-url
-		eww-bookmarks-directory (concat user-emacs-directory "etc/")
-		eww-auto-rename-buffer t
-		shr-inhibit-images t
-		shr-use-colors nil
-		shr-use-fonts nil
-		shr-bullet "• "
-		shr-folding-mode t
-		eww-search-prefix "https://duckduckgo.com/html?q="
-		url-privacy-level '(email agent lastloc)
-
-		shr-indentation 2	; Left-side margin
-		shr-width nil)		; Fold text for comfiness
-
-	(define-key eww-mode-map (kbd "[") 'eww-back-url)
-	(define-key eww-mode-map (kbd "]") 'eww-forward-url)
-	(define-key eww-bookmark-mode-map (kbd "w") 'eww)
-
-	(url-setup-privacy-info)
+	:ensure nil
+	:custom	(browse-url-browser-function 'eww-browse-url)
+		(eww-auto-rename-buffer t)
+		(eww-bookmarks-directory (concat user-emacs-directory "etc/"))
+		(eww-search-prefix "https://duckduckgo.com/html?q=")
+		(shr-inhibit-images t)
+		(shr-use-colors nil)
+		(shr-use-fonts nil)
+		(shr-bullet "• ")
+		(shr-folding-mode t)
+		(shr-indentation 2)	; Left-side margin
+		(shr-width nil)		; Fold text for comfiness
+		(url-privacy-level '(email agent lastloc))
+	:bind (	:map eww-mode-map
+		("[" . eww-back-url)
+		("]" . eww-forward-url)
+		:map eww-bookmark-mode-map
+		("w" . eww))
+	:config	(url-setup-privacy-info)
 	(add-hook 'eww-after-render-hook 'eww-readable) ;; default to 'readable-mode'
 
 	(use-package ace-link :config (ace-link-setup-default))) ;; alternative to tabbing
@@ -555,24 +574,22 @@
 		(which-key-alias "C-c /" "google-this"))
 
 (use-package google-translate
-	:config (setq
-		google-translate-translation-directions-alist '(
-		("fr" . "en")
-		("en" . "fr")))
-	(global-set-key (kbd "C-c t t") 'google-translate-at-point)
-	(global-set-key (kbd "C-c t <RET>") 'google-translate-smooth-translate)
-	(which-key-alias "C-c t" "google-translate"))
+	:bind (	("C-c t t" . google-translate-at-point)
+		("C-c t <RET>" . google-translate-smooth-translate))
+	:config	(setq google-translate-translation-directions-alist '(
+			("fr" . "en") ("en" . "fr")))
+		(which-key-alias "C-c t" "google-translate"))
 
 (use-package hl-todo
-    :hook	(prog-mode . hl-todo-mode)
-		(emacs-lisp-mode . hl-todo-mode)
-    :config	(setq hl-todo-keyword-faces `(
+	:custom	(hl-todo-keyword-faces `(
 		("TODO"       warning bold)
 		("FIXME"      error bold)
 		("HACK"       font-lock-constant-face bold)
 		("REVIEW"     font-lock-keyword-face bold)
 		("NOTE"       success bold)
-		("DEPRECATED" font-lock-doc-face bold) )))
+		("DEPRECATED" font-lock-doc-face bold)))
+	:hook	(prog-mode . hl-todo-mode)
+		(emacs-lisp-mode . hl-todo-mode))
 
 (use-package lorem-ipsum
 	:init	(easy-menu-add-item global-map '(menu-bar edit)
@@ -587,7 +604,10 @@
 		("M-p" . nil)
 		("M-n" . nil)
 		("M-r" . nil))
-	:config (add-hook 'mistty-after-process-end-hook 'mistty-kill-buffer))
+	:hook	(mistty-after-process-end . mistty-kill-buffer)
+		(mistty-mode . goto-address-mode))
+
+(use-package shortcuts-mode)
 
 (use-package ssh)
 
@@ -660,13 +680,13 @@
 		(eval-after-load 'elfeed `(make-directory ,(concat user-emacs-directory "var/elfeed/") t))
 		(advice-add 'elfeed-search-update--force :after (lambda() (goto-char (point-min))))
 
-		(load "rc/feeds" 'noerror 'nomessage)	; feeds
-		(load "init/elfeed-routines"))		; routines
+		(load "rc/feeds" 'noerror 'nomessage)
+		(load "init/elfeed-routines"))
 
 	;; Web
 	(use-package w3m
 		;; let's load it, but not make it the default.
-		;; :init	(setq browse-url-browser-function 'w3m-browse-url)
+		;; :init (setq browse-url-browser-function 'w3m-browse-url)
 		:bind ( ("C-x m" . browse-url-at-point)
 			:map w3m-mode-map
 			("<left>" . w3m-view-previous-page)
@@ -679,21 +699,26 @@
 			w3m-confirm-leaving-secure-page nil
 			w3m-default-save-directory "~/Downloads"
 			w3m-use-filter nil)
-			(autoload 'w3m-browse-url "w3m" "Ask a WWW browser to show a URL." t)
-			(require 'mime-w3m)
 
+		(autoload 'w3m-browse-url "w3m" "Ask a WWW browser to show a URL." t)
+		(require 'mime-w3m)
 		;; (require 'w3m-filter)
 		;; (add-to-list 'w3m-filter-configuration '(t "Make page readable" ".*" tsa/readability))
 		(load "init/w3m-routines.el"))
 
 	(use-package nov ; Read ePub files
-		:init (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
-		:config (setq nov-save-place-file (concat user-emacs-directory "var/nov-places")))
+		:custom (nov-save-place-file (concat user-emacs-directory "var/nov-places"))
+		:init	(add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode)))
+
+	(use-package save-check
+		:vc (save-check :url "https://github.com/skx/save-check.el.git"
+		:rev :newest)
+		:config (setq save-check-show-eval t)
+			(global-save-check-mode t))
 
 	(use-package xkcd
-		:init	(setq
-			xkcd-cache-dir    (concat user-emacs-directory "var/xkcd/")
-			xkcd-cache-latest (concat user-emacs-directory "var/xkcd/latest"))
+		:init	(setq	xkcd-cache-dir    (concat user-emacs-directory "var/xkcd/")
+				xkcd-cache-latest (concat user-emacs-directory "var/xkcd/latest"))
 		:config (defun xkcd-add-alt (&rest r)
 			(interactive)
 			(read-only-mode -1)
@@ -719,10 +744,11 @@
 (add-hook 'fill-nobreak-predicate #'fill-french-nobreak-p)
 (define-key text-mode-map (kbd "C-M-i") nil)
 
+;; HACK convert to :custom
 (use-package visual-fill-column
+	:hook	(visual-line-mode . visual-fill-column-mode)
 	:config (setq visual-fill-column-fringes-outside-margins nil)
-		(advice-add 'text-scale-adjust :after #'visual-fill-column-adjust)
-	:hook	(visual-line-mode . visual-fill-column-mode))
+		(advice-add 'text-scale-adjust :after #'visual-fill-column-adjust))
 
 (use-package adaptive-wrap
 	:hook	(visual-line-mode . adaptive-wrap-prefix-mode))
@@ -735,8 +761,7 @@
 (add-hook 'prog-mode-hook (lambda()
 	(setq show-trailing-whitespace t)
 	(abbrev-mode)
-	(when (not (equal major-mode 'lisp-interaction-mode))
-		(display-line-numbers-mode))
+	(when (not (equal major-mode 'lisp-interaction-mode)) (display-line-numbers-mode))
 	(goto-address-prog-mode)
 	(prettify-symbols-mode)
 	(show-paren-local-mode)
@@ -769,7 +794,7 @@
 		("\\.markdown\\'" . markdown-mode)
 		("\\.gmi\\'" . markdown-mode))
 	:commands (markdown-mode gfm-mode)
-	:init (setq markdown-hide-urls t)
+	:init 	(setq markdown-hide-urls t)
 	:config (setq
 		markdown-command "multimarkdown"
 		markdown-enable-prefix-prompts nil
@@ -782,70 +807,71 @@
 
 
 ;; TeX
-(setq latex-run-command "xelatex")
-
 (unless *w32* (use-package tex
 	:ensure auctex
-	:hook
-		(LaTeX-mode . prettify-symbols-mode)
-		;(LaTeX-mode . LaTeX-math-mode)
-		(LaTeX-mode . turn-on-reftex)
 	:config (setq
 		font-latex-fontify-sectioning 'color
-		TeX-auto-save t
+		ispell-parser 'tex
+		latex-run-command "xelatex"
 		prettify-symbols-unprettify-at-point 'right-edge
 		preview-locating-previews-message nil
 		preview-protect-point t
 		preview-leave-open-previews-visible t
+		TeX-auto-save t
 		TeX-parse-self t)
+
 	(use-package latex-extra
 		:hook (LaTeX-mode . latex-extra-mode))
-	;; (use-package preview-auto)
+
 	(use-package latex-preview-pane
 		;:hook (LaTeX-mode . latex-preview-pane-mode)
 		:config
 		(setq message-latex-preview-pane-welcome "")
 		(define-key latex-preview-pane-mode-map (kbd "M-p") nil)
 		(define-key latex-preview-pane-mode-map (kbd "M-P") nil))
-	(require 'reftex)
-	(add-hook 'latex-mode-hook 'turn-on-reftex)))
+
+	(use-package reftex :ensure nil)
+	:hook	(LaTeX-mode . prettify-symbols-mode)
+		;(LaTeX-mode . LaTeX-math-mode)
+		(LaTeX-mode . turn-on-reftex)))
 
 
 ;; spell checking
-(setq	flyspell-doublon-as-error-flag nil
-	flyspell-issue-welcome-flag nil
-	flyspell-issue-message-flag nil
-	flyspell-use-meta-tab nil
-	ispell-dictionary "canadian"
-	ispell-extra-args '("--sug-mode=ultra")
-	ispell-list-command "--list"	; correct command
-	ispell-program-name "aspell"	; spell checker
-	ispell-silently-savep t)	; save personal list automatically
+(use-package flyspell
+	:if (executable-find "aspell")
+	:ensure nil
+	:config
+	(setq	flyspell-doublon-as-error-flag nil
+		flyspell-issue-welcome-flag nil
+		flyspell-issue-message-flag nil
+		flyspell-use-meta-tab nil
+		ispell-dictionary "canadian"
+		ispell-extra-args '("--sug-mode=ultra")
+		ispell-list-command "--list"	; correct command
+		ispell-program-name "aspell"	; spell checker
+		ispell-silently-savep t)	; save personal list automatically
 
-(with-eval-after-load 'flyspell (define-key flyspell-mouse-map [down-mouse-3] #'flyspell-correct-word))
+	(define-key flyspell-mouse-map [down-mouse-3] #'flyspell-correct-word)
 
-;; turn-on flyspell-mode for these modes
-(unless *w32* (dolist (hook '(text-mode-hook markdown-mode-hook))
-	(add-hook hook (lambda() (flyspell-mode 1)))) )
-	;; (add-hook 'emacs-lisp-mode-hook 'flyspell-prog-mode)
+	;; turn-on flyspell-mode for these modes
+	(dolist (hook '(text-mode-hook markdown-mode-hook))
+		(add-hook hook (lambda() (flyspell-mode 1))))
+		;; (add-hook 'emacs-lisp-mode-hook 'flyspell-prog-mode)
 
-;; turn-off flyspell-mode for these modes
-(dolist (hook '(change-log-mode-hook emacs-news-mode-hook log-edit-mode-hook))
-	(add-hook hook (lambda() (flyspell-mode -1))))
+	;; turn-off flyspell-mode for these modes
+	(dolist (hook '(change-log-mode-hook emacs-news-mode-hook log-edit-mode-hook))
+		(add-hook hook (lambda() (flyspell-mode -1))))
 
-(use-package flyspell-lazy
-	:after flyspell
-	:config (setq
-		flyspell-lazy-idle-seconds 1
-		flyspell-lazy-window-idle-seconds 3)
-		(flyspell-lazy-mode 1))
+	(use-package flyspell-lazy
+		:after flyspell
+		:config (setq
+			flyspell-lazy-idle-seconds 1
+			flyspell-lazy-window-idle-seconds 3)
+			(flyspell-lazy-mode 1))
 
-(use-package flyspell-correct
-	:after flyspell
-	:bind (:map flyspell-mode-map ("C-;" . flyspell-correct-wrapper)))
-
-;; Tex
-(add-hook 'tex-mode-hook (lambda() (setq ispell-parser 'tex)))
+		(use-package flyspell-correct
+		:after flyspell
+		:bind (:map flyspell-mode-map ("C-;" . flyspell-correct-wrapper))))
 
 
 ;; print functions
@@ -970,7 +996,7 @@
 
 (set-face-underline 'org-ellipsis nil)
 
-(use-package org-appear ; automatic visibility toggling of Org elements depending on cursor position
+(use-package org-appear ; automatic visibility toggling of Org elements
 	:hook (org-mode . org-appear-mode))
 
 (use-package org-autolist ; pressing "Return" will insert a new list item automatically
@@ -979,13 +1005,12 @@
 (use-package org-cliplink) ; insert org-mode links from the clipboard
 
 ;; (use-package org-modern ; add some styling to your Org buffer
-;; 	:hook (org-mode . global-org-modern-mode)
-;; 	:custom
-;; 		(org-modern-fold-stars nil)
+;; 	:custom	(org-modern-fold-stars nil)
 ;; 		(org-modern-keyword nil)
 ;; 		(org-modern-checkbox nil)
 ;; 		(org-modern-table nil)
-;; 		(org-modern-tag nil))
+;; 		(org-modern-tag nil)
+;; 	:hook (org-mode . global-org-modern-mode))
 
 (use-package ox-report) ; export your org file to minutes report PDF file
 
@@ -993,7 +1018,7 @@
 ;;	:config
 ;;	(define-key org-mode-map (kbd "C-c o g") 'org-mac-link-get-link)))
 
-(when *natasha* (use-package org-chef :ensure t))
+(when *natasha* (use-package org-chef))
 
 (define-key org-mode-map (kbd "M-[") 'org-backward-heading-same-level)
 (define-key org-mode-map (kbd "M-]") 'org-forward-heading-same-level)
@@ -1011,6 +1036,13 @@
 	(define-key view-mode-map (kbd "RET") nil))
 
 (define-key org-mode-map (kbd "C-c '") 'org-edit-special-no-fill)
+
+;; ispell should not check code blocks in org mode
+(add-to-list 'ispell-skip-region-alist '(":\\(PROPERTIES\\|LOGBOOK\\):" . ":END:"))
+(add-to-list 'ispell-skip-region-alist '("#\\+BEGIN_SRC" . "#\\+END_SRC"))
+(add-to-list 'ispell-skip-region-alist '("#\\+begin_src" . "#\\+end_src"))
+(add-to-list 'ispell-skip-region-alist '("^#\\+begin_example " . "#\\+end_example$"))
+(add-to-list 'ispell-skip-region-alist '("^#\\+BEGIN_EXAMPLE " . "#\\+END_EXAMPLE$"))
 
 (add-hook 'org-agenda-finalize-hook 'delete-other-windows)
 
@@ -1194,9 +1226,13 @@
 
 ;; Shortcuts
 
+(bind-key "<f5>"	'my/fill-column)
+(defun my/fill-column () (interactive) (setq fill-column 0) (message "Maximum width."))
+
 (bind-key "<f6>"	'toggle-fill-column-center)
 (bind-key "<f7>"	'ispell-buffer)
 (bind-key "<f8>"	'list-bookmarks)
+(bind-key "<f9>"	'shortcuts-mode)
 
 (bind-key "C-`"		'scratch-buffer)
 (bind-key "C-<escape>"	'my/shell)

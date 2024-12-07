@@ -3,4 +3,4 @@
 (unless *w32* (unless (>= emacs-major-version 30)
 	(when (and (not (package-installed-p 'vc-use-package)) (fboundp 'package-vc-install))
 	(package-vc-install "https://github.com/slotThe/vc-use-package"))
-	(message "'vc-use-package' check.")))
+	(message "vc-use-package: disable once running Emacs 30+.")))
