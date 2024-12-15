@@ -148,6 +148,7 @@
 	page-delimiter "^[#; ]*"
 	pop-up-windows nil
 	pop-up-frames nil
+	prettify-symbols-unprettify-at-point 'right-edge
 	recenter-positions '(top) ; top middle bottom
 	require-final-newline nil
 	resize-mini-windows t
@@ -219,6 +220,9 @@
 (load "init/filesandbuffers")
 (require 'formfeed-hline)
 (if (featurep 'formfeed-hline) (formfeed-hline-mode))
+
+(require 'prog-mode)
+;; HACK (if (featurep 'prog-mode) (global-prettify-symbols-mode))
 
 (add-hook 'before-save-hook 'time-stamp)
 
@@ -298,6 +302,11 @@
 
 ;; automatically save buffers associated with files on frame (app) switch
 (add-hook 'focus-out-hook (lambda() (save-some-buffers t)))
+
+;; https://protesilaos.com/codelog/2024-12-11-emacs-diff-save-some-buffers/
+(add-to-list 'save-some-buffers-action-alist
+	(list "d" (lambda (buffer) (diff-buffer-with-file (buffer-file-name buffer)))
+		"show diff between the buffer and its file"))
 
 ;; *scratch*
 (setq initial-scratch-message nil)		; Makes *scratch* empty
@@ -809,11 +818,13 @@
 ;; TeX
 (unless *w32* (use-package tex
 	:ensure auctex
+	:hook	(LaTeX-mode . prettify-symbols-mode)
+		;(LaTeX-mode . LaTeX-math-mode)
 	:config (setq
 		font-latex-fontify-sectioning 'color
 		ispell-parser 'tex
+		LaTeX-babel-hyphen-after-hyphen nil
 		latex-run-command "xelatex"
-		prettify-symbols-unprettify-at-point 'right-edge
 		preview-locating-previews-message nil
 		preview-protect-point t
 		preview-leave-open-previews-visible t
@@ -830,10 +841,9 @@
 		(define-key latex-preview-pane-mode-map (kbd "M-p") nil)
 		(define-key latex-preview-pane-mode-map (kbd "M-P") nil))
 
-	(use-package reftex :ensure nil)
-	:hook	(LaTeX-mode . prettify-symbols-mode)
-		;(LaTeX-mode . LaTeX-math-mode)
-		(LaTeX-mode . turn-on-reftex)))
+	(use-package reftex
+	:ensure nil
+	:hook	(LaTeX-mode . turn-on-reftex))))
 
 
 ;; spell checking
@@ -852,6 +862,7 @@
 		ispell-silently-savep t)	; save personal list automatically
 
 	(define-key flyspell-mouse-map [down-mouse-3] #'flyspell-correct-word)
+	(define-key flyspell-mode-map (kbd "C-M-i") nil) ; use 'C-.' instead
 
 	;; turn-on flyspell-mode for these modes
 	(dolist (hook '(text-mode-hook markdown-mode-hook))
@@ -942,8 +953,6 @@
 	org-export-with-toc nil
 
 	org-export-with-broken-links t
-	org-export-preserve-breaks t
-
 	org-export-with-timestamps t
 	org-export-time-stamp-file t
 	org-export-date-timestamp-format "%Y-%m-%d"

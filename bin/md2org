@@ -1,0 +1,6 @@
+#!/bin/bash
+# Convert file format from markdown to org
+# 2024-12-15
+
+#FIXME: convert to generic $1, test for existence, etc.
+pandoc -f markdown -t org -o "Hebrew Bible.org" "Hebrew Bible.md"

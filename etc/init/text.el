@@ -74,7 +74,6 @@
 	(replace-string "’" "'" nil (point-min) (point-max))
 	(replace-string "“" "\"" nil (point-min) (point-max))
 	(replace-string "”" "\"" nil (point-min) (point-max))
-	(replace-string "—" "--" nil (point-min) (point-max)) ; multi-byte
 	(replace-string "" "'" nil (point-min) (point-max))
 	(replace-string "" "'" nil (point-min) (point-max))
 	(replace-string "" "\"" nil (point-min) (point-max))
@@ -106,6 +105,7 @@
 	;; mine
 	(replace-string "•" "-" nil (point-min) (point-max))
 	(replace-string "–" "--" nil (point-min) (point-max))
+	(replace-string "—" "---" nil (point-min) (point-max)) ; multi-byte
 	(replace-string "…" "..." nil (point-min) (point-max))
 	(replace-string "&#38;" "&" nil (point-min) (point-max))
 	(replace-string "&#39;" "'" nil (point-min) (point-max))

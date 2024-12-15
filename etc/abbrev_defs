@@ -28,18 +28,12 @@ Goodwood Lodge
 (define-abbrev-table 'org-mode-abbrev-table
   '(
     ("myheaders" ":HEADERS:
-#+STARTUP: inlineimages
 #+OPTIONS: num:nil
 #+LATEX_CLASS_OPTIONS: [a5paper,12pt]
 #+LATEX_HEADER: \\usepackage[margin=0.5in,bottom=0.75in]{geometry}
+#+LATEX_HEADER: \\usepackage{parskip}
 #+LATEX_HEADER: \\renewcommand{\\thefootnote}{\\fnsymbol{footnote}}
-#+LATEX_HEADER: \\setlength\\parindent{0pt}
-#+LATEX_HEADER: \\setlength\\parskip{5pt}
-#+LATEX_HEADER: \\usepackage{enumitem}
-#+LATEX_HEADER: \\setlist{topsep=0pt, leftmargin=*}
 #+LATEX_HEADER: \\raggedright
-:END:
-#+TITLE: 
-#+DATE: " nil :count 0)
+:END:" nil :count 0)
    ))
 
