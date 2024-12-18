@@ -198,3 +198,14 @@ If DEST, a buffer, is provided, insert the markup there."
 
 ;; https://sachachua.com/blog/2024/11/changing-org-mode-underlines-to-the-html-mark-element/
 ;(with-eval-after-load 'org (setf (alist-get 'underline org-html-text-markup-alist) "<mark>%s</mark>"))
+
+;; https://emacs.stackexchange.com/questions/5465/how-to-migrate-markdown-files-to-emacs-org-mode-format
+(defun markdown-convert-buffer-to-org ()
+"Convert the current buffer's content from markdown to orgmode format
+and save it with the current buffer's file name but with .org
+extension."
+	(interactive)
+	(shell-command-on-region (point-min) (point-max)
+	(format "pandoc -f markdown_mmd -t org -o '%s'"
+	(concat (file-name-sans-extension (buffer-file-name)) ".org")))
+	(find-file (concat (file-name-sans-extension (buffer-file-name)) ".org")))

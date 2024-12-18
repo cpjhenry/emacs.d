@@ -66,8 +66,12 @@
   (interactive)
   (let ((default-directory "~")
 	(buf (shell)))
-    ;; (switch-to-buffer (other-buffer buf))
     (switch-to-buffer-other-frame buf)))
+
+(defun buf-to-LF()
+	(interactive)
+	(set-buffer-file-coding-system 'utf-8-unix)
+	(set-buffer-modified-p nil))
 
 
 ;; modeline functions

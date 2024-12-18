@@ -1,10 +1,5 @@
 ;; text functions
 
-(defun buf-to-LF()
-	(interactive)
-	(set-buffer-file-coding-system 'utf-8-unix)
-	(set-buffer-modified-p nil))
-
 (defun insert-tab-char ()
 	"Insert a tab char. (ASCII 9, \t)"
 	(interactive)
@@ -13,16 +8,11 @@
 (defun unfill-paragraph ()
 	"Takes a multi-line paragraph and makes it into a single line of text."
 	(interactive)
-	;(if (visual-line-mode) (visual-line-mode -1))
-
 	(let ((beg (point-min)) (end (point-max)) (fill-column (point-max)))
 	(when (region-active-p)
 		(setq beg (region-beginning))
 		(setq end (region-end)))
-	(fill-region beg end))
-
-	;(visual-line-mode)
-	)
+	(fill-region beg end)))
 
 (defun insert-iso-date ()
 	"Insert ISO-formatted date."

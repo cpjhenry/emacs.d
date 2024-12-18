@@ -119,21 +119,28 @@
 	bookmark-set-fringe-mark nil
 	bookmark-sort-flag nil
 	comp-async-report-warnings-errors 'silent
+	completion-auto-help 'always
+	completion-auto-select 'second-tab
 	cursor-in-non-selected-windows nil
 	delete-by-moving-to-trash t
 	dictionary-server "dict.org"
+	enable-recursive-minibuffers t
 	enable-remote-dir-locals t ; .dir-locals.el
 	find-file-visit-truename t
 	frame-inhibit-implied-resize t
 	frame-resize-pixelwise t
 	frame-title-format nil
 	gnutls-verify-error nil
+	global-auto-revert-non-file-buffers t ; Revert buffer when the underlying file has changed
 	goto-address-mail-face 'default
 	help-clean-buttons t
 	help-enable-variable-value-editing t
 	ibuffer-expert t
 	inhibit-compacting-font-caches t
 	inhibit-default-init t
+	inhibit-startup-message t ; 'About Emacs'
+	inhibit-startup-buffer-menu t ; Don't show *Buffer list*
+	initial-scratch-message nil ; Makes *scratch* empty
 	isearch-allow-scroll t
 	kill-read-only-ok t
 	kill-ring-max 512
@@ -143,7 +150,6 @@
 	mark-ring-max most-positive-fixnum
 	max-lisp-eval-depth 65536
 	message-kill-buffer-on-exit t
-	enable-recursive-minibuffers t
 	package-archive-column-width 1
 	page-delimiter "^[#; ]*"
 	pop-up-windows nil
@@ -176,6 +182,10 @@
 	completion-ignore-case  t
 
 	case-fold-search t)
+
+;; https://lambdaland.org/posts/2024-12-14_emacs_catchup/
+(setopt tab-always-indent 'complete)
+(setopt completion-styles '(basic initials substring))
 
 ;; files
 (setq	abbrev-file-name		(concat user-emacs-directory "etc/abbrev_defs")
@@ -274,17 +284,12 @@
 	(define-key view-mode-map (kbd "k")	'View-scroll-line-backward-top)
 	(define-key view-mode-map (kbd "q")	'View-kill-and-leave))
 
-;; remove unneeded messages and buffers
-(setq inhibit-startup-message t)		; 'About Emacs'
-(add-hook 'minibuffer-exit-hook			; Removes *Completions* buffer when done
-	(lambda() (let ((buffer "*Completions*")) (and (get-buffer buffer) (kill-buffer buffer)))) )
+;; Removes *Completions* buffer when done
+(add-hook 'minibuffer-exit-hook
+	(lambda() (let ((buffer "*Completions*")) (and (get-buffer buffer) (kill-buffer buffer)))))
 
 ;; opening multiple files
-(setq inhibit-startup-buffer-menu t)			; Don't show *Buffer list*
-(add-hook 'window-setup-hook 'delete-other-windows)	; Show only one active window
-
-;; Revert buffers when the underlying file has changed
-(setq global-auto-revert-non-file-buffers t)		; Dired, etc.
+(add-hook 'window-setup-hook 'delete-other-windows) ; Show only one active window
 
 ;; automatically save buffers associated with files on buffer or window switch
 (defadvice switch-to-buffer (before save-buffer-now activate)
@@ -308,12 +313,9 @@
 	(list "d" (lambda (buffer) (diff-buffer-with-file (buffer-file-name buffer)))
 		"show diff between the buffer and its file"))
 
-;; *scratch*
-(setq initial-scratch-message nil)		; Makes *scratch* empty
-
 ;; Tramp
 (setq	tramp-default-method "ssh"
-	tramp-syntax 'simplified		; C-x C-f /remotehost:filename
+	tramp-syntax 'simplified ; C-x C-f /remotehost:filename
 
 	tramp-auto-save-directory	(concat user-emacs-directory "var/tramp/auto-save/")
 	tramp-persistency-file-name	(concat user-emacs-directory "var/tramp/persistency"))
@@ -528,7 +530,9 @@
 ;; :defer
 ;; :custom
 ;; :bind
+;; :mode
 ;; :hook
+;; :commands
 ;; :init
 ;; :config
 
@@ -540,13 +544,12 @@
 	:bind (	:map elpher-mode-map
 		("[" . elpher-back)
 		("]" . elpher-down))
+	:hook	(elpher-mode . (lambda()
+			(setq-local left-margin-width 10)
+			(set-window-buffer nil (current-buffer))))
 	:init	(easy-menu-add-item global-map '(menu-bar tools)
 			["Gopher" elpher :help "Browse Gopherspace"] 'browse-web)
-	:config	(advice-add 'eww-browse-url :around 'elpher:eww-browse-url)
-		;; FIXME move to :hook
-		(add-hook 'elpher-mode-hook (lambda()
-			(setq-local left-margin-width 10)
-			(set-window-buffer nil (current-buffer)))))
+	:config	(advice-add 'eww-browse-url :around 'elpher:eww-browse-url))
 
 (use-package eww
 	:ensure nil
@@ -797,20 +800,21 @@
 
 ;; Markdown
 (use-package markdown-mode
-	:mode
-		(("README\\.md\\'" . gfm-mode)
+	:custom	(markdown-command "multimarkdown")
+		(markdown-enable-prefix-prompts nil)
+		(markdown-italic-underscore t)
+		(markdown-unordered-list-item-prefix "* ")
+	:bind ( :map markdown-mode-map
+		("M-p" . nil)
+		("C-c p" . markdown-preview-file)
+		("C-x x o" . markdown-convert-buffer-to-org))
+	:mode	(("README\\.md\\'" . gfm-mode)
 		("\\.md\\'" . markdown-mode)
 		("\\.markdown\\'" . markdown-mode)
 		("\\.gmi\\'" . markdown-mode))
 	:commands (markdown-mode gfm-mode)
 	:init 	(setq markdown-hide-urls t)
-	:config (setq
-		markdown-command "multimarkdown"
-		markdown-enable-prefix-prompts nil
-		markdown-italic-underscore t
-		markdown-unordered-list-item-prefix "* ")
-	(add-to-list 'markdown-uri-types "gemini")
-	(define-key markdown-mode-map (kbd "M-p") nil))
+	:config (add-to-list 'markdown-uri-types "gemini"))
 
 (load "init/text") ; text functions
 
@@ -819,7 +823,7 @@
 (unless *w32* (use-package tex
 	:ensure auctex
 	:hook	(LaTeX-mode . prettify-symbols-mode)
-		;(LaTeX-mode . LaTeX-math-mode)
+		(LaTeX-mode . (lambda () (push '("\\&" . ?＆) prettify-symbols-alist)))
 	:config (setq
 		font-latex-fontify-sectioning 'color
 		ispell-parser 'tex
@@ -834,55 +838,25 @@
 	(use-package latex-extra
 		:hook (LaTeX-mode . latex-extra-mode))
 
-	(use-package latex-preview-pane
-		;:hook (LaTeX-mode . latex-preview-pane-mode)
-		:config
-		(setq message-latex-preview-pane-welcome "")
-		(define-key latex-preview-pane-mode-map (kbd "M-p") nil)
-		(define-key latex-preview-pane-mode-map (kbd "M-P") nil))
+	(use-package latex-pretty-symbols)
 
-	(use-package reftex
-	:ensure nil
-	:hook	(LaTeX-mode . turn-on-reftex))))
+	(use-package latex-preview-pane
+		:bind (	:map latex-preview-pane-mode-map ("M-p" . nil) ("M-P" . nil))
+		:config	(setq message-latex-preview-pane-welcome ""))
+
+	(use-package reftex :ensure nil :hook (LaTeX-mode . turn-on-reftex))))
 
 
 ;; spell checking
-(use-package flyspell
+(use-package jinx
 	:if (executable-find "aspell")
-	:ensure nil
+	:bind (	("M-$" . jinx-correct)
+		("C-M-$" . jinx-languages))
+	:hook	(emacs-startup . global-jinx-mode)
 	:config
-	(setq	flyspell-doublon-as-error-flag nil
-		flyspell-issue-welcome-flag nil
-		flyspell-issue-message-flag nil
-		flyspell-use-meta-tab nil
-		ispell-dictionary "canadian"
-		ispell-extra-args '("--sug-mode=ultra")
-		ispell-list-command "--list"	; correct command
-		ispell-program-name "aspell"	; spell checker
-		ispell-silently-savep t)	; save personal list automatically
-
-	(define-key flyspell-mouse-map [down-mouse-3] #'flyspell-correct-word)
-	(define-key flyspell-mode-map (kbd "C-M-i") nil) ; use 'C-.' instead
-
-	;; turn-on flyspell-mode for these modes
-	(dolist (hook '(text-mode-hook markdown-mode-hook))
-		(add-hook hook (lambda() (flyspell-mode 1))))
-		;; (add-hook 'emacs-lisp-mode-hook 'flyspell-prog-mode)
-
-	;; turn-off flyspell-mode for these modes
-	(dolist (hook '(change-log-mode-hook emacs-news-mode-hook log-edit-mode-hook))
-		(add-hook hook (lambda() (flyspell-mode -1))))
-
-	(use-package flyspell-lazy
-		:after flyspell
-		:config (setq
-			flyspell-lazy-idle-seconds 1
-			flyspell-lazy-window-idle-seconds 3)
-			(flyspell-lazy-mode 1))
-
-		(use-package flyspell-correct
-		:after flyspell
-		:bind (:map flyspell-mode-map ("C-;" . flyspell-correct-wrapper))))
+	(load "init/jinx-routines")
+	(add-hook 'jinx-mode-hook #'my/jinx-add-ispell-localwords)
+	(setf (alist-get ?* jinx--save-keys) #'my/jinx-save-as-ispell-localword))
 
 
 ;; print functions
@@ -904,8 +878,6 @@
 
 (setq-default
 	org-startup-indented nil
-	;; #+STARTUP: indent
-	;; #+STARTUP: noindent
 	org-pretty-entities t
 	org-use-sub-superscripts "{}"
 	org-hide-emphasis-markers t
@@ -925,7 +897,7 @@
 
 	org-catch-invisible-edits 'smart
 	org-ctrl-k-protect-subtree t
-	;org-cycle-separator-lines -1		; show all blank lines between headings
+	org-cycle-separator-lines 2
 	org-footnote-auto-adjust t
 	org-footnote-define-inline t
 	org-list-allow-alphabetical t
@@ -979,6 +951,7 @@
 	("=" (:background "maroon" :foreground "white"))
 	("~" (:background "deep sky blue" :foreground "MidnightBlue"))
 	("+" (:strike-through t)))
+
 
 	org-agenda-custom-commands '(
 	("P" "Project List"	((tags "PROJECT")))
@@ -1055,10 +1028,7 @@
 
 (add-hook 'org-agenda-finalize-hook 'delete-other-windows)
 
-(add-hook 'org-mode-hook (lambda()
-	(prettify-symbols-mode)
-	;(org-no-ellipsis-in-headlines)
-	(visual-fill-column-mode -1) ))
+(add-hook 'org-mode-hook (lambda() (visual-fill-column-mode -1)))
 
 (load "init/org") ; org-mode functions
 
@@ -1251,6 +1221,8 @@
 (bind-key "M-<f2>"	'describe-personal-keybindings)
 (bind-key "M-<f3>"	'shortdoc)
 
+(bind-key "M-q"		'my/fill-paragraph)
+(defun my/fill-paragraph () (interactive) (fill-paragraph nil t))
 (bind-key "M-Q"		'unfill-paragraph)
 
 (bind-key "C-M-;"	'eval-r)
@@ -1288,7 +1260,6 @@
 (bind-key "C-c o t"	'org-toggle-link-display)
 (which-key-alias "C-c o" "org")
 
-(bind-key "C-c p"	'markdown-preview-file)
 (bind-key "C-c q"	'dictionary-search)
 (bind-key "C-c w"	'eww-list-bookmarks) ; www
 (which-key-alias "C-c w" "eww")
@@ -1374,4 +1345,5 @@
 ; LocalWords:  persistency ido Ibuffer elfeed rc rmh elfeedroutines
 ; LocalWords:  esr md noindent nEntered shoppinglist Cliplink el kbd
 ; LocalWords:  INPROGRESS kfhelp setq xm readabilizing JS dev Lorem
-; LocalWords:  Gopherspace filesandbuffers ipsum ePub epub
+; LocalWords:  Gopherspace filesandbuffers ipsum ePub epub xelatex
+; LocalWords:  vcusepackage latexmk synctex bibtex cond
