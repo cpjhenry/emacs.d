@@ -30,17 +30,17 @@
 
 (unless EMACS29
 	(defalias 'keymap-set 'define-key)
-	(defalias 'keymap-global-set 'global-set-key))
+	(defalias 'keymap-global-set 'global-set-key)
+	(defalias 'setopt 'customize-set-variable)
 
 (when *mac* (add-to-list 'default-frame-alist '(font . "Inconsolata 21"))
-	(setq
+	(setopt
 	mac-function-modifier nil
 	mac-control-modifier 'control	; Control
 	mac-option-modifier 'meta	; Meta
 	mac-command-modifier 'super	; Super
 	mac-right-command-modifier 'alt	; Alt
-	mac-right-option-modifier nil	; pass-thru
-	ns-use-native-fullscreen t)
+	mac-right-option-modifier nil)	; pass-thru
 
 	(global-set-key (kbd "s-c") 'ns-copy-including-secondary)	; ⌘-c = Copy
 	(global-set-key (kbd "s-x") 'kill-region)			; ⌘-x = Cut
@@ -86,6 +86,7 @@
 (unless EMACS29
 	(unless (package-installed-p 'use-package)
 	(package-install 'use-package)))
+;; HACK use use-package to configure itself?
 (require 'use-package)
 (setf	use-package-always-ensure t
 	use-package-verbose nil)
@@ -101,9 +102,10 @@
 ;; settings
 (set-language-environment 'utf-8)
 
-(setq-default
+(setopt
 	initial-major-mode 'fundamental-mode
 
+	default-input-method nil
 	tab-width 4
 	standard-indent 4
 	help-window-select t
@@ -111,7 +113,6 @@
 	x-stretch-cursor t)
 
 (setq	default-major-mode 'text-mode
-	default-input-method nil
 
 	ad-redefinition-action 'accept
 	async-shell-command-buffer 'new-buffer
@@ -873,6 +874,7 @@
 
 
 ;; Org-mode
+;; HACK convert to use-package (using :ensure nil)
 (require 'org)
 (require 'ox-md)
 
