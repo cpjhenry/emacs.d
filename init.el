@@ -31,7 +31,7 @@
 (unless EMACS29
 	(defalias 'keymap-set 'define-key)
 	(defalias 'keymap-global-set 'global-set-key)
-	(defalias 'setopt 'customize-set-variable)
+	(defalias 'setopt 'customize-set-variable))
 
 (when *mac* (add-to-list 'default-frame-alist '(font . "Inconsolata 21"))
 	(setopt
@@ -69,7 +69,7 @@
 	(message "Running on GNU/Linux."))
 
 (when *w32* (add-to-list 'default-frame-alist '(font . "Consolas 12"))
-	(setq
+	(setopt
 	w32-lwindow-modifier 'super
 	w32-pass-lwindow-to-system nil
 	w32-apps-modifier 'hyper)
@@ -102,8 +102,7 @@
 ;; settings
 (set-language-environment 'utf-8)
 
-(setopt
-	initial-major-mode 'fundamental-mode
+(setopt	initial-major-mode 'fundamental-mode
 
 	default-input-method nil
 	tab-width 4
@@ -208,13 +207,6 @@
 ;; custom variables
 (setq custom-file (concat user-emacs-directory "custom.el"))
 
-;; backups
-(setq	auto-save-default nil
-	backup-by-copying t
-	make-backup-files nil)
-
-(unless *w32* (require 'backup-each-save) (add-hook 'after-save-hook 'backup-each-save))
-
 ;; path
 (if *mac* (use-package exec-path-from-shell
 	:custom	(shell-file-name "/usr/local/bin/bash"
@@ -285,12 +277,44 @@
 	(define-key view-mode-map (kbd "k")	'View-scroll-line-backward-top)
 	(define-key view-mode-map (kbd "q")	'View-kill-and-leave))
 
-;; Removes *Completions* buffer when done
+;; removes *Completions* buffer when done
 (add-hook 'minibuffer-exit-hook
 	(lambda() (let ((buffer "*Completions*")) (and (get-buffer buffer) (kill-buffer buffer)))))
 
 ;; opening multiple files
 (add-hook 'window-setup-hook 'delete-other-windows) ; Show only one active window
+
+;; backups / auto-save
+(setq	auto-save-default nil
+	auto-save-no-message nil
+	auto-save-visited-interval 60
+	create-lockfiles nil
+	kill-buffer-delete-auto-save-files t
+
+	backup-by-copying t
+	delete-old-versions t
+	make-backup-files t
+	vc-make-backup-files nil ; don't make back-ups in git-controlled dirs
+	version-control nil)
+
+;; copies every file you save in Emacs to a backup directory tree
+;; (require 'backup-each-save)
+;; (add-hook 'after-save-hook 'backup-each-save)
+
+;; http://xahlee.info/emacs/emacs/emacs_auto_save.html
+(when (>= emacs-major-version 26)
+	;; real auto save
+	(auto-save-visited-mode t))
+
+(if (version< emacs-version "27.1")
+	(add-hook 'focus-out-hook 'save-all-unsaved)
+	(setq after-focus-change-function 'save-all-unsaved))
+	;; to undo this, run: (setq after-focus-change-function 'ignore)
+
+;; https://protesilaos.com/codelog/2024-12-11-emacs-diff-save-some-buffers/
+(add-to-list 'save-some-buffers-action-alist
+	(list "d" (lambda (buffer) (diff-buffer-with-file (buffer-file-name buffer)))
+		"show diff between the buffer and its file"))
 
 ;; automatically save buffers associated with files on buffer or window switch
 (defadvice switch-to-buffer (before save-buffer-now activate)
@@ -305,14 +329,6 @@
 	(when buffer-file-name (save-buffer)))
 (defadvice windmove-right (before other-window-now activate)
 	(when buffer-file-name (save-buffer)))
-
-;; automatically save buffers associated with files on frame (app) switch
-(add-hook 'focus-out-hook (lambda() (save-some-buffers t)))
-
-;; https://protesilaos.com/codelog/2024-12-11-emacs-diff-save-some-buffers/
-(add-to-list 'save-some-buffers-action-alist
-	(list "d" (lambda (buffer) (diff-buffer-with-file (buffer-file-name buffer)))
-		"show diff between the buffer and its file"))
 
 ;; Tramp
 (setq	tramp-default-method "ssh"
@@ -1057,8 +1073,8 @@
 ;; <home>  is fn-left	<end>  is fn-right
 ;; <prior> is fn-up	<next> is fn-down
 
-(global-set-key (kbd "<home>") 'move-beginning-of-line)
-(global-set-key (kbd "<end>" ) 'move-end-of-line)
+(global-set-key (kbd "<home>") nil) ; 'move-beginning-of-line
+(global-set-key (kbd "<end>" ) nil) ; 'move-end-of-line
 (global-set-key (kbd "A-<left>") [home])
 (global-set-key (kbd "A-<right>") [end])
 
@@ -1238,8 +1254,9 @@
 (bind-key "C-c b m"	'new-markdown-buffer)
 (bind-key "C-c b n"	'new-empty-buffer)
 (bind-key "C-c b o"	'new-org-buffer)
+(bind-key "C-c b s"	(lambda() (interactive) (fancy-startup-screen)))
+(which-key-alias "C-c b s" "fancy-startup-screen")
 (which-key-alias "C-c b" "buffers")
-
 (bind-key "C-c c"	'calendar)
 
 (bind-key "C-c d SPC"	'display-current-time)
@@ -1348,4 +1365,4 @@
 ; LocalWords:  esr md noindent nEntered shoppinglist Cliplink el kbd
 ; LocalWords:  INPROGRESS kfhelp setq xm readabilizing JS dev Lorem
 ; LocalWords:  Gopherspace filesandbuffers ipsum ePub epub xelatex
-; LocalWords:  vcusepackage latexmk synctex bibtex cond
+; LocalWords:  vcusepackage latexmk synctex bibtex cond xah dirs
