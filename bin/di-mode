@@ -7,8 +7,6 @@ cond_source $HOME/.bash_routines
 
 [ $(which gcalcli) ] && gcalcli --lineart=ascii --nocolor --calendar=cpjh --calendar=Holidays calw && echo
 
-alert -f
-echo
 di
 
 TODAY=$(ssh bullwinkle "/usr/local/bin/icalBuddy -nc -df '%RD' \

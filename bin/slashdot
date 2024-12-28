@@ -1,0 +1,14 @@
+#!/bin/bash
+# /.
+# 2024-12-27
+
+cond_source() { [ -f $1 ] && . $1; }
+cond_source $HOME/.bash_routines
+
+echo "/."
+echo -e "$(date)"
+curl -s https://rss.slashdot.org/Slashdot/slashdotMain |xml2 |etoa |
+	grep "item/title" | sed 's/.*=//;s/^/- /'
+	# egrep "item/title|item/link" |
+	# gsed -e 's|/rss/channel/item/title=|\n- |' -e 's|/rss/channel/item/link=|[[|' |
+	# gsed '/\[\[/s/$/][link]]/;s/\?cmp=rss//'

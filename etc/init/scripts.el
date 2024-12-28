@@ -6,8 +6,14 @@
 	(shell-command "di-mode&" (current-buffer))
 	(view-mode)
 
+	(switch-to-buffer "*alert*")
+	(shell-command "alert -f" (current-buffer))
+	(view-mode)
+
 	(diary-list-entries (calendar-current-date) diary-number-of-entries)
-	(kill-buffer "diary"))
+	(kill-buffer "diary")
+
+	(message "'cbc' / 'xkcd'"))
 
 (defun cbc () "Today's headlines from CBC Ottawa"
 	(interactive)
@@ -15,6 +21,15 @@
 	(shell-command "cbc-mode" (current-buffer))
 	(org-mode)
 	(view-mode)
+	(goto-char (point-min)))
+
+(defun /. () "/."
+	(interactive)
+	(switch-to-buffer "*/.*")
+	(shell-command "slashdot" (current-buffer))
+	(org-mode)
+	(view-mode)
+	(jinx-mode -1)
 	(goto-char (point-min)))
 
 (defun cm () "Print version of monthly calendar."

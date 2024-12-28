@@ -1,4 +1,8 @@
-;;; Emacs configuration / cpjh -*- no-byte-compile: t; lexical-binding: t; -*-
+;;; Emacs --- configuration / cpjh -*- no-byte-compile: t; lexical-binding: t; -*-
+
+;;; Commentary:
+
+;;; Code:
 
 ;; Initialize terminal
 (blink-cursor-mode -1)
@@ -63,7 +67,12 @@
 
 	(dolist (key '("s-C" "s-D" "s-d" "s-e" "s-F" "s-f" "s-g" "s-j"
 		"s-L" "s-M" "s-m" "s-n" "s-p" "s-q" "s-t"))
-		(global-unset-key (kbd key))))
+		(global-unset-key (kbd key)))
+
+	(global-set-key (kbd "<home>") nil) ; 'move-beginning-of-line
+	(global-set-key (kbd "<end>" ) nil) ; 'move-end-of-line
+	(global-set-key (kbd "A-<left>") [home])
+	(global-set-key (kbd "A-<right>") [end]))
 
 (when *gnu* (add-to-list 'default-frame-alist '(font . "Monospace 17"))
 	(message "Running on GNU/Linux."))
@@ -83,13 +92,12 @@
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 (unless package-archive-contents (package-refresh-contents))
 
-(unless EMACS29
-	(unless (package-installed-p 'use-package)
-	(package-install 'use-package)))
-;; HACK use use-package to configure itself?
-(require 'use-package)
-(setf	use-package-always-ensure t
-	use-package-verbose nil)
+(unless (package-installed-p 'use-package)
+	(package-install 'use-package))
+(use-package use-package
+	:ensure	nil
+	:custom	(use-package-always-ensure t)
+		(use-package-verbose nil))
 
 ;; init/vcusepackage goes here, if needed.
 (unless EMACS30 (load "init/vcusepackage"))
@@ -118,6 +126,7 @@
 	bookmark-save-flag 1
 	bookmark-set-fringe-mark nil
 	bookmark-sort-flag nil
+	case-fold-search t
 	comp-async-report-warnings-errors 'silent
 	completion-auto-help 'always
 	completion-auto-select 'second-tab
@@ -177,19 +186,14 @@
 	visual-line-fringe-indicators '(nil right-curly-arrow)
 	what-cursor-show-names t
 
-	read-file-name-completion-ignore-case t
-	read-buffer-completion-ignore-case t
 	completion-ignore-case  t
-
-	case-fold-search t)
-
-;; https://lambdaland.org/posts/2024-12-14_emacs_catchup/
-(setopt tab-always-indent 'complete)
-(setopt completion-styles '(basic initials substring))
+	completion-styles '(basic initials substring)
+	read-buffer-completion-ignore-case t
+	read-file-name-completion-ignore-case t
+	tab-always-indent 'complete)
 
 ;; files
 (setq	abbrev-file-name		(concat user-emacs-directory "etc/abbrev_defs")
-	auto-save-list-file-prefix	(concat user-emacs-directory "var/auto-save/sessions/")
 	bookmark-default-file		(concat user-emacs-directory "etc/bookmarks")
 	eshell-aliases-file		(concat user-emacs-directory "etc/eshell/aliases")
 	eshell-directory-name		(concat user-emacs-directory "var/eshell/")
@@ -285,11 +289,11 @@
 (add-hook 'window-setup-hook 'delete-other-windows) ; Show only one active window
 
 ;; backups / auto-save
-(setq	auto-save-default nil
+(setopt	auto-save-default nil
+	;auto-save-list-file-prefix (concat user-emacs-directory "var/auto-save/sessions/")
 	auto-save-no-message nil
 	auto-save-visited-interval 60
 	create-lockfiles nil
-	kill-buffer-delete-auto-save-files t
 
 	backup-by-copying t
 	delete-old-versions t
@@ -302,9 +306,9 @@
 ;; (add-hook 'after-save-hook 'backup-each-save)
 
 ;; http://xahlee.info/emacs/emacs/emacs_auto_save.html
-(when (>= emacs-major-version 26)
-	;; real auto save
-	(auto-save-visited-mode t))
+;; (when (>= emacs-major-version 26)
+;; 	;; real auto save
+;; 	(auto-save-visited-mode t))
 
 (if (version< emacs-version "27.1")
 	(add-hook 'focus-out-hook 'save-all-unsaved)
@@ -330,6 +334,7 @@
 (defadvice windmove-right (before other-window-now activate)
 	(when buffer-file-name (save-buffer)))
 
+
 ;; Tramp
 (setq	tramp-default-method "ssh"
 	tramp-syntax 'simplified ; C-x C-f /remotehost:filename
@@ -338,15 +343,15 @@
 	tramp-persistency-file-name	(concat user-emacs-directory "var/tramp/persistency"))
 
 (defvar remote-tramp-bg "linen")
-(defun checker-tramp-file-hook ()
+(defun checker-tramp-file-hook () "File."
 	(when (file-remote-p buffer-file-name)
 	(face-remap-add-relative 'default :background remote-tramp-bg)))
 (add-hook 'find-file-hook 'checker-tramp-file-hook)
-(defun checker-tramp-dired-hook ()
+(defun checker-tramp-dired-hook () "Directory."
 	(when (file-remote-p dired-directory)
 	(face-remap-add-relative 'default :background remote-tramp-bg)))
 (add-hook 'dired-after-readin-hook 'checker-tramp-dired-hook)
-(defun checker-tramp-shell-hook ()
+(defun checker-tramp-shell-hook () "Shell."
 	(when (file-remote-p default-directory)
 	(face-remap-add-relative 'default :background remote-tramp-bg)))
 (add-hook 'shell-mode-hook 'checker-tramp-shell-hook)
@@ -356,8 +361,7 @@
 ;; https://korewanetadesu.com/emacs-on-os-x.html
 (when (featurep 'ns) (add-hook 'after-make-frame-functions 'ns-raise-emacs-with-frame))
 
-(when *mac*
-	;; start Emacs server
+(when *mac* ;; start Emacs server
 	(use-package mac-pseudo-daemon :config (mac-pseudo-daemon-mode))
 	(if (not (boundp 'server-process)) (server-start))
 	(if (boundp 'server-process) (message "Server running.")))
@@ -422,13 +426,13 @@
 (with-eval-after-load 'dired
 	(require 'dired-x)
 	(unless *w32* (setq dired-kill-when-opening-new-dired-buffer t))
-	(setq	dired-dwim-target t ; suggest other visible Dired buffer
+	(setopt	dired-dwim-target t ; suggest other visible Dired buffer
 		dired-listing-switches "-aBhl  --group-directories-first"
 		dired-omit-files (concat dired-omit-files
 		"\\|^INDEX$\\|-t\\.tex$\\|\\.DS_Store$\\|\\.localized$")
 		dired-omit-verbose nil)
 	(require 'ls-lisp)
-	(setq	ls-lisp-use-string-collate nil
+	(setopt	ls-lisp-use-string-collate nil
 		ls-lisp-use-insert-directory-program nil
 		ls-lisp-ignore-case 't)
 
@@ -585,14 +589,23 @@
 	:bind (	:map eww-mode-map
 		("[" . eww-back-url)
 		("]" . eww-forward-url)
+		("Q" . eww-unfill-paragraph)
 		:map eww-bookmark-mode-map
 		("w" . eww))
 	:config	(url-setup-privacy-info)
+	(defun eww-unfill-paragraph ()
+		(interactive)
+		(read-only-mode -1)
+		(unfill-paragraph)
+		(read-only-mode))
 	(add-hook 'eww-after-render-hook 'eww-readable) ;; default to 'readable-mode'
 
 	(use-package ace-link :config (ace-link-setup-default))) ;; alternative to tabbing
 
-(use-package flycheck)
+(use-package flycheck
+	:hook	(emacs-lisp-mode . flycheck-mode)
+	:init	(setq checkdoc-force-docstrings-flag nil)
+	:config	(which-key-alias "C-c !" "flycheck"))
 
 (use-package free-keys :defer t)
 
@@ -739,22 +752,22 @@
 		:custom (nov-save-place-file (concat user-emacs-directory "var/nov-places"))
 		:init	(add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode)))
 
-	(use-package save-check
-		:vc (save-check :url "https://github.com/skx/save-check.el.git"
-		:rev :newest)
-		:config (setq save-check-show-eval t)
-			(global-save-check-mode t))
+	;; (use-package save-check
+	;; 	:vc (save-check :url "https://github.com/skx/save-check.el.git" :rev :newest)
+	;; 	:config (setq save-check-show-eval t)
+	;; 		(global-save-check-mode t))
 
 	(use-package xkcd
+		:hook	(xkcd-mode . (lambda () (setq-local cursor-type nil)))
 		:init	(setq	xkcd-cache-dir    (concat user-emacs-directory "var/xkcd/")
 				xkcd-cache-latest (concat user-emacs-directory "var/xkcd/latest"))
 		:config (defun xkcd-add-alt (&rest r)
-			(interactive)
-			(read-only-mode -1)
-			(setq-local cursor-type nil fill-column (window-width))
-			(visual-line-mode 1)
-			(insert "\n\n" xkcd-alt "\n")
-			(read-only-mode t))
+				(interactive)
+				(read-only-mode -1)
+				(setq-local fill-column (window-width))
+				(visual-line-mode 1)
+				(insert "\n\n" xkcd-alt "\n")
+				(read-only-mode t))
 		(advice-add 'xkcd-alt-text :override #'xkcd-add-alt)
 		(advice-add 'xkcd-get :after #'xkcd-add-alt)))
 
@@ -773,11 +786,10 @@
 (add-hook 'fill-nobreak-predicate #'fill-french-nobreak-p)
 (define-key text-mode-map (kbd "C-M-i") nil)
 
-;; HACK convert to :custom
 (use-package visual-fill-column
+	:custom (visual-fill-column-fringes-outside-margins nil)
 	:hook	(visual-line-mode . visual-fill-column-mode)
-	:config (setq visual-fill-column-fringes-outside-margins nil)
-		(advice-add 'text-scale-adjust :after #'visual-fill-column-adjust))
+	:config (advice-add 'text-scale-adjust :after #'visual-fill-column-adjust))
 
 (use-package adaptive-wrap
 	:hook	(visual-line-mode . adaptive-wrap-prefix-mode))
@@ -870,8 +882,7 @@
 	:bind (	("M-$" . jinx-correct)
 		("C-M-$" . jinx-languages))
 	:hook	(emacs-startup . global-jinx-mode)
-	:config
-	(load "init/jinx-routines")
+	:config	(load "init/jinx-routines")
 	(add-hook 'jinx-mode-hook #'my/jinx-add-ispell-localwords)
 	(setf (alist-get ?* jinx--save-keys) #'my/jinx-save-as-ispell-localword))
 
@@ -1073,11 +1084,6 @@
 ;; <home>  is fn-left	<end>  is fn-right
 ;; <prior> is fn-up	<next> is fn-down
 
-(global-set-key (kbd "<home>") nil) ; 'move-beginning-of-line
-(global-set-key (kbd "<end>" ) nil) ; 'move-end-of-line
-(global-set-key (kbd "A-<left>") [home])
-(global-set-key (kbd "A-<right>") [end])
-
 (global-set-key (kbd "C-<home>" ) 'beginning-of-buffer)
 (global-set-key (kbd "C-<end>"  ) (lambda()(interactive)(end-of-buffer)(recenter -1)))
 (global-set-key (kbd "C-<prior>") 'scroll-down-line)
@@ -1254,7 +1260,8 @@
 (bind-key "C-c b m"	'new-markdown-buffer)
 (bind-key "C-c b n"	'new-empty-buffer)
 (bind-key "C-c b o"	'new-org-buffer)
-(bind-key "C-c b s"	(lambda() (interactive) (fancy-startup-screen)))
+(bind-key "C-c b s"	'my/fancy-startup-screen)
+(defun my/fancy-startup-screen () (interactive) (fancy-startup-screen))
 (which-key-alias "C-c b s" "fancy-startup-screen")
 (which-key-alias "C-c b" "buffers")
 (bind-key "C-c c"	'calendar)
@@ -1280,7 +1287,7 @@
 (which-key-alias "C-c o" "org")
 
 (bind-key "C-c q"	'dictionary-search)
-(bind-key "C-c w"	'eww-list-bookmarks) ; www
+(bind-key "C-c w"	'eww-list-bookmarks) ; WWW
 (which-key-alias "C-c w" "eww")
 
 (bind-key "C-c x b"	'flush-blank-lines)
@@ -1359,10 +1366,14 @@
 	default-directory "c:/Users/henrypa/OneDrive - City of Ottawa/"
 	org-agenda-file (concat default-directory "!.org")))
 
+(provide 'init)
+;;; init.el ends here
+
 ; LocalWords:  canadian sug aspell memq eval RET kfhelppanels init FN
 ; LocalWords:  pdfexport melpa vers tls dg defs eshell multisession
 ; LocalWords:  persistency ido Ibuffer elfeed rc rmh elfeedroutines
 ; LocalWords:  esr md noindent nEntered shoppinglist Cliplink el kbd
 ; LocalWords:  INPROGRESS kfhelp setq xm readabilizing JS dev Lorem
 ; LocalWords:  Gopherspace filesandbuffers ipsum ePub epub xelatex
-; LocalWords:  vcusepackage latexmk synctex bibtex cond xah dirs
+; LocalWords:  vcusepackage latexmk synctex bibtex cond xah dirs Ctrl
+; LocalWords:  remotehost flycheck modeline mori
