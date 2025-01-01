@@ -27,10 +27,17 @@ Goodwood Lodge
 
 (define-abbrev-table 'org-mode-abbrev-table
   '(
+    ("dinkus" "\\begin{center}* * *\\end{center}" nil :count 0)
     ("myheaders" ":HEADERS:
 #+OPTIONS: num:nil
 #+LATEX_CLASS_OPTIONS: [a5paper,12pt]
 #+LATEX_HEADER: \\usepackage[margin=0.5in,bottom=0.75in]{geometry}
+#+LATEX_HEADER: \\usepackage{titling}
+#+LATEX_HEADER: \\pretitle{\\begin{center}\\large\\textbf}\\posttitle{\\end{center}}
+#+LATEX_HEADER: \\usepackage{sectsty}
+#+LATEX_HEADER: \\sectionfont{\\normalsize\\selectfont}
+#+LATEX_HEADER: \\subsectionfont{\\normalsize\\selectfont}
+#+LATEX_HEADER: \\subsubsectionfont{\\normalsizeo\\selectfont}
 #+LATEX_HEADER: \\usepackage{parskip}
 #+LATEX_HEADER: \\renewcommand{\\thefootnote}{\\fnsymbol{footnote}}
 #+LATEX_HEADER: \\raggedright

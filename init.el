@@ -53,6 +53,7 @@
 
 	(global-set-key (kbd "s-a") 'mark-whole-buffer)
 	(global-set-key (kbd "s-E") 'edit-abbrevs)
+	(global-set-key (kbd "s-f") 'isearch-forward-regexp)
 	(global-set-key (kbd "s-h") 'ns-do-hide-emacs)
 	(global-set-key (kbd "s-k") 'kill-current-buffer)
 	(global-set-key (kbd "s-l") 'goto-line)
@@ -427,9 +428,11 @@
 	(require 'dired-x)
 	(unless *w32* (setq dired-kill-when-opening-new-dired-buffer t))
 	(setopt	dired-dwim-target t ; suggest other visible Dired buffer
+		dired-garbage-files-regexp (concat dired-garbage-files-regexp
+		"\\|\\.DS_Store$\\|\\.old$\\|\\.synctex\\.gz\\|\\.log$")
 		dired-listing-switches "-aBhl  --group-directories-first"
 		dired-omit-files (concat dired-omit-files
-		"\\|^INDEX$\\|-t\\.tex$\\|\\.DS_Store$\\|\\.localized$")
+		"\\|^INDEX$\\|-t\\.tex$\\|\\.localized$")
 		dired-omit-verbose nil)
 	(require 'ls-lisp)
 	(setopt	ls-lisp-use-string-collate nil
@@ -442,7 +445,7 @@
 	(if (keymap-lookup dired-mode-map "% s")
 		(message "Error: %% s already defined in dired-mode-map")
 		(define-key dired-mode-map "%s" 'my-dired-substspaces))
-	(add-hook 'dired-mode-hook (lambda()(dired-omit-mode 1))))
+	(add-hook 'dired-mode-hook 'dired-omit-mode))
 
 
 ;; Ibuffer
@@ -809,7 +812,8 @@
 	(visual-fill-column-mode -1)))
 
 ;; Emacs lisp
-(add-hook 'emacs-lisp-mode-hook (lambda() (setq tab-width 8 truncate-lines -1)))
+(add-hook 'emacs-lisp-mode-hook (lambda()
+	(setq tab-width 8 truncate-lines -1)))
 
 ;; bash
 (add-to-list 'auto-mode-alist '("\\.bash*" . sh-mode))
@@ -1035,10 +1039,14 @@
 (define-key org-mode-map (kbd "M-]") 'org-forward-heading-same-level)
 (define-key org-mode-map (kbd "C-M-<left>" ) 'outline-up-heading)
 (define-key org-mode-map (kbd "C-M-<right>") (lambda()(interactive)(org-end-of-subtree)))
+
 (define-key org-mode-map (kbd "s-S-<left>")  (lambda()(interactive)(org-call-with-arg 'org-todo 'left)))
 (define-key org-mode-map (kbd "s-S-<right>") (lambda()(interactive)(org-call-with-arg 'org-todo 'right)))
 (define-key org-mode-map (kbd "s-S-<up>") 'org-priority-up)
 (define-key org-mode-map (kbd "s-S-<down>") 'org-priority-down)
+
+(define-key org-mode-map (kbd "<home>") 'move-beginning-of-line)
+(define-key org-mode-map (kbd "<end>") 'move-end-of-line)
 
 ;; primarily for cbc-mode, but also useful for other org files in view-mode
 (with-eval-after-load 'view
@@ -1057,7 +1065,9 @@
 
 (add-hook 'org-agenda-finalize-hook 'delete-other-windows)
 
-(add-hook 'org-mode-hook (lambda() (visual-fill-column-mode -1)))
+(add-hook 'org-mode-hook 'visual-fill-column-mode--disable)
+
+(add-to-list 'org-entities-user '("textnumero" "\\textnumero" nil "&numero;" "No." "No." "№"))
 
 (load "init/org") ; org-mode functions
 
@@ -1376,4 +1386,4 @@
 ; LocalWords:  INPROGRESS kfhelp setq xm readabilizing JS dev Lorem
 ; LocalWords:  Gopherspace filesandbuffers ipsum ePub epub xelatex
 ; LocalWords:  vcusepackage latexmk synctex bibtex cond xah dirs Ctrl
-; LocalWords:  remotehost flycheck modeline mori
+; LocalWords:  remotehost flycheck modeline mori featurep
