@@ -1,7 +1,6 @@
 ;;; Emacs --- configuration / cpjh -*- no-byte-compile: t; lexical-binding: t; -*-
 
 ;;; Commentary:
-
 ;;; Code:
 
 ;; Initialize terminal
@@ -37,14 +36,13 @@
 	(defalias 'keymap-global-set 'global-set-key)
 	(defalias 'setopt 'customize-set-variable))
 
-(when *mac* (add-to-list 'default-frame-alist '(font . "Inconsolata 21"))
-	(setopt
-	mac-function-modifier nil
-	mac-control-modifier 'control	; Control
-	mac-option-modifier 'meta	; Meta
-	mac-command-modifier 'super	; Super
-	mac-right-command-modifier 'alt	; Alt
-	mac-right-option-modifier nil)	; pass-thru
+(when *mac*
+	(setopt	mac-function-modifier nil
+		mac-control-modifier 'control	; Control
+		mac-option-modifier 'meta	; Meta
+		mac-command-modifier 'super	; Super
+		mac-right-command-modifier 'alt	; Alt
+		mac-right-option-modifier nil)	; pass-thru
 
 	(global-set-key (kbd "s-c") 'ns-copy-including-secondary)	; ⌘-c = Copy
 	(global-set-key (kbd "s-x") 'kill-region)			; ⌘-x = Cut
@@ -73,22 +71,29 @@
 	(global-set-key (kbd "<home>") nil) ; 'move-beginning-of-line
 	(global-set-key (kbd "<end>" ) nil) ; 'move-end-of-line
 	(global-set-key (kbd "A-<left>") [home])
-	(global-set-key (kbd "A-<right>") [end]))
+	(global-set-key (kbd "A-<right>") [end])
 
-(when *gnu* (add-to-list 'default-frame-alist '(font . "Monospace 17"))
+	(add-to-list 'default-frame-alist '(font . "Inconsolata 21")))
+
+(when *gnu*
+	(add-to-list 'default-frame-alist '(font . "Monospace 17"))
 	(message "Running on GNU/Linux."))
 
-(when *w32* (add-to-list 'default-frame-alist '(font . "Consolas 12"))
-	(setopt
-	w32-lwindow-modifier 'super
-	w32-pass-lwindow-to-system nil
-	w32-apps-modifier 'hyper)
+(when *w32*
+	(setopt	w32-lwindow-modifier 'super
+		w32-pass-lwindow-to-system nil
+		w32-apps-modifier 'hyper)
+
+	(add-to-list 'default-frame-alist '(font . "Consolas 12"))
 	(menu-bar-mode 1)
 	(message "Running on Windows."))
 
 ;; Initialize package manager
-(setq gnutls-algorithm-priority "normal:-vers-tls1.3")
 (require 'package)
+(require 'gnutls)
+(setopt	gnutls-algorithm-priority "normal:-vers-tls1.3"
+	gnutls-verify-error nil
+	package-archive-column-width 1)
 (package-initialize)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 (unless package-archive-contents (package-refresh-contents))
@@ -111,42 +116,26 @@
 ;; settings
 (set-language-environment 'utf-8)
 
+(defvar	default-major-mode 'text-mode "Default mode when creating new buffers.")
 (setopt	initial-major-mode 'fundamental-mode
-
 	default-input-method nil
 	tab-width 4
 	standard-indent 4
-	help-window-select t
 	indicate-empty-lines t
-	x-stretch-cursor t)
-
-(setq	default-major-mode 'text-mode
+	x-stretch-cursor t
 
 	ad-redefinition-action 'accept
 	async-shell-command-buffer 'new-buffer
-	bookmark-save-flag 1
-	bookmark-set-fringe-mark nil
-	bookmark-sort-flag nil
 	case-fold-search t
-	comp-async-report-warnings-errors 'silent
-	completion-auto-help 'always
-	completion-auto-select 'second-tab
 	cursor-in-non-selected-windows nil
 	delete-by-moving-to-trash t
-	dictionary-server "dict.org"
 	enable-recursive-minibuffers t
 	enable-remote-dir-locals t ; .dir-locals.el
 	find-file-visit-truename t
-	frame-inhibit-implied-resize t
-	frame-resize-pixelwise t
-	frame-title-format nil
-	gnutls-verify-error nil
-	global-auto-revert-non-file-buffers t ; Revert buffer when the underlying file has changed
 	goto-address-mail-face 'default
 	help-clean-buttons t
 	help-enable-variable-value-editing t
-	ibuffer-expert t
-	inhibit-compacting-font-caches t
+	help-window-select t
 	inhibit-default-init t
 	inhibit-startup-message t ; 'About Emacs'
 	inhibit-startup-buffer-menu t ; Don't show *Buffer list*
@@ -156,21 +145,16 @@
 	kill-ring-max 512
 	kill-whole-line t
 	ls-lisp-use-localized-time-format t
-	Man-notify-method 'pushy
 	mark-ring-max most-positive-fixnum
 	max-lisp-eval-depth 65536
-	message-kill-buffer-on-exit t
-	package-archive-column-width 1
 	page-delimiter "^[#; ]*"
 	pop-up-windows nil
 	pop-up-frames nil
-	prettify-symbols-unprettify-at-point 'right-edge
 	recenter-positions '(top) ; top middle bottom
 	require-final-newline nil
 	resize-mini-windows t
 	revert-buffer-quick-short-answers t
 	ring-bell-function 'ignore
-	save-abbrevs 'silent
 	save-interprogram-paste-before-kill t
 	search-default-mode 'char-fold-to-regexp ; cafe = café
 	sentence-end-double-space nil
@@ -184,33 +168,25 @@
 	use-file-dialog nil
 	use-short-answers t
 	view-read-only nil ; turn on view mode when buffer is read-only
-	visual-line-fringe-indicators '(nil right-curly-arrow)
 	what-cursor-show-names t
 
-	completion-ignore-case  t
+	;; completion
+	completion-auto-help 'always
+	completion-auto-select 'second-tab
 	completion-styles '(basic initials substring)
 	read-buffer-completion-ignore-case t
 	read-file-name-completion-ignore-case t
 	tab-always-indent 'complete)
 
 ;; files
-(setq	abbrev-file-name		(concat user-emacs-directory "etc/abbrev_defs")
-	bookmark-default-file		(concat user-emacs-directory "etc/bookmarks")
-	eshell-aliases-file		(concat user-emacs-directory "etc/eshell/aliases")
-	eshell-directory-name		(concat user-emacs-directory "var/eshell/")
-	multisession-directory		(concat user-emacs-directory "var/multisession")
+(setopt	custom-file			(concat user-emacs-directory "custom.el"))
+(setq	multisession-directory		(concat user-emacs-directory "var/multisession")
 	nsm-settings-file		(concat user-emacs-directory "var/network-security.data")
 	request-storage-directory	(concat user-emacs-directory "var/request/storage/")
-
 	transient-history-file		(concat user-emacs-directory "var/transient/history.el")
 	transient-levels-file		(concat user-emacs-directory "var/transient/levels.el")
 	transient-values-file		(concat user-emacs-directory "var/transient/values.el")
-
-	url-cache-directory		(concat user-emacs-directory "var/url/cache/")
 	url-configuration-directory	(concat user-emacs-directory "var/url/configuration/"))
-
-;; custom variables
-(setq custom-file (concat user-emacs-directory "custom.el"))
 
 ;; path
 (if *mac* (use-package exec-path-from-shell
@@ -226,11 +202,30 @@
 
 ;; buffers
 (load "init/filesandbuffers")
+
+(require 'abbrev)
+(setopt	save-abbrevs 'silently
+	abbrev-file-name	(concat user-emacs-directory "etc/abbrev_defs"))
+
+(require 'bookmark)
+(setopt	bookmark-save-flag 1
+	bookmark-set-fringe-mark nil
+	bookmark-sort-flag nil
+	bookmark-default-file	(concat user-emacs-directory "etc/bookmarks"))
+
+(require 'eshell)
+(setopt	eshell-aliases-file	(concat user-emacs-directory "etc/eshell/aliases")
+	eshell-directory-name	(concat user-emacs-directory "var/eshell/"))
+
 (require 'formfeed-hline)
-(if (featurep 'formfeed-hline) (formfeed-hline-mode))
+(if (featurep 'formfeed-hline)	(formfeed-hline-mode))
+
+(require 'man)
+(setopt	Man-notify-method 'pushy)
 
 (require 'prog-mode)
 ;; HACK (if (featurep 'prog-mode) (global-prettify-symbols-mode))
+(setopt	prettify-symbols-unprettify-at-point 'right-edge)
 
 (add-hook 'before-save-hook 'time-stamp)
 
@@ -359,6 +354,10 @@
 
 
 ;; frames
+(setq	frame-inhibit-implied-resize t
+	frame-resize-pixelwise t
+	frame-title-format nil)
+
 ;; https://korewanetadesu.com/emacs-on-os-x.html
 (when (featurep 'ns) (add-hook 'after-make-frame-functions 'ns-raise-emacs-with-frame))
 
@@ -418,7 +417,7 @@
 
 ;; M-x enhancement
 (use-package smex
-	:bind	(("M-x" . smex))
+	:bind (	("M-x" . smex))
 	:custom	(smex-save-file (concat user-emacs-directory "var/smex.history"))
 	:config	(smex-initialize))
 
@@ -450,61 +449,64 @@
 
 ;; Ibuffer
 ;; https://www.emacswiki.org/emacs/IbufferMode
-(require 'ibuffer)
-(defalias 'list-buffers 'ibuffer) ; always use Ibuffer
-
-(setq	ibuffer-default-sorting-mode 'alphabetic
-	ibuffer-hidden-filter-groups (list "Helm" "*Internal*")
-	ibuffer-saved-filter-groups (quote (("home"
-		("Dired" (mode . dired-mode) )
-		("Emacs" (or (name . "^\\*scratch\\*$")
-			(name . "^\\*Messages\\*$")
-			(name . "\\.el")))
-		("Text" (or (name . "\\.txt")
-			(name . "\\.text")))
-		("Markdown" (name . "\\.md"))
-		("Org" (name . "\\.org"))
-		("TeX" (name . "\\.tex"))
-		("Planner" (or (mode . calendar-mode)
-			(mode . diary-mode)
-			(mode . diary-fancy-display-mode)
-			(name . "^\\*daily-info\\*")
-			(name . "^\\*Org Agenda\\*")
-			(name . "^\\*Virgo\\*")
-			(name . "^calendar@*")))
-		;("erc" (mode . erc-mode))
-		("Eww"   (mode . eww-mode))
-		("gnus" (or (mode . message-mode)
-			(mode . bbdb-mode)
-			(mode . mail-mode)
-			(mode . gnus-group-mode)
-			(mode . gnus-summary-mode)
-			(mode . gnus-article-mode)
-			(name . "^\\.bbdb$")
-			(name . "^\\.newsrc-dribble"))) ))))
-
-(define-key ibuffer-mode-map (kbd "<up>")   'ibuffer-previous-line)
-(define-key ibuffer-mode-map (kbd "<down>") 'ibuffer-next-line)
-(define-key ibuffer-mode-map (kbd "<left>") 'ibuffer-previous-header)
-(define-key ibuffer-mode-map (kbd "<right>")'ibuffer-next-header)
-(define-key ibuffer-mode-map (kbd "<return>")(lambda()(interactive)(ibuffer-visit-buffer)
-	(let ((buffer "*Ibuffer*")) (and (get-buffer buffer) (kill-buffer buffer)))))
-(add-hook 'ibuffer-mode-hook (lambda()
-	(ibuffer-switch-to-saved-filter-groups "home")
-	(ibuffer-update nil t)))
-
-(require 'ibuf-ext)
-(add-to-list 'ibuffer-never-show-predicates "^\\*Messages\\*")
-(add-to-list 'ibuffer-never-show-predicates "^\\*Shell Command Output\\*")
-(add-to-list 'ibuffer-never-show-predicates "^\\*tramp/")
-(add-to-list 'ibuffer-never-show-predicates "^\\*Latex Preview Pane Welcome\\*")
+(use-package ibuffer
+	:ensure	nil
+	:custom	(ibuffer-default-sorting-mode 'alphabetic)
+		(ibuffer-expert t)
+		(ibuffer-saved-filter-groups (quote (("home"
+			("Dired" (mode . dired-mode) )
+			("Emacs" (or (name . "^\\*scratch\\*$")
+				(name . "^\\*Messages\\*$")
+				(name . "\\.el")))
+			("Text" (or (name . "\\.txt")
+				(name . "\\.text")))
+			("Markdown" (name . "\\.md"))
+			("Org" (name . "\\.org"))
+			("TeX" (name . "\\.tex"))
+			("Planner" (or (mode . calendar-mode)
+				(mode . diary-mode)
+				(mode . diary-fancy-display-mode)
+				(name . "^\\*daily-info\\*")
+				(name . "^\\*Org Agenda\\*")
+				(name . "^\\*Virgo\\*")
+				(name . "^calendar@*")))
+			;("erc" (mode . erc-mode))
+			("Eww"   (mode . eww-mode))
+			("gnus" (or (mode . message-mode)
+				(mode . bbdb-mode)
+				(mode . mail-mode)
+				(mode . gnus-group-mode)
+				(mode . gnus-summary-mode)
+				(mode . gnus-article-mode)
+				(name . "^\\.bbdb$")
+				(name . "^\\.newsrc-dribble"))) ))))
+	:bind ( :map ibuffer-mode-map
+		("<up>" . ibuffer-previous-line)
+		("<down>" . ibuffer-next-line)
+		("<left>" . ibuffer-previous-header)
+		("<right>" . ibuffer-next-header)
+		("<return>" . my/ibuffer-visit-buffer))
+	:init	(defalias 'list-buffers 'ibuffer) ; always use Ibuffer
+	:config	(defun my/ibuffer-visit-buffer ()
+		(interactive)
+		(ibuffer-visit-buffer)
+		(let ((buffer "*Ibuffer*")) (and (get-buffer buffer)
+			(kill-buffer buffer))))
+	(add-hook 'ibuffer-mode-hook (lambda()
+		(ibuffer-switch-to-saved-filter-groups "home")
+		(ibuffer-update nil t)))
+	(require 'ibuf-ext)
+	(add-to-list 'ibuffer-never-show-predicates "^\\*Messages\\*")
+	(add-to-list 'ibuffer-never-show-predicates "^\\*Shell Command Output\\*")
+	(add-to-list 'ibuffer-never-show-predicates "^\\*tramp/")
+	(add-to-list 'ibuffer-never-show-predicates "^\\*Latex Preview Pane Welcome\\*"))
 
 
 ;; calendar
 (require 'calendar)
 (require 'diary-lib)
 (load "init/calendar")
-(setq	diary-file "~/Documents/diary"
+(setopt	diary-file "~/Documents/diary"
 
 	diary-display-function 'diary-fancy-display
 	diary-list-include-blanks t
@@ -526,7 +528,8 @@
 	calendar-chinese-all-holidays-flag t
 	holiday-general-holidays nil)
 
-(define-key calendar-mode-map (kbd "m") nil) ; don't allow marking of diary entries
+;; don't allow marking of diary entries
+(define-key calendar-mode-map (kbd "m") nil)
 (easy-menu-remove-item calendar-mode-map '(menu-bar diary) "Mark All")
 
 (define-key calendar-mode-map (kbd "q") 'calendar-exit-kill)
@@ -540,7 +543,8 @@
 	["Yearly Holidays" list-holidays-this-year])
 
 (advice-add 'calendar-exit :before #'save-diary-before-calendar-exit)
-(advice-add 'calendar-goto-info-node :after (lambda (&rest r) (calendar-exit-kill) (delete-other-windows)))
+(advice-add 'calendar-goto-info-node :after (lambda (&rest r)
+	(calendar-exit-kill) (delete-other-windows)))
 
 (add-hook 'diary-list-entries-hook 'diary-sort-entries t)
 (add-hook 'diary-fancy-display-mode-hook 'alt-clean-equal-signs)
@@ -563,6 +567,10 @@
 (use-package which-key
 	:config (which-key-mode)
 	(defalias 'which-key-alias 'which-key-add-key-based-replacements))
+
+(use-package dictionary
+	:ensure	nil
+	:custom	(dictionary-server "dict.org"))
 
 (use-package elpher
 	:bind (	:map elpher-mode-map
@@ -694,6 +702,7 @@
 	(add-hook 'rmail-quit-hook 'kill-current-buffer)
 
 	(require 'message)
+	(setopt message-kill-buffer-on-exit t)
 	(define-key message-mode-map (kbd "A-<return>") 'message-send-and-exit)
 
 	;; RSS
@@ -781,11 +790,14 @@
 
 ;; Text, Prog, and Markdown modes
 (require 'table)
+(setopt	visual-line-fringe-indicators '(nil right-curly-arrow))
+
 (add-hook 'text-mode-hook (lambda()
 	(abbrev-mode)
 	(goto-address-mode)
 	(table-recognize)
 	(visual-line-mode)))
+
 (add-hook 'fill-nobreak-predicate #'fill-french-nobreak-p)
 (define-key text-mode-map (kbd "C-M-i") nil)
 
@@ -813,7 +825,8 @@
 
 ;; Emacs lisp
 (add-hook 'emacs-lisp-mode-hook (lambda()
-	(setq tab-width 8 truncate-lines -1)))
+	(setq 	tab-width 8
+		truncate-lines -1)))
 
 ;; bash
 (add-to-list 'auto-mode-alist '("\\.bash*" . sh-mode))
@@ -846,7 +859,7 @@
 		("\\.markdown\\'" . markdown-mode)
 		("\\.gmi\\'" . markdown-mode))
 	:commands (markdown-mode gfm-mode)
-	:init 	(setq markdown-hide-urls t)
+	:init 	(setopt markdown-hide-urls t)
 	:config (add-to-list 'markdown-uri-types "gemini"))
 
 (load "init/text") ; text functions
@@ -909,8 +922,7 @@
 (require 'org)
 (require 'ox-md)
 
-(setq-default
-	org-startup-indented nil
+(setopt	org-startup-indented nil
 	org-pretty-entities t
 	org-use-sub-superscripts "{}"
 	org-hide-emphasis-markers t
@@ -918,10 +930,7 @@
 	org-startup-with-inline-images t
 	org-image-actual-width '(300))
 
-(setq	org-directory "~/Documents/org"
-	org-agenda-file (concat org-directory "/daily.org")
-	org-agenda-files (list org-agenda-file)
-	org-agenda-text-search-extra-files '(agenda-archives)
+(setopt	org-directory "~/Documents/org"
 	org-default-notes-file (concat org-directory "/notes.org")
 	org-id-locations-file (concat user-emacs-directory "var/org-id-locations")
 
@@ -939,17 +948,20 @@
 	org-log-state-notes-into-drawer nil
 	org-priority-enable-commands t
 	org-return-follows-link t
-	org-src-fontify-natively t
 	org-special-ctrl-a/e t
+	org-src-fontify-natively t
 	org-support-shift-select 'always
 
 	org-auto-align-tags nil
 	org-tags-column 0)
 
-(setq	org-agenda-include-diary nil
+(setq	org-agenda-file (concat org-directory "/daily.org")
+	org-agenda-files (list org-agenda-file)
+	org-agenda-include-diary nil
 	org-agenda-skip-deadline-if-done t
 	org-agenda-skip-scheduled-if-done t
 	org-agenda-start-on-weekday nil
+	org-agenda-text-search-extra-files '(agenda-archives)
 	org-agenda-todo-ignore-deadlines t
 	org-agenda-todo-ignore-scheduled t)
 
@@ -973,41 +985,7 @@
 	org-latex-pdf-process (list
 		(concat "latexmk -" org-latex-compiler " -recorder -synctex=1 -bibtex-cond %b")))
 
-(setq	org-tags-exclude-from-inheritance '("PROJECT")
-	org-todo-keywords '((sequence "TODO" "DONE"))
-	org-todo-keyword-faces '(("INPROGRESS" . (:foreground "blue" :weight bold)) )
-	org-emphasis-alist '(
-	("*" bold)
-	("**" bold)
-	("/" italic)
-	("_" italic)
-	("=" (:background "maroon" :foreground "white"))
-	("~" (:background "deep sky blue" :foreground "MidnightBlue"))
-	("+" (:strike-through t)))
-
-
-	org-agenda-custom-commands '(
-	("P" "Project List"	((tags "PROJECT")))
-	("O" "Office"		((agenda)(tags-todo "OFFICE")))
-	("W" "Weekly Plan"	((agenda)(todo "TODO")(tags "PROJECT")))
-	("H" "Home NA Lists"((agenda)(tags-todo "HOME")(tags-todo "COMPUTER"))))
-
-	org-capture-templates '(
-	("c" "Cookbook" entry (file "~/Documents/org/cookbook.org")
-	"%(org-chef-get-recipe-from-url)" :empty-lines 1)
-	("m" "Manual Cookbook" entry (file "~/Documents/org/cookbook.org")
-	"* %^{Recipe title: }\n:PROPERTIES:\n:source-url:\n:servings:\n:prep-time:\n:cook-time:\n:ready-in:\n:END:\n** Ingredients\n%?\n** Directions\n\n\n** Notes\n\n")
-
-	;; https://benadha.com/notes/how-i-manage-my-reading-list-with-org-mode/
-	("i" "📥 Inbox" entry (file "~/Documents/org/inbox.org") "* %?\n  %i\n" :prepend t)
-	("j" "📔 Journal" entry (file+datetree "~/Documents/org/journal.org") "* %? %^G\nEntered on %U\n  %i\n")
-	("b" "📑 Bookmark" entry (file "~/Documents/org/bookmarks.org") "* %? %^g\n  %i\n" :prepend t)
-	("s" "🛒 Shopping List" entry (file+headline "~/Documents/org/shoppinglist.org" "SHOPPING LIST") "* TODO %?\n  %i\n" :prepend t)
-
-	;; https://github.com/rexim/org-cliplink
-	("K" "Cliplink capture task" entry (file "") "* TODO %(org-cliplink-capture) \n  SCHEDULED: %t\n" :empty-lines 1)
-	) ; capture templates
-	) ; set
+(load "init/org-customizations") ; templates and custom commands
 
 (set-face-underline 'org-ellipsis nil)
 
@@ -1048,13 +1026,13 @@
 (define-key org-mode-map (kbd "<home>") 'move-beginning-of-line)
 (define-key org-mode-map (kbd "<end>") 'move-end-of-line)
 
+(define-key org-mode-map (kbd "C-c '") 'org-edit-special-no-fill)
+
 ;; primarily for cbc-mode, but also useful for other org files in view-mode
 (with-eval-after-load 'view
 	(define-key view-mode-map (kbd "[") 'org-previous-link)
 	(define-key view-mode-map (kbd "]") 'org-next-link)
 	(define-key view-mode-map (kbd "RET") nil))
-
-(define-key org-mode-map (kbd "C-c '") 'org-edit-special-no-fill)
 
 ;; ispell should not check code blocks in org mode
 (add-to-list 'ispell-skip-region-alist '(":\\(PROPERTIES\\|LOGBOOK\\):" . ":END:"))
@@ -1130,6 +1108,7 @@
 	(global-set-key (kbd "s-<up>") [prior])
 	(global-set-key (kbd "s-<down>") [next]))
 
+
 ;; mouse
 ;; https://github.com/purcell/disable-mouse
 (setq	mouse-yank-at-point t
@@ -1194,6 +1173,7 @@
 (global-unset-key (kbd "C-z"))
 (global-unset-key (kbd "C-x C-z"))
 
+
 ;; Darwin overrides
 (when *mac*
 	(when (display-graphic-p)
@@ -1262,6 +1242,7 @@
 (bind-key "C-M-;"	'eval-r)
 (bind-key "C-M-y"	'undo-yank)
 
+
 ;; Ctrl-c (personal keybindings)
 (bind-key "C-c a"	'org-agenda)
 (when *mac*
@@ -1316,6 +1297,7 @@
 (global-set-key (kbd "C-c 8 p") (kbd "¶"))
 (which-key-alias "C-c 8" "key translations")
 
+
 ;; Ctrl-x (buffer functions)
 (bind-key "C-x c"	'kill-current-buffer)
 (bind-key "C-x n f"	'narrow-to-focus)
@@ -1386,4 +1368,4 @@
 ; LocalWords:  INPROGRESS kfhelp setq xm readabilizing JS dev Lorem
 ; LocalWords:  Gopherspace filesandbuffers ipsum ePub epub xelatex
 ; LocalWords:  vcusepackage latexmk synctex bibtex cond xah dirs Ctrl
-; LocalWords:  remotehost flycheck modeline mori featurep
+; LocalWords:  remotehost flycheck modeline mori featurep cbc

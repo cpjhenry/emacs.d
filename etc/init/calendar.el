@@ -33,6 +33,7 @@
 		(list 11 1 year)))))))
 		"US Presidential Election")))
 
+(require 'lunar)
 (setq lunar-phase-names '(
 	"● New Moon"
 	"☽ First Quarter Moon"
@@ -86,8 +87,7 @@
 	(next-window-any-frame)
 	(fit-window-to-buffer))
 
-(defun alt-clean-equal-signs ()
-	"This function makes lines of = signs invisible."
+(defun alt-clean-equal-signs () "This function makes lines of = signs invisible."
 	(goto-char (point-min))
 	(let ((state buffer-read-only))
 		(when state (setq buffer-read-only nil))
