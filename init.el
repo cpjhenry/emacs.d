@@ -116,7 +116,7 @@
 ;; settings
 (set-language-environment 'utf-8)
 
-(defvar	default-major-mode 'text-mode "Default mode when creating new buffers.")
+(defvar	default-major-mode 'text-mode "Mode when creating new buffers.")
 (setopt	initial-major-mode 'fundamental-mode
 	default-input-method nil
 	tab-width 4
@@ -376,7 +376,7 @@
 	:hook	(after-init . doom-modeline-mode)
 	:config	(use-package nerd-icons))
 
-(setq	battery-mode-line-format "%p%% "
+(setopt	battery-mode-line-format "%p%% "
 	display-time-24hr-format t
 	display-time-default-load-average nil
 	mode-line-compact nil
@@ -401,6 +401,8 @@
 	:custom	(ido-save-directory-list-file (concat user-emacs-directory "var/ido.last"))
 		(ido-enable-flex-matching t)
 		(ido-show-dot-for-dired nil)
+	:bind (	("C-<tab>" . ido-switch-buffer)
+		("C-x C-d" . ido-dired))
 	:config (ido-mode t)
 
 	(define-key (cdr ido-minor-mode-map-entry) [remap write-file] nil); C-x C-w remapping
@@ -410,19 +412,17 @@
 	(add-to-list 'ido-ignore-files ".DS_Store")
 	(add-to-list 'ido-ignore-files "ido.last")
 
-	(global-set-key (kbd "C-<tab>") 'ido-switch-buffer)
-	(global-set-key (kbd "C-x C-d")	'ido-dired)
-
 	(use-package ido-sort-mtime :config (ido-sort-mtime-mode 1)))
 
 ;; M-x enhancement
 (use-package smex
-	:bind (	("M-x" . smex))
 	:custom	(smex-save-file (concat user-emacs-directory "var/smex.history"))
+	:bind (	("M-x" . smex))
 	:config	(smex-initialize))
 
 
 ;; Dired
+;; HACK convert to use-package (using :ensure nil)
 (with-eval-after-load 'dired
 	(require 'dired-x)
 	(unless *w32* (setq dired-kill-when-opening-new-dired-buffer t))
@@ -503,6 +503,7 @@
 
 
 ;; calendar
+;; HACK convert to use-package (using :ensure nil)
 (require 'calendar)
 (require 'diary-lib)
 (load "init/calendar")
@@ -669,34 +670,33 @@
 
 ;; Configure specific machines
 (when *natasha*
-	(setq	browse-url-secondary-browser-function 'browse-url-generic
+	(setopt	browse-url-secondary-browser-function 'browse-url-generic
 		browse-url-generic-program "/Applications/Waterfox.app/Contents/MacOS/waterfox")
 
 	;; Mail / News
 	(require 'rmail)
-	(setq
-	rmail-primary-inbox-list '("imaps://cn914@mail.ncf.ca")
-	rmail-movemail-variant-in-use 'mailutils
-	rmail-remote-password-required t
+	(setq	rmail-primary-inbox-list '("imaps://cn914@mail.ncf.ca")
+		rmail-movemail-variant-in-use 'mailutils
+		rmail-remote-password-required t
 
-	smtpmail-smtp-server "mail.ncf.ca"
-	send-mail-function   'smtpmail-send-it
-	smtpmail-smtp-service 587
+		smtpmail-smtp-server "mail.ncf.ca"
+		send-mail-function   'smtpmail-send-it
+		smtpmail-smtp-service 587
 
-	rmail-mime-prefer-html nil
-	rmail-preserve-inbox nil
-	rmail-delete-after-output t
-	rmail-mail-new-frame t
-	rmail-mime-prefer-html nil
+		rmail-mime-prefer-html nil
+		rmail-preserve-inbox nil
+		rmail-delete-after-output t
+		rmail-mail-new-frame t
+		rmail-mime-prefer-html nil
 
-	rmail-highlighted-headers "^Subject:"
-	rmail-ignored-headers (concat rmail-ignored-headers
-		"\\|^In-Reply-To:\\|^Content-Type:\\|^DKIM-Filter:")
-	rmail-nonignored-headers nil
+		rmail-highlighted-headers "^Subject:"
+		rmail-ignored-headers (concat rmail-ignored-headers
+			"\\|^In-Reply-To:\\|^Content-Type:\\|^DKIM-Filter:")
+		rmail-nonignored-headers nil
 
-	rmail-secondary-file-directory	(concat user-emacs-directory "var/")
-	rmail-default-file		(concat rmail-secondary-file-directory "XMAIL")
-	rmail-file-name			(concat rmail-secondary-file-directory "RMAIL"))
+		rmail-secondary-file-directory	(concat user-emacs-directory "var/")
+		rmail-default-file		(concat rmail-secondary-file-directory "XMAIL")
+		rmail-file-name			(concat rmail-secondary-file-directory "RMAIL"))
 
 	(add-hook 'rmail-show-message-hook 'goto-address-mode)
 	(add-hook 'rmail-quit-hook 'kill-current-buffer)
