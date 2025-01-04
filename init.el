@@ -403,8 +403,8 @@
 		(ido-show-dot-for-dired nil)
 	:bind (	("C-<tab>" . ido-switch-buffer)
 		("C-x C-d" . ido-dired))
-	:config (ido-mode t)
-
+	:init	(ido-mode t)
+	:config
 	(define-key (cdr ido-minor-mode-map-entry) [remap write-file] nil); C-x C-w remapping
 	(add-to-list 'ido-ignore-buffers "*Messages*")
 	(add-to-list 'ido-ignore-buffers "*Shell Command Output*")
@@ -436,7 +436,7 @@
 	(require 'ls-lisp)
 	(setopt	ls-lisp-use-string-collate nil
 		ls-lisp-use-insert-directory-program nil
-		ls-lisp-ignore-case 't)
+		ls-lisp-ignore-case t)
 
 	(define-key dired-mode-map (kbd "q") 'kill-dired-buffers)
 	(define-key dired-mode-map (kbd "o") 'dired-find-file-ow)
@@ -918,11 +918,12 @@
 
 
 ;; Org-mode
-;; HACK convert to use-package (using :ensure nil)
+;; HACK  convert to use-package (using :ensure nil)
+;; FIXME both setq below fail as setopt
 (require 'org)
 (require 'ox-md)
 
-(setopt	org-startup-indented nil
+(setq	org-startup-indented nil
 	org-pretty-entities t
 	org-use-sub-superscripts "{}"
 	org-hide-emphasis-markers t
@@ -930,7 +931,7 @@
 	org-startup-with-inline-images t
 	org-image-actual-width '(300))
 
-(setopt	org-directory "~/Documents/org"
+(setq	org-directory "~/Documents/org"
 	org-default-notes-file (concat org-directory "/notes.org")
 	org-id-locations-file (concat user-emacs-directory "var/org-id-locations")
 
@@ -1368,4 +1369,5 @@
 ; LocalWords:  INPROGRESS kfhelp setq xm readabilizing JS dev Lorem
 ; LocalWords:  Gopherspace filesandbuffers ipsum ePub epub xelatex
 ; LocalWords:  vcusepackage latexmk synctex bibtex cond xah dirs Ctrl
-; LocalWords:  remotehost flycheck modeline mori featurep cbc
+; LocalWords:  remotehost flycheck modeline mori featurep cbc smex
+; LocalWords:  setq's setopt
