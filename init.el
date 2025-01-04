@@ -404,8 +404,7 @@
 	:bind (	("C-<tab>" . ido-switch-buffer)
 		("C-x C-d" . ido-dired))
 	:init	(ido-mode t)
-	:config
-	(define-key (cdr ido-minor-mode-map-entry) [remap write-file] nil); C-x C-w remapping
+	:config (define-key (cdr ido-minor-mode-map-entry) [remap write-file] nil); C-x C-w remapping
 	(add-to-list 'ido-ignore-buffers "*Messages*")
 	(add-to-list 'ido-ignore-buffers "*Shell Command Output*")
 	(add-to-list 'ido-ignore-buffers "^*tramp/")
