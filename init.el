@@ -64,10 +64,9 @@
 
 	(global-set-key (kbd "s-1")(kbd "C-x 1"))
 
-	(dolist (key '("s-C" "s-D" "s-d" "s-e" "s-F" "s-f" "s-g" "s-j"
-		"s-L" "s-M" "s-m" "s-n" "s-p" "s-q" "s-t"))
+	(dolist (key '("s-C" "s-D" "s-d" "s-e" "s-F" "s-f" "s-g" "s-j" "s-L"
+		       "s-M" "s-m" "s-n" "s-p" "s-q" "s-t" "s-^" "s-&" "s-|"))
 		(global-unset-key (kbd key)))
-	;; ^ & |
 
 	(global-set-key (kbd "<home>") nil) ; 'move-beginning-of-line
 	(global-set-key (kbd "<end>" ) nil) ; 'move-end-of-line
