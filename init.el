@@ -625,6 +625,7 @@
 	:hook	(emacs-lisp-mode . flycheck-mode)
 	:init	(setq checkdoc-force-docstrings-flag nil)
 	:config	(which-key-alias "C-c !" "flycheck")
+	(require 'ibuf-ext)
 	(add-to-list 'ibuffer-never-show-predicates "^\\*Flycheck error messages\\*")
 	(add-to-list 'ido-ignore-files "*Flycheck error messages*"))
 
