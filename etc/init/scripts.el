@@ -42,13 +42,14 @@
 	(interactive)
 	(shell-command "wx-mode"))
 
-(defun fw () "Weekly Forecast"
+(defun fw () "Weekly Forecast."
 	(interactive)
 	(switch-to-buffer "*Virgo*")
 	(shell-command "fw -u" (current-buffer))
 	(text-mode)
+	(my/fill-max-column)
+	(my/no-cursor)
 	(view-mode)
-	(end-of-buffer)
 
 	(switch-to-buffer "*Aries*")
 	(shell-command "fw -uf aries |perl -p -e 'chomp if eof'" (current-buffer))
@@ -58,7 +59,7 @@
 	(kill-buffer (current-buffer))
 	(message "Forecast saved to clipboard."))
 
-(defun az () "Monthly Forecast"
+(defun az () "Monthly Forecast."
 	(interactive)
 	(let ((output "Monthly Forecast"))
 	(switch-to-buffer (make-temp-name ""))

@@ -67,6 +67,7 @@
 	(dolist (key '("s-C" "s-D" "s-d" "s-e" "s-F" "s-f" "s-g" "s-j"
 		"s-L" "s-M" "s-m" "s-n" "s-p" "s-q" "s-t"))
 		(global-unset-key (kbd key)))
+	;; ^ & |
 
 	(global-set-key (kbd "<home>") nil) ; 'move-beginning-of-line
 	(global-set-key (kbd "<end>" ) nil) ; 'move-end-of-line
@@ -274,12 +275,13 @@
 
 (with-eval-after-load 'view
 	(define-key view-mode-map (kbd "j")	'View-scroll-line-forward)
-	(define-key view-mode-map (kbd "k")	'View-scroll-line-backward-top)
+	(define-key view-mode-map (kbd "k")	'my/View-scroll-line-backward)
 	(define-key view-mode-map (kbd "q")	'View-kill-and-leave))
 
 ;; removes *Completions* buffer when done
-(add-hook 'minibuffer-exit-hook
-	(lambda() (let ((buffer "*Completions*")) (and (get-buffer buffer) (kill-buffer buffer)))))
+(add-hook 'minibuffer-exit-hook (lambda()
+	(let ((buffer "*Completions*"))
+	(and (get-buffer buffer) (kill-buffer buffer)))))
 
 ;; opening multiple files
 (add-hook 'window-setup-hook 'delete-other-windows) ; Show only one active window
@@ -426,24 +428,31 @@
 	(require 'dired-x)
 	(unless *w32* (setq dired-kill-when-opening-new-dired-buffer t))
 	(setopt	dired-dwim-target t ; suggest other visible Dired buffer
+		;; long format, all files, no groups, human readable, numerical sort
+		dired-listing-switches "-laGhv  --group-directories-first"
+		dired-omit-verbose nil
+
 		dired-garbage-files-regexp (concat dired-garbage-files-regexp
-		"\\|\\.DS_Store$\\|\\.old$\\|\\.synctex\\.gz\\|\\.log$")
-		dired-listing-switches "-aBhl  --group-directories-first"
-		dired-omit-files (concat dired-omit-files
-		"\\|^INDEX$\\|-t\\.tex$\\|\\.localized$")
-		dired-omit-verbose nil)
+		"\\|\\.DS_Store$\\|\\.old$\\|\\.synctex\\.gz$\\|\\.log$\\|\\.tex$"))
+
+		;; dired-omit-files (concat dired-omit-files
+		;; "\\|^INDEX$\\|-t\\.tex$\\|\\.localized$")
+
+	(add-hook 'dired-mode-hook 'dired-omit-mode)
+	(delete "~" dired-omit-extensions); show backup files
+
+	;; improve file sorting
 	(require 'ls-lisp)
 	(setopt	ls-lisp-use-string-collate nil
-		ls-lisp-use-insert-directory-program nil
 		ls-lisp-ignore-case t)
+	(unless *w32* (setopt ls-lisp-use-insert-directory-program nil))
 
 	(define-key dired-mode-map (kbd "q") 'kill-dired-buffers)
 	(define-key dired-mode-map (kbd "o") 'dired-find-file-ow)
 	(defalias 'dired-find-file 'dired-find-alternate-file)
 	(if (keymap-lookup dired-mode-map "% s")
 		(message "Error: %% s already defined in dired-mode-map")
-		(define-key dired-mode-map "%s" 'my-dired-substspaces))
-	(add-hook 'dired-mode-hook 'dired-omit-mode))
+		(define-key dired-mode-map "%s" 'my-dired-substspaces)))
 
 
 ;; Ibuffer
@@ -616,22 +625,25 @@
 (use-package flycheck
 	:hook	(emacs-lisp-mode . flycheck-mode)
 	:init	(setq checkdoc-force-docstrings-flag nil)
-	:config	(which-key-alias "C-c !" "flycheck"))
+	:config	(which-key-alias "C-c !" "flycheck")
+	(add-to-list 'ibuffer-never-show-predicates "^\\*Flycheck error messages\\*")
+	(add-to-list 'ido-ignore-files "*Flycheck error messages*"))
 
-(use-package free-keys :defer t)
+(use-package free-keys :defer t
+	:config	(add-to-list 'free-keys-modifiers "s" t))
 
 (use-package go-mode)
 
 (use-package google-this
-	:config	(google-this-mode)
-		(which-key-alias "C-c /" "google-this"))
+	:init	(which-key-alias "C-c /" "google-this")
+	:config	(google-this-mode))
 
 (use-package google-translate
 	:bind (	("C-c t t" . google-translate-at-point)
 		("C-c t <RET>" . google-translate-smooth-translate))
-	:config	(setq google-translate-translation-directions-alist '(
-			("fr" . "en") ("en" . "fr")))
-		(which-key-alias "C-c t" "google-translate"))
+	:init	(which-key-alias "C-c t" "google-translate")
+		(setq google-translate-translation-directions-alist '(
+			("fr" . "en") ("en" . "fr"))))
 
 (use-package hl-todo
 	:custom	(hl-todo-keyword-faces `(
@@ -706,8 +718,6 @@
 
 	;; RSS
 	(use-package elfeed
-		:init	(easy-menu-add-item global-map '(menu-bar tools)
-			["Read RSS Feeds" elfeed :help "Read RSS Feeds"] "Read Mail")
 		:bind (	("C-c f" . elfeed)
 			:map elfeed-search-mode-map
 			("/" . elfeed-search-live-filter)
@@ -720,6 +730,8 @@
 			("]" . end-of-buffer)
 			("TAB" . shr-next-link)
 			("SPC" . scroll-up-half))
+		:init	(easy-menu-add-item global-map '(menu-bar tools)
+			["Read RSS Feeds" elfeed :help "Read RSS Feeds"] "Read Mail")
 		:config	(setq
 			elfeed-db-directory (concat user-emacs-directory "var/elfeed/db/")
 			elfeed-enclosure-default-dir (concat user-emacs-directory "var/elfeed/enclosures/")
@@ -738,8 +750,6 @@
 
 	;; Web
 	(use-package w3m
-		;; let's load it, but not make it the default.
-		;; :init (setq browse-url-browser-function 'w3m-browse-url)
 		:bind ( ("C-x m" . browse-url-at-point)
 			:map w3m-mode-map
 			("<left>" . w3m-view-previous-page)
@@ -747,6 +757,8 @@
 			("Q" . my/w3m-quit)
 			("R" . tsa/w3m-toggle-readability)
 			("M-o" . ace-link-w3m))
+		;; let's load it, but not make it the default.
+		;; :init (setq browse-url-browser-function 'w3m-browse-url)
 		:config (setq
 			w3m-bookmark-file (concat user-emacs-directory "etc/w3m-bookmarks.html")
 			w3m-confirm-leaving-secure-page nil
@@ -769,7 +781,7 @@
 	;; 		(global-save-check-mode t))
 
 	(use-package xkcd
-		:hook	(xkcd-mode . (lambda () (setq-local cursor-type nil)))
+		:hook	(xkcd-mode . my/no-cursor)
 		:init	(setq	xkcd-cache-dir    (concat user-emacs-directory "var/xkcd/")
 				xkcd-cache-latest (concat user-emacs-directory "var/xkcd/latest"))
 		:config (defun xkcd-add-alt (&rest r)
@@ -778,7 +790,8 @@
 				(setq-local fill-column (window-width))
 				(visual-line-mode 1)
 				(insert "\n\n" xkcd-alt "\n")
-				(read-only-mode t))
+				(read-only-mode t)
+				(goto-char (point-min)))
 		(advice-add 'xkcd-alt-text :override #'xkcd-add-alt)
 		(advice-add 'xkcd-get :after #'xkcd-add-alt)))
 
@@ -1018,13 +1031,10 @@
 (define-key org-mode-map (kbd "C-M-<left>" ) 'outline-up-heading)
 (define-key org-mode-map (kbd "C-M-<right>") (lambda()(interactive)(org-end-of-subtree)))
 
-(define-key org-mode-map (kbd "s-S-<left>")  (lambda()(interactive)(org-call-with-arg 'org-todo 'left)))
-(define-key org-mode-map (kbd "s-S-<right>") (lambda()(interactive)(org-call-with-arg 'org-todo 'right)))
-(define-key org-mode-map (kbd "s-S-<up>") 'org-priority-up)
-(define-key org-mode-map (kbd "s-S-<down>") 'org-priority-down)
-
-(define-key org-mode-map (kbd "<home>") 'move-beginning-of-line)
-(define-key org-mode-map (kbd "<end>") 'move-end-of-line)
+(define-key org-mode-map (kbd "S-<home>") (lambda()(interactive)(org-call-with-arg 'org-todo 'left)))
+(define-key org-mode-map (kbd "S-<end>") (lambda()(interactive)(org-call-with-arg 'org-todo 'right)))
+(define-key org-mode-map (kbd "S-<prior>") 'org-priority-up)
+(define-key org-mode-map (kbd "S-<next>") 'org-priority-down)
 
 (define-key org-mode-map (kbd "C-c '") 'org-edit-special-no-fill)
 
@@ -1082,11 +1092,10 @@
 ;; M-<prior>		'scroll-other-window-down
 ;; M-<next>		'scroll-other-window
 
-(defalias 'b-o-l 'beginning-of-line)
-(global-set-key (kbd "M-<up>")   (lambda()(interactive)(backward-paragraph)(recenter-top-bottom)))
-(global-set-key (kbd "M-<down>") (lambda()(interactive)(forward-paragraph)(recenter-top-bottom)))
-(global-set-key (kbd "M-<left>") (lambda()(interactive)(backward-page)(recenter-top-bottom)(b-o-l)))
-(global-set-key (kbd "M-<right>")(lambda()(interactive)(next-line)(forward-page)(recenter-top-bottom)(b-o-l)))
+(global-unset-key (kbd "M-<left>"))
+(global-unset-key (kbd "M-<right>"))
+(global-set-key (kbd "M-[") 'my/backward-page)
+(global-set-key (kbd "M-]") 'my/forward-page)
 
 
 ;; scroll settings
@@ -1148,8 +1157,6 @@
 (bind-key "C-w"     'kill-region-or-backward-word) ; kill-region
 (bind-key "M-w"     'kill-region-or-thing-at-point) ; kill-ring-save
 (bind-key "M-j"     'join-line) ; default-indent-new-line (see 'C-M-j')
-
-(bind-key "C-S-k"   'kill-whole-line)
 (bind-key "C-x S-u" 'undo-redo) ; (see also 's-M-z')
 
 (global-set-key (kbd "C-s")	'isearch-forward-regexp)
@@ -1163,15 +1170,14 @@
 (global-set-key (kbd "M-<f11>")	'toggle-modeline)
 (global-set-key (kbd "A-<return>") (kbd "M-<return>"))
 
-;; extended commands (alternates)
-;(global-set-key (kbd "C-x C-m") 'execute-extended-command)
-
 ;; avoid accidental exits
 ;(global-unset-key (kbd "C-x C-c"))
 ;(global-set-key (kbd "C-x C-c c") 'save-buffers-kill-terminal)
 
 (global-unset-key (kbd "C-z"))
-(global-unset-key (kbd "C-x C-z"))
+
+;; extended commands (alternates)
+(global-set-key (kbd "C-x C-z") 'execute-extended-command)
 
 
 ;; Darwin overrides
@@ -1219,8 +1225,8 @@
 
 ;; Shortcuts
 
-(bind-key "<f5>"	'my/fill-column)
-(defun my/fill-column () (interactive) (setq fill-column 0) (message "Maximum width."))
+(bind-key "<f5>"	'my/fill-max-column)
+(defun my/fill-max-column () (interactive) (setq fill-column 0) (message "Maximum width."))
 
 (bind-key "<f6>"	'toggle-fill-column-center)
 (bind-key "<f7>"	'ispell-buffer)

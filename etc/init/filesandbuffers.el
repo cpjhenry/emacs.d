@@ -1,5 +1,7 @@
-;; FILE/BUFFER functions
+;;; filesandbuffers --- FILE/BUFFER functions
 
+;;; Commentary:
+;;; Code:
 (if (< emacs-major-version 29)(defun scratch-buffer ()
 "Switch to the *scratch* buffer.
 	If the buffer doesn't exist, create it first."
@@ -110,8 +112,13 @@
 ;; misc. functions
 
 (defun set-window-width (n)
-"Set the selected window's width."
+"Set the selected window's width as 'N'."
 	(adjust-window-trailing-edge (selected-window) (- n (window-width)) t))
+
+;; FIXME doesn't work. Perhaps set to 0?
+(defun set-full-frame () "Set the selected window to full-frame."
+	(interactive)
+	(set-window-width (window-width)))
 
 (defun set-80-columns ()
 "Set the selected window to 80 columns."
@@ -126,7 +133,7 @@
 	(message "'fill-column' set to: %s" fill-column))
 
 (defun toggle-fill-column-center ()
-"Toggles fill-column-center when in visual-fill-column-mode."
+"Toggle fill-column-center when in visual-fill-column-mode."
 	(interactive)
 	(if (bound-and-true-p visual-fill-column-mode) (progn
 		(if (bound-and-true-p visual-fill-column-center-text)
@@ -134,25 +141,6 @@
 			(setq visual-fill-column-center-text t) )
 			(visual-fill-column-adjust) )
 		(message "'visual-fill-column-mode' not enabled.") ))
-
-;; https://emacs.stackexchange.com/questions/46935/adjust-the-line-according-to-the-screen-width
-(defun dynamic-fill-column-set-var (frame)
-  (when dynamic-fill-column-mode
-    (setq fill-column (- (window-total-width) 3))))
-
-(defun dynamic-fill-column-buffer-list-change ()
-  (when dynamic-fill-column-mode
-    (setq fill-column (- (window-total-width) 3))))
-
-(define-minor-mode dynamic-fill-column-mode
-  "Sets `fill-column' when buffer's window is resized"
-  :lighter " DFC"
-  (if dynamic-fill-column-mode
-      (progn
-        (add-hook 'window-size-change-functions 'dynamic-fill-column-set-var nil t)
-        (add-hook 'buffer-list-update-hook 'dynamic-fill-column-buffer-list-change nil t))
-    (remove-hook 'window-size-change-functions 'dynamic-fill-column-set-var t)
-    (remove-hook 'buffer-list-update-hook 'dynamic-fill-column-buffer-list-change t)))
 
 (defun preview-html () "Render buffer as HTML."
 	(interactive)
@@ -172,6 +160,19 @@
 	(interactive)
 	(find-file user-init-file))
 
+(defun my/backward-page () "Backward page."
+	(interactive)
+	(backward-page)
+	(recenter-top-bottom)
+	(beginning-of-line))
+
+(defun my/forward-page () "Forward page."
+	(interactive)
+	(next-line)
+	(forward-page)
+	(recenter-top-bottom)
+	(beginning-of-line))
+
 (defun my/outline-previous-heading ()
 	(interactive)
 	(outline-previous-heading)
@@ -182,10 +183,17 @@
 	(outline-next-heading)
 	(recenter-top-bottom))
 
-(defun View-scroll-line-backward-top () "Scroll line backward, jump to new top of screen."
+(defun my/View-scroll-line-backward () "Scroll line backward, jump to new top of screen."
 	(interactive)
 	(View-scroll-line-backward)
 	(move-to-window-line-top-bottom))
+
+(defun my/no-cursor () "Hides cursor locally."
+	(interactive)
+	(setq-local cursor-type nil))
+
+
+;; org-mode functions
 
 (defun org-edit-special-no-fill () "Call a special editor for the element at point; turn off fill."
 	(interactive)
@@ -441,3 +449,5 @@ word."
       (let ((regexp (if arg "[ \t\n]+" "[ \t]+")))
         (re-search-forward regexp nil t)
         (replace-match "" nil nil)))
+
+; LocalWords:  filesandbuffers
