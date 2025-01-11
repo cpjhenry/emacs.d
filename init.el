@@ -103,7 +103,8 @@
 (use-package use-package
 	:ensure	nil
 	:custom	(use-package-always-ensure t)
-		(use-package-verbose nil))
+		(use-package-compute-statistics t)
+		(use-package-verbose t))
 
 ;; init/vcusepackage goes here, if needed.
 (unless EMACS30 (load "init/vcusepackage"))
@@ -189,12 +190,12 @@
 	url-configuration-directory	(concat user-emacs-directory "var/url/configuration/"))
 
 ;; path
-(if *mac* (use-package exec-path-from-shell
-	:custom	(shell-file-name "/usr/local/bin/bash"
-		"This is necessary because some Emacs installs overwrite this variable.")
-		(exec-path-from-shell-variables '("PATH" "MANPATH" "PKG_CONFIG_PATH")
-		"This adds PKG_CONFIG_PATH to the list of variables to grab.")
-	:init	(exec-path-from-shell-initialize)))
+(use-package exec-path-from-shell
+	:disabled
+	:if	*mac*
+	:custom	(shell-file-name "/usr/local/bin/bash")
+		(exec-path-from-shell-variables '("PATH" "MANPATH" "PKG_CONFIG_PATH"))
+	:init	(exec-path-from-shell-initialize))
 
 ;; garbage collection
 (use-package gcmh :config (gcmh-mode 1))
@@ -332,69 +333,6 @@
 	(when buffer-file-name (save-buffer)))
 
 
-;; Tramp
-(setq	tramp-default-method "ssh"
-	tramp-syntax 'simplified ; C-x C-f /remotehost:filename
-
-	tramp-auto-save-directory	(concat user-emacs-directory "var/tramp/auto-save/")
-	tramp-persistency-file-name	(concat user-emacs-directory "var/tramp/persistency"))
-
-(defvar remote-tramp-bg "linen")
-(defun checker-tramp-file-hook () "File."
-	(when (file-remote-p buffer-file-name)
-	(face-remap-add-relative 'default :background remote-tramp-bg)))
-(add-hook 'find-file-hook 'checker-tramp-file-hook)
-(defun checker-tramp-dired-hook () "Directory."
-	(when (file-remote-p dired-directory)
-	(face-remap-add-relative 'default :background remote-tramp-bg)))
-(add-hook 'dired-after-readin-hook 'checker-tramp-dired-hook)
-(defun checker-tramp-shell-hook () "Shell."
-	(when (file-remote-p default-directory)
-	(face-remap-add-relative 'default :background remote-tramp-bg)))
-(add-hook 'shell-mode-hook 'checker-tramp-shell-hook)
-
-
-;; frames
-(setq	frame-inhibit-implied-resize t
-	frame-resize-pixelwise t
-	frame-title-format nil)
-
-;; https://korewanetadesu.com/emacs-on-os-x.html
-(when (featurep 'ns) (add-hook 'after-make-frame-functions 'ns-raise-emacs-with-frame))
-
-(when *mac* ;; start Emacs server
-	(use-package mac-pseudo-daemon :config (mac-pseudo-daemon-mode))
-	(if (not (boundp 'server-process)) (server-start))
-	(if (boundp 'server-process) (message "Server running.")))
-
-
-;; modeline
-(use-package doom-modeline
-	:custom	(doom-modeline-column-zero-based nil)
-		(doom-modeline-enable-word-count t)
-		(doom-modeline-continuous-word-count-modes '(markdown-mode gfm-mode org-mode text-mode))
-		(doom-modeline-icon nil)
-	:hook	(after-init . doom-modeline-mode)
-	:config	(use-package nerd-icons))
-
-(setopt	battery-mode-line-format "%p%% "
-	display-time-24hr-format t
-	display-time-default-load-average nil
-	mode-line-compact nil
-	mode-line-position (list mode-line-percent-position " " "(%l,%C)")
-	mode-line-right-align-edge 'right-fringe)
-(column-number-mode)
-(display-battery-mode)
-(display-time-mode -1)
-(load "rc/mm" 'noerror) ; memento-mori
-
-;; Startup time
-(defun efs/display-startup-time ()
-	(message "GNU Emacs %s loaded in %s with %d garbage collections." emacs-version
-	(format "%.2f seconds" (float-time (time-subtract after-init-time before-init-time))) gcs-done))
-(add-hook 'emacs-startup-hook 'efs/display-startup-time)
-
-
 ;; IDO
 ;; https://www.emacswiki.org/emacs/InteractivelyDoThings
 (use-package ido
@@ -421,43 +359,11 @@
 	:config	(smex-initialize))
 
 
-;; Dired
-;; HACK convert to use-package (using :ensure nil)
-(with-eval-after-load 'dired
-	(require 'dired-x)
-	(unless *w32* (setq dired-kill-when-opening-new-dired-buffer t))
-	(setopt	dired-dwim-target t ; suggest other visible Dired buffer
-		;; long format, all files, no groups, human readable, numerical sort
-		dired-listing-switches "-laGhv  --group-directories-first"
-		dired-omit-verbose nil
-
-		dired-garbage-files-regexp (concat dired-garbage-files-regexp
-		"\\|\\.DS_Store$\\|\\.old$\\|\\.synctex\\.gz$\\|\\.log$\\|\\.tex$"))
-
-		;; dired-omit-files (concat dired-omit-files
-		;; "\\|^INDEX$\\|-t\\.tex$\\|\\.localized$")
-
-	(add-hook 'dired-mode-hook 'dired-omit-mode)
-	(delete "~" dired-omit-extensions); show backup files
-
-	;; improve file sorting
-	(require 'ls-lisp)
-	(setopt	ls-lisp-use-string-collate nil
-		ls-lisp-ignore-case t)
-	(unless *w32* (setopt ls-lisp-use-insert-directory-program nil))
-
-	(define-key dired-mode-map (kbd "q") 'kill-dired-buffers)
-	(define-key dired-mode-map (kbd "o") 'dired-find-file-ow)
-	(defalias 'dired-find-file 'dired-find-alternate-file)
-	(if (keymap-lookup dired-mode-map "% s")
-		(message "Error: %% s already defined in dired-mode-map")
-		(define-key dired-mode-map "%s" 'my-dired-substspaces)))
-
-
 ;; Ibuffer
 ;; https://www.emacswiki.org/emacs/IbufferMode
 (use-package ibuffer
 	:ensure	nil
+	:demand	t
 	:custom	(ibuffer-default-sorting-mode 'alphabetic)
 		(ibuffer-expert t)
 		(ibuffer-saved-filter-groups (quote (("home"
@@ -470,6 +376,7 @@
 			("Markdown" (name . "\\.md"))
 			("Org" (name . "\\.org"))
 			("TeX" (name . "\\.tex"))
+			("ePub" (mode . nov-mode))
 			("Planner" (or (mode . calendar-mode)
 				(mode . diary-mode)
 				(mode . diary-fancy-display-mode)
@@ -507,6 +414,110 @@
 	(add-to-list 'ibuffer-never-show-predicates "^\\*Shell Command Output\\*")
 	(add-to-list 'ibuffer-never-show-predicates "^\\*tramp/")
 	(add-to-list 'ibuffer-never-show-predicates "^\\*Latex Preview Pane Welcome\\*"))
+
+
+;; Dired
+;; HACK convert to use-package (using :ensure nil)
+(with-eval-after-load 'dired
+	(require 'dired-x)
+	(unless *w32* (setq dired-kill-when-opening-new-dired-buffer t))
+	(setopt	dired-dwim-target t ; suggest other visible Dired buffer
+		;; long format, all files, no groups, human readable, numerical sort
+		dired-listing-switches "-laGhv  --group-directories-first"
+		dired-omit-verbose nil
+
+		dired-garbage-files-regexp (concat dired-garbage-files-regexp
+		"\\|\\.DS_Store$\\|\\.old$\\|\\.synctex\\.gz$\\|\\.log$\\|\\.tex$"))
+
+		;; dired-omit-files (concat dired-omit-files
+		;; "\\|^INDEX$\\|-t\\.tex$\\|\\.localized$")
+
+	(add-hook 'dired-mode-hook 'dired-omit-mode)
+	(delete "~" dired-omit-extensions); show backup files
+
+	;; improve file sorting
+	(require 'ls-lisp)
+	(setopt	ls-lisp-use-string-collate nil
+		ls-lisp-ignore-case t)
+	(unless *w32* (setopt ls-lisp-use-insert-directory-program nil))
+
+	(use-package dired-toggle-sudo
+		:bind (	:map dired-mode-map
+			("C-c C-s" . dired-toggle-sudo))
+		:config	(eval-after-load 'tramp '(progn
+			;; Allow to use: /sudo:user@host:/path/to/file
+       			(add-to-list 'tramp-default-proxies-alist
+			'(".*" "\\`.+\\'" "/ssh:%h:")))))
+
+	(define-key dired-mode-map (kbd "q") 'kill-dired-buffers)
+	(define-key dired-mode-map (kbd "o") 'dired-find-file-ow)
+	(defalias 'dired-find-file 'dired-find-alternate-file)
+	(if (keymap-lookup dired-mode-map "% s")
+		(message "Error: %% s already defined in dired-mode-map")
+		(define-key dired-mode-map "%s" 'my-dired-substspaces)))
+
+
+;; frames
+(setq	frame-inhibit-implied-resize t
+	frame-resize-pixelwise t
+	frame-title-format nil)
+
+;; https://korewanetadesu.com/emacs-on-os-x.html
+(when (featurep 'ns) (add-hook 'after-make-frame-functions 'ns-raise-emacs-with-frame))
+
+(when *mac* ;; start Emacs server
+	(use-package mac-pseudo-daemon :config (mac-pseudo-daemon-mode))
+	(if (not (boundp 'server-process)) (server-start))
+	(if (boundp 'server-process) (message "Server running.")))
+
+
+;; Tramp
+(setq	tramp-default-method "ssh"
+	tramp-syntax 'simplified ; C-x C-f /remotehost:filename
+
+	tramp-auto-save-directory	(concat user-emacs-directory "var/tramp/auto-save/")
+	tramp-persistency-file-name	(concat user-emacs-directory "var/tramp/persistency"))
+
+(defvar remote-tramp-bg "linen")
+(defun checker-tramp-file-hook () "File."
+	(when (file-remote-p buffer-file-name)
+	(face-remap-add-relative 'default :background remote-tramp-bg)))
+(add-hook 'find-file-hook 'checker-tramp-file-hook)
+(defun checker-tramp-dired-hook () "Directory."
+	(when (file-remote-p dired-directory)
+	(face-remap-add-relative 'default :background remote-tramp-bg)))
+(add-hook 'dired-after-readin-hook 'checker-tramp-dired-hook)
+(defun checker-tramp-shell-hook () "Shell."
+	(when (file-remote-p default-directory)
+	(face-remap-add-relative 'default :background remote-tramp-bg)))
+(add-hook 'shell-mode-hook 'checker-tramp-shell-hook)
+
+
+;; modeline
+(use-package doom-modeline
+	:custom	(doom-modeline-column-zero-based nil)
+		(doom-modeline-enable-word-count t)
+		(doom-modeline-continuous-word-count-modes '(markdown-mode gfm-mode org-mode text-mode))
+		(doom-modeline-icon nil)
+	:hook	(after-init . doom-modeline-mode)
+	:config	(use-package nerd-icons))
+
+(setopt	battery-mode-line-format "%p%% "
+	display-time-24hr-format t
+	display-time-default-load-average nil
+	mode-line-compact nil
+	mode-line-position (list mode-line-percent-position " " "(%l,%C)")
+	mode-line-right-align-edge 'right-fringe)
+(column-number-mode)
+(display-battery-mode)
+(display-time-mode -1)
+;; (load "rc/mm" 'noerror) ; memento-mori
+
+;; Startup time
+(defun efs/display-startup-time ()
+	(message "GNU Emacs %s loaded in %s with %d garbage collections." emacs-version
+	(format "%.2f seconds" (float-time (time-subtract after-init-time before-init-time))) gcs-done))
+(add-hook 'emacs-startup-hook 'efs/display-startup-time)
 
 
 ;; calendar
@@ -562,6 +573,7 @@
 ;; Initialize packages
 
 ;; use-package directives in this order:
+;; :disabled
 ;; :ensure
 ;; :defer
 ;; :custom
@@ -570,6 +582,9 @@
 ;; :hook
 ;; :commands
 ;; :init
+;; :defer
+;; :demand
+;; :load
 ;; :config
 
 (use-package which-key
@@ -578,6 +593,7 @@
 
 (use-package dictionary
 	:ensure	nil
+	:defer	t
 	:custom	(dictionary-server "dict.org"))
 
 (use-package elpher
@@ -625,14 +641,15 @@
 	:hook	(emacs-lisp-mode . flycheck-mode)
 	:init	(setq checkdoc-force-docstrings-flag nil)
 	:config	(which-key-alias "C-c !" "flycheck")
-	(require 'ibuf-ext)
-	(add-to-list 'ibuffer-never-show-predicates "^\\*Flycheck error messages\\*")
-	(add-to-list 'ido-ignore-files "*Flycheck error messages*"))
+	(if (featurep 'ibuf-ext)
+		(add-to-list 'ibuffer-never-show-predicates "^\\*Flycheck error messages\\*"))
+	(if (featurep 'ido)
+		(add-to-list 'ido-ignore-buffers "*Flycheck error messages*")))
 
 (use-package free-keys :defer t
 	:config	(add-to-list 'free-keys-modifiers "s" t))
 
-(use-package go-mode)
+(use-package go-mode :defer t)
 
 (use-package google-this
 	:init	(which-key-alias "C-c /" "google-this")
@@ -714,86 +731,96 @@
 
 	(require 'message)
 	(setopt message-kill-buffer-on-exit t)
-	(define-key message-mode-map (kbd "A-<return>") 'message-send-and-exit)
+	(define-key message-mode-map (kbd "A-<return>") 'message-send-and-exit))
 
-	;; RSS
-	(use-package elfeed
-		:bind (	("C-c f" . elfeed)
-			:map elfeed-search-mode-map
-			("/" . elfeed-search-live-filter)
-			("\\" . elfeed-search-set-filter-nil)
-			("[" . beginning-of-buffer) ; top
-			("]" . end-of-buffer) ; bottom
-			("m" . elfeed-mail-todo)
-			:map elfeed-show-mode-map
-			("[" . beginning-of-buffer)
-			("]" . end-of-buffer)
-			("TAB" . shr-next-link)
-			("SPC" . scroll-up-half))
-		:init	(easy-menu-add-item global-map '(menu-bar tools)
-			["Read RSS Feeds" elfeed :help "Read RSS Feeds"] "Read Mail")
-		:config	(setq
-			elfeed-db-directory (concat user-emacs-directory "var/elfeed/db/")
-			elfeed-enclosure-default-dir (concat user-emacs-directory "var/elfeed/enclosures/")
-			elfeed-score-score-file (concat user-emacs-directory "etc/elfeed/score/score.el")
+;; RSS
+(use-package elfeed
+	:if	*natasha*
+	:bind (	("C-c f" . elfeed)
+		:map elfeed-search-mode-map
+		("/" . elfeed-search-live-filter)
+		("\\" . elfeed-search-set-filter-nil)
+		("[" . beginning-of-buffer) ; top
+		("]" . end-of-buffer) ; bottom
+		("m" . elfeed-mail-todo)
+		:map elfeed-show-mode-map
+		("[" . beginning-of-buffer)
+		("]" . end-of-buffer)
+		("TAB" . shr-next-link)
+		("SPC" . scroll-up-half))
+	:init	(easy-menu-add-item global-map '(menu-bar tools)
+		["Read RSS Feeds" elfeed :help "Read RSS Feeds"] "Read Mail")
+	:config	(setq
+		elfeed-db-directory (concat user-emacs-directory "var/elfeed/db/")
+		elfeed-enclosure-default-dir (concat user-emacs-directory "var/elfeed/enclosures/")
+		elfeed-score-score-file (concat user-emacs-directory "etc/elfeed/score/score.el")
 
-			elfeed-log-level 'error
-			elfeed-show-truncate-long-urls nil
-			elfeed-sort-order 'ascending
-			elfeed-use-curl t)
+		elfeed-log-level 'error
+		elfeed-show-truncate-long-urls nil
+		elfeed-sort-order 'ascending
+		elfeed-use-curl t)
 
-		(eval-after-load 'elfeed `(make-directory ,(concat user-emacs-directory "var/elfeed/") t))
-		(advice-add 'elfeed-search-update--force :after (lambda() (goto-char (point-min))))
+	(eval-after-load 'elfeed `(make-directory ,(concat user-emacs-directory "var/elfeed/") t))
+	(advice-add 'elfeed-search-update--force :after (lambda() (goto-char (point-min))))
 
-		(load "rc/feeds" 'noerror 'nomessage)
-		(load "init/elfeed-routines"))
+	(load "rc/feeds" 'noerror 'nomessage)
+	(load "init/elfeed-routines"))
 
-	;; Web
-	(use-package w3m
-		:bind ( ("C-x m" . browse-url-at-point)
-			:map w3m-mode-map
-			("<left>" . w3m-view-previous-page)
-			("&" . macosx-open-url)
-			("Q" . my/w3m-quit)
-			("R" . tsa/w3m-toggle-readability)
-			("M-o" . ace-link-w3m))
-		;; let's load it, but not make it the default.
-		;; :init (setq browse-url-browser-function 'w3m-browse-url)
-		:config (setq
-			w3m-bookmark-file (concat user-emacs-directory "etc/w3m-bookmarks.html")
-			w3m-confirm-leaving-secure-page nil
-			w3m-default-save-directory "~/Downloads"
-			w3m-use-filter nil)
+;; Web
+(use-package w3m
+	:defer	t
+	:bind ( ("C-x m" . browse-url-at-point)
+		:map w3m-mode-map
+		("<left>" . w3m-view-previous-page)
+		("&" . macosx-open-url)
+		("Q" . my/w3m-quit)
+		("R" . tsa/w3m-toggle-readability)
+		("M-o" . ace-link-w3m))
+	;; let's load it, but not make it the default.
+	;; :init (setq browse-url-browser-function 'w3m-browse-url)
+	:config (setq
+		w3m-bookmark-file (concat user-emacs-directory "etc/w3m-bookmarks.html")
+		w3m-confirm-leaving-secure-page nil
+		w3m-default-save-directory "~/Downloads"
+		w3m-use-filter nil)
 
-		(autoload 'w3m-browse-url "w3m" "Ask a WWW browser to show a URL." t)
-		(require 'mime-w3m)
-		;; (require 'w3m-filter)
-		;; (add-to-list 'w3m-filter-configuration '(t "Make page readable" ".*" tsa/readability))
-		(load "init/w3m-routines.el"))
+	(autoload 'w3m-browse-url "w3m" "Ask a WWW browser to show a URL." t)
+	(require 'mime-w3m)
+	;; (require 'w3m-filter)
+	;; (add-to-list 'w3m-filter-configuration '(t "Make page readable" ".*" tsa/readability))
+	(load "init/w3m-routines.el"))
 
-	(use-package nov ; Read ePub files
-		:custom (nov-save-place-file (concat user-emacs-directory "var/nov-places"))
-		:init	(add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode)))
+(use-package nov ; Read ePub files
+	:if	*natasha*
+	:defer	t
+	:custom (nov-save-place-file (concat user-emacs-directory "var/nov-places"))
+	:init	(add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
+	:config
+	(if (featurep 'ibuf-ext)
+	(add-to-list 'ibuffer-never-show-predicates "^\\*nov unzip\\*"))
+	(if (featurep 'ido)
+	(add-to-list 'ido-ignore-buffers "*nov unzip*")))
 
-	;; (use-package save-check
-	;; 	:vc (save-check :url "https://github.com/skx/save-check.el.git" :rev :newest)
-	;; 	:config (setq save-check-show-eval t)
-	;; 		(global-save-check-mode t))
+;; (use-package save-check
+;; 	:vc (save-check :url "https://github.com/skx/save-check.el.git" :rev :newest)
+;; 	:config (setq save-check-show-eval t)
+;; 		(global-save-check-mode t))
 
-	(use-package xkcd
-		:hook	(xkcd-mode . my/no-cursor)
-		:init	(setq	xkcd-cache-dir    (concat user-emacs-directory "var/xkcd/")
-				xkcd-cache-latest (concat user-emacs-directory "var/xkcd/latest"))
-		:config (defun xkcd-add-alt (&rest r)
-				(interactive)
-				(read-only-mode -1)
-				(setq-local fill-column (window-width))
-				(visual-line-mode 1)
-				(insert "\n\n" xkcd-alt "\n")
-				(read-only-mode t)
-				(goto-char (point-min)))
-		(advice-add 'xkcd-alt-text :override #'xkcd-add-alt)
-		(advice-add 'xkcd-get :after #'xkcd-add-alt)))
+(use-package xkcd
+	:if	*natasha*
+	:hook	(xkcd-mode . my/no-cursor)
+	:init	(setq	xkcd-cache-dir    (concat user-emacs-directory "var/xkcd/")
+			xkcd-cache-latest (concat user-emacs-directory "var/xkcd/latest"))
+	:config (defun xkcd-add-alt (&rest r)
+			(interactive)
+			(read-only-mode -1)
+			(setq-local fill-column (window-width))
+			(visual-line-mode 1)
+			(insert "\n\n" xkcd-alt "\n")
+			(read-only-mode t)
+			(goto-char (point-min)))
+	(advice-add 'xkcd-alt-text :override #'xkcd-add-alt)
+	(advice-add 'xkcd-get :after #'xkcd-add-alt))
 
 (when *gnu*
 	(setq	browse-url-secondary-browser-function 'browse-url-generic
@@ -878,7 +905,8 @@
 
 
 ;; TeX
-(unless *w32* (use-package tex
+(use-package tex
+	:unless *w32*
 	:ensure auctex
 	:hook	(LaTeX-mode . prettify-symbols-mode)
 		(LaTeX-mode . (lambda () (push '("\\&" . ?＆) prettify-symbols-alist)))
@@ -902,7 +930,7 @@
 		:bind (	:map latex-preview-pane-mode-map ("M-p" . nil) ("M-P" . nil))
 		:config	(setq message-latex-preview-pane-welcome ""))
 
-	(use-package reftex :ensure nil :hook (LaTeX-mode . turn-on-reftex))))
+	(use-package reftex :ensure nil :hook (LaTeX-mode . turn-on-reftex)))
 
 
 ;; spell checking
@@ -1018,11 +1046,7 @@
 ;; 		(org-modern-tag nil)
 ;; 	:hook (org-mode . global-org-modern-mode))
 
-(use-package ox-report) ; export your org file to minutes report PDF file
-
-;; (when *mac* (use-package org-mac-link ; grab links from various mac apps
-;;	:config
-;;	(define-key org-mode-map (kbd "C-c o g") 'org-mac-link-get-link)))
+;; (use-package ox-report) ; export your org file to minutes report PDF file
 
 (when *natasha* (use-package org-chef))
 
