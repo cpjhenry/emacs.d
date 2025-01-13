@@ -244,7 +244,7 @@
 (add-hook 'help-mode-hook (lambda()
 	(setq-local font-lock-keywords-only t)
 	(goto-address-mode)))
-(add-hook 'pdf-view-mode-hook 'auto-revert-mode)
+;; (add-hook 'pdf-view-mode-hook 'auto-revert-mode)
 (add-hook 'shell-mode-hook 'goto-address-mode)
 (remove-hook 'file-name-at-point-functions 'ffap-guess-file-name-at-point)
 
@@ -276,7 +276,10 @@
 (with-eval-after-load 'view
 	(define-key view-mode-map (kbd "j")	'View-scroll-line-forward)
 	(define-key view-mode-map (kbd "k")	'my/View-scroll-line-backward)
-	(define-key view-mode-map (kbd "q")	'View-kill-and-leave))
+	(define-key view-mode-map (kbd "q")	'View-kill-and-leave)
+
+	(define-key view-mode-map (kbd "C-<up>")	'my/backward-paragraph)
+	(define-key view-mode-map (kbd "C-<down>")	'my/forward-paragraph))
 
 ;; removes *Completions* buffer when done
 (add-hook 'minibuffer-exit-hook (lambda()
@@ -417,44 +420,33 @@
 
 
 ;; Dired
-;; HACK convert to use-package (using :ensure nil)
-(with-eval-after-load 'dired
-	(require 'dired-x)
-	(unless *w32* (setq dired-kill-when-opening-new-dired-buffer t))
-	(setopt	dired-dwim-target t ; suggest other visible Dired buffer
-		;; long format, all files, no groups, human readable, numerical sort
-		dired-listing-switches "-laGhv  --group-directories-first"
-		dired-omit-verbose nil
+(use-package dired
+	:ensure nil)
 
-		dired-garbage-files-regexp (concat dired-garbage-files-regexp
+(use-package dired-x
+	:ensure	nil
+	:custom	(dired-dwim-target t) ; suggest other visible Dired buffer
+		(dired-listing-switches "-laGhv  --group-directories-first")
+		(dired-garbage-files-regexp (concat dired-garbage-files-regexp
 		"\\|\\.DS_Store$\\|\\.old$\\|\\.synctex\\.gz$\\|\\.log$\\|\\.tex$"))
+		(dired-omit-verbose nil)
+	:bind (	:map dired-mode-map
+		("q" . kill-dired-buffers)
+		("o" . dired-find-file-ow))
+	:hook	(dired-mode . dired-omit-mode)
+	:config	(unless *w32* (setq dired-kill-when-opening-new-dired-buffer t))
+		(defalias 'dired-find-file 'dired-find-alternate-file)
+		(if (keymap-lookup dired-mode-map "% s")
+			(message "Error: %% s already defined in dired-mode-map")
+			(define-key dired-mode-map "%s" 'my-dired-substspaces))
+		(delete "~" dired-omit-extensions)); show backup files
 
-		;; dired-omit-files (concat dired-omit-files
-		;; "\\|^INDEX$\\|-t\\.tex$\\|\\.localized$")
-
-	(add-hook 'dired-mode-hook 'dired-omit-mode)
-	(delete "~" dired-omit-extensions); show backup files
-
-	;; improve file sorting
-	(require 'ls-lisp)
-	(setopt	ls-lisp-use-string-collate nil
-		ls-lisp-ignore-case t)
-	(unless *w32* (setopt ls-lisp-use-insert-directory-program nil))
-
-	(use-package dired-toggle-sudo
-		:bind (	:map dired-mode-map
-			("C-c C-s" . dired-toggle-sudo))
-		:config	(eval-after-load 'tramp '(progn
-			;; Allow to use: /sudo:user@host:/path/to/file
-       			(add-to-list 'tramp-default-proxies-alist
-			'(".*" "\\`.+\\'" "/ssh:%h:")))))
-
-	(define-key dired-mode-map (kbd "q") 'kill-dired-buffers)
-	(define-key dired-mode-map (kbd "o") 'dired-find-file-ow)
-	(defalias 'dired-find-file 'dired-find-alternate-file)
-	(if (keymap-lookup dired-mode-map "% s")
-		(message "Error: %% s already defined in dired-mode-map")
-		(define-key dired-mode-map "%s" 'my-dired-substspaces)))
+;; improve file sorting
+(use-package ls-lisp
+	:ensure	nil
+	:custom	(ls-lisp-use-string-collate nil)
+		(ls-lisp-ignore-case t)
+	:config	(unless *w32* (setopt ls-lisp-use-insert-directory-program nil)))
 
 
 ;; frames
@@ -621,10 +613,13 @@
 		(shr-indentation 2)	; Left-side margin
 		(shr-width nil)		; Fold text for comfiness
 		(url-privacy-level '(email agent lastloc))
-	:bind (	:map eww-mode-map
+	:bind (	("C-x m" . browse-url-at-point)
+		:map eww-mode-map
 		("[" . eww-back-url)
 		("]" . eww-forward-url)
 		("Q" . eww-unfill-paragraph)
+		("C-<up>" . my/backward-paragraph)
+		("C-<down>" . my/forward-paragraph)
 		:map eww-bookmark-mode-map
 		("w" . eww))
 	:config	(url-setup-privacy-info)
@@ -699,14 +694,22 @@
 ;; Configure specific machines
 (when *natasha*
 	(setopt	browse-url-secondary-browser-function 'browse-url-generic
-		browse-url-generic-program "/Applications/Waterfox.app/Contents/MacOS/waterfox")
+		browse-url-generic-program "/Applications/Waterfox.app/Contents/MacOS/waterfox"))
 
-	;; Mail / News
-	(require 'rmail)
-	(setq	rmail-primary-inbox-list '("imaps://cn914@mail.ncf.ca")
-		rmail-movemail-variant-in-use 'mailutils
-		rmail-remote-password-required t
+;; Mail / News
+(use-package rmail
+	:if	*natasha*
+	:ensure nil
+	:defer	t
+	:custom	(rmail-secondary-file-directory	(concat user-emacs-directory "var/"))
+		(rmail-default-file		(concat rmail-secondary-file-directory "XMAIL"))
+		(rmail-file-name	       	(concat rmail-secondary-file-directory "RMAIL"))
 
+		(rmail-primary-inbox-list '("imaps://cn914@mail.ncf.ca"))
+		(rmail-remote-password-required t)
+	:hook	(rmail-show-message . goto-address-mode)
+		(rmail-quit . kill-current-buffer)
+	:config	(setq
 		smtpmail-smtp-server "mail.ncf.ca"
 		send-mail-function   'smtpmail-send-it
 		smtpmail-smtp-service 587
@@ -716,22 +719,18 @@
 		rmail-delete-after-output t
 		rmail-mail-new-frame t
 		rmail-mime-prefer-html nil
+		rmail-movemail-variant-in-use 'mailutils
 
 		rmail-highlighted-headers "^Subject:"
 		rmail-ignored-headers (concat rmail-ignored-headers
 			"\\|^In-Reply-To:\\|^Content-Type:\\|^DKIM-Filter:")
-		rmail-nonignored-headers nil
+		rmail-nonignored-headers nil))
 
-		rmail-secondary-file-directory	(concat user-emacs-directory "var/")
-		rmail-default-file		(concat rmail-secondary-file-directory "XMAIL")
-		rmail-file-name			(concat rmail-secondary-file-directory "RMAIL"))
-
-	(add-hook 'rmail-show-message-hook 'goto-address-mode)
-	(add-hook 'rmail-quit-hook 'kill-current-buffer)
-
-	(require 'message)
-	(setopt message-kill-buffer-on-exit t)
-	(define-key message-mode-map (kbd "A-<return>") 'message-send-and-exit))
+(use-package message
+	:if	*natasha*
+	:ensure nil
+	:custom	(message-kill-buffer-on-exit t)
+	:bind ( :map  message-mode-map ("A-<return>" . message-send-and-exit)))
 
 ;; RSS
 (use-package elfeed
@@ -769,26 +768,26 @@
 ;; Web
 (use-package w3m
 	:defer	t
-	:bind ( ("C-x m" . browse-url-at-point)
-		:map w3m-mode-map
+	:bind ( :map w3m-mode-map
 		("<left>" . w3m-view-previous-page)
 		("&" . macosx-open-url)
 		("Q" . my/w3m-quit)
-		("R" . tsa/w3m-toggle-readability)
 		("M-o" . ace-link-w3m))
-	;; let's load it, but not make it the default.
+	:commands (w3m-browse-url)
 	;; :init (setq browse-url-browser-function 'w3m-browse-url)
 	:config (setq
 		w3m-bookmark-file (concat user-emacs-directory "etc/w3m-bookmarks.html")
 		w3m-confirm-leaving-secure-page nil
 		w3m-default-save-directory "~/Downloads"
 		w3m-use-filter nil)
-
-	(autoload 'w3m-browse-url "w3m" "Ask a WWW browser to show a URL." t)
-	(require 'mime-w3m)
-	;; (require 'w3m-filter)
-	;; (add-to-list 'w3m-filter-configuration '(t "Make page readable" ".*" tsa/readability))
 	(load "init/w3m-routines.el"))
+
+;; Others
+(use-package chess
+	:if 	*natasha*
+	:defer	t
+	:custom (chess-default-engine 'chess-gnuchess)
+		(chess-images-default-size 80))
 
 (use-package nov ; Read ePub files
 	:if	*natasha*
@@ -1048,7 +1047,9 @@
 
 ;; (use-package ox-report) ; export your org file to minutes report PDF file
 
-(when *natasha* (use-package org-chef))
+(use-package org-chef
+	:if 	*natasha*
+	:defer	t)
 
 (define-key org-mode-map (kbd "M-[") 'org-backward-heading-same-level)
 (define-key org-mode-map (kbd "M-]") 'org-forward-heading-same-level)
@@ -1100,6 +1101,19 @@
 (eval-after-load 'latex-mode '(define-key latex-mode-map (kbd "C-c r") 'latex-compile-and-update-other-buffer))
 (eval-after-load 'markdown-mode '(define-key markdown-mode-map (kbd "C-c r") 'md-compile-and-update-other-buffer))
 (eval-after-load 'org-mode '(define-key org-mode-map (kbd "C-c o r") 'org-compile-latex-and-update-other-buffer))
+
+;; https://jonathanabennett.github.io/blog/2019/05/29/writing-academic-papers-with-org-mode/
+(use-package pdf-tools
+	:if	*mac*
+	:custom	(pdf-annot-activate-created-annotations t)
+		(pdf-view-display-size 'fit-width)
+	:bind (	:map pdf-view-mode-map
+		("C-s" . isearch-forward)
+		("h" . pdf-annot-activate-created-annotations)
+		("t" . pdf-annot-add-text-annotation)
+		("D" . pdf-annot-delete))
+	:magic	("%PDF" . pdf-view-mode)
+	:config	(pdf-tools-install :no-query))
 
 
 ;; arrow keys (Darwin)

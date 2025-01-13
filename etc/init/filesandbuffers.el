@@ -160,6 +160,16 @@
 	(interactive)
 	(find-file user-init-file))
 
+(defun my/backward-paragraph () "Backward paragraph."
+	(interactive)
+	(backward-paragraph)
+	(recenter-top-bottom))
+
+(defun my/forward-paragraph () "Forward paragraph."
+	(interactive)
+	(forward-paragraph)
+	(recenter-top-bottom))
+
 (defun my/backward-page () "Backward page."
 	(interactive)
 	(backward-page)
