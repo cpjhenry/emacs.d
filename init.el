@@ -1210,6 +1210,7 @@
 ;(global-unset-key (kbd "C-x C-c"))
 ;(global-set-key (kbd "C-x C-c c") 'save-buffers-kill-terminal)
 
+(global-unset-key (kbd "C-x a C-a"))
 (global-unset-key (kbd "C-z"))
 
 ;; extended commands (alternates)
@@ -1354,6 +1355,7 @@
 (which-key-alias "C-x 8" "key translations")
 (which-key-alias "C-x 8 e" "emojis")
 (which-key-alias "C-x a" "abbrev")
+(which-key-alias "C-x a i" "inverse")
 (which-key-alias "C-x n" "narrow")
 (which-key-alias "C-x p" "project")
 (which-key-alias "C-x r" "registers")
