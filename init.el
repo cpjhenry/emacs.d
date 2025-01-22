@@ -613,7 +613,7 @@
 		(shr-indentation 2)	; Left-side margin
 		(shr-width nil)		; Fold text for comfiness
 		(url-privacy-level '(email agent lastloc))
-	:bind (	("C-x m" . browse-url-at-point)
+	:bind (	("C-x g" . browse-url-at-point)
 		:map eww-mode-map
 		("[" . eww-back-url)
 		("]" . eww-forward-url)
@@ -746,7 +746,9 @@
 		("[" . beginning-of-buffer)
 		("]" . end-of-buffer)
 		("TAB" . shr-next-link)
-		("SPC" . scroll-up-half))
+		("SPC" . scroll-up-half)
+		("C-<up>" . my/backward-paragraph)
+		("C-<down>" . my/forward-paragraph))
 	:init	(easy-menu-add-item global-map '(menu-bar tools)
 		["Read RSS Feeds" elfeed :help "Read RSS Feeds"] "Read Mail")
 	:config	(setq
@@ -780,7 +782,7 @@
 		w3m-confirm-leaving-secure-page nil
 		w3m-default-save-directory "~/Downloads"
 		w3m-use-filter nil)
-	(load "init/w3m-routines.el"))
+	(load "init/w3m-routines"))
 
 ;; Others
 (use-package chess
@@ -840,8 +842,7 @@
 (define-key text-mode-map (kbd "C-M-i") nil)
 
 (use-package visual-fill-column
-	:custom (visual-fill-column-fringes-outside-margins nil)
-	:hook	(visual-line-mode . visual-fill-column-mode)
+	;; :hook	(visual-line-mode . visual-fill-column-mode)
 	:config (advice-add 'text-scale-adjust :after #'visual-fill-column-adjust))
 
 (use-package adaptive-wrap
@@ -859,7 +860,7 @@
 	(goto-address-prog-mode)
 	(prettify-symbols-mode)
 	(show-paren-local-mode)
-	(visual-fill-column-mode -1)))
+	(if (featurep 'visual-fill-column) (visual-fill-column-mode -1))))
 
 ;; Emacs lisp
 (add-hook 'emacs-lisp-mode-hook (lambda()
@@ -875,7 +876,7 @@
 (add-to-list 'auto-mode-alist '("\\.html$" . html-mode))
 (add-hook 'html-mode-hook (lambda()
 	(visual-line-mode -1)
-	(visual-fill-column-mode -1)
+	(if (featurep 'visual-fill-column) (visual-fill-column-mode -1))
 	(toggle-truncate-lines 1)))
 
 ;; do not mark long lines in whitespace-mode
@@ -1078,11 +1079,11 @@
 
 (add-hook 'org-agenda-finalize-hook 'delete-other-windows)
 
-(add-hook 'org-mode-hook 'visual-fill-column-mode--disable)
+(if (featurep 'visual-fill-column) (add-hook 'org-mode-hook 'visual-fill-column-mode--disable))
 
 (add-to-list 'org-entities-user '("textnumero" "\\textnumero" nil "&numero;" "No." "No." "№"))
 
-(load "init/org") ; org-mode functions
+(load "init/org-functions")
 
 ;; fix table.el error
 ;; https://github.com/doomemacs/doomemacs/issues/6980
@@ -1134,6 +1135,8 @@
 (global-unset-key (kbd "M-<right>"))
 (global-set-key (kbd "M-[") 'my/backward-page)
 (global-set-key (kbd "M-]") 'my/forward-page)
+(global-set-key (kbd "M-{") 'my/backward-paragraph)
+(global-set-key (kbd "M-}") 'my/forward-paragraph)
 
 
 ;; scroll settings
@@ -1179,11 +1182,6 @@
 (global-set-key (kbd "C-c <right>") 'windmove-right)
 (global-set-key (kbd "C-c <up>")    'windmove-up)
 (global-set-key (kbd "C-c <down>")  'windmove-down))
-
-; tweaking window sizes
-(global-set-key (kbd "C-{") 'shrink-window-horizontally)
-(global-set-key (kbd "C-}") 'enlarge-window-horizontally)
-(global-set-key (kbd "C-^") 'enlarge-window)
 
 ;; Winner mode is a global minor mode that records the changes in the window configuration.
 ;; https://www.gnu.org/software/emacs/manual/html_node/emacs/Window-Convenience.html
@@ -1263,9 +1261,6 @@
 
 ;; Shortcuts
 
-(bind-key "<f5>"	'my/fill-max-column)
-(defun my/fill-max-column () (interactive) (setq fill-column 0) (message "Maximum width."))
-
 (bind-key "<f6>"	'toggle-fill-column-center)
 (bind-key "<f7>"	'ispell-buffer)
 (bind-key "<f8>"	'list-bookmarks)
@@ -1295,10 +1290,8 @@
 (bind-key "C-c b m"	'new-markdown-buffer)
 (bind-key "C-c b n"	'new-empty-buffer)
 (bind-key "C-c b o"	'new-org-buffer)
-(bind-key "C-c b s"	'my/fancy-startup-screen)
-(defun my/fancy-startup-screen () (interactive) (fancy-startup-screen))
-(which-key-alias "C-c b s" "fancy-startup-screen")
 (which-key-alias "C-c b" "buffers")
+
 (bind-key "C-c c"	'calendar)
 
 (bind-key "C-c d SPC"	'display-current-time)
@@ -1347,15 +1340,17 @@
 (bind-key "C-x n f"	'narrow-to-focus)
 
 (bind-key "C-x x L"	'buf-to-LF)
+(bind-key "C-x x V"	'view-text-file-as-info-manual)
 (bind-key "C-x x c"	'toggle-fill-column)
 (bind-key "C-x x k"	'kill-other-buffers)
 (bind-key "C-x x l"	'add-file-local-variable)
 (bind-key "C-x x m"	'move-buffer-file)
 (bind-key "C-x x r"	'rename-file-and-buffer)
-(bind-key "C-x x v"	'view-text-file-as-info-manual)
+(bind-key "C-x x v"	'view-mode)
 (bind-key "C-x x w"	'preview-html)
 (which-key-alias "C-x x" "buffers")
 
+;; Additional which-key aliases
 (which-key-alias "C-x 8" "key translations")
 (which-key-alias "C-x 8 e" "emojis")
 (which-key-alias "C-x a" "abbrev")

@@ -13,7 +13,7 @@
 	(diary-list-entries (calendar-current-date) diary-number-of-entries)
 	(kill-buffer "diary")
 
-	(message "'cbc' / 'xkcd'"))
+	(message "'cbc' / 'xkcd' / 'elfeed'"))
 
 (defun cbc () "Today's headlines from CBC Ottawa"
 	(interactive)

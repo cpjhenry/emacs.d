@@ -13,34 +13,41 @@
 
 (define-abbrev-table 'latex-mode-abbrev-table
   '(
-    ("myheaders" "\\documentclass[14pt,a5paper]{extarticle}
+    ("myheader" "\\documentclass[14pt,a5paper]{extarticle}
 \\usepackage[margin=0.5in,bottom=0.75in]{geometry}
 \\setlength\\parindent{0pt}" nil :count 2)
-   ))
-
-(define-abbrev-table 'markdown-mode-abbrev-table
-  '(
-    ("talkauthor" "Paul J Henry MM RAM FRC
-Goodwood Lodge
-№ 159 AF&AM GRC" nil :count 2)
    ))
 
 (define-abbrev-table 'org-mode-abbrev-table
   '(
     ("dinkus" "\\begin{center}* * *\\end{center}" nil :count 0)
-    ("myheaders" ":HEADERS:
+    ("myheader" ":HEADER:
+#+STARTUP: nofold
 #+OPTIONS: num:nil
-#+LATEX_CLASS_OPTIONS: [a5paper,12pt]
-#+LATEX_HEADER: \\usepackage[margin=0.5in,bottom=0.75in]{geometry}
+#+LATEX_CLASS_OPTIONS: [a5paper]
+#+LATEX_HEADER: \\usepackage[fontsize=15]{fontsize}
+#+LATEX_HEADER: \\usepackage[margin=0.50in,bottom=0.75in]{geometry}
 #+LATEX_HEADER: \\usepackage{titling}
-#+LATEX_HEADER: \\pretitle{\\begin{center}\\large\\textbf}\\posttitle{\\end{center}}
+#+LATEX_HEADER: \\pretitle{\\begin{center}\\large\\textbf}
+#+LATEX_HEADER: \\posttitle{\\end{center}}
 #+LATEX_HEADER: \\usepackage{sectsty}
 #+LATEX_HEADER: \\sectionfont{\\normalsize\\selectfont}
 #+LATEX_HEADER: \\subsectionfont{\\normalsize\\selectfont}
-#+LATEX_HEADER: \\subsubsectionfont{\\normalsizeo\\selectfont}
+#+LATEX_HEADER: \\subsubsectionfont{\\normalsize\\selectfont}
 #+LATEX_HEADER: \\usepackage{parskip}
-#+LATEX_HEADER: \\renewcommand{\\thefootnote}{\\fnsymbol{footnote}}
 #+LATEX_HEADER: \\raggedright
-:END:" nil :count 0)
+#+LATEX_HEADER: \\renewcommand{\\thefootnote}{\\fnsymbol{footnote}}
+#+LATEX_HEADER: \\hypersetup{hidelinks}
+#+LATEX_HEADER: \\usepackage[hang,ragged]{footmisc}
+#+LATEX_HEADER: \\setlength{\\footnotemargin}{2mm}
+:END:
+#+TITLE: 
+#+AUTHOR: Paul J Henry
+#+AUTHOR: MM RAM FRC
+#+DATE: 7 January 2025
+Goodwood Lodge\\\\
+\\textnumero159 AF&AM GRC
+
+CHECK AGAINST DELIVERY" nil :count 0)
    ))
 

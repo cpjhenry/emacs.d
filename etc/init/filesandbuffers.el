@@ -126,18 +126,26 @@
 	(set-window-width 80))
 
 (defun toggle-fill-column ()
-    "Toggle fill-column values between 32 and 70."
+"Toggle `fill-column' values between 32 and 70."
     (interactive)
     (setq fill-column (if (= fill-column 70) 32 70))
 	;; three values: (setq fill-column (if (= fill-column 8) 4 (if (= fill-column 4) 2 8)))
 	(message "'fill-column' set to: %s" fill-column))
 
+(defun fill-max-column ()
+"Set `fill-column' to maximum width."
+	(interactive)
+	(setq fill-column 0)
+	(message "Maximum width."))
+
 (defun toggle-fill-column-center ()
 "Toggle fill-column-center when in visual-fill-column-mode."
 	(interactive)
+	(if (featurep 'visual-fill-column) (visual-fill-column-mode))
 	(if (bound-and-true-p visual-fill-column-mode) (progn
-		(if (bound-and-true-p visual-fill-column-center-text)
+		(if (bound-and-true-p visual-fill-column-center-text) (progn
 			(setq visual-fill-column-center-text nil)
+			(visual-fill-column-mode -1))
 			(setq visual-fill-column-center-text t) )
 			(visual-fill-column-adjust) )
 		(message "'visual-fill-column-mode' not enabled.") ))
@@ -208,7 +216,7 @@
 (defun org-edit-special-no-fill () "Call a special editor for the element at point; turn off fill."
 	(interactive)
 	(org-edit-special)
-	(visual-fill-column-mode -1))
+	(if (featurep 'visual-fill-column) (visual-fill-column-mode -1)))
 
 
 ;; DIRED functions
