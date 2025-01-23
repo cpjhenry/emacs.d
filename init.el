@@ -11,6 +11,12 @@
 (tooltip-mode -1)
 (toggle-frame-maximized)
 
+;; Add directories to load-path
+(add-to-list 'load-path (expand-file-name "etc" user-emacs-directory))
+(add-to-list 'load-path (expand-file-name "opt" user-emacs-directory))
+(add-to-list 'load-path (expand-file-name "var" user-emacs-directory))
+
+;; Environmental constants
 (defconst *mac* (eq system-type 'darwin))
 (defconst *gnu* (eq system-type 'gnu/linux))
 (defconst *w32* (eq system-type 'windows-nt))
@@ -22,15 +28,10 @@
 (defconst EMACS29 (>= emacs-major-version 29) "Running Emacs 29 or greater.")
 (defconst EMACS30 (>= emacs-major-version 30) "Running Emacs 30 or greater.")
 
-;; Add directories to load-path
-(add-to-list 'load-path (expand-file-name "etc" user-emacs-directory))
-(add-to-list 'load-path (expand-file-name "opt" user-emacs-directory))
-(add-to-list 'load-path (expand-file-name "var" user-emacs-directory))
-
-;; what and who am I
 (if (boundp 'emacs-edition) (message "Running '%s'." emacs-edition))
 (load "rc/me" 'noerror)
 
+;; Customize
 (unless EMACS29
 	(defalias 'keymap-set 'define-key)
 	(defalias 'keymap-global-set 'global-set-key)
@@ -809,7 +810,7 @@
 
 (use-package xkcd
 	:if	*natasha*
-	:hook	(xkcd-mode . my/no-cursor)
+	:hook	(xkcd-mode . turn-off-cursor)
 	:init	(setq	xkcd-cache-dir    (concat user-emacs-directory "var/xkcd/")
 			xkcd-cache-latest (concat user-emacs-directory "var/xkcd/latest"))
 	:config (defun xkcd-add-alt (&rest r)
@@ -1281,8 +1282,6 @@
 
 ;; Ctrl-c (personal keybindings)
 (bind-key "C-c a"	'org-agenda)
-(when *mac*
-(bind-key "C-c z"	'my/agenda))
 
 (bind-key "C-c b m"	'new-markdown-buffer)
 (bind-key "C-c b n"	'new-empty-buffer)
@@ -1325,6 +1324,8 @@
 (bind-key "C-c x x"	'delete-whitespace-rectangle)
 (bind-key "C-c x y"	'whitespace-cleanup)
 (which-key-alias "C-c x" "text")
+
+(bind-key "C-c z"	'my/agenda)
 
 (global-set-key (kbd "C-c 8 c") (kbd "✓"))
 (global-set-key (kbd "C-c 8 n") (kbd "№"))

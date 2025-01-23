@@ -47,8 +47,7 @@
 	(switch-to-buffer "*Virgo*")
 	(shell-command "fw -u" (current-buffer))
 	(text-mode)
-	(my/fill-max-column)
-	(my/no-cursor)
+	(turn-off-cursor)
 	(view-mode)
 
 	(switch-to-buffer "*Aries*")

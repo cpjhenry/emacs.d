@@ -160,7 +160,11 @@
 	(deactivate-mark)
 	(message "Region evaluated."))
 
-(defun my/agenda () "Load org-agenda file."
+(defun turn-off-cursor () "Hides cursor locally."
+	(interactive)
+	(setq-local cursor-type nil))
+
+(defun my/agenda () "Load `org-agenda' file."
 	(interactive)
 	(find-file org-agenda-file))
 
@@ -205,10 +209,6 @@
 	(interactive)
 	(View-scroll-line-backward)
 	(move-to-window-line-top-bottom))
-
-(defun my/no-cursor () "Hides cursor locally."
-	(interactive)
-	(setq-local cursor-type nil))
 
 
 ;; org-mode functions
