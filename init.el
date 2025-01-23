@@ -960,14 +960,16 @@
 ;; Org-mode
 ;; HACK  convert to use-package (using :ensure nil)
 ;; FIXME both setq below fail as setopt
-(require 'org)
-(require 'ox-md)
 
-(setq	org-startup-indented nil
-	org-pretty-entities t
-	org-use-sub-superscripts "{}"
-	org-hide-emphasis-markers t
+(require 'org)
+;; (require 'ox-md)
+
+;; :custom
+(setopt	org-startup-indented nil
 	org-ellipsis "$"
+	org-pretty-entities t
+	org-use-sub-superscripts '{}
+	org-hide-emphasis-markers t
 	org-startup-with-inline-images t
 	org-image-actual-width '(300))
 
@@ -1026,32 +1028,9 @@
 	org-latex-pdf-process (list
 		(concat "latexmk -" org-latex-compiler " -recorder -synctex=1 -bibtex-cond %b")))
 
-(load "init/org-customizations") ; templates and custom commands
+(load "init/org-customizations") ; templates et al.
 
-(set-face-underline 'org-ellipsis nil)
-
-(use-package org-appear ; automatic visibility toggling of Org elements
-	:hook (org-mode . org-appear-mode))
-
-(use-package org-autolist ; pressing "Return" will insert a new list item automatically
-	:hook (org-mode . org-autolist-mode))
-
-(use-package org-cliplink) ; insert org-mode links from the clipboard
-
-;; (use-package org-modern ; add some styling to your Org buffer
-;; 	:custom	(org-modern-fold-stars nil)
-;; 		(org-modern-keyword nil)
-;; 		(org-modern-checkbox nil)
-;; 		(org-modern-table nil)
-;; 		(org-modern-tag nil)
-;; 	:hook (org-mode . global-org-modern-mode))
-
-;; (use-package ox-report) ; export your org file to minutes report PDF file
-
-(use-package org-chef
-	:if 	*natasha*
-	:defer	t)
-
+;; :bind
 (define-key org-mode-map (kbd "M-[") 'org-backward-heading-same-level)
 (define-key org-mode-map (kbd "M-]") 'org-forward-heading-same-level)
 (define-key org-mode-map (kbd "C-M-<left>" ) 'outline-up-heading)
@@ -1064,28 +1043,45 @@
 
 (define-key org-mode-map (kbd "C-c '") 'org-edit-special-no-fill)
 
-;; primarily for cbc-mode, but also useful for other org files in view-mode
+;; ;; primarily for cbc-mode, but also useful for other org files in view-mode
 (with-eval-after-load 'view
 	(define-key view-mode-map (kbd "[") 'org-previous-link)
 	(define-key view-mode-map (kbd "]") 'org-next-link)
 	(define-key view-mode-map (kbd "RET") nil))
 
+;; :hook
+(add-hook 'org-agenda-finalize-hook 'delete-other-windows)
+(if (featurep 'visual-fill-column)
+	(add-hook 'org-mode-hook 'visual-fill-column-mode--disable))
+
+;; :config
 ;; ispell should not check code blocks in org mode
 (add-to-list 'ispell-skip-region-alist '(":\\(PROPERTIES\\|LOGBOOK\\):" . ":END:"))
 (add-to-list 'ispell-skip-region-alist '("#\\+BEGIN_SRC" . "#\\+END_SRC"))
 (add-to-list 'ispell-skip-region-alist '("#\\+begin_src" . "#\\+end_src"))
 (add-to-list 'ispell-skip-region-alist '("^#\\+begin_example " . "#\\+end_example$"))
 (add-to-list 'ispell-skip-region-alist '("^#\\+BEGIN_EXAMPLE " . "#\\+END_EXAMPLE$"))
-
-(add-hook 'org-agenda-finalize-hook 'delete-other-windows)
-
-(if (featurep 'visual-fill-column) (add-hook 'org-mode-hook 'visual-fill-column-mode--disable))
-
 (add-to-list 'org-entities-user '("textnumero" "\\textnumero" nil "&numero;" "No." "No." "№"))
 
-(load "init/org-functions")
+(use-package org-appear ; automatic visibility toggling of Org elements
+	:hook (org-mode . org-appear-mode))
+
+(use-package org-autolist ; pressing "Return" will insert a new list item automatically
+	:hook (org-mode . org-autolist-mode))
+
+(use-package org-cliplink) ; insert org-mode links from the clipboard
+
+(use-package ox-report :disabled) ; export your org file to minutes report PDF file
+
+(use-package org-chef :disabled :if *natasha* :defer t)
+
+;; (set-face-underline 'org-ellipsis nil)
+
+;; FIXME - cleanup
+;; (load "init/org-functions")
 
 ;; fix table.el error
+;; FIXME - check if still needed with v30
 ;; https://github.com/doomemacs/doomemacs/issues/6980
 (defun myfunc/check_table_p (oldfunc) (funcall oldfunc t))
 (advice-add 'org-at-table-p :around 'myfunc/check_table_p)

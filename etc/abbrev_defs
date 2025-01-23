@@ -40,8 +40,8 @@
 #+LATEX_HEADER: \\hypersetup{hidelinks}
 #+LATEX_HEADER: \\usepackage[hang,ragged]{footmisc}
 #+LATEX_HEADER: \\setlength{\\footnotemargin}{2mm}
-:END:
-#+TITLE: 
+:END:" nil :count 2)
+    ("mytitle" "#+TITLE: Goodwood Lodge and the Jacobites
 #+AUTHOR: Paul J Henry
 #+AUTHOR: MM RAM FRC
 #+DATE: 7 January 2025

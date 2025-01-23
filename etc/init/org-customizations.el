@@ -1,4 +1,4 @@
-;;; org-customizations --- templates and custom commands
+;;; org-customizations --- templates et al.
 
 ;;; Commentary:
 ;;; Code:
