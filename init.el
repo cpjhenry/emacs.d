@@ -108,12 +108,7 @@
 		(use-package-verbose t))
 
 ;; init/vcusepackage goes here, if needed.
-(unless EMACS30 (load "init/vcusepackage"))
-
-(add-to-list 'display-buffer-alist '(
-	"\\`\\*\\(Warnings\\|Compile-Log\\)\\*\\'"
-	(display-buffer-no-window)
-	(allow-no-window . t)))
+;(unless EMACS30 (load "init/vcusepackage"))
 
 ;; settings
 (set-language-environment 'utf-8)
@@ -335,6 +330,12 @@
 	(when buffer-file-name (save-buffer)))
 (defadvice windmove-right (before other-window-now activate)
 	(when buffer-file-name (save-buffer)))
+
+;; don't immediately display these buffers
+(add-to-list 'display-buffer-alist '(
+	"\\`\\*\\(Warnings\\|Compile-Log\\)\\*\\'"
+	(display-buffer-no-window)
+	(allow-no-window . t)))
 
 
 ;; IDO
@@ -905,59 +906,6 @@
 (load "init/text") ; text functions
 
 
-;; TeX
-(use-package tex
-	:unless *w32*
-	:ensure auctex
-	:hook	(LaTeX-mode . prettify-symbols-mode)
-		(LaTeX-mode . (lambda () (push '("\\&" . ?＆) prettify-symbols-alist)))
-	:config (setq
-		font-latex-fontify-sectioning 'color
-		ispell-parser 'tex
-		LaTeX-babel-hyphen-after-hyphen nil
-		latex-run-command "xelatex"
-		preview-locating-previews-message nil
-		preview-protect-point t
-		preview-leave-open-previews-visible t
-		TeX-auto-save t
-		TeX-parse-self t)
-
-	(use-package latex-extra
-		:hook (LaTeX-mode . latex-extra-mode))
-
-	(use-package latex-pretty-symbols)
-
-	(use-package latex-preview-pane
-		:bind (	:map latex-preview-pane-mode-map ("M-p" . nil) ("M-P" . nil))
-		:config	(setq message-latex-preview-pane-welcome ""))
-
-	(use-package reftex :ensure nil :hook (LaTeX-mode . turn-on-reftex)))
-
-
-;; spell checking
-(use-package jinx
-	:if (executable-find "aspell")
-	:bind (	("M-$" . jinx-correct)
-		("C-M-$" . jinx-languages))
-	:hook	(emacs-startup . global-jinx-mode)
-	:config	(load "init/jinx-routines")
-	(add-hook 'jinx-mode-hook #'my/jinx-add-ispell-localwords)
-	(setf (alist-get ?* jinx--save-keys) #'my/jinx-save-as-ispell-localword))
-
-
-;; print functions
-(load "init/print")
-
-(setq lpr-page-header-switches '("-t"))
-(define-key global-map [menu-bar file print] nil)
-
-(bind-key "M-p e" 'enscript)
-(bind-key "M-p E" (lambda()(interactive) (enscript '(4)) (kill-buffer))) (which-key-alias "M-p E" "folded")
-(bind-key "M-p f" 'fill-to-printer) (which-key-alias "M-p f" "fill buffer")
-(bind-key "M-p r" 'print-buffer-or-region)
-(bind-key "M-p s" 'ps-print-buffer-or-region)
-
-
 ;; Org-mode
 ;; HACK  convert to use-package (using :ensure nil)
 ;; FIXME both setq below fail as setopt
@@ -1086,6 +1034,59 @@
 ;; https://github.com/doomemacs/doomemacs/issues/6980
 (defun myfunc/check_table_p (oldfunc) (funcall oldfunc t))
 (advice-add 'org-at-table-p :around 'myfunc/check_table_p)
+
+
+;; TeX
+(use-package tex
+	:unless *w32*
+	:ensure auctex
+	:hook	(LaTeX-mode . prettify-symbols-mode)
+		(LaTeX-mode . (lambda () (push '("\\&" . ?＆) prettify-symbols-alist)))
+	:config (setq
+		font-latex-fontify-sectioning 'color
+		ispell-parser 'tex
+		LaTeX-babel-hyphen-after-hyphen nil
+		latex-run-command "xelatex"
+		preview-locating-previews-message nil
+		preview-protect-point t
+		preview-leave-open-previews-visible t
+		TeX-auto-save t
+		TeX-parse-self t)
+
+	(use-package latex-extra
+		:hook (LaTeX-mode . latex-extra-mode))
+
+	(use-package latex-pretty-symbols)
+
+	(use-package latex-preview-pane
+		:bind (	:map latex-preview-pane-mode-map ("M-p" . nil) ("M-P" . nil))
+		:config	(setq message-latex-preview-pane-welcome ""))
+
+	(use-package reftex :ensure nil :hook (LaTeX-mode . turn-on-reftex)))
+
+
+;; spell checking
+(use-package jinx
+	:if (executable-find "aspell")
+	:bind (	("M-$" . jinx-correct)
+		("C-M-$" . jinx-languages))
+	:hook	(emacs-startup . global-jinx-mode)
+	:config	(load "init/jinx-routines")
+	(add-hook 'jinx-mode-hook #'my/jinx-add-ispell-localwords)
+	(setf (alist-get ?* jinx--save-keys) #'my/jinx-save-as-ispell-localword))
+
+
+;; print functions
+(load "init/print")
+
+(setq lpr-page-header-switches '("-t"))
+(define-key global-map [menu-bar file print] nil)
+
+(bind-key "M-p e" 'enscript)
+(bind-key "M-p E" (lambda()(interactive) (enscript '(4)) (kill-buffer))) (which-key-alias "M-p E" "folded")
+(bind-key "M-p f" 'fill-to-printer) (which-key-alias "M-p f" "fill buffer")
+(bind-key "M-p r" 'print-buffer-or-region)
+(bind-key "M-p s" 'ps-print-buffer-or-region)
 
 
 ;; sundry
