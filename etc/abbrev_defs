@@ -36,15 +36,16 @@
 #+LATEX_HEADER: \\subsubsectionfont{\\normalsize\\selectfont}
 #+LATEX_HEADER: \\usepackage{parskip}
 #+LATEX_HEADER: \\raggedright
+#+LATEX_HEADER: \\usepackage[australian]{datetime2}
 #+LATEX_HEADER: \\renewcommand{\\thefootnote}{\\fnsymbol{footnote}}
 #+LATEX_HEADER: \\hypersetup{hidelinks}
 #+LATEX_HEADER: \\usepackage[hang,ragged]{footmisc}
 #+LATEX_HEADER: \\setlength{\\footnotemargin}{2mm}
-:END:" nil :count 2)
-    ("mytitle" "#+TITLE: Goodwood Lodge and the Jacobites
+:END:" nil :count 0)
+    ("mytitle" "#+TITLE: 
 #+AUTHOR: Paul J Henry
 #+AUTHOR: MM RAM FRC
-#+DATE: 7 January 2025
+#+DATE: 
 Goodwood Lodge\\\\
 \\textnumero159 AF&AM GRC
 

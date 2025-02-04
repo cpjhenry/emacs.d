@@ -1,4 +1,4 @@
-;;; org-mode functions
+;;; org-functions
 
 ;; org links
 (require 'ol)
@@ -93,10 +93,10 @@
 		(set-face-underline-p 'org-link t))
 	(iimage-mode ‘toggle))
 
-;; (defun org-no-ellipsis-in-headlines ()
-;; 	"Remove use of ellipsis in headlines. See `buffer-invisibility-spec'."
-;; 	(remove-from-invisibility-spec '(outline . t))
-;; 	(add-to-invisibility-spec 'outline))
+(defun org-no-ellipsis-in-headlines ()
+	"Remove use of ellipsis in headlines. See `buffer-invisibility-spec'."
+	(remove-from-invisibility-spec '(outline . t))
+	(add-to-invisibility-spec 'outline))
 
 (defun org-cycle-hide-drawers (state)
   "Re-hide all drawers after a visibility state change."

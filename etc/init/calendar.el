@@ -21,17 +21,29 @@
 	(holiday-fixed 04 06  "Tartan Day")
 	(holiday-fixed 04 09  "Vimy Ridge Day")
 	(holiday-fixed 06 21  "Indigenous Peoples Day")
-	;(holiday-fixed 06 24  "Midsummer Day") ; prefer floating date (Saturday following Summer Solstice)
 	(holiday-fixed 09 30  "Truth and Reconciliation")
 	(holiday-float 11 0 2 "Remembrance Sunday")
 	(holiday-fixed 12 11  "Statute of Westminster")))
 
 (setq holiday-other-holidays '(
-	(holiday-advent -11 "Prayer & Repentance")
+	(holiday-float 1 1 3 "Martin Luther King Day")
+	(holiday-float 06 6 1 "Midsummer" (floor (nth 1 (solar-equinoxes/solstices 1 displayed-year))))
 	(holiday-sexp '(if (zerop (% year 4)) (calendar-gregorian-from-absolute (1+
 		(calendar-dayname-on-or-before 1 (+ 6 (calendar-absolute-from-gregorian
 		(list 11 1 year)))))))
-		"US Presidential Election")))
+		"US Presidential Election")
+	(holiday-float 11 4 4 "US Thanksgiving")
+	(holiday-advent -11 "Prayer & Repentance")
+	(holiday-fixed 12 (floor (nth 1 (solar-equinoxes/solstices 3 displayed-year))) "Midwinter")))
+
+(setq holiday-bahai-holidays '(
+	(holiday-bahai-new-year)
+	(holiday-bahai-ridvan)))
+
+(setq holiday-islamic-holidays '(
+	(holiday-islamic-new-year)
+	(holiday-islamic 9 1 "Ramadan Begins")
+	(holiday-islamic 10 1 "Id-al-Fitr")))
 
 (require 'lunar)
 (setq lunar-phase-names '(
@@ -77,9 +89,10 @@
 (defun display-current-time () (interactive)
 	(message (format-time-string "%Y-%m-%d %H:%M:%S")))
 
-(defun list-holidays-this-year () "Display holidays for current year."
+(defun list-holidays-this-year () "Display holidays for displayed (or current) year."
 	(interactive)
-	(list-holidays (string-to-number (format-time-string "%Y"))))
+	(if (boundp 'displayed-year) (list-holidays displayed-year)
+	(list-holidays (string-to-number (format-time-string "%Y")))))
 
 (defun calendar-world-clock () "Display a world clock buffer with times in various time zones."
 	(interactive)
@@ -87,7 +100,7 @@
 	(next-window-any-frame)
 	(fit-window-to-buffer))
 
-(defun alt-clean-equal-signs () "This function makes lines of = signs invisible."
+(defun alt-clean-equal-signs () "Make lines of = signs invisible."
 	(goto-char (point-min))
 	(let ((state buffer-read-only))
 		(when state (setq buffer-read-only nil))

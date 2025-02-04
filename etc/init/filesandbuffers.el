@@ -17,7 +17,7 @@
 		(setq buffer-offer-save t) ))
 
 (defun new-markdown-buffer ()
-"Create new empty markdown buffer."
+"Create new empty `markdown-mode' buffer."
 	(interactive)
 	(let ((buf (generate-new-buffer "untitled\.md")))
 		(switch-to-buffer buf)
@@ -25,7 +25,7 @@
 		(setq buffer-offer-save t) ))
 
 (defun new-org-buffer ()
-"Create new empty org-mode buffer."
+"Create new empty `org-mode' buffer."
 	(interactive)
 	(let ((buf (generate-new-buffer "untitled\.org")))
 		(switch-to-buffer buf)
@@ -143,12 +143,19 @@
 	(interactive)
 	(if (featurep 'visual-fill-column) (visual-fill-column-mode))
 	(if (bound-and-true-p visual-fill-column-mode) (progn
-		(if (bound-and-true-p visual-fill-column-center-text) (progn
-			(setq visual-fill-column-center-text nil)
-			(visual-fill-column-mode -1))
-			(setq visual-fill-column-center-text t) )
-			(visual-fill-column-adjust) )
-		(message "'visual-fill-column-mode' not enabled.") ))
+		(if (bound-and-true-p visual-fill-column-center-text)
+			(progn	(setq visual-fill-column-center-text nil)
+				(visual-fill-column-mode -1))
+			(progn	(setq visual-fill-column-center-text t)))
+			(visual-fill-column-adjust))
+		(message "'visual-fill-column-mode' not enabled.")))
+
+;; See: https://emacs.stackexchange.com/questions/81361/how-to-switch-to-a-buffer-from-terminal-with-a-unique-partial-name
+(require 'dash) ; for `-find', `-compose' and `-partial'
+(defun switch-to-buffer-matching (regular-expression)
+  "Switch to the first buffer that matches REGULAR-EXPRESSION."
+	(switch-to-buffer (-find (-compose (-partial #'string-match-p regular-expression) #'buffer-name)
+		(buffer-list))))
 
 (defun preview-html () "Render buffer as HTML."
 	(interactive)
@@ -260,24 +267,6 @@
 		(set-visited-file-name newname)
 		(set-buffer-modified-p nil) t))))
 
-(defun mydired-sort ()
-"Sort dired listings with directories first."
-	(save-excursion
-		(let (buffer-read-only)
-			(forward-line 2) ;; beyond dir. header
-			(sort-regexp-fields t "^.*$" "[ ]*." (point) (point-max)))
-		(set-buffer-modified-p nil)))
-
-(defadvice dired-readin
-	(after dired-after-updating-hook first () activate)
-	"Sort dired listings with directories first before adding marks."
-	(mydired-sort))
-
-(defun dired-find-file-ow()
-	(interactive)
-	(dired-find-file-other-window)
-	(delete-other-windows))
-
 ;; dired extension "% s"
 ;; https://social.tchncs.de/@stackeffect/113431684014013180
 (defun my-substspaces (str)
@@ -345,8 +334,6 @@
 			default-directory))))
 		(list (ido-read-file-name "Find file: " default-directory) t)))
 	(find-file file wildcards))
-	(add-hook 'ibuffer-mode-hook (lambda ()
-		(define-key ibuffer-mode-map (kbd "C-x C-f") 'ibuffer-ido-find-file)) )
 
 
 ;; scrolling
@@ -360,8 +347,11 @@
 	(cond ((string-match-p "\\`\\(gemini\\|gopher\\)://" url) (elpher-go url))
 		(t (funcall original url new-window))))
 
-(defun elpher-up ()	(interactive)(backward-paragraph)(recenter-top-bottom))
-(defun elpher-down () 	(interactive)(forward-paragraph)(recenter-top-bottom))
+(defun eww-unfill-paragraph ()
+	(interactive)
+	(read-only-mode -1)
+	(unfill-paragraph)
+	(read-only-mode))
 
 
 ;; https://vishesh.github.io/emacs/editors/2023/01/25/lean-emacs-config.html

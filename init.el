@@ -73,6 +73,7 @@
 	(global-set-key (kbd "<end>" ) nil) ; 'move-end-of-line
 	(global-set-key (kbd "A-<left>") [home])
 	(global-set-key (kbd "A-<right>") [end])
+	(global-set-key (kbd "A-k") (kbd "s-k"))
 
 	(add-to-list 'default-frame-alist '(font . "Inconsolata 21")))
 
@@ -240,8 +241,7 @@
 (add-hook 'help-mode-hook (lambda()
 	(setq-local font-lock-keywords-only t)
 	(goto-address-mode)))
-;; (add-hook 'pdf-view-mode-hook 'auto-revert-mode)
-(add-hook 'shell-mode-hook 'goto-address-mode)
+(add-hook 'pdf-view-mode-hook 'auto-revert-mode)
 (remove-hook 'file-name-at-point-functions 'ffap-guess-file-name-at-point)
 
 ;; Modes derived from special-mode will pick-up this directive
@@ -287,7 +287,7 @@
 
 ;; backups / auto-save
 (setopt	auto-save-default nil
-	;auto-save-list-file-prefix (concat user-emacs-directory "var/auto-save/sessions/")
+	auto-save-list-file-prefix (concat user-emacs-directory "var/auto-save/")
 	auto-save-no-message nil
 	auto-save-visited-interval 60
 	create-lockfiles nil
@@ -400,6 +400,7 @@
 				(name . "^\\.bbdb$")
 				(name . "^\\.newsrc-dribble"))) ))))
 	:bind ( :map ibuffer-mode-map
+		("C-x C-f" . ibuffer-ido-find-file)
 		("<up>" . ibuffer-previous-line)
 		("<down>" . ibuffer-next-line)
 		("<left>" . ibuffer-previous-header)
@@ -423,10 +424,12 @@
 
 ;; Dired
 (use-package dired
-	:ensure nil)
+	:ensure nil
+	:demand t)
 
 (use-package dired-x
 	:ensure	nil
+	:demand	t
 	:custom	(dired-dwim-target t) ; suggest other visible Dired buffer
 		(dired-listing-switches "-laGhv  --group-directories-first")
 		(dired-garbage-files-regexp (concat dired-garbage-files-regexp
@@ -434,13 +437,16 @@
 		(dired-omit-verbose nil)
 	:bind (	:map dired-mode-map
 		("q" . kill-dired-buffers)
-		("o" . dired-find-file-ow))
+	)
 	:hook	(dired-mode . dired-omit-mode)
 	:config	(unless *w32* (setq dired-kill-when-opening-new-dired-buffer t))
 		(defalias 'dired-find-file 'dired-find-alternate-file)
+		(advice-add 'dired-find-file-other-window
+			:after (lambda (&rest r) (delete-other-windows)))
 		(if (keymap-lookup dired-mode-map "% s")
 			(message "Error: %% s already defined in dired-mode-map")
 			(define-key dired-mode-map "%s" 'my-dired-substspaces))
+		(setopt dired-omit-files (concat dired-omit-files "\\|^\\.localized$"))
 		(delete "~" dired-omit-extensions)); show backup files
 
 ;; improve file sorting
@@ -452,9 +458,8 @@
 
 
 ;; frames
-(setq	frame-inhibit-implied-resize t
-	frame-resize-pixelwise t
-	frame-title-format nil)
+(setopt	frame-inhibit-implied-resize t
+	frame-resize-pixelwise t)
 
 ;; https://korewanetadesu.com/emacs-on-os-x.html
 (when (featurep 'ns) (add-hook 'after-make-frame-functions 'ns-raise-emacs-with-frame))
@@ -515,53 +520,55 @@
 
 
 ;; calendar
-;; HACK convert to use-package (using :ensure nil)
-(require 'calendar)
-(require 'diary-lib)
-(load "init/calendar")
-(setopt	diary-file "~/Documents/diary"
+(use-package calendar
+	:ensure	nil
+	:custom	calendar-date-style 'iso
+	:init	(setq
+		calendar-mark-holidays-flag t
+		world-clock-time-format "%a %e %b %R %Z"
 
-	diary-display-function 'diary-fancy-display
-	diary-list-include-blanks t
-	diary-show-holidays-flag t
+		calendar-month-header '(propertize
+			(format "%s %d" (calendar-month-name month) year)
+			'font-lock-face 'calendar-month-header)
 
-	calendar-date-style 'iso
-	calendar-mark-diary-entries-flag nil
-	calendar-mark-holidays-flag t
-	calendar-setup nil; one-frame
-	calendar-view-diary-initially-flag nil
-	calendar-view-holidays-initially-flag nil
+		calendar-christian-all-holidays-flag t
+		calendar-chinese-all-holidays-flag t
+		holiday-general-holidays nil)
+	:config
+	(define-key calendar-mode-map (kbd "q") 'calendar-exit-kill)
+	(define-key calendar-mode-map (kbd "w") 'calendar-world-clock)
+	(define-key calendar-mode-map (kbd "y") 'list-holidays-this-year)
 
-	calendar-month-header '(propertize
-		(format "%s %d" (calendar-month-name month) year)
-		'font-lock-face 'calendar-month-header)
-	world-clock-time-format "%a %e %b %R %Z"
+	;; don't allow marking of diary entries
+	(define-key calendar-mode-map (kbd "m") nil)
+	(easy-menu-remove-item calendar-mode-map '(menu-bar diary) "Mark All")
 
-	calendar-christian-all-holidays-flag t
-	calendar-chinese-all-holidays-flag t
-	holiday-general-holidays nil)
+	(easy-menu-add-item calendar-mode-map '(menu-bar goto)
+		["World clock" calendar-world-clock] "Beginning of Week")
+	(easy-menu-add-item calendar-mode-map '(menu-bar holidays)
+		["Yearly Holidays" list-holidays-this-year])
 
-;; don't allow marking of diary entries
-(define-key calendar-mode-map (kbd "m") nil)
-(easy-menu-remove-item calendar-mode-map '(menu-bar diary) "Mark All")
+	(advice-add 'calendar-exit :before #'save-diary-before-calendar-exit)
+	(advice-add 'calendar-goto-info-node
+		:after (lambda (&rest r) (calendar-exit-kill) (delete-other-windows)))
 
-(define-key calendar-mode-map (kbd "q") 'calendar-exit-kill)
-(define-key calendar-mode-map (kbd "w") 'calendar-world-clock)
-(define-key calendar-mode-map (kbd "y") 'list-holidays-this-year)
-(define-key diary-mode-map (kbd "C-c C-q") 'kill-current-buffer)
+	(load "init/calendar"))
 
-(easy-menu-add-item calendar-mode-map '(menu-bar goto)
-	["World clock" calendar-world-clock] "Beginning of Week")
-(easy-menu-add-item calendar-mode-map '(menu-bar holidays)
-	["Yearly Holidays" list-holidays-this-year])
+(use-package diary-lib
+	:after	calendar
+	:ensure	nil
+	:custom	diary-file "~/Documents/diary"
 
-(advice-add 'calendar-exit :before #'save-diary-before-calendar-exit)
-(advice-add 'calendar-goto-info-node :after (lambda (&rest r)
-	(calendar-exit-kill) (delete-other-windows)))
+		diary-display-function 'diary-fancy-display
+		diary-list-include-blanks t
+		diary-show-holidays-flag t
+	:init
+	(add-to-list 'auto-mode-alist '("diary" . diary-mode))
+	:config
+	(add-hook 'diary-list-entries-hook 'diary-sort-entries t)
+	(add-hook 'diary-fancy-display-mode-hook 'alt-clean-equal-signs)
 
-(add-hook 'diary-list-entries-hook 'diary-sort-entries t)
-(add-hook 'diary-fancy-display-mode-hook 'alt-clean-equal-signs)
-(add-to-list 'auto-mode-alist '("diary" . diary-mode))
+	(define-key diary-mode-map (kbd "C-c C-q") 'kill-current-buffer))
 
 
 ;; Initialize packages
@@ -569,6 +576,7 @@
 ;; use-package directives in this order:
 ;; :disabled
 ;; :ensure
+;; :demand
 ;; :defer
 ;; :custom
 ;; :bind
@@ -593,7 +601,8 @@
 (use-package elpher
 	:bind (	:map elpher-mode-map
 		("[" . elpher-back)
-		("]" . elpher-down))
+		("C-<up>" . my/backward-paragraph)
+		("C-<down>" . my/forward-paragraph))
 	:hook	(elpher-mode . (lambda()
 			(setq-local left-margin-width 10)
 			(set-window-buffer nil (current-buffer))))
@@ -625,13 +634,7 @@
 		:map eww-bookmark-mode-map
 		("w" . eww))
 	:config	(url-setup-privacy-info)
-	(defun eww-unfill-paragraph ()
-		(interactive)
-		(read-only-mode -1)
-		(unfill-paragraph)
-		(read-only-mode))
 	(add-hook 'eww-after-render-hook 'eww-readable) ;; default to 'readable-mode'
-
 	(use-package ace-link :config (ace-link-setup-default))) ;; alternative to tabbing
 
 (use-package flycheck
@@ -644,7 +647,8 @@
 		(add-to-list 'ido-ignore-buffers "*Flycheck error messages*")))
 
 (use-package free-keys :defer t
-	:config	(add-to-list 'free-keys-modifiers "s" t))
+	:config	(add-to-list 'free-keys-modifiers "s" t)
+		(add-to-list 'free-keys-modifiers "A" t))
 
 (use-package go-mode :defer t)
 
@@ -787,6 +791,11 @@
 	(load "init/w3m-routines"))
 
 ;; Others
+(use-package chatgpt-shell
+	:disabled
+	:if	*natasha*
+	:defer t)
+
 (use-package chess
 	:if 	*natasha*
 	:defer	t
@@ -873,13 +882,10 @@
 (add-to-list 'auto-mode-alist '("\\.bash*" . sh-mode))
 (define-key shell-mode-map (kbd "M-r") nil)
 (define-key shell-mode-map (kbd "M-p") nil)
+(add-hook 'shell-mode-hook 'goto-address-mode)
 
 ;; html
 (add-to-list 'auto-mode-alist '("\\.html$" . html-mode))
-(add-hook 'html-mode-hook (lambda()
-	(visual-line-mode -1)
-	(if (featurep 'visual-fill-column) (visual-fill-column-mode -1))
-	(toggle-truncate-lines 1)))
 
 ;; do not mark long lines in whitespace-mode
 (require 'whitespace)
@@ -887,6 +893,7 @@
 
 ;; Markdown
 (use-package markdown-mode
+	:demand	t
 	:custom	(markdown-command "multimarkdown")
 		(markdown-enable-prefix-prompts nil)
 		(markdown-italic-underscore t)
@@ -982,8 +989,8 @@
 ;; :bind
 (define-key org-mode-map (kbd "M-[") 'org-backward-heading-same-level)
 (define-key org-mode-map (kbd "M-]") 'org-forward-heading-same-level)
-(define-key org-mode-map (kbd "C-M-<left>" ) 'outline-up-heading)
-(define-key org-mode-map (kbd "C-M-<right>") (lambda()(interactive)(org-end-of-subtree)))
+(define-key org-mode-map (kbd "C-M-[" ) 'outline-up-heading)
+(define-key org-mode-map (kbd "C-M-]") (lambda()(interactive)(org-end-of-subtree)))
 
 (define-key org-mode-map (kbd "S-<home>") (lambda()(interactive)(org-call-with-arg 'org-todo 'left)))
 (define-key org-mode-map (kbd "S-<end>") (lambda()(interactive)(org-call-with-arg 'org-todo 'right)))
@@ -1027,7 +1034,7 @@
 ;; (set-face-underline 'org-ellipsis nil)
 
 ;; FIXME - cleanup
-;; (load "init/org-functions")
+(load "init/org-functions")
 
 ;; fix table.el error
 ;; FIXME - check if still needed with v30
@@ -1067,6 +1074,7 @@
 
 ;; spell checking
 (use-package jinx
+	:demand	t
 	:if (executable-find "aspell")
 	:bind (	("M-$" . jinx-correct)
 		("C-M-$" . jinx-languages))

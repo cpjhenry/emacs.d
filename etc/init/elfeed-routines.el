@@ -50,8 +50,34 @@
 	(let ((buffer elfeed-log-buffer-name))
 	(and (get-buffer buffer) (kill-buffer buffer)))))
 
-(defun elfeed-search-set-filter-nil () "Reset Elfeed search filter"
+(defun elfeed-search-set-filter-nil () "Reset Elfeed search filter."
 	(interactive)
 	(elfeed-search-set-filter nil))
+
+;; https://takeonrules.com/2024/08/11/exporting-org-mode-elfeed-links/
+(org-link-set-parameters "elfeed"
+  :follow #'elfeed-link-open
+  :store #'elfeed-link-store-link
+  :export #'elfeed-link-export-link)
+
+(defun elfeed-link-export-link (link desc format _protocol)
+  "Export `org-mode' `elfeed' LINK with DESC for FORMAT."
+  (if (string-match "\\([^#]+\\)#\\(.+\\)" link)
+    (if-let* ((entry
+                (elfeed-db-get-entry
+                  (cons (match-string 1 link)
+                    (match-string 2 link))))
+               (url
+                 (elfeed-entry-link entry))
+               (title
+                 (elfeed-entry-title entry)))
+      (pcase format
+        ('html (format "<a href=\"%s\">%s</a>" url desc))
+        ('md (format "[%s](%s)" desc url))
+        ('latex (format "\\href{%s}{%s}" url desc))
+        ('texinfo (format "@uref{%s,%s}" url desc))
+        (_ (format "%s (%s)" desc url)))
+      (format "%s (%s)" desc url))
+    (format "%s (%s)" desc link)))
 
 ; LocalWords:  elfeed
