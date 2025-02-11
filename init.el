@@ -274,8 +274,8 @@
 	(define-key view-mode-map (kbd "k")	'my/View-scroll-line-backward)
 	(define-key view-mode-map (kbd "q")	'View-kill-and-leave)
 
-	(define-key view-mode-map (kbd "C-<up>")	'my/backward-paragraph)
-	(define-key view-mode-map (kbd "C-<down>")	'my/forward-paragraph))
+	(define-key view-mode-map (kbd "C-<up>")   'my/backward-paragraph)
+	(define-key view-mode-map (kbd "C-<down>") 'my/forward-paragraph))
 
 ;; removes *Completions* buffer when done
 (add-hook 'minibuffer-exit-hook (lambda()
@@ -552,7 +552,7 @@
 	(advice-add 'calendar-goto-info-node
 		:after (lambda (&rest r) (calendar-exit-kill) (delete-other-windows)))
 
-	(load "init/calendar"))
+	(load "init/calendar-routines"))
 
 (use-package diary-lib
 	:after	calendar
@@ -853,6 +853,7 @@
 (define-key text-mode-map (kbd "C-M-i") nil)
 
 (use-package visual-fill-column
+	:bind (	("<f5>" . visual-fill-column-mode))
 	;; :hook	(visual-line-mode . visual-fill-column-mode)
 	:config (advice-add 'text-scale-adjust :after #'visual-fill-column-adjust))
 
@@ -1299,7 +1300,7 @@
 
 (bind-key "C-c c"	'calendar)
 
-(bind-key "C-c d SPC"	'display-current-time)
+(bind-key "C-c d SPC"	'display-current-date-and-time)
 (bind-key "C-c d c"	'insert-date)
 (bind-key "C-c d i"	'insert-iso-date)
 (which-key-alias "C-c d" "dates")

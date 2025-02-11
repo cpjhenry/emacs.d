@@ -1,4 +1,6 @@
-;; calendar settings / functions
+;;; calendar --- settings / functions
+;;; Commentary:
+;;; Code:
 
 (setq holiday-local-holidays '( ; National / Provincial Holidays and Commemorations
 	(holiday-fixed 01 01  "New Year's Day")
@@ -37,8 +39,18 @@
 	(holiday-fixed 12 (floor (nth 1 (solar-equinoxes/solstices 3 displayed-year))) "Midwinter")))
 
 (setq holiday-bahai-holidays '(
-	(holiday-bahai-new-year)
-	(holiday-bahai-ridvan)))
+	(holiday-bahai-new-year)))
+
+(setq holiday-oriental-holidays '(
+	(holiday-chinese-new-year)
+	(if calendar-chinese-all-holidays-flag (append
+		(holiday-chinese 1 15 "Lantern Festival")
+		(holiday-chinese-qingming)
+		(holiday-chinese 5 5 "Dragon Boat Festival")
+		(holiday-chinese 7 7 "Double Seventh Festival")
+		(holiday-chinese 7 15 "Ghost Festival")
+		(holiday-chinese 8 15 "Mid-Autumn Festival")
+		(holiday-chinese 9 9 "Double Ninth Festival")))))
 
 (setq holiday-islamic-holidays '(
 	(holiday-islamic-new-year)
@@ -73,9 +85,9 @@
 	("Asia/Shanghai" "Beijing")
 	("Asia/Tokyo" "Tokyo")
 	("Australia/Sydney" "Sydney")
-	("NZ" "Wellington")
-	))
+	("NZ" "Wellington")))
 
+;; functions
 (defun calendar-exit-kill ()
 	(interactive)
 	(calendar-exit 'kill)
@@ -86,7 +98,8 @@
 		(not (buffer-modified-p diary-buffer))
 		(with-current-buffer diary-buffer (save-buffer)))))
 
-(defun display-current-time () (interactive)
+(defun display-current-date-and-time () "Display current date and time."
+	(interactive)
 	(message (format-time-string "%Y-%m-%d %H:%M:%S")))
 
 (defun list-holidays-this-year () "Display holidays for displayed (or current) year."
@@ -100,6 +113,7 @@
 	(next-window-any-frame)
 	(fit-window-to-buffer))
 
+;; https://www.emacswiki.org/emacs/DiaryMode
 (defun alt-clean-equal-signs () "Make lines of = signs invisible."
 	(goto-char (point-min))
 	(let ((state buffer-read-only))
@@ -107,33 +121,6 @@
 		(while (not (eobp)) (search-forward-regexp "^=+$" nil 'move)
 		(add-text-properties (match-beginning 0) (match-end 0) '(invisible t)))
 		(when state (setq buffer-read-only t))))
-
-(defun diary-sunrise ()
-	(let ((dss (diary-sunrise-sunset)))
-	(with-temp-buffer
-	(insert dss)
-	(goto-char (point-min))
-	(while (re-search-forward " ([^)]*)" nil t)
-	(replace-match "" nil nil))
-	(goto-char (point-min))
-	(search-forward ",")
-	(buffer-substring (point-min) (match-beginning 0)))))
-
-(defun diary-sunset ()
-	(let ((dss (diary-sunrise-sunset)) start end)
-	(with-temp-buffer
-	(insert dss)
-	(goto-char (point-min))
-	(while (re-search-forward " ([^)]*)" nil t)
-	(replace-match "" nil nil))
-	(goto-char (point-min))
-	(search-forward ", ")
-	(setq start (match-end 0))
-	(search-forward " at")
-	(setq end (match-beginning 0))
-	(goto-char start)
-	(capitalize-word 1)
-	(buffer-substring start end))))
 
 ;; Local Variables:
 ;; truncate-lines: -1
