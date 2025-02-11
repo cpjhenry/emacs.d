@@ -523,6 +523,10 @@
 (use-package calendar
 	:ensure	nil
 	:custom	calendar-date-style 'iso
+	:bind (	:map calendar-mode-map
+		("q" . calendar-exit-kill)
+		("w" . calendar-world-clock)
+		("y" . list-holidays-this-year))
 	:init	(setq
 		calendar-mark-holidays-flag t
 		world-clock-time-format "%a %e %b %R %Z"
@@ -535,10 +539,6 @@
 		calendar-chinese-all-holidays-flag t
 		holiday-general-holidays nil)
 	:config
-	(define-key calendar-mode-map (kbd "q") 'calendar-exit-kill)
-	(define-key calendar-mode-map (kbd "w") 'calendar-world-clock)
-	(define-key calendar-mode-map (kbd "y") 'list-holidays-this-year)
-
 	;; don't allow marking of diary entries
 	(define-key calendar-mode-map (kbd "m") nil)
 	(easy-menu-remove-item calendar-mode-map '(menu-bar diary) "Mark All")
