@@ -1,13 +1,24 @@
 ;; Elfeed routines
-(defun elfeed-mark-all-as-read () (interactive)
+(defun elfeed-mark-all-as-read ()
+	(interactive)
 	(mark-whole-buffer)
 	(elfeed-search-untag-all-unread))
-	(define-key elfeed-search-mode-map (kbd "R") 'elfeed-mark-all-as-read)
 
-(defun elfeed-beginning-to-point-as-read () (interactive)
+(defun elfeed-beginning-to-point-as-read ()
+	(interactive)
 	(mark-from-beginning-of-buffer)
 	(elfeed-search-untag-all-unread))
-	(define-key elfeed-search-mode-map (kbd "B") 'elfeed-beginning-to-point-as-read)
+
+(defun elfeed-show-visit-secondary-browser ()
+	(interactive)
+	(elfeed-show-visit '(4)))
+
+(defun elfeed-copy-edit (buff)
+	(if (boundp 'buffer-read-only) (read-only-mode -1))
+	(replace-string "&#38;" "&" nil (point-min) (point-max))
+	(if (not (boundp 'buffer-read-only)) (read-only-mode))
+	(goto-char (point-min))
+	(message nil))
 
 ;; https://noonker.github.io/posts/2020-04-22-elfeed/
 (defun todo (text &optional body)
@@ -79,5 +90,22 @@
         (_ (format "%s (%s)" desc url)))
       (format "%s (%s)" desc url))
     (format "%s (%s)" desc link)))
+
+;; https://old.reddit.com/r/emacs/comments/go5d0v/using_emacs_72_customizing_elfeed/
+(defun elfeed-scroll-up-command (&optional arg)
+  "Scroll up or go to next feed item in Elfeed."
+	(interactive "^P")
+	(let ((scroll-error-top-bottom nil))
+	(condition-case-unless-debug nil
+	(scroll-up-command arg)
+	(error (elfeed-show-next)))))
+
+(defun elfeed-scroll-down-command (&optional arg)
+  "Scroll up or go to next feed item in Elfeed."
+	(interactive "^P")
+	(let ((scroll-error-top-bottom nil))
+	(condition-case-unless-debug nil
+	(scroll-down-command arg)
+	(error (elfeed-show-prev)))))
 
 ; LocalWords:  elfeed

@@ -25,6 +25,7 @@
 #+STARTUP: nofold
 #+OPTIONS: num:nil
 #+LATEX_CLASS_OPTIONS: [a5paper]
+#+LATEX_HEADER: \\usepackage[lf]{ebgaramond}
 #+LATEX_HEADER: \\usepackage[fontsize=15]{fontsize}
 #+LATEX_HEADER: \\usepackage[margin=0.50in,bottom=0.75in]{geometry}
 #+LATEX_HEADER: \\usepackage{titling}
@@ -41,7 +42,7 @@
 #+LATEX_HEADER: \\hypersetup{hidelinks}
 #+LATEX_HEADER: \\usepackage[hang,ragged]{footmisc}
 #+LATEX_HEADER: \\setlength{\\footnotemargin}{2mm}
-:END:" nil :count 0)
+:END:" nil :count 2)
     ("mytitle" "#+TITLE: 
 #+AUTHOR: Paul J Henry
 #+AUTHOR: MM RAM FRC

@@ -202,8 +202,9 @@
 (load "init/filesandbuffers")
 
 (require 'abbrev)
-(setopt	save-abbrevs 'silently
-	abbrev-file-name	(concat user-emacs-directory "etc/abbrev_defs"))
+(setopt	abbrev-file-name (concat user-emacs-directory "etc/abbrev_defs")
+	abbrev-suggest t
+	save-abbrevs 'silently)
 
 (require 'bookmark)
 (setopt	bookmark-save-flag 1
@@ -584,8 +585,6 @@
 ;; :hook
 ;; :commands
 ;; :init
-;; :defer
-;; :demand
 ;; :load
 ;; :config
 
@@ -747,6 +746,8 @@
 		("\\" . elfeed-search-set-filter-nil)
 		("[" . beginning-of-buffer) ; top
 		("]" . end-of-buffer) ; bottom
+		("B" . elfeed-beginning-to-point-as-read)
+		("R" . elfeed-mark-all-as-read)
 		("m" . elfeed-mail-todo)
 		:map elfeed-show-mode-map
 		("[" . beginning-of-buffer)
@@ -754,9 +755,10 @@
 		("TAB" . shr-next-link)
 		("SPC" . scroll-up-half)
 		("C-<up>" . my/backward-paragraph)
-		("C-<down>" . my/forward-paragraph))
+		("C-<down>" . my/forward-paragraph)
+		("B" . elfeed-show-visit-secondary-browser))
 	:init	(easy-menu-add-item global-map '(menu-bar tools)
-		["Read RSS Feeds" elfeed :help "Read RSS Feeds"] "Read Mail")
+			["Read RSS Feeds" elfeed :help "Read RSS Feeds"] "Read Mail")
 	:config	(setq
 		elfeed-db-directory (concat user-emacs-directory "var/elfeed/db/")
 		elfeed-enclosure-default-dir (concat user-emacs-directory "var/elfeed/enclosures/")
@@ -769,6 +771,10 @@
 
 	(eval-after-load 'elfeed `(make-directory ,(concat user-emacs-directory "var/elfeed/") t))
 	(advice-add 'elfeed-search-update--force :after (lambda() (goto-char (point-min))))
+	(advice-add 'elfeed-search-show-entry :after 'elfeed-copy-edit)
+
+	;; HACK Figure this one out
+	;; (add-to-list 'prettify-symbols-alist '("\\&\\#38\\;" . "&"))
 
 	(load "rc/feeds" 'noerror 'nomessage)
 	(load "init/elfeed-routines"))
@@ -919,7 +925,6 @@
 ;; FIXME both setq below fail as setopt
 
 (require 'org)
-;; (require 'ox-md)
 
 ;; :custom
 (setopt	org-startup-indented nil
@@ -1012,7 +1017,7 @@
 	(add-hook 'org-mode-hook 'visual-fill-column-mode--disable))
 
 ;; :config
-;; ispell should not check code blocks in org mode
+;; Ispell should not check code blocks in org mode
 (add-to-list 'ispell-skip-region-alist '(":\\(PROPERTIES\\|LOGBOOK\\):" . ":END:"))
 (add-to-list 'ispell-skip-region-alist '("#\\+BEGIN_SRC" . "#\\+END_SRC"))
 (add-to-list 'ispell-skip-region-alist '("#\\+begin_src" . "#\\+end_src"))
@@ -1026,13 +1031,30 @@
 (use-package org-autolist ; pressing "Return" will insert a new list item automatically
 	:hook (org-mode . org-autolist-mode))
 
+(use-package org-chef
+	:disabled
+	:if *natasha* :defer t)
+
 (use-package org-cliplink) ; insert org-mode links from the clipboard
 
-(use-package ox-report :disabled) ; export your org file to minutes report PDF file
+(use-package org-download
+	:if	*natasha*
+	:custom	(org-download-heading-lvl nil)
+		(org-download-image-org-width 925))
 
-(use-package org-chef :disabled :if *natasha* :defer t)
+(require 'ox-latex)
+(add-to-list 'org-latex-classes '("letter" "\\documentclass{letter}") t)
+(add-to-list 'org-latex-classes '("memoir" "\\documentclass{memoir}"
+	("\\chapter{%s}" . "\\chapter*{%s}")
+	("\\section{%s}" . "\\section*{%s}")
+	("\\subsection{%s}" . "\\subsection*{%s}")
+	("\\subsubsection{%s}" . "\\subsubsection*{%s}"))
+	t)
 
-;; (set-face-underline 'org-ellipsis nil)
+(require 'ox-md)
+
+(use-package ox-report ; export your org file to minutes report PDF file
+	:disabled)
 
 ;; FIXME - cleanup
 (load "init/org-functions")
