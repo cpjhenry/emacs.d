@@ -1,5 +1,9 @@
 ;;; org-functions
 
+;; remaps
+(defun org-todo-left () (interactive)(org-call-with-arg 'org-todo 'left))
+(defun org-todo-right() (interactive)(org-call-with-arg 'org-todo 'right))
+
 ;; org links
 (require 'ol)
 (org-link-set-parameters "gemini" ; gemini://host/index.gmi

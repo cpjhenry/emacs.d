@@ -20,10 +20,16 @@
 
 (define-abbrev-table 'org-mode-abbrev-table
   '(
-    ("dinkus" "\\begin{center}* * *\\end{center}" nil :count 0)
+    ("dinkus" "#+LATEX: \\begin{center}* * *\\end{center}" nil :count 1)
+    ("myabstract" "#+LATEX: \\begin{abstract}
+#+LATEX: \\noindent\\parindent=0pt\\parskip=.5\\baselineskip plus 2pt
+
+#+LATEX: \\end{abstract}" nil :count 0)
+    ("mycomment" "#+BEGIN_COMMENT
+
+#+END_COMMENT" nil :count 0)
     ("myheader" ":HEADER:
 #+STARTUP: nofold
-#+OPTIONS: num:nil
 #+LATEX_CLASS_OPTIONS: [a5paper]
 #+LATEX_HEADER: \\usepackage[lf]{ebgaramond}
 #+LATEX_HEADER: \\usepackage[fontsize=15]{fontsize}
@@ -41,8 +47,9 @@
 #+LATEX_HEADER: \\renewcommand{\\thefootnote}{\\fnsymbol{footnote}}
 #+LATEX_HEADER: \\hypersetup{hidelinks}
 #+LATEX_HEADER: \\usepackage[hang,ragged]{footmisc}
-#+LATEX_HEADER: \\setlength{\\footnotemargin}{2mm}
-:END:" nil :count 2)
+#+LATEX_HEADER: \\setlength{\\footnotemargin}{5mm}
+#+LATEX_HEADER: \\usepackage[title]{appendix}
+:END:" nil :count 0)
     ("mytitle" "#+TITLE: 
 #+AUTHOR: Paul J Henry
 #+AUTHOR: MM RAM FRC
@@ -50,6 +57,6 @@
 Goodwood Lodge\\\\
 \\textnumero159 AF&AM GRC
 
-CHECK AGAINST DELIVERY" nil :count 0)
+CHECK AGAINST DELIVERY" nil :count 4)
    ))
 

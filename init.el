@@ -75,6 +75,12 @@
 	(global-set-key (kbd "A-<right>") [end])
 	(global-set-key (kbd "A-k") (kbd "s-k"))
 
+	(easy-menu-add-item global-map '(menu-bar edit)
+		["Emoji & Symbols"
+		ns-do-show-character-palette
+		:help "Show macOS Character Palette."
+		:visible (eq window-system 'ns)])
+
 	(add-to-list 'default-frame-alist '(font . "Inconsolata 21")))
 
 (when *gnu*
@@ -223,7 +229,7 @@
 (setopt	Man-notify-method 'pushy)
 
 (require 'prog-mode)
-;; HACK (if (featurep 'prog-mode) (global-prettify-symbols-mode))
+;; HACK (global-prettify-symbols-mode)
 (setopt	prettify-symbols-unprettify-at-point 'right-edge)
 
 (add-hook 'before-save-hook 'time-stamp)
@@ -472,7 +478,8 @@
 
 
 ;; Tramp
-(setq	tramp-default-method "ssh"
+(require 'tramp)
+(setopt	tramp-default-method "ssh"
 	tramp-syntax 'simplified ; C-x C-f /remotehost:filename
 
 	tramp-auto-save-directory	(concat user-emacs-directory "var/tramp/auto-save/")
@@ -652,6 +659,7 @@
 (use-package go-mode :defer t)
 
 (use-package google-this
+	:disabled
 	:init	(which-key-alias "C-c /" "google-this")
 	:config	(google-this-mode))
 
@@ -927,35 +935,29 @@
 (require 'org)
 
 ;; :custom
-(setopt	org-startup-indented nil
-	org-ellipsis "$"
-	org-pretty-entities t
-	org-use-sub-superscripts '{}
-	org-hide-emphasis-markers t
-	org-startup-with-inline-images t
-	org-image-actual-width '(300))
-
-(setq	org-directory "~/Documents/org"
+(setopt	org-directory "~/Documents/org"
 	org-default-notes-file (concat org-directory "/notes.org")
 	org-id-locations-file (concat user-emacs-directory "var/org-id-locations")
 
-	org-startup-folded 'content		; folded children content all
-	org-startup-shrink-all-tables t
-
-	org-catch-invisible-edits 'smart
 	org-ctrl-k-protect-subtree t
-	org-cycle-separator-lines 2
+	org-ellipsis "$"
+	org-fold-catch-invisible-edits 'smart
 	org-footnote-auto-adjust t
 	org-footnote-define-inline t
+	org-hide-emphasis-markers t
+	org-image-actual-width '(300)
 	org-list-allow-alphabetical t
-	org-log-done t				; 'CLOSED' logging
+	org-log-done 'time
 	org-log-repeat nil
 	org-log-state-notes-into-drawer nil
-	org-priority-enable-commands t
+	org-pretty-entities t
 	org-return-follows-link t
 	org-special-ctrl-a/e t
-	org-src-fontify-natively t
-	org-support-shift-select 'always
+	org-startup-folded 'content ; folded children content all
+	org-startup-indented nil
+	org-startup-shrink-all-tables t
+	org-startup-with-inline-images t
+	org-use-sub-superscripts '{}
 
 	org-auto-align-tags nil
 	org-tags-column 0)
@@ -970,25 +972,30 @@
 	org-agenda-todo-ignore-deadlines t
 	org-agenda-todo-ignore-scheduled t)
 
-(setq 	org-export-with-author t
+(setq	org-export-with-author t
+	org-export-with-broken-links t
 	org-export-with-date t
+	org-export-with-properties nil
+	org-export-with-section-numbers nil
+	org-export-with-smart-quotes t
+	org-export-with-sub-superscripts t
+	org-export-with-tables t
+	org-export-with-timestamps t
 	org-export-with-toc nil
 
-	org-export-with-broken-links t
-	org-export-with-timestamps t
-	org-export-time-stamp-file t
 	org-export-date-timestamp-format "%Y-%m-%d"
+	org-export-time-stamp-file t
 
 	org-ascii-text-width 50
 	org-ascii-inner-margin 2
 	org-ascii-quote-margin 4
 	org-ascii-headline-spacing '(0 . 1)
 
-	org-md-headline-style 'atx
-
 	org-latex-compiler "xelatex"
 	org-latex-pdf-process (list
-		(concat "latexmk -" org-latex-compiler " -recorder -synctex=1 -bibtex-cond %b")))
+		(concat "latexmk -" org-latex-compiler " -recorder -synctex=1 -bibtex-cond %b"))
+
+	org-md-headline-style 'atx)
 
 (load "init/org-customizations") ; templates et al.
 
@@ -998,12 +1005,21 @@
 (define-key org-mode-map (kbd "C-M-[" ) 'outline-up-heading)
 (define-key org-mode-map (kbd "C-M-]") (lambda()(interactive)(org-end-of-subtree)))
 
-(define-key org-mode-map (kbd "S-<home>") (lambda()(interactive)(org-call-with-arg 'org-todo 'left)))
-(define-key org-mode-map (kbd "S-<end>") (lambda()(interactive)(org-call-with-arg 'org-todo 'right)))
-(define-key org-mode-map (kbd "S-<prior>") 'org-priority-up)
-(define-key org-mode-map (kbd "S-<next>") 'org-priority-down)
+;; alternative mapping for 'org-support-shift-select'
+(define-key org-mode-map (kbd "S-<left>") nil)
+(define-key org-mode-map (kbd "S-<right>") nil)
+(define-key org-mode-map (kbd "S-<up>") nil)
+(define-key org-mode-map (kbd "S-<down>") nil)
+(define-key org-mode-map (kbd "S-<home>") 'org-shiftleft)
+(define-key org-mode-map (kbd "S-<end>") 'org-shiftright)
+(define-key org-mode-map (kbd "S-<prior>") 'org-shift-up)
+(define-key org-mode-map (kbd "S-<next>") 'org-shiftdown)
 
 (define-key org-mode-map (kbd "C-c '") 'org-edit-special-no-fill)
+
+;; fix 'Ctrl-a' binding in org-mode
+(if (fboundp 'back-to-indentation-or-beginning-of-line) (org-remap org-mode-map
+	'back-to-indentation-or-beginning-of-line 'org-beginning-of-line))
 
 ;; ;; primarily for cbc-mode, but also useful for other org files in view-mode
 (with-eval-after-load 'view
@@ -1037,7 +1053,11 @@
 
 (use-package org-cliplink) ; insert org-mode links from the clipboard
 
-(use-package org-download
+(use-package org-contrib ; use ':ignore:' tag to exclude heading (but not content) from export
+	:config	(require 'ox-extra)
+		(ox-extras-activate '(ignore-headlines)))
+
+(use-package org-download ; org-download-yank
 	:if	*natasha*
 	:custom	(org-download-heading-lvl nil)
 		(org-download-image-org-width 925))
@@ -1092,7 +1112,9 @@
 		:bind (	:map latex-preview-pane-mode-map ("M-p" . nil) ("M-P" . nil))
 		:config	(setq message-latex-preview-pane-welcome ""))
 
-	(use-package reftex :ensure nil :hook (LaTeX-mode . turn-on-reftex)))
+	(use-package reftex
+		:ensure nil
+		:hook (LaTeX-mode . turn-on-reftex)))
 
 
 ;; spell checking
@@ -1218,7 +1240,10 @@
 
 
 ;; alternate keys
-(bind-key "C-a"     'back-to-indentation-or-beginning-of-line) ; move-beginning-of-line
+(global-set-key (kbd "C-a") 'back-to-indentation-or-beginning-of-line) ; move-beginning-of-line
+(if (key-binding (kbd "s-<left>"))
+	(global-set-key (kbd "s-<left>") 'back-to-indentation-or-beginning-of-line))
+
 (bind-key "C-w"     'kill-region-or-backward-word) ; kill-region
 (bind-key "M-w"     'kill-region-or-thing-at-point) ; kill-ring-save
 (bind-key "M-j"     'join-line) ; default-indent-new-line (see 'C-M-j')
@@ -1352,7 +1377,6 @@
 (bind-key "C-c x l"	'lorem-ipsum-insert-paragraphs)
 (bind-key "C-c x n"	'number-paragraphs)
 
-(bind-key "C-c x w"	'whack-whitespace)
 (bind-key "C-c x x"	'delete-whitespace-rectangle)
 (bind-key "C-c x y"	'whitespace-cleanup)
 (which-key-alias "C-c x" "text")
