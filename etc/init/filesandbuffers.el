@@ -151,7 +151,7 @@
 		(message "'visual-fill-column-mode' not enabled.")))
 
 ;; See: https://emacs.stackexchange.com/questions/81361/how-to-switch-to-a-buffer-from-terminal-with-a-unique-partial-name
-(require 'dash) ; for `-find', `-compose' and `-partial'
+(use-package dash) ; for `-find', `-compose' and `-partial'
 (defun switch-to-buffer-matching (regular-expression)
   "Switch to the first buffer that matches REGULAR-EXPRESSION."
 	(switch-to-buffer (-find (-compose (-partial #'string-match-p regular-expression) #'buffer-name)
