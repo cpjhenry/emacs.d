@@ -204,6 +204,33 @@
 (use-package gcmh :config (gcmh-mode 1))
 
 
+;; modeline
+(use-package doom-modeline
+	:custom	(doom-modeline-column-zero-based nil)
+		(doom-modeline-enable-word-count t)
+		(doom-modeline-continuous-word-count-modes '(markdown-mode gfm-mode org-mode text-mode))
+		(doom-modeline-icon nil)
+	:hook	(after-init . doom-modeline-mode)
+	:config	(use-package nerd-icons))
+
+(setopt	battery-mode-line-format "%p%% "
+	display-time-24hr-format t
+	display-time-default-load-average nil
+	mode-line-compact nil
+	mode-line-position (list mode-line-percent-position " " "(%l,%C)")
+	mode-line-right-align-edge 'right-fringe)
+(column-number-mode)
+(display-battery-mode)
+(display-time-mode -1)
+;; (load "rc/mm" 'noerror) ; memento-mori
+
+;; Startup time
+(defun efs/display-startup-time ()
+	(message "GNU Emacs %s loaded in %s with %d garbage collections." emacs-version
+	(format "%.2f seconds" (float-time (time-subtract after-init-time before-init-time))) gcs-done))
+(add-hook 'emacs-startup-hook 'efs/display-startup-time)
+
+
 ;; buffers
 (load "init/filesandbuffers")
 
@@ -464,19 +491,6 @@
 	:config	(unless *w32* (setopt ls-lisp-use-insert-directory-program nil)))
 
 
-;; frames
-(setopt	frame-inhibit-implied-resize t
-	frame-resize-pixelwise t)
-
-;; https://korewanetadesu.com/emacs-on-os-x.html
-(when (featurep 'ns) (add-hook 'after-make-frame-functions 'ns-raise-emacs-with-frame))
-
-(when *mac* ;; start Emacs server
-	(use-package mac-pseudo-daemon :config (mac-pseudo-daemon-mode))
-	(if (not (boundp 'server-process)) (server-start))
-	(if (boundp 'server-process) (message "Server running.")))
-
-
 ;; Tramp
 (require 'tramp)
 (setopt	tramp-default-method "ssh"
@@ -500,31 +514,17 @@
 (add-hook 'shell-mode-hook 'checker-tramp-shell-hook)
 
 
-;; modeline
-(use-package doom-modeline
-	:custom	(doom-modeline-column-zero-based nil)
-		(doom-modeline-enable-word-count t)
-		(doom-modeline-continuous-word-count-modes '(markdown-mode gfm-mode org-mode text-mode))
-		(doom-modeline-icon nil)
-	:hook	(after-init . doom-modeline-mode)
-	:config	(use-package nerd-icons))
+;; frames
+(setopt	frame-inhibit-implied-resize t
+	frame-resize-pixelwise t)
 
-(setopt	battery-mode-line-format "%p%% "
-	display-time-24hr-format t
-	display-time-default-load-average nil
-	mode-line-compact nil
-	mode-line-position (list mode-line-percent-position " " "(%l,%C)")
-	mode-line-right-align-edge 'right-fringe)
-(column-number-mode)
-(display-battery-mode)
-(display-time-mode -1)
-;; (load "rc/mm" 'noerror) ; memento-mori
+;; https://korewanetadesu.com/emacs-on-os-x.html
+(when (featurep 'ns) (add-hook 'after-make-frame-functions 'ns-raise-emacs-with-frame))
 
-;; Startup time
-(defun efs/display-startup-time ()
-	(message "GNU Emacs %s loaded in %s with %d garbage collections." emacs-version
-	(format "%.2f seconds" (float-time (time-subtract after-init-time before-init-time))) gcs-done))
-(add-hook 'emacs-startup-hook 'efs/display-startup-time)
+(when *mac* ;; start Emacs server
+	(use-package mac-pseudo-daemon :config (mac-pseudo-daemon-mode))
+	(if (not (boundp 'server-process)) (server-start))
+	(if (boundp 'server-process) (message "Server running.")))
 
 
 ;; calendar
@@ -860,7 +860,7 @@
 (add-hook 'text-mode-hook (lambda()
 	(abbrev-mode)
 	(goto-address-mode)
-	(table-recognize)
+	;; (table-recognize)
 	(visual-line-mode)))
 
 (add-hook 'fill-nobreak-predicate #'fill-french-nobreak-p)
@@ -901,6 +901,9 @@
 
 ;; html
 (add-to-list 'auto-mode-alist '("\\.html$" . html-mode))
+
+;; XML
+;; (add-hook 'nxml-mode-hook 'show-parens-local-mode)
 
 ;; do not mark long lines in whitespace-mode
 (require 'whitespace)
@@ -1172,6 +1175,13 @@
 ;; <home>  is fn-left	<end>  is fn-right
 ;; <prior> is fn-up	<next> is fn-down
 
+;; <home> key / Ctrl-a
+(if (key-binding (kbd "<home>"))
+	(global-set-key (kbd "<home>") 'back-to-indentation-or-beginning-of-line))
+(if (key-binding (kbd "s-<left>"))
+	(global-set-key (kbd "s-<left>") 'back-to-indentation-or-beginning-of-line))
+(global-set-key (kbd "C-a") 'back-to-indentation-or-beginning-of-line)
+
 (global-set-key (kbd "C-<home>" ) 'beginning-of-buffer)
 (global-set-key (kbd "C-<end>"  ) (lambda()(interactive)(end-of-buffer)(recenter -1)))
 (global-set-key (kbd "C-<prior>") 'scroll-down-line)
@@ -1209,6 +1219,14 @@
 	(global-set-key (kbd "s-<up>") [prior])
 	(global-set-key (kbd "s-<down>") [next]))
 
+;; (unless (package-installed-p 'ultra-scroll)
+;; 	(package-vc-install '(ultra-scroll
+;; 		:vc-backend Git
+;; 		:url "https://github.com/jdtsmith/ultra-scroll")))
+;; (use-package ultra-scroll
+;; 	:init (setq scroll-conservatively 101) ; important!
+;; 	:config (ultra-scroll-mode 1))
+
 
 ;; mouse
 ;; https://github.com/purcell/disable-mouse
@@ -1240,10 +1258,6 @@
 
 
 ;; alternate keys
-(global-set-key (kbd "C-a") 'back-to-indentation-or-beginning-of-line) ; move-beginning-of-line
-(if (key-binding (kbd "s-<left>"))
-	(global-set-key (kbd "s-<left>") 'back-to-indentation-or-beginning-of-line))
-
 (bind-key "C-w"     'kill-region-or-backward-word) ; kill-region
 (bind-key "M-w"     'kill-region-or-thing-at-point) ; kill-ring-save
 (bind-key "M-j"     'join-line) ; default-indent-new-line (see 'C-M-j')
@@ -1354,6 +1368,7 @@
 
 (bind-key "C-c e"	'elpher) ; gopher / gemini
 (bind-key "C-c g"	'grep-completing-read)
+(bind-key "C-c i"	'my/init)
 
 (bind-key "C-c m"	'menu-bar-read-mail)
 (which-key-alias "C-c m" "read-mail")
@@ -1444,8 +1459,6 @@
 
 (defalias 'dr 'desktop-read)
 (defalias 'ds 'desktop-save)
-
-(when *mac* (bind-key "s-i" 'my/init))
 
 ;; Work-specific
 (when *w32* (setq
