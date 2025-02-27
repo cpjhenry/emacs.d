@@ -903,6 +903,12 @@
 (add-to-list 'auto-mode-alist '("\\.html$" . html-mode))
 
 ;; XML
+(setq auto-mode-alist (cons '("\\.xml$" . nxml-mode) auto-mode-alist))
+(setq auto-mode-alist (cons '("\\.xsl$" . nxml-mode) auto-mode-alist))
+(setq auto-mode-alist (cons '("\\.xhtml$" . nxml-mode) auto-mode-alist))
+(setq auto-mode-alist (cons '("\\.page$" . nxml-mode) auto-mode-alist))
+
+(autoload 'xml-mode "nxml" "XML editing mode" t)
 ;; (add-hook 'nxml-mode-hook 'show-parens-local-mode)
 
 ;; do not mark long lines in whitespace-mode
