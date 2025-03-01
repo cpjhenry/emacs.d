@@ -21,6 +21,7 @@ M-;						comment (do-what-I-mean)
 C-l						re-centre top
 C-M-l					reposition window
 M-r						move to top
+M-s o					occur
 C-SPC					mark | un-mark
 C-x a g					define abbreviation
 C-x n n	| C-x n w		narrow | widen buffer
@@ -68,8 +69,7 @@ C-c TAB					toggle table column width
 
 Calendar
 
-C-<spc> ... M-=			number of days between mark and point
-")
+C-<spc> ... M-=			number of days between mark and point")
 (kf-gen-displayer my/emacs-help "Display Emacs help." "*Emacs cheat-sheet*")
 
 (defconst Hanke-Henry

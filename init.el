@@ -1,6 +1,8 @@
 ;;; Emacs --- configuration / cpjh -*- no-byte-compile: t; lexical-binding: t; -*-
 
 ;;; Commentary:
+;; brew install emacs-plus --with-modern-black-dragon-icon --with-mailutils --with-imagemagick
+
 ;;; Code:
 
 ;; Initialize terminal
@@ -113,9 +115,6 @@
 	:custom	(use-package-always-ensure t)
 		(use-package-compute-statistics t)
 		(use-package-verbose t))
-
-;; init/vcusepackage goes here, if needed.
-;(unless EMACS30 (load "init/vcusepackage"))
 
 ;; settings
 (set-language-environment 'utf-8)
@@ -956,6 +955,7 @@
 	org-hide-emphasis-markers t
 	org-image-actual-width '(300)
 	org-list-allow-alphabetical t
+	org-list-demote-modify-bullet '(("+" . "-") ("-" . "+") ("*" . "+"))
 	org-log-done 'time
 	org-log-repeat nil
 	org-log-state-notes-into-drawer nil
@@ -1482,4 +1482,4 @@
 ; LocalWords:  Gopherspace filesandbuffers ipsum ePub epub xelatex
 ; LocalWords:  vcusepackage latexmk synctex bibtex cond xah dirs Ctrl
 ; LocalWords:  remotehost flycheck modeline mori featurep cbc smex
-; LocalWords:  setq's setopt
+; LocalWords:  setq's setopt mailutils imagemagick
