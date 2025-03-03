@@ -55,3 +55,6 @@
 
 ;; font compacting
 (setq inhibit-compacting-font-caches t)
+
+;; caching nonsense
+(startup-redirect-eln-cache (concat user-emacs-directory "var/cache"))
