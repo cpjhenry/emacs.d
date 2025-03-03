@@ -390,6 +390,7 @@
 	(add-to-list 'ido-ignore-buffers "*Messages*")
 	(add-to-list 'ido-ignore-buffers "*Shell Command Output*")
 	(add-to-list 'ido-ignore-buffers "^*tramp/")
+	(add-to-list 'ido-ignore-buffers "^*.*[Nn]ative-compile-[Ll]og*")
 	(add-to-list 'ido-ignore-files ".DS_Store")
 	(add-to-list 'ido-ignore-files "ido.last")
 
@@ -457,7 +458,8 @@
 	(add-to-list 'ibuffer-never-show-predicates "^\\*Messages\\*")
 	(add-to-list 'ibuffer-never-show-predicates "^\\*Shell Command Output\\*")
 	(add-to-list 'ibuffer-never-show-predicates "^\\*tramp/")
-	(add-to-list 'ibuffer-never-show-predicates "^\\*Latex Preview Pane Welcome\\*"))
+	(add-to-list 'ibuffer-never-show-predicates "^\\*Latex Preview Pane Welcome\\*")
+	(add-to-list 'ibuffer-never-show-predicates "^\\*.*[Nn]ative-compile-[Ll]og\\*"))
 
 
 ;; Dired
@@ -1489,4 +1491,4 @@
 ; LocalWords:  Gopherspace filesandbuffers ipsum ePub epub xelatex
 ; LocalWords:  vcusepackage latexmk synctex bibtex cond xah dirs Ctrl
 ; LocalWords:  remotehost flycheck modeline mori featurep cbc smex
-; LocalWords:  setq's setopt mailutils imagemagick usr
+; LocalWords:  setq's setopt mailutils imagemagick usr dunnet Async
