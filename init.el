@@ -2,6 +2,7 @@
 
 ;;; Commentary:
 ;; brew install emacs-plus --with-modern-black-dragon-icon --with-mailutils --with-imagemagick
+;; /usr/local/share/emacs/site-lisp
 
 ;;; Code:
 
@@ -73,8 +74,9 @@
 
 	(global-set-key (kbd "<home>") nil) ; 'move-beginning-of-line
 	(global-set-key (kbd "<end>" ) nil) ; 'move-end-of-line
-	(global-set-key (kbd "A-<left>") [home])
-	(global-set-key (kbd "A-<right>") [end])
+
+	(global-set-key (kbd "A-<left>") (kbd "s-<left>"))
+	(global-set-key (kbd "A-<right>")(kbd "s-<right>"))
 	(global-set-key (kbd "A-k") (kbd "s-k"))
 
 	(easy-menu-add-item global-map '(menu-bar edit)
@@ -136,6 +138,7 @@
 	enable-remote-dir-locals t ; .dir-locals.el
 	find-file-visit-truename t
 	goto-address-mail-face 'default
+	grep-use-headings t
 	help-clean-buttons t
 	help-enable-variable-value-editing t
 	help-window-select t
@@ -218,6 +221,7 @@
 	mode-line-compact nil
 	mode-line-position (list mode-line-percent-position " " "(%l,%C)")
 	mode-line-right-align-edge 'right-fringe)
+(if EMACS30 (setopt project-mode-line t))
 (column-number-mode)
 (display-battery-mode)
 (display-time-mode -1)
@@ -620,6 +624,7 @@
 	:custom	(browse-url-browser-function 'eww-browse-url)
 		(eww-auto-rename-buffer t)
 		(eww-bookmarks-directory (concat user-emacs-directory "etc/"))
+		(eww-readable-adds-to-history nil)
 		(eww-search-prefix "https://duckduckgo.com/html?q=")
 		(shr-inhibit-images t)
 		(shr-use-colors nil)
@@ -863,15 +868,15 @@
 	(visual-line-mode)))
 
 (add-hook 'fill-nobreak-predicate #'fill-french-nobreak-p)
-(define-key text-mode-map (kbd "C-M-i") nil)
+;(define-key text-mode-map (kbd "C-M-i") nil)
 
 (use-package visual-fill-column
 	:bind (	("<f5>" . visual-fill-column-mode))
 	;; :hook	(visual-line-mode . visual-fill-column-mode)
 	:config (advice-add 'text-scale-adjust :after #'visual-fill-column-adjust))
 
-(use-package adaptive-wrap
-	:hook	(visual-line-mode . adaptive-wrap-prefix-mode))
+(if EMACS30 (global-visual-wrap-prefix-mode)
+	(use-package adaptive-wrap :hook (visual-line-mode . adaptive-wrap-prefix-mode)))
 
 (use-package hl-sentence) ; highlight current sentence
 
@@ -1433,6 +1438,7 @@
 (which-key-alias "C-x n" "narrow")
 (which-key-alias "C-x p" "project")
 (which-key-alias "C-x r" "registers")
+(which-key-alias "C-x t" "tabs")
 (which-key-alias "C-x w" "windows")
 
 
@@ -1482,4 +1488,4 @@
 ; LocalWords:  Gopherspace filesandbuffers ipsum ePub epub xelatex
 ; LocalWords:  vcusepackage latexmk synctex bibtex cond xah dirs Ctrl
 ; LocalWords:  remotehost flycheck modeline mori featurep cbc smex
-; LocalWords:  setq's setopt mailutils imagemagick
+; LocalWords:  setq's setopt mailutils imagemagick usr
