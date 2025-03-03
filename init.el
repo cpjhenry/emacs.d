@@ -185,7 +185,8 @@
 	tab-always-indent 'complete)
 
 ;; files
-(setopt	custom-file			(concat user-emacs-directory "custom.el"))
+(setopt	custom-file			(concat user-emacs-directory "custom.el")
+	dun-log-file			(concat user-emacs-directory "var/games/dunnet-scores"))
 (setq	multisession-directory		(concat user-emacs-directory "var/multisession")
 	nsm-settings-file		(concat user-emacs-directory "var/network-security.data")
 	request-storage-directory	(concat user-emacs-directory "var/request/storage/")
