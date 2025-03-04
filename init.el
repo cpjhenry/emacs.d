@@ -390,6 +390,7 @@
 	(add-to-list 'ido-ignore-buffers "*Messages*")
 	(add-to-list 'ido-ignore-buffers "*Shell Command Output*")
 	(add-to-list 'ido-ignore-buffers "^*tramp/")
+	(add-to-list 'ido-ignore-buffers "^*Compile-Log*")
 	(add-to-list 'ido-ignore-buffers "^*.*[Nn]ative-compile-[Ll]og*")
 	(add-to-list 'ido-ignore-files ".DS_Store")
 	(add-to-list 'ido-ignore-files "ido.last")
@@ -459,7 +460,8 @@
 	(add-to-list 'ibuffer-never-show-predicates "^\\*Shell Command Output\\*")
 	(add-to-list 'ibuffer-never-show-predicates "^\\*tramp/")
 	(add-to-list 'ibuffer-never-show-predicates "^\\*Latex Preview Pane Welcome\\*")
-	(add-to-list 'ibuffer-never-show-predicates "^\\*.*[Nn]ative-compile-[Ll]og\\*"))
+	;; (add-to-list 'ibuffer-never-show-predicates "^\\*.*[Nn]ative-compile-[Ll]og\\*")
+	)
 
 
 ;; Dired
@@ -973,7 +975,6 @@
 	org-startup-folded 'content ; folded children content all
 	org-startup-indented nil
 	org-startup-shrink-all-tables t
-	org-startup-with-inline-images t
 	org-use-sub-superscripts '{}
 
 	org-auto-align-tags nil
@@ -1058,15 +1059,18 @@
 (add-to-list 'ispell-skip-region-alist '("^#\\+BEGIN_EXAMPLE " . "#\\+END_EXAMPLE$"))
 (add-to-list 'org-entities-user '("textnumero" "\\textnumero" nil "&numero;" "No." "No." "№"))
 
-(use-package org-appear ; automatic visibility toggling of Org elements
-	:hook (org-mode . org-appear-mode))
+;; Errors with Emacs30
+;; (use-package org-appear ; automatic visibility toggling of Org elements
+;; 	:disabled
+;; 	:hook (org-mode . org-appear-mode))
 
-(use-package org-autolist ; pressing "Return" will insert a new list item automatically
-	:hook (org-mode . org-autolist-mode))
+;; Errors with Emacs30
+;; (use-package org-autolist ; pressing "Return" will insert a new list item automatically
+;; 	:hook (org-mode . org-autolist-mode))
 
-(use-package org-chef
-	:disabled
-	:if *natasha* :defer t)
+;; (use-package org-chef
+;; 	:disabled
+;; 	:if *natasha* :defer t)
 
 (use-package org-cliplink) ; insert org-mode links from the clipboard
 
@@ -1089,9 +1093,6 @@
 	t)
 
 (require 'ox-md)
-
-(use-package ox-report ; export your org file to minutes report PDF file
-	:disabled)
 
 ;; FIXME - cleanup
 (load "init/org-functions")
