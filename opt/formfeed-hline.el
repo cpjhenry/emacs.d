@@ -303,6 +303,7 @@ URL `http://user42.tuxfamily.org/formfeed-hline/index.html'"
 
 ;;-----------------------------------------------------------------------------
 ;; xemacs workarounds
+;; HACK disable `defadvice' macro (deprecated) 2025-03-09/cpjh
 
 ;; XEmacs 21.4.22 has the `window-size-change-functions' variable, but it's
 ;; not implemented, ie. its functions are not called.  Notice size changes
@@ -310,19 +311,19 @@ URL `http://user42.tuxfamily.org/formfeed-hline/index.html'"
 ;; windows.  Not sure if this is everything, but user-level window creation
 ;; goes through `split-window' at least.
 ;;
-(when (eval-when-compile (featurep 'xemacs))
-  ;; unload-feature doesn't run an -unload-hook or -unload-function in
-  ;; xemacs 21.4.22, so just defang with a boundp check against unloaded
-  (defadvice split-window (after formfeed-hline activate)
-    "Notice window size change for `formfeed-hline-mode'."
-    (if (and (boundp 'formfeed-hline-mode)
-             formfeed-hline-mode)
-        (formfeed-hline-window-size-change (window-frame window))))
-  (defadvice set-window-configuration (after formfeed-hline activate)
-    "Notice window size change for `formfeed-hline-mode'."
-    (if (and (boundp 'formfeed-hline-mode)
-             formfeed-hline-mode)
-        (mapc 'formfeed-hline-window-size-change (frame-list)))))
+;; (when (eval-when-compile (featurep 'xemacs))
+;;   ;; unload-feature doesn't run an -unload-hook or -unload-function in
+;;   ;; xemacs 21.4.22, so just defang with a boundp check against unloaded
+;;   (defadvice split-window (after formfeed-hline activate)
+;;     "Notice window size change for `formfeed-hline-mode'."
+;;     (if (and (boundp 'formfeed-hline-mode)
+;;              formfeed-hline-mode)
+;;         (formfeed-hline-window-size-change (window-frame window))))
+;;   (defadvice set-window-configuration (after formfeed-hline activate)
+;;     "Notice window size change for `formfeed-hline-mode'."
+;;     (if (and (boundp 'formfeed-hline-mode)
+;;              formfeed-hline-mode)
+;;         (mapc 'formfeed-hline-window-size-change (frame-list)))))
 
 ;;-----------------------------------------------------------------------------
 

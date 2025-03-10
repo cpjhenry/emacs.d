@@ -92,9 +92,9 @@
 	(message "Running on GNU/Linux."))
 
 (when *w32*
-	(setopt	w32-lwindow-modifier 'super
-		w32-pass-lwindow-to-system nil
-		w32-apps-modifier 'hyper)
+	(setopt	w32-apps-modifier 'super)
+
+	(global-set-key (kbd "<f11>") 'toggle-frame-maximized)
 
 	(add-to-list 'default-frame-alist '(font . "Consolas 12"))
 	(menu-bar-mode 1)
@@ -460,7 +460,6 @@
 	(add-to-list 'ibuffer-never-show-predicates "^\\*Shell Command Output\\*")
 	(add-to-list 'ibuffer-never-show-predicates "^\\*tramp/")
 	(add-to-list 'ibuffer-never-show-predicates "^\\*Latex Preview Pane Welcome\\*")
-	;; (add-to-list 'ibuffer-never-show-predicates "^\\*.*[Nn]ative-compile-[Ll]og\\*")
 	)
 
 
@@ -1030,7 +1029,7 @@
 (define-key org-mode-map (kbd "S-<down>") nil)
 (define-key org-mode-map (kbd "S-<home>") 'org-shiftleft)
 (define-key org-mode-map (kbd "S-<end>") 'org-shiftright)
-(define-key org-mode-map (kbd "S-<prior>") 'org-shift-up)
+(define-key org-mode-map (kbd "S-<prior>") 'org-shiftup)
 (define-key org-mode-map (kbd "S-<next>") 'org-shiftdown)
 
 (define-key org-mode-map (kbd "C-c '") 'org-edit-special-no-fill)
@@ -1098,7 +1097,6 @@
 (load "init/org-functions")
 
 ;; fix table.el error
-;; FIXME - check if still needed with v30
 ;; https://github.com/doomemacs/doomemacs/issues/6980
 (defun myfunc/check_table_p (oldfunc) (funcall oldfunc t))
 (advice-add 'org-at-table-p :around 'myfunc/check_table_p)

@@ -70,5 +70,6 @@ Goodwood Lodge\\\\
 
 CHECK AGAINST DELIVERY" nil :count 4)
     ("referencemark" "#+LATEX: {\\fontspec{NewCM10-Book} \\large \\textreferencemark}" nil :count 0)
+    ("wmye" "WM,YE." nil :count 0)
    ))
 
