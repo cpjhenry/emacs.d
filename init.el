@@ -35,11 +35,6 @@
 (load "rc/me" 'noerror)
 
 ;; Customize
-(unless EMACS29
-	(defalias 'keymap-set 'define-key)
-	(defalias 'keymap-global-set 'global-set-key)
-	(defalias 'setopt 'customize-set-variable))
-
 (when *mac*
 	(setopt	mac-function-modifier nil
 		mac-control-modifier 'control	; Control
@@ -581,13 +576,9 @@
 	:after	calendar
 	:ensure	nil
 	:custom	diary-file "~/Documents/diary"
-
-		diary-display-function 'diary-fancy-display
-		diary-list-include-blanks t
-		diary-show-holidays-flag t
-	:init
-	(add-to-list 'auto-mode-alist '("diary" . diary-mode))
+	:init	(setq diary-list-include-blanks t)
 	:config
+	(add-to-list 'auto-mode-alist '("diary" . diary-mode))
 	(add-hook 'diary-list-entries-hook 'diary-sort-entries t)
 	(add-hook 'diary-fancy-display-mode-hook 'alt-clean-equal-signs)
 
@@ -1314,10 +1305,16 @@
 	(dotimes (i 10) (keymap-global-unset (concat prefix (number-to-string i)))))
 
 ;; disable daemon before killing terminal
-(global-set-key (kbd "C-x C-c") (lambda() (interactive)
-	(if (boundp mac-pseudo-daemon-mode) (mac-pseudo-daemon-mode -1))
-	(save-buffers-kill-terminal)))
-	(which-key-alias "C-x C-c" "save-buffers-kill-terminal")
+(global-set-key (kbd "C-x C-c") 'kill-daemon-save-buffers-kill-terminal)
+(which-key-alias "C-x C-c" "save-buffers-kill-terminal")
+
+(if *w32* (defalias 'restart-emacs 'save-buffers-kill-terminal))
+
+(defun kill-daemon-save-buffers-kill-terminal ()
+  "Kill daemon (if running), then trigger normal exit."
+	(interactive)
+	(if (boundp 'mac-pseudo-daemon-mode) (mac-pseudo-daemon-mode -1))
+	(save-buffers-kill-terminal))
 
 
 ;; Disabled functions
