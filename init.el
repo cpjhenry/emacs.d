@@ -72,6 +72,14 @@
 		       "s-M" "s-m" "s-n" "s-p" "s-q" "s-t" "s-^" "s-&" "s-|"))
 		(global-unset-key (kbd key)))
 
+	;; (dolist (key '("C-<f10>")); "<f10>" "S-<f10>" "M-<f10>"
+	;; 	(global-unset-key (kbd key)))
+
+	;; f10		menu-bar-open
+	;; S-f10	context-menu-open
+	;; C-f10	buffer-menu-open
+	;; M-f10	toggle-frame-maximized
+
 	(global-set-key (kbd "<home>") nil) ; 'move-beginning-of-line
 	(global-set-key (kbd "<end>" ) nil) ; 'move-end-of-line
 
@@ -124,8 +132,9 @@
 (defvar	default-major-mode 'text-mode "Mode when creating new buffers.")
 (setopt	initial-major-mode 'fundamental-mode
 	default-input-method nil
-	tab-width 4
 	standard-indent 4
+	tab-always-indent nil
+	tab-width 4
 	indicate-empty-lines t
 	x-stretch-cursor t
 
@@ -181,8 +190,7 @@
 	completion-auto-select 'second-tab
 	completion-styles '(basic initials substring)
 	read-buffer-completion-ignore-case t
-	read-file-name-completion-ignore-case t
-	tab-always-indent 'complete)
+	read-file-name-completion-ignore-case t)
 
 ;; files
 (setopt	custom-file			(concat user-emacs-directory "custom.el")
@@ -1282,7 +1290,6 @@
 (global-set-key (kbd "M-s r")	'isearch-backward)
 
 (global-set-key (kbd "<f12>")	'list-buffers)
-(global-set-key (kbd "TAB")	'self-insert-command)
 
 (global-set-key (kbd "M-<f11>")	'toggle-modeline)
 (global-set-key (kbd "A-<return>") (kbd "M-<return>"))
@@ -1297,30 +1304,20 @@
 ;; extended commands (alternates)
 (global-set-key (kbd "C-x C-z") 'execute-extended-command)
 
-
-;; Darwin overrides
-(when *mac*
-	(when (display-graphic-p)
-		(dolist (key '("C-<f10>")); "<f10>" "S-<f10>" "M-<f10>"))
-		(global-unset-key (kbd key))))
-
-	(global-set-key (kbd "C-x C-c") (lambda() (interactive)
-		(if (boundp mac-pseudo-daemon-mode) (mac-pseudo-daemon-mode -1))
-		(save-buffers-kill-terminal)))
-		(which-key-alias "C-x C-c" "save-buffers-kill-terminal")
-	(bind-key "s-M-z" 'undo-redo))
-
 ;; quit cleanly
 (global-set-key (kbd "C-c C-g") 'keyboard-quit)
 (global-set-key (kbd "C-x C-g") 'keyboard-quit)
-
-;; unbind C-M-? keys
-;; FIXME
 
 ;; Disable the "numeric argument". Prefer universal argument (C-u) prefix.
 (dolist (prefix '("C-" "M-" "C-M-"))
 	(keymap-global-unset (concat prefix "-"))
 	(dotimes (i 10) (keymap-global-unset (concat prefix (number-to-string i)))))
+
+;; disable daemon before killing terminal
+(global-set-key (kbd "C-x C-c") (lambda() (interactive)
+	(if (boundp mac-pseudo-daemon-mode) (mac-pseudo-daemon-mode -1))
+	(save-buffers-kill-terminal)))
+	(which-key-alias "C-x C-c" "save-buffers-kill-terminal")
 
 
 ;; Disabled functions
@@ -1342,7 +1339,6 @@
 
 
 ;; Shortcuts
-
 (bind-key "<f6>"	'toggle-fill-column-center)
 (bind-key "<f7>"	'ispell-buffer)
 (bind-key "<f8>"	'list-bookmarks)
