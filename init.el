@@ -545,17 +545,14 @@
 		("q" . calendar-exit-kill)
 		("w" . calendar-world-clock)
 		("y" . list-holidays-this-year))
-	:init	(setq
-		calendar-mark-holidays-flag t
-		world-clock-time-format "%a %e %b %R %Z"
-
-		calendar-month-header '(propertize
+	:init	(setq	calendar-month-header '(propertize
 			(format "%s %d" (calendar-month-name month) year)
 			'font-lock-face 'calendar-month-header)
-
-		calendar-christian-all-holidays-flag t
 		calendar-chinese-all-holidays-flag t
-		holiday-general-holidays nil)
+		calendar-christian-all-holidays-flag t
+		calendar-mark-holidays-flag t
+		holiday-general-holidays nil
+		world-clock-time-format "%a %e %b %R %Z")
 	:config
 	;; don't allow marking of diary entries
 	(define-key calendar-mode-map (kbd "m") nil)
@@ -581,7 +578,6 @@
 	(add-to-list 'auto-mode-alist '("diary" . diary-mode))
 	(add-hook 'diary-list-entries-hook 'diary-sort-entries t)
 	(add-hook 'diary-fancy-display-mode-hook 'alt-clean-equal-signs)
-
 	(define-key diary-mode-map (kbd "C-c C-q") 'kill-current-buffer))
 
 
@@ -1285,15 +1281,8 @@
 (global-set-key (kbd "M-<f11>")	'toggle-modeline)
 (global-set-key (kbd "A-<return>") (kbd "M-<return>"))
 
-;; avoid accidental exits
-;(global-unset-key (kbd "C-x C-c"))
-;(global-set-key (kbd "C-x C-c c") 'save-buffers-kill-terminal)
-
 (global-unset-key (kbd "C-x a C-a"))
 (global-unset-key (kbd "C-z"))
-
-;; extended commands (alternates)
-(global-set-key (kbd "C-x C-z") 'execute-extended-command)
 
 ;; quit cleanly
 (global-set-key (kbd "C-c C-g") 'keyboard-quit)
@@ -1306,8 +1295,6 @@
 
 ;; disable daemon before killing terminal
 (global-set-key (kbd "C-x C-c") 'kill-daemon-save-buffers-kill-terminal)
-(which-key-alias "C-x C-c" "save-buffers-kill-terminal")
-
 (if *w32* (defalias 'restart-emacs 'save-buffers-kill-terminal))
 
 (defun kill-daemon-save-buffers-kill-terminal ()
