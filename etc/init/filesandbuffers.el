@@ -2,6 +2,7 @@
 
 ;;; Commentary:
 ;;; Code:
+
 (if (< emacs-major-version 29)(defun scratch-buffer ()
 "Switch to the *scratch* buffer.
 	If the buffer doesn't exist, create it first."
@@ -151,7 +152,6 @@
 		(message "'visual-fill-column-mode' not enabled.")))
 
 ;; See: https://emacs.stackexchange.com/questions/81361/how-to-switch-to-a-buffer-from-terminal-with-a-unique-partial-name
-(use-package dash) ; for `-find', `-compose' and `-partial'
 (defun switch-to-buffer-matching (regular-expression)
   "Switch to the first buffer that matches REGULAR-EXPRESSION."
 	(switch-to-buffer (-find (-compose (-partial #'string-match-p regular-expression) #'buffer-name)
@@ -457,5 +457,11 @@ word."
       (let ((regexp (if arg "[ \t\n]+" "[ \t]+")))
         (re-search-forward regexp nil t)
         (replace-match "" nil nil)))
+
+;; https://emacs.stackexchange.com/questions/3022/reset-custom-variable-to-default-value-programmatically
+;; usage: (custom/reset-var 'somevar)
+(defun custom/reset-var (symbl)
+  "Reset SYMBL to its standard value."
+	(set symbl (eval (car (get symbl 'standard-value)))))
 
 ; LocalWords:  filesandbuffers

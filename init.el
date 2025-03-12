@@ -243,6 +243,7 @@
 
 
 ;; buffers
+(use-package dash) ; for `-find', `-compose' and `-partial'
 (load "init/filesandbuffers")
 
 (require 'abbrev)
@@ -256,7 +257,8 @@
 	bookmark-sort-flag nil
 	bookmark-default-file	(concat user-emacs-directory "etc/bookmarks"))
 
-(require 'eshell)
+(require 'em-alias)
+(require 'esh-mode)
 (setopt	eshell-aliases-file	(concat user-emacs-directory "etc/eshell/aliases")
 	eshell-directory-name	(concat user-emacs-directory "var/eshell/"))
 
@@ -889,7 +891,8 @@
 (add-hook 'prog-mode-hook (lambda()
 	(setq show-trailing-whitespace t)
 	(abbrev-mode)
-	(when (not (equal major-mode 'lisp-interaction-mode)) (display-line-numbers-mode))
+	(when (not (equal major-mode 'lisp-interaction-mode)) ; ie. *scratch*
+		(display-line-numbers-mode))
 	(goto-address-prog-mode)
 	(prettify-symbols-mode)
 	(show-paren-local-mode)
@@ -1057,12 +1060,12 @@
 (add-to-list 'ispell-skip-region-alist '("^#\\+BEGIN_EXAMPLE " . "#\\+END_EXAMPLE$"))
 (add-to-list 'org-entities-user '("textnumero" "\\textnumero" nil "&numero;" "No." "No." "№"))
 
-;; Errors with Emacs30
+;; FIXME - Errors with Emacs30
 ;; (use-package org-appear ; automatic visibility toggling of Org elements
 ;; 	:disabled
 ;; 	:hook (org-mode . org-appear-mode))
 
-;; Errors with Emacs30
+;; FIXME - Errors with Emacs30
 ;; (use-package org-autolist ; pressing "Return" will insert a new list item automatically
 ;; 	:hook (org-mode . org-autolist-mode))
 
