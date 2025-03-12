@@ -67,6 +67,9 @@
 		       "s-M" "s-m" "s-n" "s-p" "s-q" "s-t" "s-^" "s-&" "s-|"))
 		(global-unset-key (kbd key)))
 
+	(global-unset-key (kbd "C-z"))
+	(global-unset-key (kbd "C-x C-z"))
+
 	;; (dolist (key '("C-<f10>")); "<f10>" "S-<f10>" "M-<f10>"
 	;; 	(global-unset-key (kbd key)))
 
@@ -126,12 +129,11 @@
 
 (defvar	default-major-mode 'text-mode "Mode when creating new buffers.")
 (setopt	initial-major-mode 'fundamental-mode
-	default-input-method nil
 	standard-indent 4
-	tab-always-indent nil
 	tab-width 4
-	indicate-empty-lines t
-	x-stretch-cursor t
+
+	;indent-line-function 'indent-according-to-mode
+	;tab-always-indent nil
 
 	ad-redefinition-action 'accept
 	async-shell-command-buffer 'new-buffer
@@ -146,6 +148,7 @@
 	help-clean-buttons t
 	help-enable-variable-value-editing t
 	help-window-select t
+	indicate-empty-lines t
 	inhibit-default-init t
 	inhibit-startup-message t ; 'About Emacs'
 	inhibit-startup-buffer-menu t ; Don't show *Buffer list*
@@ -179,6 +182,7 @@
 	use-short-answers t
 	view-read-only nil ; turn on view mode when buffer is read-only
 	what-cursor-show-names t
+	x-stretch-cursor t
 
 	;; completion
 	completion-auto-help 'always
@@ -1281,8 +1285,7 @@
 (global-set-key (kbd "M-<f11>")	'toggle-modeline)
 (global-set-key (kbd "A-<return>") (kbd "M-<return>"))
 
-(global-unset-key (kbd "C-x a C-a"))
-(global-unset-key (kbd "C-z"))
+(dolist (key '("C-a" "+" "-" "'")) (keymap-global-unset (concat "C-x a " key)))
 
 ;; quit cleanly
 (global-set-key (kbd "C-c C-g") 'keyboard-quit)
@@ -1471,3 +1474,4 @@
 ; LocalWords:  vcusepackage latexmk synctex bibtex cond xah dirs Ctrl
 ; LocalWords:  remotehost flycheck modeline mori featurep cbc smex
 ; LocalWords:  setq's setopt mailutils imagemagick usr dunnet Async
+; LocalWords:  dir
