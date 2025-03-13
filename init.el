@@ -61,14 +61,14 @@
 	(global-set-key (kbd "s-w") 'delete-frame)
 	(global-set-key (kbd "s-z") 'undo)
 
-	(global-set-key (kbd "s-1")(kbd "C-x 1"))
+	(global-set-key (kbd "s-1") (kbd "C-x 1"))
 
 	(dolist (key '("s-C" "s-D" "s-d" "s-e" "s-F" "s-f" "s-g" "s-j" "s-L"
 		       "s-M" "s-m" "s-n" "s-p" "s-q" "s-t" "s-^" "s-&" "s-|"))
 		(global-unset-key (kbd key)))
 
+	;; Disable suspend-frame
 	(global-unset-key (kbd "C-z"))
-	(global-unset-key (kbd "C-x C-z"))
 
 	;; (dolist (key '("C-<f10>")); "<f10>" "S-<f10>" "M-<f10>"
 	;; 	(global-unset-key (kbd key)))
@@ -101,6 +101,7 @@
 	(setopt	w32-apps-modifier 'super)
 
 	(global-set-key (kbd "<f11>") 'toggle-frame-maximized)
+	(defalias 'restart-emacs 'save-buffers-kill-terminal)
 
 	(add-to-list 'default-frame-alist '(font . "Consolas 12"))
 	(menu-bar-mode 1)
@@ -235,7 +236,7 @@
 (display-time-mode -1)
 ;; (load "rc/mm" 'noerror) ; memento-mori
 
-;; Startup time
+;; startup time
 (defun efs/display-startup-time ()
 	(message "GNU Emacs %s loaded in %s with %d garbage collections." emacs-version
 	(format "%.2f seconds" (float-time (time-subtract after-init-time before-init-time))) gcs-done))
@@ -538,7 +539,15 @@
 (when (featurep 'ns) (add-hook 'after-make-frame-functions 'ns-raise-emacs-with-frame))
 
 (when *mac* ;; start Emacs server
-	(use-package mac-pseudo-daemon :config (mac-pseudo-daemon-mode))
+	(use-package mac-pseudo-daemon :config (mac-pseudo-daemon-mode)
+	(global-set-key (kbd "C-x C-c") 'kill-daemon-save-buffers-kill-terminal)
+
+	(defun kill-daemon-save-buffers-kill-terminal ()
+	  "Kill daemon (if running), then trigger normal exit."
+	  (interactive)
+	  (if (boundp 'mac-pseudo-daemon-mode) (mac-pseudo-daemon-mode -1))
+	  (save-buffers-kill-terminal)))
+
 	(if (not (boundp 'server-process)) (server-start))
 	(if (boundp 'server-process) (message "Server running.")))
 
@@ -1294,34 +1303,26 @@
 (global-set-key (kbd "C-c C-g") 'keyboard-quit)
 (global-set-key (kbd "C-x C-g") 'keyboard-quit)
 
+;; Disable alternate suspend-frame
+(global-unset-key (kbd "C-x C-z"))
+
 ;; Disable the "numeric argument". Prefer universal argument (C-u) prefix.
 (dolist (prefix '("C-" "M-" "C-M-"))
 	(keymap-global-unset (concat prefix "-"))
 	(dotimes (i 10) (keymap-global-unset (concat prefix (number-to-string i)))))
-
-;; disable daemon before killing terminal
-(global-set-key (kbd "C-x C-c") 'kill-daemon-save-buffers-kill-terminal)
-(if *w32* (defalias 'restart-emacs 'save-buffers-kill-terminal))
-
-(defun kill-daemon-save-buffers-kill-terminal ()
-  "Kill daemon (if running), then trigger normal exit."
-	(interactive)
-	(if (boundp 'mac-pseudo-daemon-mode) (mac-pseudo-daemon-mode -1))
-	(save-buffers-kill-terminal))
 
 
 ;; Disabled functions
 ;(setq disabled-command-function 'enable-me)
 
 (put 'dired-find-alternate-file 'disabled nil)
-(put 'upcase-region 'disabled nil) ; C-x C-u
 (put 'downcase-region 'disabled nil) ; C-x C-l
 (put 'narrow-to-region 'disabled nil) ; C-x n n
+(put 'suspend-frame 'disabled nil) ; C-z
+(put 'upcase-region 'disabled nil) ; C-x C-u
 
 ;; https://lists.gnu.org/archive/html/bug-gnu-emacs/2024-02/msg01410.html
 (with-eval-after-load 'help-fns (put 'help-fns-edit-variable 'disabled nil))
-
-(put 'suspend-frame 'disabled t) ; C-z / C-x C-z
 
 ;; Safe local variables
 (add-to-list 'safe-local-variable-values '(org-log-done))
