@@ -1300,8 +1300,8 @@
 (dolist (key '("C-a" "+" "-" "'")) (keymap-global-unset (concat "C-x a " key)))
 
 ;; quit cleanly
-(global-set-key (kbd "C-c C-g") 'keyboard-quit)
 (global-set-key (kbd "C-x C-g") 'keyboard-quit)
+(global-set-key (kbd "C-c C-g") 'keyboard-quit)
 
 ;; Disable alternate suspend-frame
 (global-unset-key (kbd "C-x C-z"))
