@@ -70,14 +70,6 @@
 	;; Disable suspend-frame
 	(global-unset-key (kbd "C-z"))
 
-	;; (dolist (key '("C-<f10>")); "<f10>" "S-<f10>" "M-<f10>"
-	;; 	(global-unset-key (kbd key)))
-
-	;; f10		menu-bar-open
-	;; S-f10	context-menu-open
-	;; C-f10	buffer-menu-open
-	;; M-f10	toggle-frame-maximized
-
 	(global-set-key (kbd "<home>") nil) ; 'move-beginning-of-line
 	(global-set-key (kbd "<end>" ) nil) ; 'move-end-of-line
 
@@ -1311,6 +1303,14 @@
 	(keymap-global-unset (concat prefix "-"))
 	(dotimes (i 10) (keymap-global-unset (concat prefix (number-to-string i)))))
 
+;; <f10>	menu-bar-open
+;; S-<f10>	context-menu-open
+;; C-<f10>	buffer-menu-open
+;; M-<f10>	toggle-frame-maximized
+
+(dolist (key '("S-<f10>" "C-<f10>" "M-<f10>"))
+	(global-unset-key (kbd key)))
+
 
 ;; Disabled functions
 ;(setq disabled-command-function 'enable-me)
@@ -1478,4 +1478,4 @@
 ; LocalWords:  vcusepackage latexmk synctex bibtex cond xah dirs Ctrl
 ; LocalWords:  remotehost flycheck modeline mori featurep cbc smex
 ; LocalWords:  setq's setopt mailutils imagemagick usr dunnet Async
-; LocalWords:  dir
+; LocalWords:  dir fullscreen
