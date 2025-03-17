@@ -1289,8 +1289,6 @@
 (global-set-key (kbd "M-<f11>")	'toggle-modeline)
 (global-set-key (kbd "A-<return>") (kbd "M-<return>"))
 
-(dolist (key '("C-a" "+" "-" "'")) (keymap-global-unset (concat "C-x a " key)))
-
 ;; quit cleanly
 (global-set-key (kbd "C-x C-g") 'keyboard-quit)
 (global-set-key (kbd "C-c C-g") 'keyboard-quit)
@@ -1310,6 +1308,8 @@
 
 (dolist (key '("S-<f10>" "C-<f10>" "M-<f10>"))
 	(global-unset-key (kbd key)))
+
+(dolist (key '("C-a" "+" "-" "'")) (keymap-global-unset (concat "C-x a " key)))
 
 
 ;; Disabled functions
