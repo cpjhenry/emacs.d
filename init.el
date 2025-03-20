@@ -77,8 +77,7 @@
 	(global-set-key (kbd "A-<right>")(kbd "s-<right>"))
 	(global-set-key (kbd "A-k") (kbd "s-k"))
 
-	(easy-menu-add-item global-map '(menu-bar edit)
-		["Emoji & Symbols"
+	(easy-menu-add-item global-map '(menu-bar edit) ["Emoji & Symbols"
 		ns-do-show-character-palette
 		:help "Show macOS Character Palette."
 		:visible (eq window-system 'ns)])
@@ -209,12 +208,11 @@
 
 ;; modeline
 (use-package doom-modeline
-	:custom	(doom-modeline-column-zero-based nil)
-		(doom-modeline-enable-word-count t)
-		(doom-modeline-continuous-word-count-modes '(markdown-mode gfm-mode org-mode text-mode))
-		(doom-modeline-icon nil)
-	:hook	(after-init . doom-modeline-mode)
-	:config	(use-package nerd-icons))
+  :custom (doom-modeline-column-zero-based nil)
+  (doom-modeline-enable-word-count t)
+  (doom-modeline-continuous-word-count-modes '(markdown-mode gfm-mode org-mode text-mode))
+  (doom-modeline-icon nil)
+  :hook (after-init . doom-modeline-mode))
 
 (setopt	battery-mode-line-format "%p%% "
 	display-time-24hr-format t
@@ -461,8 +459,7 @@
 	(add-to-list 'ibuffer-never-show-predicates "^\\*Messages\\*")
 	(add-to-list 'ibuffer-never-show-predicates "^\\*Shell Command Output\\*")
 	(add-to-list 'ibuffer-never-show-predicates "^\\*tramp/")
-	(add-to-list 'ibuffer-never-show-predicates "^\\*Latex Preview Pane Welcome\\*")
-	)
+	(add-to-list 'ibuffer-never-show-predicates "^\\*Latex Preview Pane Welcome\\*"))
 
 
 ;; Dired
@@ -890,7 +887,7 @@
 
 ;; prog-mode
 (add-hook 'prog-mode-hook (lambda()
-	(setq show-trailing-whitespace t)
+	(setq show-trailing-whitespace t)  ; needs to be buffer local
 	(abbrev-mode)
 	(when (not (equal major-mode 'lisp-interaction-mode)) ; ie. *scratch*
 		(display-line-numbers-mode))
@@ -906,6 +903,7 @@
 
 ;; bash
 (add-to-list 'auto-mode-alist '("\\.bash*" . sh-mode))
+(add-to-list 'auto-mode-alist '("calendar" . goto-address-mode))
 (define-key shell-mode-map (kbd "M-r") nil)
 (define-key shell-mode-map (kbd "M-p") nil)
 (add-hook 'shell-mode-hook 'goto-address-mode)
@@ -1277,7 +1275,6 @@
 (bind-key "C-w"     'kill-region-or-backward-word) ; kill-region
 (bind-key "M-w"     'kill-region-or-thing-at-point) ; kill-ring-save
 (bind-key "M-j"     'join-line) ; default-indent-new-line (see 'C-M-j')
-(bind-key "C-x S-u" 'undo-redo) ; (see also 's-M-z')
 
 (global-set-key (kbd "C-s")	'isearch-forward-regexp)
 (global-set-key (kbd "C-r")	'isearch-backward-regexp)
@@ -1298,8 +1295,8 @@
 
 ;; Disable the "numeric argument". Prefer universal argument (C-u) prefix.
 (dolist (prefix '("C-" "M-" "C-M-"))
-	(keymap-global-unset (concat prefix "-"))
-	(dotimes (i 10) (keymap-global-unset (concat prefix (number-to-string i)))))
+  (keymap-global-unset (concat prefix "-"))
+  (dotimes (i 10) (keymap-global-unset (concat prefix (number-to-string i)))))
 
 ;; <f10>	menu-bar-open
 ;; S-<f10>	context-menu-open
@@ -1307,9 +1304,10 @@
 ;; M-<f10>	toggle-frame-maximized
 
 (dolist (key '("S-<f10>" "C-<f10>" "M-<f10>"))
-	(global-unset-key (kbd key)))
+  (global-unset-key (kbd key)))
 
-(dolist (key '("C-a" "+" "-" "'")) (keymap-global-unset (concat "C-x a " key)))
+(dolist (key '("C-a" "+" "-" "'"))
+  (keymap-global-unset (concat "C-x a " key)))
 
 
 ;; Disabled functions
@@ -1327,6 +1325,7 @@
 ;; Safe local variables
 (add-to-list 'safe-local-variable-values '(org-log-done))
 (add-to-list 'safe-local-variable-values '(truncate-lines . -1))
+(add-to-list 'safe-local-variable-values '(goto-address-mode))
 
 
 ;; Shortcuts
