@@ -1303,7 +1303,7 @@
 ;; C-<f10>	buffer-menu-open
 ;; M-<f10>	toggle-frame-maximized
 
-(dolist (key '("S-<f10>" "C-<f10>" "M-<f10>"))
+(dolist (key '("C-<f10>" "M-<f10>"))
   (global-unset-key (kbd key)))
 
 (dolist (key '("C-a" "+" "-" "'"))
