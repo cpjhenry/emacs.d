@@ -902,8 +902,8 @@
 		truncate-lines -1)))
 
 ;; bash
-(add-to-list 'auto-mode-alist '("\\.bash*" . sh-mode))
-(add-to-list 'auto-mode-alist '("calendar" . goto-address-mode))
+(add-to-list 'auto-mode-alist '("^\\.bash*" . sh-mode))
+(add-to-list 'auto-mode-alist '("^calendar$" . goto-address-mode))
 (define-key shell-mode-map (kbd "M-r") nil)
 (define-key shell-mode-map (kbd "M-p") nil)
 (add-hook 'shell-mode-hook 'goto-address-mode)
@@ -1282,8 +1282,8 @@
 (global-set-key (kbd "M-s r")	'isearch-backward)
 
 (global-set-key (kbd "<f12>")	'list-buffers)
-
 (global-set-key (kbd "M-<f11>")	'toggle-modeline)
+
 (global-set-key (kbd "A-<return>") (kbd "M-<return>"))
 
 ;; quit cleanly
@@ -1325,7 +1325,6 @@
 ;; Safe local variables
 (add-to-list 'safe-local-variable-values '(org-log-done))
 (add-to-list 'safe-local-variable-values '(truncate-lines . -1))
-(add-to-list 'safe-local-variable-values '(goto-address-mode))
 
 
 ;; Shortcuts

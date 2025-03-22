@@ -38,8 +38,10 @@
 	(holiday-advent -11 "Prayer & Repentance")
 	(holiday-fixed 12 (floor (nth 1 (solar-equinoxes/solstices 3 displayed-year))) "Midwinter")))
 
+;; FIXME New Year is based on date of vernal equinox
 (setq holiday-bahai-holidays '(
-	(holiday-bahai-new-year)))
+	(holiday-fixed 3 (floor (nth 1 (solar-equinoxes/solstices 1 displayed-year)))
+	(format "Bahá’í New Year (Naw-Ruz) %d" (- displayed-year (1- 1844))))))
 
 (setq holiday-oriental-holidays '(
 	(holiday-chinese-new-year)
