@@ -70,6 +70,9 @@
 	;; Disable suspend-frame
 	(global-unset-key (kbd "C-z"))
 
+	;; Disable toggle-frame-fullscreen
+	(global-unset-key (kbd "<f11>"))
+
 	(global-set-key (kbd "<home>") nil) ; 'move-beginning-of-line
 	(global-set-key (kbd "<end>" ) nil) ; 'move-end-of-line
 
@@ -224,7 +227,7 @@
 (if EMACS30 (setopt project-mode-line t))
 (column-number-mode)
 (display-battery-mode)
-(display-time-mode)
+;; (display-time-mode)
 ;; (load "rc/mm" 'noerror) ; memento-mori
 
 ;; startup time
@@ -1060,12 +1063,12 @@
 (add-to-list 'ispell-skip-region-alist '("^#\\+BEGIN_EXAMPLE " . "#\\+END_EXAMPLE$"))
 (add-to-list 'org-entities-user '("textnumero" "\\textnumero" nil "&numero;" "No." "No." "№"))
 
-;; FIXME - Errors with Emacs30
+;; FIXME - Errors with EMACS30
 ;; (use-package org-appear ; automatic visibility toggling of Org elements
 ;; 	:disabled
 ;; 	:hook (org-mode . org-appear-mode))
 
-;; FIXME - Errors with Emacs30
+;; FIXME - Errors with EMACS30
 ;; (use-package org-autolist ; pressing "Return" will insert a new list item automatically
 ;; 	:hook (org-mode . org-autolist-mode))
 
@@ -1293,6 +1296,10 @@
 
 ;; Disable alternate suspend-frame
 (global-unset-key (kbd "C-x C-z"))
+
+;; Disable fullscreen frames
+;; FIXME - Errors with EMACS30
+(put 'toggle-frame-fullscreen 'disabled t)
 
 ;; Disable the "numeric argument". Prefer universal argument (C-u) prefix.
 (dolist (prefix '("C-" "M-" "C-M-"))
