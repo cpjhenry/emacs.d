@@ -209,9 +209,10 @@
 ;; modeline
 (use-package doom-modeline
   :custom (doom-modeline-column-zero-based nil)
-  (doom-modeline-enable-word-count t)
-  (doom-modeline-continuous-word-count-modes '(markdown-mode gfm-mode org-mode text-mode))
-  (doom-modeline-icon nil)
+	(doom-modeline-enable-word-count t)
+	(doom-modeline-continuous-word-count-modes '(markdown-mode gfm-mode org-mode text-mode))
+	(doom-modeline-icon nil)
+	(doom-modeline-time-icon nil)
   :hook (after-init . doom-modeline-mode))
 
 (setopt	battery-mode-line-format "%p%% "
@@ -223,7 +224,7 @@
 (if EMACS30 (setopt project-mode-line t))
 (column-number-mode)
 (display-battery-mode)
-(display-time-mode -1)
+(display-time-mode)
 ;; (load "rc/mm" 'noerror) ; memento-mori
 
 ;; startup time
