@@ -1,4 +1,4 @@
-;;; Emacs --- configuration / cpjh -*- no-byte-compile: t; lexical-binding: t; -*-
+;;; init.el --- Emacs configuration / cpjh -*- no-byte-compile: t; lexical-binding: t; -*-
 
 ;;; Commentary:
 ;; brew install emacs-plus --with-modern-black-dragon-icon --with-mailutils --with-imagemagick
@@ -73,13 +73,16 @@
 	;; Disable toggle-frame-fullscreen
 	(global-unset-key (kbd "<f11>"))
 
+	;; Line movement
 	(global-set-key (kbd "<home>") nil) ; 'move-beginning-of-line
 	(global-set-key (kbd "<end>" ) nil) ; 'move-end-of-line
 
+	;; Alternates
 	(global-set-key (kbd "A-<left>") (kbd "s-<left>"))
 	(global-set-key (kbd "A-<right>")(kbd "s-<right>"))
 	(global-set-key (kbd "A-k") (kbd "s-k"))
 
+	;; Emojis
 	(easy-menu-add-item global-map '(menu-bar edit) ["Emoji & Symbols"
 		ns-do-show-character-palette
 		:help "Show macOS Character Palette."
@@ -656,12 +659,13 @@
 
 (use-package flycheck
 	:hook	(emacs-lisp-mode . flycheck-mode)
-	:init	(setq checkdoc-force-docstrings-flag nil)
+	:init	(require 'checkdoc)
+		(setq checkdoc-force-docstrings-flag nil)
 	:config	(which-key-alias "C-c !" "flycheck")
-	(if (featurep 'ibuf-ext)
-		(add-to-list 'ibuffer-never-show-predicates "^\\*Flycheck error messages\\*"))
-	(if (featurep 'ido)
-		(add-to-list 'ido-ignore-buffers "*Flycheck error messages*")))
+		(if (featurep 'ibuf-ext)
+		    (add-to-list 'ibuffer-never-show-predicates "^\\*Flycheck error messages\\*"))
+		(if (featurep 'ido)
+		    (add-to-list 'ido-ignore-buffers "*Flycheck error messages*")))
 
 (use-package free-keys :defer t
 	:config	(add-to-list 'free-keys-modifiers "s" t)
@@ -907,7 +911,6 @@
 
 ;; bash
 (add-to-list 'auto-mode-alist '("^\\.bash*" . sh-mode))
-(add-to-list 'auto-mode-alist '("^calendar$" . goto-address-mode))
 (define-key shell-mode-map (kbd "M-r") nil)
 (define-key shell-mode-map (kbd "M-p") nil)
 (add-hook 'shell-mode-hook 'goto-address-mode)
@@ -955,6 +958,7 @@
 ;; FIXME both setq below fail as setopt
 
 (require 'org)
+(defvar org-agenda-file (concat org-directory "/daily.org") "Default agenda file.")
 
 ;; :custom
 (setopt	org-directory "~/Documents/org"
@@ -984,8 +988,7 @@
 	org-auto-align-tags nil
 	org-tags-column 0)
 
-(setq	org-agenda-file (concat org-directory "/daily.org")
-	org-agenda-files (list org-agenda-file)
+(setopt	org-agenda-files (list org-agenda-file)
 	org-agenda-include-diary nil
 	org-agenda-skip-deadline-if-done t
 	org-agenda-skip-scheduled-if-done t
@@ -1014,8 +1017,8 @@
 	org-ascii-headline-spacing '(0 . 1)
 
 	org-latex-compiler "xelatex"
-	org-latex-pdf-process (list
-		(concat "latexmk -" org-latex-compiler " -recorder -synctex=1 -bibtex-cond %b"))
+	org-latex-pdf-process
+	  (list (concat "latexmk -" org-latex-compiler " -recorder -synctex=1 -bibtex-cond %b"))
 
 	org-md-headline-style 'atx)
 
@@ -1472,7 +1475,7 @@
 	default-directory "c:/Users/henrypa/OneDrive - City of Ottawa/"
 	org-agenda-file (concat default-directory "!.org")))
 
-(provide 'init)
+(provide 'cpj/init)
 ;;; init.el ends here
 
 ; LocalWords:  canadian sug aspell memq eval RET kfhelppanels init FN

@@ -1,4 +1,7 @@
-;; execute bash scripts
+;;; scripts.el --- execute bash scripts -*- lexical-binding: t -*-
+
+;;; commentary:
+;;; code:
 
 (defun di () "Daily information."
 	(interactive)
@@ -6,16 +9,25 @@
 	(shell-command "di-mode&" (current-buffer))
 	(view-mode)
 
-	(switch-to-buffer "*alert*")
-	(shell-command "alert -f" (current-buffer))
-	(view-mode)
+	(alert)
 
 	(diary-list-entries (calendar-current-date) diary-number-of-entries)
 	(kill-buffer "diary")
 
 	(message "'cbc' / 'xkcd' / 'elfeed'"))
 
-(defun cbc () "Today's headlines from CBC Ottawa"
+(defun alert () "Weather alerts from Environment Canada."
+	(interactive)
+	(switch-to-buffer "*alert*")
+	(shell-command "alert -f" (current-buffer))
+	(goto-char (point-max))
+	(newline)
+	(insert "Note:\n")
+	(insert "- Watches are issued when there is the potential for severe weather.\n")
+	(insert "- Warnings are issued when severe weather is actually occurring or is imminent.\n")
+	(view-mode))
+
+(defun cbc () "Today's headlines from CBC Ottawa."
 	(interactive)
 	(switch-to-buffer "*CBC*")
 	(shell-command "cbc-mode" (current-buffer))
@@ -70,3 +82,5 @@
 		(visual-line-mode)
 		(eww-unfill-paragraph)
 		(toggle-fill-column-center)))
+
+;;; scripts.el ends here

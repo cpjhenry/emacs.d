@@ -2,6 +2,7 @@
 (define-abbrev-table 'emacs-lisp-mode-abbrev-table
   '(
     ("advicename" "'((name . \"test\"))" nil :count 0)
+    ("lexb" "-*- lexical-binding: t -*-" nil :count 0)
    ))
 
 (define-abbrev-table 'global-abbrev-table
@@ -21,8 +22,9 @@
 (define-abbrev-table 'org-mode-abbrev-table
   '(
     ("dinkus" "#+LATEX: \\begin{center}* * *\\end{center}" nil :count 2)
-    ("hdr" "#+LATEX_HEADER:" nil :count 4)
-    ("lat" "#+LATEX:" nil :count 4)
+    ("hdr" "#+LATEX_HEADER:" nil :count 5)
+    ("lat" "#+LATEX:" nil :count 5)
+    ("mapleleaf" "\\twemoji{maple leaf}" nil :count 0)
     ("myabstract" "#+LATEX: \\begin{abstract}
 #+LATEX: \\noindent\\parindent=0pt\\parskip=.5\\baselineskip plus 2pt
 
@@ -32,11 +34,11 @@
 #+END_COMMENT" nil :count 0)
     ("myheader" ":HEADER:
 #+STARTUP: nofold
-#+LATEX_CLASS_OPTIONS: [a5paper]
+#+LATEX_CLASS_OPTIONS: [a5paper,twoside]
 #+LATEX_HEADER: \\usepackage{fontspec}
 #+LATEX_HEADER: \\setmainfont{EB Garamond}
 #+LATEX_HEADER: \\usepackage[english]{babel}
-#+LATEX_HEADER: \\usepackage[fontsize=15]{fontsize}
+#+LATEX_HEADER: \\usepackage[fontsize=14]{fontsize}
 #+LATEX_HEADER: \\usepackage[margin=0.50in,top=0.75in,bottom=0.75in]{geometry}
 #+LATEX_HEADER: \\usepackage{titling}
 #+LATEX_HEADER: \\pretitle{\\begin{center}\\large\\textbf}
@@ -60,7 +62,8 @@
 #+LATEX_HEADER: \\usepackage{lastpage}
 #+LATEX_HEADER: \\fancyfoot[C]{\\thepage\\ / \\pageref{LastPage}}
 #+LATEX_HEADER: \\usepackage{framed}
-:END:" nil :count 2)
+#+LATEX_HEADER: \\usepackage{twemojis}
+:END:" nil :count 0)
     ("mytitle" "#+TITLE: 
 #+AUTHOR: Paul J Henry
 #+AUTHOR: MM RAM FRC
@@ -68,7 +71,7 @@
 Goodwood Lodge\\\\
 \\textnumero159 AF&AM GRC
 
-CHECK AGAINST DELIVERY" nil :count 4)
+CHECK AGAINST DELIVERY" nil :count 5)
     ("referencemark" "#+LATEX: {\\fontspec{NewCM10-Book} \\large \\textreferencemark}" nil :count 0)
     ("wmye" "WM,YE." nil :count 0)
    ))
