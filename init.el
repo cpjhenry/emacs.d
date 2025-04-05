@@ -958,7 +958,6 @@
 ;; FIXME both setq below fail as setopt
 
 (require 'org)
-(defvar org-agenda-file (concat org-directory "/daily.org") "Default agenda file.")
 
 ;; :custom
 (setopt	org-directory "~/Documents/org"
@@ -988,6 +987,7 @@
 	org-auto-align-tags nil
 	org-tags-column 0)
 
+(defvar org-agenda-file (concat org-directory "/daily.org") "Default agenda file.")
 (setopt	org-agenda-files (list org-agenda-file)
 	org-agenda-include-diary nil
 	org-agenda-skip-deadline-if-done t
@@ -1075,9 +1075,9 @@
 ;; (use-package org-autolist ; pressing "Return" will insert a new list item automatically
 ;; 	:hook (org-mode . org-autolist-mode))
 
-;; (use-package org-chef
-;; 	:disabled
-;; 	:if *natasha* :defer t)
+(use-package org-chef
+	:disabled
+	:if *natasha* :defer t)
 
 (use-package org-cliplink) ; insert org-mode links from the clipboard
 

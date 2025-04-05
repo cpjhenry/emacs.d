@@ -20,11 +20,6 @@
 	(interactive)
 	(switch-to-buffer "*alert*")
 	(shell-command "alert -f" (current-buffer))
-	(goto-char (point-max))
-	(newline)
-	(insert "Note:\n")
-	(insert "- Watches are issued when there is the potential for severe weather.\n")
-	(insert "- Warnings are issued when severe weather is actually occurring or is imminent.\n")
 	(view-mode))
 
 (defun cbc () "Today's headlines from CBC Ottawa."
