@@ -1477,7 +1477,8 @@
 
 ;; Work-specific
 (when *w32* (load (expand-file-name ".work" user-emacs-directory) 'noerror))
-(when *mac* (bind-key "C-c Z" (lambda()(interactive) (find-file "/db:/!.org"))))
+(when *mac* (bind-key "C-c Z" (lambda()(interactive) (find-file "/db:/!.org")))
+      (which-key-alias "C-c Z" "work-agenda"))
 
 ;;; init.el ends here
 ; LocalWords:  canadian sug aspell memq eval RET kfhelppanels init FN
