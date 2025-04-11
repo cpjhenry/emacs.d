@@ -1,4 +1,4 @@
-;;; init.el --- Emacs configuration / cpjh -*- no-byte-compile: t; lexical-binding: t; -*-
+;;; init.el --- Emacs configuration -*- no-byte-compile: t; lexical-binding: t; -*-
 
 ;;; Commentary:
 ;; brew install emacs-plus --with-modern-black-dragon-icon --with-mailutils --with-imagemagick
@@ -15,9 +15,9 @@
 (toggle-frame-maximized)
 
 ;; Add directories to load-path
-(add-to-list 'load-path (expand-file-name "etc" user-emacs-directory))
-(add-to-list 'load-path (expand-file-name "opt" user-emacs-directory))
-(add-to-list 'load-path (expand-file-name "var" user-emacs-directory))
+(add-to-list 'load-path (directory-file-name (expand-file-name "etc/" user-emacs-directory)))
+(add-to-list 'load-path (directory-file-name (expand-file-name "opt/" user-emacs-directory)))
+(add-to-list 'load-path (directory-file-name (expand-file-name "var/" user-emacs-directory)))
 
 ;; Environmental constants
 (defconst *mac* (eq system-type 'darwin))
@@ -1476,11 +1476,10 @@
 (defalias 'ds 'desktop-save)
 
 ;; Work-specific
-(when *w32* (load (concat user-emacs-directory ".work") 'noerror))
+(when *w32* (load (expand-file-name ".work" user-emacs-directory) 'noerror))
+(when *mac* (bind-key "C-c Z" (lambda()(interactive) (find-file "/db:/!.org"))))
 
-(provide 'cpj/init)
 ;;; init.el ends here
-
 ; LocalWords:  canadian sug aspell memq eval RET kfhelppanels init FN
 ; LocalWords:  pdfexport melpa vers tls dg defs eshell multisession
 ; LocalWords:  persistency ido Ibuffer elfeed rc rmh elfeedroutines

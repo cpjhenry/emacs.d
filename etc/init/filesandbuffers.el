@@ -1,4 +1,4 @@
-;;; filesandbuffers --- FILE/BUFFER functions
+;;; filesandbuffers.el --- FILE/BUFFER functions
 
 ;;; Commentary:
 ;;; Code:
@@ -470,5 +470,4 @@ word."
 	(set symbl (eval (car (get symbl 'standard-value)))))
 
 ;;; filesandbuffers.el ends here
-
 ; LocalWords:  filesandbuffers
