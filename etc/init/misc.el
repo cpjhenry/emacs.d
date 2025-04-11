@@ -1,3 +1,7 @@
+;;; misc.el --- Miscellaneous routines
+;;; commentary:
+;;; code:
+
 ;; Compatibility settings
 (when (< emacs-major-version 28) (defalias 'show-paren-local-mode 'show-paren-mode))
 
@@ -323,3 +327,5 @@ column, then prepend asterisk + space and post-pend colon + space."
       ;; Show Calendar in the upper left quadrant.
       (switch-to-buffer (get-buffer buffer-calendar))
       ))
+
+;;; misc.el ends here

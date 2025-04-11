@@ -12,10 +12,10 @@
  (handler . Info-bookmark-jump))
 ("org-capture-last-stored"
  (filename . "~/Documents/org/cookbook.org")
- (front-context-string . "* Quinoa Lentil ")
- (rear-context-string . "nd refrigerate.\n")
- (position . 3613)
- (last-modified 26299 58911 472556 0))
+ (front-context-string . "* Air Fryer Garl")
+ (rear-context-string . "itional basil.\n\n")
+ (position . 11613)
+ (last-modified 26609 59383 137663 0))
 ("2023-05-10 - Six years of gopher"
  (position . 684)
  (location . "gemini://zaibatsu.circumlunar.space/users/solderpunk/gemlog/six-years-of-gopher.gmi")

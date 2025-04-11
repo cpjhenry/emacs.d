@@ -526,6 +526,10 @@
 	(face-remap-add-relative 'default :background remote-tramp-bg)))
 (add-hook 'shell-mode-hook 'checker-tramp-shell-hook)
 
+;; Dropbox
+(require 'dropbox nil t)
+(setopt dropbox-config-file (concat user-emacs-directory ".dropbox"))
+
 
 ;; frames
 (setopt	frame-inhibit-implied-resize t
@@ -882,7 +886,8 @@
 ;(define-key text-mode-map (kbd "C-M-i") nil)
 
 (use-package visual-fill-column
-	:bind (	("<f5>" . visual-fill-column-mode))
+	:bind (	("<f5>" . visual-fill-column-mode)
+		("<f6>"	. toggle-fill-column-center))
 	;; :hook	(visual-line-mode . visual-fill-column-mode)
 	:config (advice-add 'text-scale-adjust :after #'visual-fill-column-adjust))
 
@@ -1339,7 +1344,6 @@
 
 
 ;; Shortcuts
-(bind-key "<f6>"	'toggle-fill-column-center)
 (bind-key "<f7>"	'ispell-buffer)
 (bind-key "<f8>"	'list-bookmarks)
 (bind-key "<f9>"	'shortcuts-mode)
@@ -1417,6 +1421,7 @@
 (bind-key "C-x c"	'kill-current-buffer)
 (bind-key "C-x n f"	'narrow-to-focus)
 
+(bind-key "C-x x SPC"	'toggle-cursor-off/on)
 (bind-key "C-x x L"	'buf-to-LF)
 (bind-key "C-x x V"	'view-text-file-as-info-manual)
 (bind-key "C-x x c"	'toggle-fill-column)
@@ -1471,9 +1476,7 @@
 (defalias 'ds 'desktop-save)
 
 ;; Work-specific
-(when *w32* (setq
-	default-directory "c:/Users/henrypa/OneDrive - City of Ottawa/"
-	org-agenda-file (concat default-directory "!.org")))
+(when *w32* (load (concat user-emacs-directory ".work") 'noerror))
 
 (provide 'cpj/init)
 ;;; init.el ends here
@@ -1487,4 +1490,4 @@
 ; LocalWords:  vcusepackage latexmk synctex bibtex cond xah dirs Ctrl
 ; LocalWords:  remotehost flycheck modeline mori featurep cbc smex
 ; LocalWords:  setq's setopt mailutils imagemagick usr dunnet Async
-; LocalWords:  dir fullscreen
+; LocalWords:  dir fullscreen dropbox

@@ -140,16 +140,15 @@
 	(message "Maximum width."))
 
 (defun toggle-fill-column-center ()
-"Toggle fill-column-center when in visual-fill-column-mode."
-	(interactive)
-	(if (featurep 'visual-fill-column) (visual-fill-column-mode))
-	(if (bound-and-true-p visual-fill-column-mode) (progn
-		(if (bound-and-true-p visual-fill-column-center-text)
-			(progn	(setq visual-fill-column-center-text nil)
-				(visual-fill-column-mode -1))
-			(progn	(setq visual-fill-column-center-text t)))
-			(visual-fill-column-adjust))
-		(message "'visual-fill-column-mode' not enabled.")))
+  "Toggle fill-column-center when in visual-fill-column-mode."
+  (interactive)
+  (if (bound-and-true-p visual-fill-column-mode) (progn
+     (if (bound-and-true-p visual-fill-column-center-text)
+	(progn	(setq visual-fill-column-center-text nil)
+		(visual-fill-column-mode -1))
+		(progn	(setq visual-fill-column-center-text t)))
+		(visual-fill-column-adjust))
+	(message "`visual-fill-column-mode' not enabled.")))
 
 ;; See: https://emacs.stackexchange.com/questions/81361/how-to-switch-to-a-buffer-from-terminal-with-a-unique-partial-name
 (defun switch-to-buffer-matching (regular-expression)
@@ -170,6 +169,12 @@
 (defun turn-off-cursor () "Hides cursor locally."
 	(interactive)
 	(setq-local cursor-type nil))
+
+(defun toggle-cursor-off/on () "Toggle cursor visibility."
+       (interactive)
+       (if (bound-and-true-p cursor-type)
+	   (setq-local cursor-type nil)
+	 (setq-local cursor-type t)))
 
 (defun my/agenda () "Load `org-agenda' file."
 	(interactive)
@@ -463,5 +468,7 @@ word."
 (defun custom/reset-var (symbl)
   "Reset SYMBL to its standard value."
 	(set symbl (eval (car (get symbl 'standard-value)))))
+
+;;; filesandbuffers.el ends here
 
 ; LocalWords:  filesandbuffers

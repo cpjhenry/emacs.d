@@ -8,10 +8,12 @@
 (defun unfill-paragraph ()
 	"Takes a multi-line paragraph and makes it into a single line of text."
 	(interactive)
-	(let ((beg (point-min)) (end (point-max)) (fill-column (point-max)))
+	(let ((beg (point-min))
+	      (end (point-max))
+	      (fill-column (point-max)))
 	(when (region-active-p)
-		(setq beg (region-beginning))
-		(setq end (region-end)))
+	  (setq beg (region-beginning))
+	  (setq end (region-end)))
 	(fill-region beg end)))
 
 (defun insert-iso-date ()
