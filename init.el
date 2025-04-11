@@ -444,7 +444,7 @@
 				(mode . gnus-group-mode)
 				(mode . gnus-summary-mode)
 				(mode . gnus-article-mode)
-				(name . "^\\.bbdb$")
+				(name . "\\.bbdb$")
 				(name . "^\\.newsrc-dribble"))) ))))
 	:bind ( :map ibuffer-mode-map
 		("C-x C-f" . ibuffer-ido-find-file)
@@ -915,7 +915,7 @@
 		truncate-lines -1)))
 
 ;; bash
-(add-to-list 'auto-mode-alist '("^\\.bash*" . sh-mode))
+(add-to-list 'auto-mode-alist '("\\.bash*" . sh-mode))
 (define-key shell-mode-map (kbd "M-r") nil)
 (define-key shell-mode-map (kbd "M-p") nil)
 (add-hook 'shell-mode-hook 'goto-address-mode)
