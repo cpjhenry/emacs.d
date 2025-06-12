@@ -45,64 +45,58 @@
 		(goto-char (point-min))
 		(query-replace-regexp "\\(\\b\\w+\\b\\)\\W+\\1\\b" "\\1")))
 
-(defun replace-smart-quotes (beg end)
-	"Replace 'smart quotes' in buffer or region with ASCII quotes."
-	(interactive "r")
-	(format-replace-strings '(
-		("\x201C" . "\"")
-		("\x201D" . "\"")
-		("\x2018" . "'")
-		("\x2019" . "'"))
-		nil beg end)
-	(message "Smart quotes replaced."))
-
 ;; https://www.emacswiki.org/emacs/ReplaceGarbageChars
-;; FIXME scan only region if exists...
 (defun replace-garbage-chars ()
-	"Replace goofy MS and other garbage characters with Latin1 equivalents."
-	(interactive) (save-excursion				;save the current point
-	(replace-string "΄" "'" nil (point-min) (point-max))
-	(replace-string "‘" "'" nil (point-min) (point-max))
-	(replace-string "’" "'" nil (point-min) (point-max))
-	(replace-string "“" "\"" nil (point-min) (point-max))
-	(replace-string "”" "\"" nil (point-min) (point-max))
-	(replace-string "" "'" nil (point-min) (point-max))
-	(replace-string "" "'" nil (point-min) (point-max))
-	(replace-string "" "\"" nil (point-min) (point-max))
-	(replace-string "" "\"" nil (point-min) (point-max))
-	(replace-string "" "\"" nil (point-min) (point-max))
-	(replace-string "" "\"" nil (point-min) (point-max))
-	(replace-string "‘" "\"" nil (point-min) (point-max))
-	(replace-string "’" "'" nil (point-min) (point-max))
-	(replace-string "¡\"" "\"" nil (point-min) (point-max))
-	(replace-string "¡­" "..." nil (point-min) (point-max))
-	(replace-string "" "..." nil (point-min) (point-max))
-	(replace-string "" " " nil (point-min) (point-max)) ; M-SPC
-	(replace-string "" "`" nil (point-min) (point-max))  ; \221
-	(replace-string "" "'" nil (point-min) (point-max))  ; \222
-	(replace-string "" "``" nil (point-min) (point-max))
-	(replace-string "" "''" nil (point-min) (point-max))
-	(replace-string "" "*" nil (point-min) (point-max))
-	(replace-string "" "--" nil (point-min) (point-max))
-	(replace-string "" "--" nil (point-min) (point-max))
-	(replace-string " " " " nil (point-min) (point-max)) ; M-SPC
-	(replace-string "¡" "\"" nil (point-min) (point-max))
-	(replace-string "´" "\"" nil (point-min) (point-max))
-	(replace-string "»" "<<" nil (point-min) (point-max))
-	(replace-string "Ç" "'" nil (point-min) (point-max))
-	(replace-string "È" "\"" nil (point-min) (point-max))
-	(replace-string "é" "e" nil (point-min) (point-max)) ;; &eacute;
-	(replace-string "ó" "-" nil (point-min) (point-max))
+  "Replace goofy MS and other garbage characters with Latin1 equivalents."
+	(interactive)
+	(let ((beg (point-min))
+	      (end (point-max)))
+	  (when (region-active-p)
+	    (setq beg (region-beginning))
+	    (setq end (region-end)))
+	  (save-excursion ;save the current point
+	    (replace-string "΄" "'" nil beg end)
+	    (replace-string "‘" "'" nil beg end)
+	    (replace-string "’" "'" nil beg end)
+	    (replace-string "“" "\"" nil beg end)
+	    (replace-string "”" "\"" nil beg end)
+	    (replace-string "" "'" nil beg end)
+	    (replace-string "" "'" nil beg end)
+	    (replace-string "" "\"" nil beg end)
+	    (replace-string "" "\"" nil beg end)
+	    (replace-string "" "\"" nil beg end)
+	    (replace-string "" "\"" nil beg end)
+	    (replace-string "‘" "\"" nil beg end)
+	    (replace-string "’" "'" nil beg end)
+	    (replace-string "¡\"" "\"" nil beg end)
+	    (replace-string "¡­" "..." nil beg end)
+	    (replace-string "" "..." nil beg end)
+	    (replace-string "" " " nil beg end) ; M-SPC
+	    (replace-string "" "`" nil beg end)  ; \221
+	    (replace-string "" "'" nil beg end)  ; \222
+	    (replace-string "" "``" nil beg end)
+	    (replace-string "" "''" nil beg end)
+	    (replace-string "" "*" nil beg end)
+	    (replace-string "" "--" nil beg end)
+	    (replace-string "" "--" nil beg end)
+	    (replace-string " " " " nil beg end) ; M-SPC
+	    (replace-string "¡" "\"" nil beg end)
+	    (replace-string "´" "\"" nil beg end)
+	    (replace-string "»" "<<" nil beg end)
+	    (replace-string "Ç" "'" nil beg end)
+	    (replace-string "È" "\"" nil beg end)
+	    (replace-string "é" "e" nil beg end) ;; &eacute;
+	    (replace-string "ó" "-" nil beg end)
 
-	;; mine
-	(replace-string "•" "-" nil (point-min) (point-max))
-	(replace-string "–" "--" nil (point-min) (point-max))
-	(replace-string "—" "---" nil (point-min) (point-max)) ; multi-byte
-	(replace-string "…" "..." nil (point-min) (point-max))
-	(replace-string "&#38;" "&" nil (point-min) (point-max))
-	(replace-string "&#39;" "'" nil (point-min) (point-max))
+	    ;; mine
+	    (replace-string "•" "-" nil beg end)
+	    (replace-string "–" "--" nil beg end)
+	    (replace-string "—" "---" nil beg end) ; multi-byte
+	    (replace-string "…" "..." nil beg end)
+	    (replace-string "&#38;" "&" nil beg end)
+	    (replace-string "&#39;" "'" nil beg end)
 
-	(message "Garbage in, garbage out.") ))
+	    (message "Garbage in, garbage out.") )))
 
 ;; https://emacs.stackexchange.com/questions/51629/add-paragraph-numbers
 (defun number-paragraphs (&optional takefirst)

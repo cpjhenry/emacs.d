@@ -1,4 +1,4 @@
-;; PRINT functions
+;;; PRINT functions
 
 (setq ps-page-dimensions-database '(
 	(a4 595 842 "A4")
@@ -13,6 +13,7 @@
 	(executive 540.0 720.0 "Executive")
 	(pos80 204.0 595.0 "POS-80")))
 
+(defvar ps-printer-line-length 50)
 (when *mac* (setq
 	ps-printer-name "Brother_HL_L2370DW"
 	ps-lpr-switches '("-o media=a5")
@@ -36,6 +37,18 @@
 	ps-bottom-margin 14
 	ps-left-margin 28
 	ps-right-margin 28))
+
+(defun enscript (parg)
+"Sends current buffer or region to 'enscript'. Prefix fills to printer before printing."
+	(interactive "P")
+	(let ((prefix (car parg))) (cond
+		((not prefix))
+		((= prefix 4) (fill-to-printer '(4)))))
+	(let ((beg (point-min)) (end (point-max)) (enscript "enscript -cqB"))
+	(when (region-active-p)
+		(setq beg (region-beginning))
+		(setq end (region-end)))
+	(shell-command-on-region beg end enscript)))
 
 (defun fill-to-printer (&optional parg)
 	"Re-formats text in current buffer for printer."
@@ -67,39 +80,31 @@
 		(setq end (region-end)))
 	(print-region beg end)))
 
-(defun ps-print-buffer-or-region (parg)
-"Convert buffer or region to pdf, and print it. Ghostscript is required.
-Prefix fills to printer before printing."
-	(interactive "P")
-	(let ((prefix (car parg))) (cond
-		((not prefix) (copy-current-to-temp-buffer))
-		((= prefix 4) (fill-to-printer))))
+(defun ps-print-buffer-or-region ()
+  "Convert buffer or region to pdf, and print it. Ghostscript is required."
+	(interactive)
+	(if (> (longest-line-in-buffer) ps-printer-line-length)
+	  (fill-to-printer)
+	  (copy-current-to-temp-buffer))
+
 	(let ((filename (buffer-name)))
 	(ps-print-buffer (concat filename ".ps"))
 	(kill-buffer)
 
 	(when (executable-find "gs")
-	(shell-command (concat "ps2pdfwr " filename ".ps"))
-	(shell-command (concat "pdfcrop " filename ".pdf " filename "-cropped.pdf"))
-	(shell-command (concat "lp -d " ps-printer-name " -o media=" (symbol-name 'ps-paper-type)
+	  (shell-command (concat "ps2pdfwr " filename ".ps"))
+	  (shell-command (concat "pdfcrop " filename ".pdf " filename "-cropped.pdf"))
+	  (shell-command (concat "lp -d " ps-printer-name " -o media=" (symbol-name 'ps-paper-type)
 		" -o fit-to-page " filename "-cropped.pdf"))
 
-	(delete-file (concat filename ".ps") t)
-	(delete-file (concat filename ".pdf") t)
-	(delete-file (concat filename "-cropped.pdf") t))))
-
-(defun enscript (parg)
-"Sends current buffer or region to 'enscript'. Prefix fills to printer before printing."
-	(interactive "P")
-	(let ((prefix (car parg))) (cond
-		((not prefix))
-		((= prefix 4) (fill-to-printer '(4)))))
-	(let ((beg (point-min)) (end (point-max)) (enscript "enscript -cqB"))
-	(when (region-active-p)
-		(setq beg (region-beginning))
-		(setq end (region-end)))
-	(shell-command-on-region beg end enscript)))
+	  (delete-file (concat filename ".ps") t)
+	  (delete-file (concat filename ".pdf") t)
+	  (delete-file (concat filename "-cropped.pdf") t))))
 
 ;; Local Variables:
 ;; truncate-lines: -1
 ;; End:
+
+; LocalWords:  Ghostscript Munbyn
+
+;;; print.el ends here

@@ -78,4 +78,8 @@
 		(eww-unfill-paragraph)
 		(toggle-fill-column-center)))
 
+(defun wwv () "Geophysical alerts and space weather."
+       (interactive)
+       (eww "https://services.swpc.noaa.gov/text/"))
+
 ;;; scripts.el ends here

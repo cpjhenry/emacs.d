@@ -7,9 +7,15 @@
 
 (define-abbrev-table 'global-abbrev-table
   '(
+    ("jd" "J.D." nil :count 0)
+    ("jw" "J.W." nil :count 0)
+    ("mry" ".....ry" nil :count 2)
     ("spd" "Salutem plurimam dicit." nil :count 3)
     ("sqpd" "Salutem quam plurimam dicit." nil :count 0)
     ("svb" "Si vales, bene est; ego valeo." nil :count 5)
+    ("sw" "S.W." nil :count 1)
+    ("wm" "W.M." nil :count 1)
+    ("wsir" "W.Sir" nil :count 18)
    ))
 
 (define-abbrev-table 'latex-mode-abbrev-table
@@ -21,9 +27,10 @@
 
 (define-abbrev-table 'org-mode-abbrev-table
   '(
+    ("asterism" "#+LATEX: \\begin{center}\\asterism\\end{center}" nil :count 6)
     ("dinkus" "#+LATEX: \\begin{center}* * *\\end{center}" nil :count 2)
-    ("hdr" "#+LATEX_HEADER:" nil :count 5)
-    ("lat" "#+LATEX:" nil :count 5)
+    ("hdr" "#+LATEX_HEADER:" nil :count 8)
+    ("lat" "#+LATEX:" nil :count 8)
     ("mapleleaf" "\\twemoji{maple leaf}" nil :count 0)
     ("myabstract" "#+LATEX: \\begin{abstract}
 #+LATEX: \\noindent\\parindent=0pt\\parskip=.5\\baselineskip plus 2pt
@@ -63,6 +70,15 @@
 #+LATEX_HEADER: \\fancyfoot[C]{\\thepage\\ / \\pageref{LastPage}}
 #+LATEX_HEADER: \\usepackage{framed}
 #+LATEX_HEADER: \\usepackage{twemojis}
+#+LATEX_HEADER: \\newcommand{\\asterism}{\\smash{%
+#+LATEX_HEADER:   \\raisebox{-.5ex}{%
+#+LATEX_HEADER:     \\setlength{\\tabcolsep}{1pt}%
+#+LATEX_HEADER:     \\begin{tabular}{@{}cc@{}}%
+#+LATEX_HEADER:       \\multicolumn2c*\\\\[-2ex]*&*%
+#+LATEX_HEADER:     \\end{tabular}}}}
+#+LATEX_HEADER: \\usepackage{circledsteps}
+#+LATEX_HEADER: \\def\\opn{\\ensuremath{\\mathrel{\\subseteq\\!\\!\\!\\!\\!\\raisebox{1pt}{$\\circ$}}}}
+#+LATEX_HEADER: \\def\\cls{\\ensuremath{\\mathrel{\\subseteq\\!\\!\\!\\!\\!\\raisebox{1pt}{$\\bullet$}}}}
 :END:" nil :count 0)
     ("mytitle" "#+TITLE: 
 #+AUTHOR: Paul J Henry

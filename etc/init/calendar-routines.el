@@ -29,7 +29,10 @@
 
 (setq holiday-other-holidays '(
 	(holiday-float 1 1 3 "Martin Luther King Day")
-	(holiday-float 06 6 1 "Midsummer" (floor (nth 1 (solar-equinoxes/solstices 1 displayed-year))))
+	;; first Saturday of June following the Summer Solstice
+	(holiday-float 6 6 1 "Midsummer" (floor (nth 1 (solar-equinoxes/solstices 1 displayed-year))))
+	;; first Tuesday in November after the first Monday, every four even-numbered years
+	;; (between November 2 and 8th)
 	(holiday-sexp '(if (zerop (% year 4)) (calendar-gregorian-from-absolute (1+
 		(calendar-dayname-on-or-before 1 (+ 6 (calendar-absolute-from-gregorian
 		(list 11 1 year)))))))

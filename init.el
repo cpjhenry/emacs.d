@@ -2,6 +2,7 @@
 
 ;;; Commentary:
 ;; brew install emacs-plus --with-modern-black-dragon-icon --with-mailutils --with-imagemagick
+
 ;; /usr/local/share/emacs/site-lisp
 
 ;;; Code:
@@ -58,7 +59,8 @@
 	(global-set-key (kbd "s-S") 'write-file)
 	(global-set-key (kbd "s-s") 'save-buffer)
 	(global-set-key (kbd "s-u") 'revert-buffer)
-	(global-set-key (kbd "s-w") 'delete-frame)
+	(global-set-key (kbd "s-W") 'delete-frame)
+	(global-set-key (kbd "s-w") 'kill-current-buffer)
 	(global-set-key (kbd "s-z") 'undo)
 
 	(global-set-key (kbd "s-1") (kbd "C-x 1"))
@@ -81,6 +83,7 @@
 	(global-set-key (kbd "A-<left>") (kbd "s-<left>"))
 	(global-set-key (kbd "A-<right>")(kbd "s-<right>"))
 	(global-set-key (kbd "A-k") (kbd "s-k"))
+	(global-set-key (kbd "A-=") (kbd "s-="))
 
 	;; Emojis
 	(easy-menu-add-item global-map '(menu-bar edit) ["Emoji & Symbols"
@@ -136,6 +139,7 @@
 	ad-redefinition-action 'accept
 	async-shell-command-buffer 'new-buffer
 	case-fold-search t
+	confirm-kill-processes nil ; quit Emacs directly even if there are running processes
 	cursor-in-non-selected-windows nil
 	delete-by-moving-to-trash t
 	enable-recursive-minibuffers t
@@ -155,6 +159,8 @@
 	kill-read-only-ok t
 	kill-ring-max 512
 	kill-whole-line t
+	large-file-warning-threshold 100000000 ; warn when opening files bigger than 100MB
+	load-prefer-newer t ; Always load newest byte code
 	ls-lisp-use-localized-time-format t
 	mark-ring-max most-positive-fixnum
 	max-lisp-eval-depth 65536
@@ -662,6 +668,7 @@
 	(use-package ace-link :config (ace-link-setup-default))) ;; alternative to tabbing
 
 (use-package flycheck
+	:unless *w32*
 	:hook	(emacs-lisp-mode . flycheck-mode)
 	:init	(require 'checkdoc)
 		(setq checkdoc-force-docstrings-flag nil)
@@ -717,6 +724,8 @@
 		(mistty-mode . goto-address-mode))
 
 (use-package shortcuts-mode)
+
+(use-package simple-httpd :ensure t)
 
 (use-package ssh)
 
@@ -987,6 +996,8 @@
 	org-startup-folded 'content ; folded children content all
 	org-startup-indented nil
 	org-startup-shrink-all-tables t
+
+	org-use-speed-commands (lambda() (and (looking-at org-outline-regexp) (looking-back "^\**")))
 	org-use-sub-superscripts '{}
 
 	org-auto-align-tags nil
@@ -1149,6 +1160,7 @@
 ;; spell checking
 (use-package jinx
 	:demand	t
+	:pin gnu ; source from 'gnu' package archives only
 	:if (executable-find "aspell")
 	:bind (	("M-$" . jinx-correct)
 		("C-M-$" . jinx-languages))
@@ -1355,6 +1367,7 @@
 (bind-key "M-<f1>"	'my/emacs-help)
 (bind-key "M-<f2>"	'describe-personal-keybindings)
 (bind-key "M-<f3>"	'shortdoc)
+(bind-key "M-<f4>"	'org-speed-command-help)
 
 (bind-key "M-q"		'my/fill-paragraph)
 (defun my/fill-paragraph () (interactive) (fill-paragraph nil t))
@@ -1387,7 +1400,6 @@
 (which-key-alias "C-c m" "read-mail")
 ;(bind-key "C-c n"	'newsticker-show-news)
 
-(bind-key "C-c o a"	'org-archive-subtree-default)
 (bind-key "C-c o c"	'org-capture)
 (bind-key "C-c o k"	'org-cliplink)
 (bind-key "C-c o l"	'org-store-link)
