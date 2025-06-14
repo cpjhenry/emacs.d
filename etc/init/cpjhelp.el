@@ -1,4 +1,7 @@
-;; cpjh help
+;;; cpjhelp.el --- Custom help screens
+;;; commentary:
+
+;;; code:
 (defconst my/emacs-help
 "EMACS
 
@@ -13,7 +16,7 @@ C-k | C-S-DEL			kill eol | line
 C-DEL | (fn)-C-BS 		kill word ← →
 C-g						abort action
 C-s | C-r				search forward | back
-C-z						undo
+C-/ | C-?  			   	undo | redo
 C-x h					select all text
 M-q | M-S-q				fill | un-fill paragraph
 M-|						pipe region

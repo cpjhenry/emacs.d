@@ -34,22 +34,29 @@
 		(setq buffer-offer-save t) ))
 
 (defun copy-current-to-temp-buffer ()
-"Copy the current buffer or region, create temp buffer, paste it there."
-	(interactive)
-	(let ((beg (point-min)) (end (point-max)))
-		(when (region-active-p)
-			(setq beg (region-beginning))
-			(setq end (region-end)))
+  "Copy the current buffer or region, create temp buffer, paste it there."
+  (interactive)
+  (let ((beg (point-min)) (end (point-max)))
+    (when (region-active-p)
+      (setq beg (region-beginning))
+      (setq end (region-end)))
 
-		(kill-ring-save beg end)
-		(switch-to-buffer (make-temp-name ""))
-		(yank)))
+    (kill-ring-save beg end)
+    (switch-to-buffer (make-temp-name ""))
+    (yank))
+
+  ;; clean up section markers, so text folds correctly.
+  (save-excursion
+    (goto-char (point-min))
+    (let ((case-fold-search nil))
+      (while (search-forward "" nil t) ; group separator
+	(replace-match "")))))
 
 (defun kill-other-buffers ()
-"Kill all other buffers."
-	(interactive)
-	(mapc 'kill-buffer (delq (current-buffer) (buffer-list)))
-	(kill-dired-buffers))
+  "Kill all other buffers."
+  (interactive)
+  (mapc 'kill-buffer (delq (current-buffer) (buffer-list)))
+  (kill-dired-buffers))
 
 (defun shell-command-on-buffer ()
 "Asks for a command and executes it in inferior shell with current buffer as input."

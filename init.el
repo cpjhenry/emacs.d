@@ -6,7 +6,6 @@
 ;; /usr/local/share/emacs/site-lisp
 
 ;;; Code:
-
 ;; Initialize terminal
 (blink-cursor-mode -1)
 (delete-selection-mode t)
@@ -909,19 +908,20 @@
 
 ;; prog-mode
 (add-hook 'prog-mode-hook (lambda()
-	(setq show-trailing-whitespace t)  ; needs to be buffer local
-	(abbrev-mode)
-	(when (not (equal major-mode 'lisp-interaction-mode)) ; ie. *scratch*
-		(display-line-numbers-mode))
-	(goto-address-prog-mode)
-	(prettify-symbols-mode)
-	(show-paren-local-mode)
-	(if (featurep 'visual-fill-column) (visual-fill-column-mode -1))))
+  (setq show-trailing-whitespace t)  ; needs to be buffer local
+  (abbrev-mode)
+  (when (not (equal major-mode 'lisp-interaction-mode)) ; ie. *scratch*
+    (display-line-numbers-mode))
+  (electric-indent-local-mode)
+  (goto-address-prog-mode)
+  (prettify-symbols-mode)
+  (show-paren-local-mode)
+  (if (featurep 'visual-fill-column) (visual-fill-column-mode -1))))
 
 ;; Emacs lisp
 (add-hook 'emacs-lisp-mode-hook (lambda()
-	(setq 	tab-width 8
-		truncate-lines -1)))
+  (setq	tab-width 8
+	truncate-lines -1)))
 
 ;; bash
 (add-to-list 'auto-mode-alist '("\\.bash*" . sh-mode))

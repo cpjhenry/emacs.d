@@ -1,12 +1,14 @@
-;; text functions
+;;; text.el --- text functions
+;;; commentary:
 
+;;; code:
 (defun insert-tab-char ()
-	"Insert a tab char. (ASCII 9, \t)"
+	"Insert a tab char. (ASCII 9, \t)."
 	(interactive)
 	(insert "\t"))
 
 (defun unfill-paragraph ()
-	"Takes a multi-line paragraph and makes it into a single line of text."
+	"Take a multi-line paragraph and make it into a single line of text."
 	(interactive)
 	(let ((beg (point-min))
 	      (end (point-max))
@@ -27,7 +29,7 @@
 	(insert (format-time-string "%-d %B %Y")))
 
 (defun markdown-preview-file ()
-	"Run Marked on the current file and revert the buffer"
+	"Run `Marked' on the current file and revert the buffer."
 	(interactive)
 	(shell-command (format "open -a /Applications/Marked\\ 2.app %s"
 		(shell-quote-argument (buffer-file-name)))
@@ -99,25 +101,54 @@
 	    (message "Garbage in, garbage out.") )))
 
 ;; https://emacs.stackexchange.com/questions/51629/add-paragraph-numbers
-(defun number-paragraphs (&optional takefirst)
-"Numbers resp. renumber paragraphs.
+(defun number-paragraphs (parg &optional takefirst)
+  "Numbers resp. renumber paragraphs.
 
-If starting from already numbered, take that value as offset."
-	(interactive "*P")
-	(let ((counter 0)
-		(last 0))
-		(when  (looking-at "\\([0-9]+\\)\. ")
-			(setq counter (car (read-from-string  (match-string-no-properties 1))))
-			(forward-paragraph))
-		(while (and (forward-paragraph) (< last (point)))
-			(setq last (copy-marker (point)))
-			(backward-paragraph)
-			(skip-chars-forward " \t\r\n\f")
-			(when (looking-at "[0-9]+\. ")
-				(delete-region (match-beginning 0) (match-end 0)))
-			(insert (format "%s. " (1+ counter)))
-			(setq counter (1+ counter))
-			(goto-char last))))
+If starting from already numbered, take that value as offset.
+
+Prefix removes numbering."
+  (interactive "*P")
+
+  ;; HACK un-number first,
+  ;; renumber existing numbers isn't quite working
+  (unnumber-paragraphs)
+
+  (save-excursion (let ((prefix (car parg))) (cond
+      ((not prefix) (let ((counter 0) (last 0))
+	(when  (looking-at "\\([0-9]+\\)\. ")
+	  (setq counter (car (read-from-string  (match-string-no-properties 1))))
+	  (forward-paragraph))
+	(while (and (forward-paragraph) (< last (point)))
+	  (setq last (copy-marker (point)))
+	  (backward-paragraph)
+	  (skip-chars-forward " \t\r\n\f")
+	  (when (looking-at "[0-9]+\. ")
+	    (delete-region (match-beginning 0) (match-end 0)))
+	  (insert (format "%s. " (1+ counter)))
+	  (setq counter (1+ counter))
+	  (goto-char last))))
+      ;((= prefix 4)) ...
+      ))))
+
+(defun unnumber-paragraphs ()
+"Remove numbering from paragraphs."
+	(interactive)
+	(save-excursion
+	(replace-regexp "^[0-9]+\. " "")))
+
+(defun narrow-to-section ()
+  "Narrow buffer to text section."
+  (interactive)
+  (save-excursion
+    (push-mark)
+
+    ;; HACK - do something at end of file,
+    ;; or when there's no marker
+
+    (search-forward "") ; group separator
+    (left-char 2)
+    (narrow-to-region (region-beginning) (region-end))
+    (deactivate-mark)))
 
 ;; https://emacsnotes.wordpress.com/2023/09/14/view-emacs-news-files-as-info-manual-too/
 (defun view-text-file-as-info-manual ()
@@ -200,7 +231,7 @@ like \\[yank-pop] does, but in the opposite direction."
 ;; https://speechcode.com/blog/narrow-to-focus/
 (defun narrow-to-focus (start end)
 "If the region is active, narrow to region, marking it (and only
-it) for the future.  If the mark is not active, narrow to the
+it) for the future. If the mark is not active, narrow to the
 region that was the most recent focus."
 	(interactive "r")
 	(cond ((use-region-p)
