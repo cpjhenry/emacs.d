@@ -89,8 +89,6 @@
 	(set-buffer-file-coding-system 'utf-8-unix)
 	(set-buffer-modified-p nil))
 
-
-
 
 ;; modeline functions
 ;; https://jiewawa.me/2024/10/useful-emacs-commands-for-reading/

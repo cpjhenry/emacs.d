@@ -83,3 +83,5 @@
        (eww "https://services.swpc.noaa.gov/text/"))
 
 ;;; scripts.el ends here
+
+; LocalWords:  cbc
