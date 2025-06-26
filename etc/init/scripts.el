@@ -54,8 +54,12 @@
 	(switch-to-buffer "*Virgo*")
 	(shell-command "fw -u" (current-buffer))
 	(text-mode)
+
 	(turn-off-cursor)
-	(view-mode)
+	(text-scale-increase 1)
+	(visual-fill-column-mode)
+	(toggle-fill-column-center)
+	;(view-mode); interferes with spell-check
 
 	(switch-to-buffer "*Aries*")
 	(shell-command "fw -uf aries |perl -p -e 'chomp if eof'" (current-buffer))
