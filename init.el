@@ -43,6 +43,7 @@
 		mac-right-command-modifier 'alt	; Alt
 		mac-right-option-modifier nil)	; pass-thru
 
+	;; HACK keymap-global-set
 	(global-set-key (kbd "s-c") 'ns-copy-including-secondary)	; ⌘-c = Copy
 	(global-set-key (kbd "s-x") 'kill-region)			; ⌘-x = Cut
 	(global-set-key (kbd "s-v") 'yank)				; ⌘-v = Paste
@@ -90,6 +91,7 @@
 		:help "Show macOS Character Palette."
 		:visible (eq window-system 'ns)])
 
+	;; Font
 	(add-to-list 'default-frame-alist '(font . "Inconsolata 21")))
 
 (when *gnu*
@@ -1158,16 +1160,20 @@
 
 
 ;; spell checking
+(bind-key "<f7>" 'ispell-buffer)
+
 (use-package jinx
 	:demand	t
 	:pin gnu ; source from 'gnu' package archives only
 	:if (executable-find "aspell")
-	:bind (	("M-$" . jinx-correct)
-		("C-M-$" . jinx-languages))
+	:bind ( ;([remap ispell-word] . jinx-correct)
+	        ("M-$" . jinx-correct)
+		("C-M-$" . jinx-languages)
+		("<f7>" . jinx-correct-all))
 	:hook	(emacs-startup . global-jinx-mode)
 	:config	(load "init/jinx-routines")
-	(add-hook 'jinx-mode-hook #'my/jinx-add-ispell-localwords)
-	(setf (alist-get ?* jinx--save-keys) #'my/jinx-save-as-ispell-localword))
+		(add-hook 'jinx-mode-hook #'my/jinx-add-ispell-localwords)
+		(setf (alist-get ?* jinx--save-keys) #'my/jinx-save-as-ispell-localword))
 
 
 ;; print functions
@@ -1356,7 +1362,6 @@
 
 
 ;; Shortcuts
-(bind-key "<f7>"	'ispell-buffer)
 (bind-key "<f8>"	'list-bookmarks)
 (bind-key "<f9>"	'shortcuts-mode)
 
@@ -1502,4 +1507,4 @@
 ; LocalWords:  vcusepackage latexmk synctex bibtex cond xah dirs Ctrl
 ; LocalWords:  remotehost flycheck modeline mori featurep cbc smex
 ; LocalWords:  setq's setopt mailutils imagemagick usr dunnet Async
-; LocalWords:  dir fullscreen dropbox
+; LocalWords:  dir fullscreen dropbox keymap
