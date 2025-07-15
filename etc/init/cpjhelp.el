@@ -36,6 +36,7 @@ C-q C-l      			<FF>
 C-x [ | C-x ]			<FF> bk | fwd
 
 M-:						evaluate (interactive)
+C-M-x					evaluate current function
 C-M-;					evaluate region
 C-x C-e					evaluate last standard expression (sexp)
 

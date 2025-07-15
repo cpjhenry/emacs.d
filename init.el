@@ -708,6 +708,8 @@
 	:hook	(prog-mode . hl-todo-mode)
 		(emacs-lisp-mode . hl-todo-mode))
 
+(use-package list-projects)
+
 (use-package lorem-ipsum
 	:init	(easy-menu-add-item global-map '(menu-bar edit)
 		["Lorem-ipsum" lorem-ipsum-insert-paragraphs :help "Insert..."])
@@ -1274,7 +1276,7 @@
 
 ;; mouse
 ;; https://github.com/purcell/disable-mouse
-(setq	mouse-yank-at-point t
+(setopt	mouse-yank-at-point t
 	mouse-wheel-progressive-speed nil
 	mouse-wheel-scroll-amount '(1))
 

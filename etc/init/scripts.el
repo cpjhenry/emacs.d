@@ -50,53 +50,53 @@
 	(shell-command "wx-mode"))
 
 (defun fw () "Weekly Forecast."
-	(interactive)
-	(switch-to-buffer "*Virgo*")
-	(shell-command "fw -u" (current-buffer))
-	(text-mode)
+  (interactive)
+  (switch-to-buffer "*Virgo*")
+  (shell-command "fw -u" (current-buffer))
+  (text-mode)
 
-	(turn-off-cursor)
-	(text-scale-increase 1)
-	(visual-fill-column-mode)
-	(toggle-fill-column-center)
-	(view-mode)
+  (turn-off-cursor)
+  (text-scale-increase 1)
+  (visual-fill-column-mode)
+  (toggle-fill-column-center)
+  (view-mode)
 
-	;; leaves view-mode 'on' (keys work), but otherwise modifiable by spell-checker
-	(setq-local inhibit-read-only t)
+  ;; leaves view-mode 'on' (keys work), but otherwise modifiable by spell-checker
+  (setq-local inhibit-read-only t)
 
-	(switch-to-buffer "*Aries*")
-	(shell-command "fw -uf aries |perl -p -e 'chomp if eof'" (current-buffer))
-	(text-mode)
+  (switch-to-buffer "*Aries*")
+  (shell-command "fw -uf aries |perl -p -e 'chomp if eof'" (current-buffer))
+  (text-mode)
 
-	;; First approach, automate spell and copying.
-	;; Doesn't work, at least not with Jinx, which spawns its own process.
-	;(ispell-buffer)
-	;(kill-ring-save (point-min) (point-max))
-	;(kill-buffer (current-buffer))
-	;(message "Forecast saved to clipboard.")
+  ;; First approach, automate spell and copying.
+  ;; Doesn't work, at least not with Jinx, which spawns its own process.
 
-	;; Second approach, leaving spell-checking and copying to user.
-	(mark-whole-buffer)
-	(view-mode)
-	(setq-local inhibit-read-only t))
+  ;(ispell-buffer)
+  ;(kill-ring-save (point-min) (point-max))
+  ;(kill-buffer (current-buffer))
+  ;(message "Forecast saved to clipboard.")
+
+  ;; Second approach, leaving spell-checking and copying to user.
+  (view-mode)
+  (setq-local inhibit-read-only t))
 
 (defun az () "Monthly Forecast."
-	(interactive)
-	(let ((output "Monthly Forecast"))
-		(switch-to-buffer (make-temp-name ""))
-		(shell-command "az -u" (current-buffer))
-		(markdown-preview output)
-		(kill-buffer (current-buffer))
-		(kill-buffer output)
+  (interactive)
+  (let ((output "Monthly Forecast"))
+    (switch-to-buffer (make-temp-name ""))
+    (shell-command "az -u" (current-buffer))
+    (markdown-preview output)
+    (kill-buffer (current-buffer))
+    (kill-buffer output)
 
-		(switch-to-buffer-matching output)
-		(visual-line-mode)
-		(eww-unfill-paragraph)
-		(visual-fill-column-mode)
-		(toggle-fill-column-center)
+    (switch-to-buffer-matching output)
+    (visual-line-mode)
+    (eww-unfill-paragraph)
+    (visual-fill-column-mode)
+    (toggle-fill-column-center)
 
-		;; leaves view-mode 'on' (keys work), but otherwise modifiable by spell-checker
-		(setq-local inhibit-read-only t)))
+    ;; leaves view-mode 'on' (keys work), but otherwise modifiable by spell-checker
+    (setq-local inhibit-read-only t)))
 
 (defun wwv () "Geophysical alerts and space weather."
        (interactive)
