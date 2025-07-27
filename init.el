@@ -1095,6 +1095,10 @@
 ;; (use-package org-autolist ; pressing "Return" will insert a new list item automatically
 ;; 	:hook (org-mode . org-autolist-mode))
 
+(use-package org-autoexport
+  :defer t
+  :hook (org-mode . org-autoexport-mode))
+
 (use-package org-chef
 	:disabled
 	:if *natasha* :defer t)
@@ -1109,6 +1113,9 @@
 	:if	*natasha*
 	:custom	(org-download-heading-lvl nil)
 		(org-download-image-org-width 925))
+
+(require 'org-pretty-table)
+(add-hook 'org-mode-hook (lambda () (org-pretty-table-mode)))
 
 (require 'ox-latex)
 (add-to-list 'org-latex-classes '("letter" "\\documentclass{letter}") t)
@@ -1304,9 +1311,9 @@
 
 
 ;; alternate keys
-(bind-key "C-w"     'kill-region-or-backward-word) ; kill-region
-(bind-key "M-w"     'kill-region-or-thing-at-point) ; kill-ring-save
-(bind-key "M-j"     'join-line) ; default-indent-new-line (see 'C-M-j')
+(bind-key "C-w" 'kill-region-or-backward-word) ; kill-region
+(bind-key "M-w" 'kill-region-or-thing-at-point) ; kill-ring-save
+(bind-key "M-j" 'join-line) ; default-indent-new-line (see 'C-M-j')
 
 (global-set-key (kbd "C-s")	'isearch-forward-regexp)
 (global-set-key (kbd "C-r")	'isearch-backward-regexp)
@@ -1317,6 +1324,14 @@
 (global-set-key (kbd "M-<f11>")	'toggle-modeline)
 
 (global-set-key (kbd "A-<return>") (kbd "M-<return>"))
+
+;; https://www.matem.unam.mx/~omar/apropos-emacs.html#writing-experience
+(bind-key "C-d" 'delete-forward-char)
+(bind-key "M-c" 'capitalize-dwim)
+(bind-key "M-K" 'kill-paragraph)
+(bind-key "C-x M-t" 'transpose-paragraphs)
+(global-set-key [remap mark-word] 'mark-whole-word)
+(global-set-key [remap forward-word] 'forward-to-word)
 
 ;; quit cleanly
 (global-set-key (kbd "C-x C-g") 'keyboard-quit)
@@ -1331,7 +1346,7 @@
 
 ;; Disable the "numeric argument". Prefer universal argument (C-u) prefix.
 (dolist (prefix '("C-" "M-" "C-M-"))
-  (keymap-global-unset (concat prefix "-"))
+  ;(keymap-global-unset (concat prefix "-"))
   (dotimes (i 10) (keymap-global-unset (concat prefix (number-to-string i)))))
 
 ;; <f10>	menu-bar-open

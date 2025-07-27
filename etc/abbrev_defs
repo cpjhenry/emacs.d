@@ -29,8 +29,8 @@
   '(
     ("asterism" "#+LATEX: \\begin{center}\\asterism\\end{center}" nil :count 6)
     ("dinkus" "#+LATEX: \\begin{center}* * *\\end{center}" nil :count 2)
-    ("hdr" "#+LATEX_HEADER:" nil :count 8)
-    ("lat" "#+LATEX:" nil :count 8)
+    ("hdr" "#+LATEX_HEADER:" nil :count 13)
+    ("lat" "#+LATEX:" nil :count 15)
     ("mapleleaf" "\\twemoji{maple leaf}" nil :count 0)
     ("myabstract" "#+LATEX: \\begin{abstract}
 #+LATEX: \\noindent\\parindent=0pt\\parskip=.5\\baselineskip plus 2pt
@@ -79,6 +79,7 @@
 #+LATEX_HEADER: \\usepackage{circledsteps}
 #+LATEX_HEADER: \\def\\opn{\\ensuremath{\\mathrel{\\subseteq\\!\\!\\!\\!\\!\\raisebox{1pt}{$\\circ$}}}}
 #+LATEX_HEADER: \\def\\cls{\\ensuremath{\\mathrel{\\subseteq\\!\\!\\!\\!\\!\\raisebox{1pt}{$\\bullet$}}}}
+#+LATEX_HEADER: \\def\\M{.....}
 :END:" nil :count 0)
     ("mytitle" "#+TITLE: 
 #+AUTHOR: Paul J Henry

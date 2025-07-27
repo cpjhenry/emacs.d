@@ -1,5 +1,7 @@
-;;; PRINT functions
+;;; print.el --- PRINT functions
+;;; commentary:
 
+;;; code:
 (setq ps-page-dimensions-database '(
 	(a4 595 842 "A4")
 	(a5 420 595 "A5")
