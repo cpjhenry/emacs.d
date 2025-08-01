@@ -30,6 +30,7 @@
 
 (defconst EMACS29 (>= emacs-major-version 29) "Running Emacs 29 or greater.")
 (defconst EMACS30 (>= emacs-major-version 30) "Running Emacs 30 or greater.")
+(defconst EMACS31 (>= emacs-major-version 31) "Running Emacs 31 or greater.")
 
 (if (boundp 'emacs-edition) (message "Running '%s'." emacs-edition))
 (load "rc/me" 'noerror)
@@ -74,6 +75,8 @@
 
 	;; Disable toggle-frame-fullscreen
 	(global-unset-key (kbd "<f11>"))
+	;; FIXME - Errors with EMACS30
+	(put 'toggle-frame-fullscreen 'disabled t)
 
 	;; Line movement
 	(global-set-key (kbd "<home>") nil) ; 'move-beginning-of-line
@@ -274,7 +277,7 @@
 (setopt	Man-notify-method 'pushy)
 
 (require 'prog-mode)
-;; HACK (global-prettify-symbols-mode)
+(global-prettify-symbols-mode)
 (setopt	prettify-symbols-unprettify-at-point 'right-edge)
 
 (add-hook 'before-save-hook 'time-stamp)
@@ -490,16 +493,15 @@
 		"\\|\\.DS_Store$\\|\\.old$\\|\\.synctex\\.gz$\\|\\.log$\\|\\.tex$"))
 		(dired-omit-verbose nil)
 	:bind (	:map dired-mode-map
-		("q" . kill-dired-buffers)
-	)
+		("q" . kill-dired-buffers))
 	:hook	(dired-mode . dired-omit-mode)
 	:config	(unless *w32* (setq dired-kill-when-opening-new-dired-buffer t))
 		(defalias 'dired-find-file 'dired-find-alternate-file)
 		(advice-add 'dired-find-file-other-window
-			:after (lambda (&rest r) (delete-other-windows)))
+		  :after (lambda (&rest r) (delete-other-windows)))
 		(if (keymap-lookup dired-mode-map "% s")
-			(message "Error: %% s already defined in dired-mode-map")
-			(define-key dired-mode-map "%s" 'my-dired-substspaces))
+		  (message "Error: %% s already defined in dired-mode-map")
+		  (define-key dired-mode-map "%s" 'my-dired-substspaces))
 		(setopt dired-omit-files (concat dired-omit-files "\\|^\\.localized$"))
 		(delete "~" dired-omit-extensions)); show backup files
 
@@ -620,29 +622,35 @@
 ;; :config
 
 (use-package which-key
-	:config (which-key-mode)
-	(defalias 'which-key-alias 'which-key-add-key-based-replacements))
+  :custom (which-key-idle-delay 0.5)
+  :config (which-key-mode)
+  	  (defalias 'which-key-alias 'which-key-add-key-based-replacements))
+
+(use-package casual
+  :bind (("M-o" . casual-editkit-main-tmenu)
+	 :map calendar-mode-map
+	 ("M-o" . casual-calendar)))
 
 (use-package dictionary
-	:ensure	nil
-	:defer	t
-	:custom	(dictionary-server "dict.org"))
+  :ensure nil
+  :defer  t
+  :custom (dictionary-server "dict.org"))
 
 (use-package elpher
-	:bind (	:map elpher-mode-map
-		("[" . elpher-back)
-		("C-<up>" . my/backward-paragraph)
-		("C-<down>" . my/forward-paragraph))
-	:hook	(elpher-mode . (lambda()
-			(setq-local left-margin-width 10)
-			(set-window-buffer nil (current-buffer))))
-	:init	(easy-menu-add-item global-map '(menu-bar tools)
-			["Gopher" elpher :help "Browse Gopherspace"] 'browse-web)
-	:config	(advice-add 'eww-browse-url :around 'elpher:eww-browse-url))
+  :bind   (	:map elpher-mode-map
+	  ("[" . elpher-back)
+	  ("C-<up>" . my/backward-paragraph)
+	  ("C-<down>" . my/forward-paragraph))
+  :hook	  (elpher-mode . (lambda()
+	  (setq-local left-margin-width 10)
+	  (set-window-buffer nil (current-buffer))))
+  :init	  (easy-menu-add-item global-map '(menu-bar tools)
+	    ["Gopher" elpher :help "Browse Gopherspace"] 'browse-web)
+  :config (advice-add 'eww-browse-url :around 'elpher:eww-browse-url))
 
 (use-package eww
-	:ensure nil
-	:custom	(browse-url-browser-function 'eww-browse-url)
+  :ensure	nil
+  :custom	(browse-url-browser-function 'eww-browse-url)
 		(eww-auto-rename-buffer t)
 		(eww-bookmarks-directory (concat user-emacs-directory "etc/"))
 		(eww-readable-adds-to-history nil)
@@ -655,7 +663,7 @@
 		(shr-indentation 2)	; Left-side margin
 		(shr-width nil)		; Fold text for comfiness
 		(url-privacy-level '(email agent lastloc))
-	:bind (	("C-x g" . browse-url-at-point)
+  :bind (	("C-x g" . browse-url-at-point)
 		:map eww-mode-map
 		("[" . eww-back-url)
 		("]" . eww-forward-url)
@@ -664,67 +672,67 @@
 		("C-<down>" . my/forward-paragraph)
 		:map eww-bookmark-mode-map
 		("w" . eww))
-	:config	(url-setup-privacy-info)
-	(add-hook 'eww-after-render-hook 'eww-readable) ;; default to 'readable-mode'
-	(use-package ace-link :config (ace-link-setup-default))) ;; alternative to tabbing
+  :config	(url-setup-privacy-info)
+  		(add-hook 'eww-after-render-hook 'eww-readable) ;; default to 'readable-mode'
+		(use-package ace-link :config (ace-link-setup-default))) ;; alternative to tabbing
 
 (use-package flycheck
-	:unless *w32*
-	:hook	(emacs-lisp-mode . flycheck-mode)
-	:init	(require 'checkdoc)
-		(setq checkdoc-force-docstrings-flag nil)
-	:config	(which-key-alias "C-c !" "flycheck")
+  :unless *w32*
+  :hook	(emacs-lisp-mode . flycheck-mode)
+  :init	(require 'checkdoc)
+  	(setq checkdoc-force-docstrings-flag nil)
+  :config	(which-key-alias "C-c !" "flycheck")
 		(if (featurep 'ibuf-ext)
 		    (add-to-list 'ibuffer-never-show-predicates "^\\*Flycheck error messages\\*"))
 		(if (featurep 'ido)
 		    (add-to-list 'ido-ignore-buffers "*Flycheck error messages*")))
 
 (use-package free-keys :defer t
-	:config	(add-to-list 'free-keys-modifiers "s" t)
+  :config	(add-to-list 'free-keys-modifiers "s" t)
 		(add-to-list 'free-keys-modifiers "A" t))
 
 (use-package go-mode :defer t)
 
 (use-package google-this
-	:disabled
-	:init	(which-key-alias "C-c /" "google-this")
-	:config	(google-this-mode))
+  :disabled
+  :init		(which-key-alias "C-c /" "google-this")
+  :config	(google-this-mode))
 
 (use-package google-translate
-	:bind (	("C-c t t" . google-translate-at-point)
+  :bind (	("C-c t t" . google-translate-at-point)
 		("C-c t <RET>" . google-translate-smooth-translate))
-	:init	(which-key-alias "C-c t" "google-translate")
-		(setq google-translate-translation-directions-alist '(
-			("fr" . "en") ("en" . "fr"))))
+  :init	(which-key-alias "C-c t" "google-translate")
+	(setq google-translate-translation-directions-alist '(
+	  ("fr" . "en") ("en" . "fr"))))
 
 (use-package hl-todo
-	:custom	(hl-todo-keyword-faces `(
+  :custom	(hl-todo-keyword-faces `(
 		("TODO"       warning bold)
 		("FIXME"      error bold)
 		("HACK"       font-lock-constant-face bold)
 		("REVIEW"     font-lock-keyword-face bold)
 		("NOTE"       success bold)
 		("DEPRECATED" font-lock-doc-face bold)))
-	:hook	(prog-mode . hl-todo-mode)
+  :hook		(prog-mode . hl-todo-mode)
 		(emacs-lisp-mode . hl-todo-mode))
 
 (use-package list-projects)
 
 (use-package lorem-ipsum
-	:init	(easy-menu-add-item global-map '(menu-bar edit)
-		["Lorem-ipsum" lorem-ipsum-insert-paragraphs :help "Insert..."])
-	:config (setq-default lorem-ipsum-sentence-separator " "))
+  :init	(easy-menu-add-item global-map '(menu-bar edit)
+	  ["Lorem-ipsum" lorem-ipsum-insert-paragraphs :help "Insert..."])
+  :config (setq-default lorem-ipsum-sentence-separator " "))
 
 (use-package mistty
-	:bind ( :map mistty-prompt-map
-		("C-p" . mistty-send-key)
-		("C-n" . mistty-send-key)
-		("C-r" . mistty-send-key)
-		("M-p" . nil)
-		("M-n" . nil)
-		("M-r" . nil))
-	:hook	(mistty-after-process-end . mistty-kill-buffer)
-		(mistty-mode . goto-address-mode))
+  :bind ( :map mistty-prompt-map
+	("C-p" . mistty-send-key)
+	("C-n" . mistty-send-key)
+	("C-r" . mistty-send-key)
+	("M-p" . nil)
+	("M-n" . nil)
+	("M-r" . nil))
+  :hook	(mistty-after-process-end . mistty-kill-buffer)
+	(mistty-mode . goto-address-mode))
 
 (use-package shortcuts-mode)
 
@@ -918,7 +926,6 @@
     (display-line-numbers-mode))
   (electric-indent-local-mode)
   (goto-address-prog-mode)
-  (prettify-symbols-mode)
   (show-paren-local-mode)
   (if (featurep 'visual-fill-column) (visual-fill-column-mode -1))))
 
@@ -1230,9 +1237,9 @@
 
 ;; <home> key / Ctrl-a
 (if (key-binding (kbd "<home>"))
-	(global-set-key (kbd "<home>") 'back-to-indentation-or-beginning-of-line))
+  (global-set-key (kbd "<home>") 'back-to-indentation-or-beginning-of-line))
 (if (key-binding (kbd "s-<left>"))
-	(global-set-key (kbd "s-<left>") 'back-to-indentation-or-beginning-of-line))
+  (global-set-key (kbd "s-<left>") 'back-to-indentation-or-beginning-of-line))
 (global-set-key (kbd "C-a") 'back-to-indentation-or-beginning-of-line)
 
 (global-set-key (kbd "C-<home>" ) 'beginning-of-buffer)
@@ -1326,12 +1333,12 @@
 (global-set-key (kbd "A-<return>") (kbd "M-<return>"))
 
 ;; https://www.matem.unam.mx/~omar/apropos-emacs.html#writing-experience
-(bind-key "C-d" 'delete-forward-char)
-(bind-key "M-c" 'capitalize-dwim)
-(bind-key "M-K" 'kill-paragraph)
-(bind-key "C-x M-t" 'transpose-paragraphs)
+(bind-key "C-d" 'delete-forward-char) ; better replacement for delete-char
+(bind-key "M-c" 'capitalize-dwim) ; capitalize-word
+(bind-key "M-K" 'kill-paragraph) ; M-k capitalizes sentence
+(bind-key "C-x M-t" 'transpose-paragraphs) ; C-x C-t transpose-lines
 (global-set-key [remap mark-word] 'mark-whole-word)
-(global-set-key [remap forward-word] 'forward-to-word)
+(global-set-key [remap forward-word] 'forward-to-word) ; leaves point in better spot
 
 ;; quit cleanly
 (global-set-key (kbd "C-x C-g") 'keyboard-quit)
@@ -1340,13 +1347,9 @@
 ;; Disable alternate suspend-frame
 (global-unset-key (kbd "C-x C-z"))
 
-;; Disable fullscreen frames
-;; FIXME - Errors with EMACS30
-(put 'toggle-frame-fullscreen 'disabled t)
-
 ;; Disable the "numeric argument". Prefer universal argument (C-u) prefix.
 (dolist (prefix '("C-" "M-" "C-M-"))
-  ;(keymap-global-unset (concat prefix "-"))
+  ;(keymap-global-unset (concat prefix "-")) ; negative-argument
   (dotimes (i 10) (keymap-global-unset (concat prefix (number-to-string i)))))
 
 ;; <f10>	menu-bar-open
@@ -1357,6 +1360,7 @@
 (dolist (key '("C-<f10>" "M-<f10>"))
   (global-unset-key (kbd key)))
 
+;; Cleanup abbrev menu
 (dolist (key '("C-a" "+" "-" "'"))
   (keymap-global-unset (concat "C-x a " key)))
 
