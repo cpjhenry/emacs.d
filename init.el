@@ -377,13 +377,13 @@
 	(when buffer-file-name (save-buffer)))
 (defadvice other-window (before other-window-now activate)
 	(when buffer-file-name (save-buffer)))
-(defadvice windmove-up (before other-window-now activate)
-	(when buffer-file-name (save-buffer)))
-(defadvice windmove-down (before other-window-now activate)
-	(when buffer-file-name (save-buffer)))
 (defadvice windmove-left (before other-window-now activate)
 	(when buffer-file-name (save-buffer)))
 (defadvice windmove-right (before other-window-now activate)
+	(when buffer-file-name (save-buffer)))
+(defadvice windmove-up (before other-window-now activate)
+	(when buffer-file-name (save-buffer)))
+(defadvice windmove-down (before other-window-now activate)
 	(when buffer-file-name (save-buffer)))
 
 ;; don't immediately display these buffers
@@ -431,13 +431,15 @@
 		(ibuffer-saved-filter-groups (quote (("home"
 			("Dired" (mode . dired-mode) )
 			("Emacs" (or (name . "^\\*scratch\\*$")
-				(name . "^\\*Messages\\*$")
+			        (name . "^\\*Messages\\*$")
 				(name . "\\.el")))
+			("Shell" (or (mode . sh-mode)
+			        (mode . mistty-mode)))
 			("Text" (or (name . "\\.txt")
 				(name . "\\.text")))
 			("Markdown" (name . "\\.md"))
-			("Org" (name . "\\.org"))
-			("TeX" (name . "\\.tex"))
+			("Org"  (name . "\\.org"))
+			("TeX"  (name . "\\.tex"))
 			("ePub" (mode . nov-mode))
 			("Planner" (or (mode . calendar-mode)
 				(mode . diary-mode)
@@ -447,7 +449,7 @@
 				(name . "^\\*Virgo\\*")
 				(name . "^calendar@*")))
 			;("erc" (mode . erc-mode))
-			("Eww"   (mode . eww-mode))
+			("Eww"  (mode . eww-mode))
 			("gnus" (or (mode . message-mode)
 				(mode . bbdb-mode)
 				(mode . mail-mode)
@@ -629,7 +631,11 @@
 (use-package casual
   :bind (("M-o" . casual-editkit-main-tmenu)
 	 :map calendar-mode-map
-	 ("M-o" . casual-calendar)))
+	 ("M-o" . casual-calendar-tmenu)
+	 :map dired-mode-map
+	 ("M-o" . casual-dired-tmenu)
+	 :map Info-mode-map
+	 ("M-o" . casual-info-tmenu)))
 
 (use-package dictionary
   :ensure nil
@@ -676,16 +682,17 @@
   		(add-hook 'eww-after-render-hook 'eww-readable) ;; default to 'readable-mode'
 		(use-package ace-link :config (ace-link-setup-default))) ;; alternative to tabbing
 
-(use-package flycheck
+(use-package flycheck ; on-the-fly syntax checking
   :unless *w32*
-  :hook	(emacs-lisp-mode . flycheck-mode)
-  :init	(require 'checkdoc)
-  	(setq checkdoc-force-docstrings-flag nil)
-  :config	(which-key-alias "C-c !" "flycheck")
-		(if (featurep 'ibuf-ext)
-		    (add-to-list 'ibuffer-never-show-predicates "^\\*Flycheck error messages\\*"))
-		(if (featurep 'ido)
-		    (add-to-list 'ido-ignore-buffers "*Flycheck error messages*")))
+  :custom (flycheck-keymap-prefix "!")
+  :hook	  (emacs-lisp-mode . flycheck-mode)
+  :init	  (require 'checkdoc)
+  	  (setq checkdoc-force-docstrings-flag nil)
+  :config (which-key-alias "C-x !" "flycheck")
+  	  (if (featurep 'ibuf-ext)
+	    (add-to-list 'ibuffer-never-show-predicates "^\\*Flycheck error messages\\*"))
+	  (if (featurep 'ido)
+	    (add-to-list 'ido-ignore-buffers "*Flycheck error messages*")))
 
 (use-package free-keys :defer t
   :config	(add-to-list 'free-keys-modifiers "s" t)
@@ -1299,18 +1306,26 @@
 (unless *w32* (mouse-avoidance-mode 'banish))
 
 (when *mac*
-	;; https://lmno.lol/alvaro/hey-mouse-dont-mess-with-my-emacs-font-size
-	(global-set-key (kbd "<pinch>") 'ignore)
-	(global-set-key (kbd "<C-wheel-up>") 'ignore)
-	(global-set-key (kbd "<C-wheel-down>") 'ignore))
+  ;; https://lmno.lol/alvaro/hey-mouse-dont-mess-with-my-emacs-font-size
+  (global-set-key (kbd "<pinch>") 'ignore)
+  (global-set-key (kbd "<C-wheel-up>") 'ignore)
+  (global-set-key (kbd "<C-wheel-down>") 'ignore))
 
 
 ;; window navigation
-(when (fboundp 'windmove-default-keybindings)
-(global-set-key (kbd "C-c <left>")  'windmove-left)
-(global-set-key (kbd "C-c <right>") 'windmove-right)
-(global-set-key (kbd "C-c <up>")    'windmove-up)
-(global-set-key (kbd "C-c <down>")  'windmove-down))
+(use-package windmove
+  :ensure nil
+  :bind
+  (("C-M-<left>". windmove-left)
+   ("C-M-<right>". windmove-right)
+   ("C-M-<up>". windmove-up)
+   ("C-M-<down>". windmove-down)))
+
+;; (when (fboundp 'windmove-default-keybindings)
+;; (global-set-key (kbd "C-c <left>")  'windmove-left)
+;; (global-set-key (kbd "C-c <right>") 'windmove-right)
+;; (global-set-key (kbd "C-c <up>")    'windmove-up)
+;; (global-set-key (kbd "C-c <down>")  'windmove-down))
 
 ;; Winner mode is a global minor mode that records the changes in the window configuration.
 ;; https://www.gnu.org/software/emacs/manual/html_node/emacs/Window-Convenience.html
@@ -1357,7 +1372,7 @@
 ;; C-<f10>	buffer-menu-open
 ;; M-<f10>	toggle-frame-maximized
 
-(dolist (key '("C-<f10>" "M-<f10>"))
+(dolist (key '("C-<f10>"))
   (global-unset-key (kbd key)))
 
 ;; Cleanup abbrev menu
