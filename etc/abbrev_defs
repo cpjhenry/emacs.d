@@ -79,7 +79,8 @@
 #+LATEX_HEADER: \\usepackage{circledsteps}
 #+LATEX_HEADER: \\def\\opn{\\ensuremath{\\mathrel{\\subseteq\\!\\!\\!\\!\\!\\raisebox{1pt}{$\\circ$}}}}
 #+LATEX_HEADER: \\def\\cls{\\ensuremath{\\mathrel{\\subseteq\\!\\!\\!\\!\\!\\raisebox{1pt}{$\\bullet$}}}}
-#+LATEX_HEADER: \\def\\M{.....}
+#+LATEX_HEADER: \\def\\fived{.....}
+#+LATEX_HEADER: \\def\\longdash{\\textemdash{}\\textemdash{}\\textemdash{}}
 :END:" nil :count 0)
     ("mytitle" "#+TITLE: 
 #+AUTHOR: Paul J Henry

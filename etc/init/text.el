@@ -150,6 +150,14 @@ Prefix removes numbering."
     (narrow-to-region (region-beginning) (region-end))
     (deactivate-mark)))
 
+(defun replace-double-spaces ()
+  "Replace double spaces in the buffer with single ones."
+  (interactive)
+  (save-excursion
+    ;; HACK - region only, if selected.
+    (goto-char (point-min))
+    (replace-regexp "  " " ")))
+
 (defun mark-from-beginning-of-buffer ()
   "Marks the region from the beginning of the buffer to point."
   (interactive)
