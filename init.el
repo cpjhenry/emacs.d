@@ -973,7 +973,9 @@
 	:bind ( :map markdown-mode-map
 		("M-p" . nil)
 		("C-c p" . markdown-preview-file)
-		("C-x x o" . markdown-convert-buffer-to-org))
+		("C-x x o" . markdown-convert-buffer-to-org)
+		("C-<up>" . my/backward-paragraph)
+		("C-<down>" . my/forward-paragraph))
 	:mode	(("README\\.md\\'" . gfm-mode)
 		("\\.md\\'" . markdown-mode)
 		("\\.markdown\\'" . markdown-mode)
@@ -1063,6 +1065,10 @@
 (define-key org-mode-map (kbd "M-]") 'org-forward-heading-same-level)
 (define-key org-mode-map (kbd "C-M-[" ) 'outline-up-heading)
 (define-key org-mode-map (kbd "C-M-]") (lambda()(interactive)(org-end-of-subtree)))
+
+;; HACK - Add mapping for C-up/down. Rethink whether this needs to be global. Use:
+;;	(global-set-key [remap backward-paragraph] 'my/backward-paragraph)
+;;	(global-set-key [remap forward-paragraph] 'my/forward-paragraph)
 
 ;; alternative mapping for 'org-support-shift-select'
 (define-key org-mode-map (kbd "S-<left>") nil)

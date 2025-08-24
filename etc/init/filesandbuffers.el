@@ -365,6 +365,19 @@
 	(unfill-paragraph)
 	(read-only-mode))
 
+;; https://old.reddit.com/r/emacs/comments/17h4h4k/how_to_preview_buffer_with_html_in_ewwbrowser/
+(defun eww-render-buffer ()
+  "Render the current buffer in EWW."
+  (interactive)
+  (let* ((html (buffer-substring-no-properties (point-min) (point-max)))
+    (source (buffer-name))
+    (buf (generate-new-buffer (concat "eww: " source))))
+    (with-current-buffer buf
+      (insert html)
+      (goto-char (point-min))
+      (eww-display-html 'utf-8 source nil nil buf))
+    (switch-to-buffer buf)))
+
 
 ;; https://vishesh.github.io/emacs/editors/2023/01/25/lean-emacs-config.html
 ;; (see bindings for: "C-a" "C-w" "M-w" "M-j")
