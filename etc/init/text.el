@@ -238,3 +238,10 @@ from point."
 (defun align-equals (begin end)
 	(interactive "r")
 	(align-regexp begin end "\\(\\s-*\\)=" 1 1))
+
+(defun indent-whole-buffer ()
+  "Indent the entire buffer without affecting point or mark."
+  (interactive)
+  (save-excursion
+    (save-restriction
+      (indent-region (point-min) (point-max)))))

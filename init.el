@@ -327,10 +327,7 @@
 (with-eval-after-load 'view
 	(define-key view-mode-map (kbd "j")	'View-scroll-line-forward)
 	(define-key view-mode-map (kbd "k")	'my/View-scroll-line-backward)
-	(define-key view-mode-map (kbd "q")	'View-kill-and-leave)
-
-	(define-key view-mode-map (kbd "C-<up>")   'my/backward-paragraph)
-	(define-key view-mode-map (kbd "C-<down>") 'my/forward-paragraph))
+	(define-key view-mode-map (kbd "q")	'View-kill-and-leave))
 
 ;; removes *Completions* buffer when done
 (add-hook 'minibuffer-exit-hook (lambda()
@@ -644,9 +641,7 @@
 
 (use-package elpher
   :bind   (	:map elpher-mode-map
-	  ("[" . elpher-back)
-	  ("C-<up>" . my/backward-paragraph)
-	  ("C-<down>" . my/forward-paragraph))
+	  ("[" . elpher-back))
   :hook	  (elpher-mode . (lambda()
 	  (setq-local left-margin-width 10)
 	  (set-window-buffer nil (current-buffer))))
@@ -674,8 +669,6 @@
 		("[" . eww-back-url)
 		("]" . eww-forward-url)
 		("Q" . eww-unfill-paragraph)
-		("C-<up>" . my/backward-paragraph)
-		("C-<down>" . my/forward-paragraph)
 		:map eww-bookmark-mode-map
 		("w" . eww))
   :config	(url-setup-privacy-info)
@@ -808,8 +801,6 @@
 		("]" . end-of-buffer)
 		("TAB" . shr-next-link)
 		("SPC" . scroll-up-half)
-		("C-<up>" . my/backward-paragraph)
-		("C-<down>" . my/forward-paragraph)
 		("B" . elfeed-show-visit-secondary-browser))
 	:init	(easy-menu-add-item global-map '(menu-bar tools)
 			["Read RSS Feeds" elfeed :help "Read RSS Feeds"] "Read Mail")
@@ -973,9 +964,7 @@
 	:bind ( :map markdown-mode-map
 		("M-p" . nil)
 		("C-c p" . markdown-preview-file)
-		("C-x x o" . markdown-convert-buffer-to-org)
-		("C-<up>" . my/backward-paragraph)
-		("C-<down>" . my/forward-paragraph))
+		("C-x x o" . markdown-convert-buffer-to-org))
 	:mode	(("README\\.md\\'" . gfm-mode)
 		("\\.md\\'" . markdown-mode)
 		("\\.markdown\\'" . markdown-mode)
@@ -1065,10 +1054,6 @@
 (define-key org-mode-map (kbd "M-]") 'org-forward-heading-same-level)
 (define-key org-mode-map (kbd "C-M-[" ) 'outline-up-heading)
 (define-key org-mode-map (kbd "C-M-]") (lambda()(interactive)(org-end-of-subtree)))
-
-;; HACK - Add mapping for C-up/down. Rethink whether this needs to be global. Use:
-;;	(global-set-key [remap backward-paragraph] 'my/backward-paragraph)
-;;	(global-set-key [remap forward-paragraph] 'my/forward-paragraph)
 
 ;; alternative mapping for 'org-support-shift-select'
 (define-key org-mode-map (kbd "S-<left>") nil)
@@ -1269,8 +1254,8 @@
 (global-unset-key (kbd "M-<right>"))
 (global-set-key (kbd "M-[") 'my/backward-page)
 (global-set-key (kbd "M-]") 'my/forward-page)
-(global-set-key (kbd "M-{") 'my/backward-paragraph)
-(global-set-key (kbd "M-}") 'my/forward-paragraph)
+(global-set-key [remap backward-paragraph] 'my/backward-paragraph)
+(global-set-key [remap forward-paragraph] 'my/forward-paragraph)
 
 
 ;; scroll settings
