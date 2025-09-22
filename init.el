@@ -113,10 +113,10 @@
 
 ;; Initialize package manager
 (require 'package)
-(require 'gnutls)
-(setopt	gnutls-algorithm-priority "normal:-vers-tls1.3"
-	gnutls-verify-error nil
-	package-archive-column-width 1)
+;; (require 'gnutls)
+;; (setopt	gnutls-algorithm-priority "normal:-vers-tls1.3"
+;; 	gnutls-verify-error nil
+;; 	package-archive-column-width 1)
 (package-initialize)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 (unless package-archive-contents (package-refresh-contents))
@@ -1026,12 +1026,12 @@
 	org-export-with-broken-links t
 	org-export-with-date t
 	org-export-with-properties nil
-	org-export-with-section-numbers nil
+	;org-export-with-section-numbers nil
 	org-export-with-smart-quotes t
 	org-export-with-sub-superscripts t
 	org-export-with-tables t
 	org-export-with-timestamps t
-	org-export-with-toc nil
+	;org-export-with-toc nil
 
 	org-export-date-timestamp-format "%Y-%m-%d"
 	org-export-time-stamp-file t
@@ -1534,4 +1534,4 @@
 ; LocalWords:  vcusepackage latexmk synctex bibtex cond xah dirs Ctrl
 ; LocalWords:  remotehost flycheck modeline mori featurep cbc smex
 ; LocalWords:  setq's setopt mailutils imagemagick usr dunnet Async
-; LocalWords:  dir fullscreen dropbox keymap
+; LocalWords:  dir fullscreen dropbox keymap toc
