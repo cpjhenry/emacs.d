@@ -426,10 +426,10 @@
 	:custom	(ibuffer-default-sorting-mode 'alphabetic)
 		(ibuffer-expert t)
 		(ibuffer-saved-filter-groups (quote (("home"
-			("Dired" (mode . dired-mode) )
 			("Emacs" (or (name . "^\\*scratch\\*$")
 			        (name . "^\\*Messages\\*$")
 				(name . "\\.el")))
+			("Dired" (mode . dired-mode))
 			("Shell" (or (mode . sh-mode)
 			        (mode . mistty-mode)))
 			("Text" (or (name . "\\.txt")
