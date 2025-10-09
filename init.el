@@ -113,10 +113,7 @@
 
 ;; Initialize package manager
 (require 'package)
-;; (require 'gnutls)
-;; (setopt	gnutls-algorithm-priority "normal:-vers-tls1.3"
-;; 	gnutls-verify-error nil
-;; 	package-archive-column-width 1)
+(setopt package-archive-column-width 1)
 (package-initialize)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 (unless package-archive-contents (package-refresh-contents))
@@ -128,6 +125,10 @@
 	:custom	(use-package-always-ensure t)
 		(use-package-compute-statistics t)
 		(use-package-verbose t))
+
+;(require 'gnutls)
+;(setopt gnutls-algorithm-priority "normal:-vers-tls1.3"
+;	gnutls-verify-error nil)
 
 ;; settings
 (set-language-environment 'utf-8)
@@ -501,7 +502,7 @@
 		(if (keymap-lookup dired-mode-map "% s")
 		  (message "Error: %% s already defined in dired-mode-map")
 		  (define-key dired-mode-map "%s" 'my-dired-substspaces))
-		(setopt dired-omit-files (concat dired-omit-files "\\|^\\.localized$"))
+		(setopt dired-omit-files (concat dired-omit-files "\\|^.DS_Store$\\|^.localized$"))
 		(delete "~" dired-omit-extensions)); show backup files
 
 ;; improve file sorting
@@ -580,7 +581,6 @@
 	;; don't allow marking of diary entries
 	(define-key calendar-mode-map (kbd "m") nil)
 	(easy-menu-remove-item calendar-mode-map '(menu-bar diary) "Mark All")
-
 	(easy-menu-add-item calendar-mode-map '(menu-bar goto)
 		["World clock" calendar-world-clock] "Beginning of Week")
 	(easy-menu-add-item calendar-mode-map '(menu-bar holidays)
@@ -734,7 +734,8 @@
   :hook	(mistty-after-process-end . mistty-kill-buffer)
 	(mistty-mode . goto-address-mode))
 
-(use-package shortcuts-mode)
+(use-package shortcuts-mode
+  :bind (("<f9>" . shortcuts-mode)))
 
 (use-package simple-httpd :ensure t)
 
@@ -1125,11 +1126,12 @@
 (require 'ox-latex)
 (add-to-list 'org-latex-classes '("letter" "\\documentclass{letter}") t)
 (add-to-list 'org-latex-classes '("memoir" "\\documentclass{memoir}"
-	("\\chapter{%s}" . "\\chapter*{%s}")
-	("\\section{%s}" . "\\section*{%s}")
-	("\\subsection{%s}" . "\\subsection*{%s}")
-	("\\subsubsection{%s}" . "\\subsubsection*{%s}"))
-	t)
+  ("\\chapter{%s}" . "\\chapter*{%s}")
+  ("\\section{%s}" . "\\section*{%s}")
+  ("\\subsection{%s}" . "\\subsection*{%s}")
+  ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))
+  t)
+(advice-add 'org-latex-export-as-latex :after (lambda (&rest r) (delete-other-windows)))
 
 (require 'ox-md)
 
@@ -1146,18 +1148,19 @@
 (use-package tex
 	:unless *w32*
 	:ensure auctex
+	:custom (font-latex-fontify-sectioning 'color)
+		(LaTeX-babel-hyphen-after-hyphen nil)
+		(latex-run-command "xelatex")
+		(TeX-auto-save t)
+		(TeX-master nil)	; FIXME EMACS30 fail
+		(TeX-parse-self nil)	; FIXME EMACS30 fail
 	:hook	(LaTeX-mode . prettify-symbols-mode)
 		(LaTeX-mode . (lambda () (push '("\\&" . ?＆) prettify-symbols-alist)))
 	:config (setq
-		font-latex-fontify-sectioning 'color
 		ispell-parser 'tex
-		LaTeX-babel-hyphen-after-hyphen nil
-		latex-run-command "xelatex"
-		preview-locating-previews-message nil
-		preview-protect-point t
 		preview-leave-open-previews-visible t
-		TeX-auto-save t
-		TeX-parse-self t)
+		preview-locating-previews-message nil
+		preview-protect-point t)
 
 	(use-package latex-extra
 		:hook (LaTeX-mode . latex-extra-mode))
@@ -1168,9 +1171,11 @@
 		:bind (	:map latex-preview-pane-mode-map ("M-p" . nil) ("M-P" . nil))
 		:config	(setq message-latex-preview-pane-welcome ""))
 
+	(use-package cdlatex)
 	(use-package reftex
 		:ensure nil
-		:hook (LaTeX-mode . turn-on-reftex)))
+		:hook (	(LaTeX-mode . turn-on-reftex)
+			(LaTeX-mode . turn-on-cdlatex))))
 
 
 ;; spell checking
@@ -1181,9 +1186,11 @@
 	:pin gnu ; source from 'gnu' package archives only
 	:if (executable-find "aspell")
 	:bind ( ;([remap ispell-word] . jinx-correct)
+	        :map jinx-mode-map
 	        ("M-$" . jinx-correct)
 		("C-M-$" . jinx-languages)
-		("<f7>" . jinx-correct-all))
+		("<f7>" . jinx-correct-all)
+		("M-n" . jinx-next))
 	:hook	(emacs-startup . global-jinx-mode)
 	:config	(load "init/jinx-routines")
 		(add-hook 'jinx-mode-hook #'my/jinx-add-ispell-localwords)
@@ -1390,7 +1397,6 @@
 
 ;; Shortcuts
 (bind-key "<f8>"	'list-bookmarks)
-(bind-key "<f9>"	'shortcuts-mode)
 
 (bind-key "C-`"		'scratch-buffer)
 (bind-key "C-<escape>"	'my/shell)

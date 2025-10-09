@@ -71,7 +71,7 @@
 	(let ((prefix (car parg))) (cond
 		((not prefix)(setq
 			printer-name "Brother_HL_L2370DW"
-			lpr-switches '("-o media=a5 -o cpi=12 -o lpi=8")))
+			lpr-switches '("-o media=a5 -o cpi=9.5 -o lpi=7")))
 		((= prefix 4)(setq
 			printer-name "Munbyn_ITPP047"
 			lpr-switches '("-o media=pos80 cpi=13 -o lpi=9")))
