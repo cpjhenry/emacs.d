@@ -45,26 +45,26 @@
 		mac-right-option-modifier nil)	; pass-thru
 
 	;; HACK keymap-global-set
-	(global-set-key (kbd "s-c") 'ns-copy-including-secondary)	; ⌘-c = Copy
-	(global-set-key (kbd "s-x") 'kill-region)			; ⌘-x = Cut
-	(global-set-key (kbd "s-v") 'yank)				; ⌘-v = Paste
-	(global-set-key (kbd "s-y") 'ns-paste-secondary)
+	(keymap-global-set "s-c" 'ns-copy-including-secondary)	; ⌘-c = Copy
+	(keymap-global-set "s-x" 'kill-region)			; ⌘-x = Cut
+	(keymap-global-set "s-v" 'yank)				; ⌘-v = Paste
+	(keymap-global-set "s-y" 'ns-paste-secondary)
 
-	(global-set-key (kbd "s-a") 'mark-whole-buffer)
-	(global-set-key (kbd "s-E") 'edit-abbrevs)
-	(global-set-key (kbd "s-f") 'isearch-forward-regexp)
-	(global-set-key (kbd "s-h") 'ns-do-hide-emacs)
-	(global-set-key (kbd "s-k") 'kill-current-buffer)
-	(global-set-key (kbd "s-l") 'goto-line)
-	(global-set-key (kbd "s-o") 'find-file)
-	(global-set-key (kbd "s-S") 'write-file)
-	(global-set-key (kbd "s-s") 'save-buffer)
-	(global-set-key (kbd "s-u") 'revert-buffer)
-	(global-set-key (kbd "s-W") 'delete-frame)
-	(global-set-key (kbd "s-w") 'kill-current-buffer)
-	(global-set-key (kbd "s-z") 'undo)
+	(keymap-global-set "s-a" 'mark-whole-buffer)
+	(keymap-global-set "s-E" 'edit-abbrevs)
+	(keymap-global-set "s-f" 'isearch-forward-regexp)
+	(keymap-global-set "s-h" 'ns-do-hide-emacs)
+	(keymap-global-set "s-k" 'kill-current-buffer)
+	(keymap-global-set "s-l" 'goto-line)
+	(keymap-global-set "s-o" 'find-file)
+	(keymap-global-set "s-S" 'write-file)
+	(keymap-global-set "s-s" 'save-buffer)
+	(keymap-global-set "s-u" 'revert-buffer)
+	(keymap-global-set "s-W" 'delete-frame)
+	(keymap-global-set "s-w" 'kill-current-buffer)
+	(keymap-global-set "s-z" 'undo)
 
-	(global-set-key (kbd "s-1") (kbd "C-x 1"))
+	(keymap-global-set "s-1" "C-x 1")
 
 	(dolist (key '("s-C" "s-D" "s-d" "s-e" "s-F" "s-f" "s-g" "s-j" "s-L"
 		       "s-M" "s-m" "s-n" "s-p" "s-q" "s-t" "s-^" "s-&" "s-|"))
@@ -1051,6 +1051,7 @@
 (load "init/org-customizations") ; templates et al.
 
 ;; :bind
+(bind-key "M-<f4>"	'org-speed-command-help org-mode-map)
 (define-key org-mode-map (kbd "M-[") 'org-backward-heading-same-level)
 (define-key org-mode-map (kbd "M-]") 'org-forward-heading-same-level)
 (define-key org-mode-map (kbd "C-M-[" ) 'outline-up-heading)
@@ -1405,7 +1406,6 @@
 (bind-key "M-<f1>"	'my/emacs-help)
 (bind-key "M-<f2>"	'describe-personal-keybindings)
 (bind-key "M-<f3>"	'shortdoc)
-(bind-key "M-<f4>"	'org-speed-command-help)
 
 (bind-key "M-q"		'my/fill-paragraph)
 (defun my/fill-paragraph () (interactive) (fill-paragraph nil t))
