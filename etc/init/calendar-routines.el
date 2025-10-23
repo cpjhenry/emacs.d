@@ -118,6 +118,11 @@
 	(next-window-any-frame)
 	(fit-window-to-buffer))
 
+;; (defun calendar-timezone-planner () ""
+;;        (interactive)
+;;        (casual-timezone-planner)
+;;        (setq-local cursor-type t))
+
 ;; https://www.emacswiki.org/emacs/DiaryMode
 (defun alt-clean-equal-signs () "Make lines of = signs invisible."
 	(goto-char (point-min))

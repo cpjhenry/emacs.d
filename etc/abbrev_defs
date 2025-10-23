@@ -7,15 +7,9 @@
 
 (define-abbrev-table 'global-abbrev-table
   '(
-    ("jd" "J.D." nil :count 0)
-    ("jw" "J.W." nil :count 0)
-    ("mry" ".....ry" nil :count 2)
     ("spd" "Salutem plurimam dicit." nil :count 3)
     ("sqpd" "Salutem quam plurimam dicit." nil :count 0)
     ("svb" "Si vales, bene est; ego valeo." nil :count 5)
-    ("sw" "S.W." nil :count 2)
-    ("wm" "W.M." nil :count 1)
-    ("wsir" "W.Sir" nil :count 18)
    ))
 
 (define-abbrev-table 'latex-mode-abbrev-table
@@ -37,8 +31,9 @@
     ("endq" "#+END_QUOTE" nil :count 8)
     ("endsp" "#+LATEX: \\end{samepage}" nil :count 4)
     ("endv" "#+LATEX: \\end{verse}" nil :count 0)
-    ("hdr" "#+LATEX_HEADER:" nil :count 133)
-    ("lat" "#+LATEX:" nil :count 40)
+    ("hdr" "#+LATEX_HEADER:" nil :count 134)
+    ("lat" "#+LATEX:" nil :count 41)
+    ("lsvc" "# This is the letter-size version. Adjust page definition, margins, and font-sizes above to change." nil :count 0)
     ("mapleleaf" "\\twemoji{maple leaf}" nil :count 0)
     ("myabstract" "#+LATEX: \\begin{abstract}
 #+LATEX: \\noindent\\parindent=0pt\\parskip=.5\\baselineskip plus 2pt

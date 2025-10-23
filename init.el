@@ -44,7 +44,6 @@
 		mac-right-command-modifier 'alt	; Alt
 		mac-right-option-modifier nil)	; pass-thru
 
-	;; HACK keymap-global-set
 	(keymap-global-set "s-c" 'ns-copy-including-secondary)	; ⌘-c = Copy
 	(keymap-global-set "s-x" 'kill-region)			; ⌘-x = Cut
 	(keymap-global-set "s-v" 'yank)				; ⌘-v = Paste
@@ -68,25 +67,25 @@
 
 	(dolist (key '("s-C" "s-D" "s-d" "s-e" "s-F" "s-f" "s-g" "s-j" "s-L"
 		       "s-M" "s-m" "s-n" "s-p" "s-q" "s-t" "s-^" "s-&" "s-|"))
-		(global-unset-key (kbd key)))
+		(keymap-global-unset key))
 
 	;; Disable suspend-frame
-	(global-unset-key (kbd "C-z"))
+	(keymap-global-unset "C-z")
 
 	;; Disable toggle-frame-fullscreen
-	(global-unset-key (kbd "<f11>"))
+	(keymap-global-unset "<f11>")
 	;; FIXME - Errors with EMACS30
 	(put 'toggle-frame-fullscreen 'disabled t)
 
 	;; Line movement
-	(global-set-key (kbd "<home>") nil) ; 'move-beginning-of-line
-	(global-set-key (kbd "<end>" ) nil) ; 'move-end-of-line
+	(keymap-global-set "<home>" nil) ; 'move-beginning-of-line
+	(keymap-global-set "<end>"  nil) ; 'move-end-of-line
 
 	;; Alternates
-	(global-set-key (kbd "A-<left>") (kbd "s-<left>"))
-	(global-set-key (kbd "A-<right>")(kbd "s-<right>"))
-	(global-set-key (kbd "A-k") (kbd "s-k"))
-	(global-set-key (kbd "A-=") (kbd "s-="))
+	(keymap-global-set "A-<left>" "s-<left>")
+	(keymap-global-set "A-<right>" "s-<right>")
+	(keymap-global-set "A-k" "s-k")
+	(keymap-global-set "A-=" "s-=")
 
 	;; Emojis
 	(easy-menu-add-item global-map '(menu-bar edit) ["Emoji & Symbols"
@@ -104,7 +103,7 @@
 (when *w32*
 	(setopt	w32-apps-modifier 'super)
 
-	(global-set-key (kbd "<f11>") 'toggle-frame-maximized)
+	(keymap-global-set "<f11>" 'toggle-frame-maximized)
 	(defalias 'restart-emacs 'save-buffers-kill-terminal)
 
 	(add-to-list 'default-frame-alist '(font . "Consolas 12"))
@@ -301,7 +300,9 @@
 (remove-hook 'file-name-at-point-functions 'ffap-guess-file-name-at-point)
 
 ;; Modes derived from special-mode will pick-up this directive
+;; HACK keymap-set
 (define-key special-mode-map (kbd "q") 'kill-current-buffer)
+(define-key casual-timezone-planner-mode-map (kbd "q") 'kill-current-buffer)
 (define-key messages-buffer-mode-map (kbd "q")	'bury-buffer) ; 'messages-buffer-mode
 
 ;; eval-after-loads are run once, before mode hooks
@@ -582,13 +583,13 @@
 	(define-key calendar-mode-map (kbd "m") nil)
 	(easy-menu-remove-item calendar-mode-map '(menu-bar diary) "Mark All")
 	(easy-menu-add-item calendar-mode-map '(menu-bar goto)
-		["World clock" calendar-world-clock] "Beginning of Week")
+	  ["World clock" calendar-world-clock] "Beginning of Week")
 	(easy-menu-add-item calendar-mode-map '(menu-bar holidays)
-		["Yearly Holidays" list-holidays-this-year])
+	  ["Yearly Holidays" list-holidays-this-year])
 
 	(advice-add 'calendar-exit :before #'save-diary-before-calendar-exit)
 	(advice-add 'calendar-goto-info-node
-		:after (lambda (&rest r) (calendar-exit-kill) (delete-other-windows)))
+	  :after (lambda (&rest r) (calendar-exit-kill) (delete-other-windows)))
 
 	(load "init/calendar-routines"))
 
@@ -629,10 +630,14 @@
   :bind (("M-o" . casual-editkit-main-tmenu)
 	 :map calendar-mode-map
 	 ("M-o" . casual-calendar-tmenu)
+	 ("z" . casual-timezone-planner)
 	 :map dired-mode-map
 	 ("M-o" . casual-dired-tmenu)
 	 :map Info-mode-map
-	 ("M-o" . casual-info-tmenu)))
+	 ("M-o" . casual-info-tmenu))
+  :config (advice-add 'casual-timezone-planner
+	  :after (lambda (&rest r) (calendar-exit-kill) (delete-other-windows)))
+)
 
 (use-package dictionary
   :ensure nil
@@ -740,6 +745,8 @@
 (use-package simple-httpd :ensure t)
 
 (use-package ssh)
+
+(use-package tmr)
 
 (use-package visible-mark) ; make the mark visible
 
@@ -1454,7 +1461,7 @@
 (bind-key "C-c x g"	'replace-garbage-chars)
 (bind-key "C-c x l"	'lorem-ipsum-insert-paragraphs)
 (bind-key "C-c x n"	'number-paragraphs)
-
+(bind-key "C-c x s"	'replace-double-spaces)
 (bind-key "C-c x x"	'delete-whitespace-rectangle)
 (bind-key "C-c x y"	'whitespace-cleanup)
 (which-key-alias "C-c x" "text")
