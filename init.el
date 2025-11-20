@@ -302,7 +302,6 @@
 ;; Modes derived from special-mode will pick-up this directive
 ;; HACK keymap-set
 (define-key special-mode-map (kbd "q") 'kill-current-buffer)
-(define-key casual-timezone-planner-mode-map (kbd "q") 'kill-current-buffer)
 (define-key messages-buffer-mode-map (kbd "q")	'bury-buffer) ; 'messages-buffer-mode
 
 ;; eval-after-loads are run once, before mode hooks
@@ -494,10 +493,20 @@
 		"\\|\\.DS_Store$\\|\\.old$\\|\\.synctex\\.gz$\\|\\.log$\\|\\.tex$"))
 		(dired-omit-verbose nil)
 	:bind (	:map dired-mode-map
-		("q" . kill-dired-buffers))
+		("q" . kill-dired-buffers)
+		("C-<home>" . dired-home)
+		("C-<end>" . dired-end))
 	:hook	(dired-mode . dired-omit-mode)
 	:config	(unless *w32* (setq dired-kill-when-opening-new-dired-buffer t))
 		(defalias 'dired-find-file 'dired-find-alternate-file)
+		(defun dired-home () "Go to first line in Dired buffer."
+		  (interactive)
+		  (beginning-of-buffer)
+		  (dired-next-line 1))
+		(defun dired-end () "Go to last line in Dired buffer."
+		  (interactive)
+		  (end-of-buffer)
+		  (dired-previous-line 1))
 		(advice-add 'dired-find-file-other-window
 		  :after (lambda (&rest r) (delete-other-windows)))
 		(if (keymap-lookup dired-mode-map "% s")
@@ -563,46 +572,142 @@
 
 
 ;; calendar
-(use-package calendar
-	:ensure	nil
-	:custom	calendar-date-style 'iso
-	:bind (	:map calendar-mode-map
-		("q" . calendar-exit-kill)
-		("w" . calendar-world-clock)
-		("y" . list-holidays-this-year))
-	:init	(setq	calendar-month-header '(propertize
-			(format "%s %d" (calendar-month-name month) year)
-			'font-lock-face 'calendar-month-header)
-		calendar-chinese-all-holidays-flag t
-		calendar-christian-all-holidays-flag t
-		calendar-mark-holidays-flag t
-		holiday-general-holidays nil
-		world-clock-time-format "%a %e %b %R %Z")
-	:config
-	;; don't allow marking of diary entries
-	(define-key calendar-mode-map (kbd "m") nil)
-	(easy-menu-remove-item calendar-mode-map '(menu-bar diary) "Mark All")
-	(easy-menu-add-item calendar-mode-map '(menu-bar goto)
-	  ["World clock" calendar-world-clock] "Beginning of Week")
-	(easy-menu-add-item calendar-mode-map '(menu-bar holidays)
-	  ["Yearly Holidays" list-holidays-this-year])
+(require 'calendar)
+(load "init/calendar-routines")
 
-	(advice-add 'calendar-exit :before #'save-diary-before-calendar-exit)
-	(advice-add 'calendar-goto-info-node
-	  :after (lambda (&rest r) (calendar-exit-kill) (delete-other-windows)))
+;; `setq' is used here to override persistent defaults.
+(setq	calendar-date-style 'iso
+	calendar-mark-holidays-flag t
+	calendar-month-header '(propertize
+	  (format "%s %d" (calendar-month-name month) year)
+	  'font-lock-face 'calendar-month-header)
 
-	(load "init/calendar-routines"))
+	holiday-general-holidays nil
+	calendar-chinese-all-holidays-flag t
+	calendar-christian-all-holidays-flag t
 
-(use-package diary-lib
-	:after	calendar
-	:ensure	nil
-	:custom	diary-file "~/Documents/diary"
-	:init	(setq diary-list-include-blanks t)
-	:config
-	(add-to-list 'auto-mode-alist '("diary" . diary-mode))
-	(add-hook 'diary-list-entries-hook 'diary-sort-entries t)
-	(add-hook 'diary-fancy-display-mode-hook 'alt-clean-equal-signs)
-	(define-key diary-mode-map (kbd "C-c C-q") 'kill-current-buffer))
+	holiday-local-holidays '( ; National / Provincial Holidays and Commemorations
+	  (holiday-fixed 1 1    "New Year's Day")
+	  (holiday-fixed 2 2    "Groundhog Day")
+	  (holiday-fixed 2 14   "Valentine's Day")
+	  (holiday-fixed 4 1    "April Fools' Day")
+	  (holiday-float 5 0 2  "Mother's Day")
+	  (holiday-float 6 0 3  "Father's Day")
+	  (holiday-fixed 7 1    "Canada Day")
+	  (holiday-float 8 1 1  "Civic Holiday")
+	  (holiday-float 9 1 1  "Labour Day")
+	  (holiday-float 10 1 2 "Thanksgiving")
+	  (holiday-fixed 10 31  "Halloween")
+	  (holiday-fixed 11 11  "Remembrance Day")
+	  (holiday-fixed 1 21   "Lincoln Alexander Day")
+	  (holiday-float 2 1 3  "Family Day")
+	  (holiday-fixed 2 15   "National Flag Day")
+	  (holiday-float 3 1 2  "Commonwealth Day")
+	  (holiday-fixed 4 6    "Tartan Day")
+	  (holiday-fixed 4 9    "Vimy Ridge Day")
+	  (holiday-fixed 6 21   "Indigenous Peoples Day")
+	  (holiday-fixed 9 30   "Truth and Reconciliation")
+	  (holiday-float 11 0 2 "Remembrance Sunday")
+	  (holiday-fixed 12 11  "Statute of Westminster"))
+
+	holiday-other-holidays '(
+	  ;; third Monday of January
+	  (holiday-float 1 1 3 "Martin Luther King Day")
+	  ;; first Saturday of June following the Summer Solstice
+	  (holiday-float 6 6 1 "Midsummer"
+	    (floor (nth 1 (solar-equinoxes/solstices 1 displayed-year))))
+	  ;; first Tuesday in November after the first Monday, every four even-numbered years
+	  ;; (between November 2 and 8th)
+	  (holiday-sexp '(if (zerop (% year 4)) (calendar-gregorian-from-absolute (1+
+	    (calendar-dayname-on-or-before 1 (+ 6 (calendar-absolute-from-gregorian
+	    (list 11 1 year)))))))
+	    "US Presidential Election")
+	  (holiday-float 11 4 4 "US Thanksgiving")
+
+	  (holiday-fixed
+	    (calendar-extract-month (add-one-day (car (car (holiday-float 11 4 4 "")))))
+	    (calendar-extract-day   (add-one-day (car (car (holiday-float 11 4 4 "")))))
+	    "Black Friday")
+
+	  (holiday-advent -11 "Prayer & Repentance")
+	  (holiday-fixed 12
+	    (floor (nth 1 (solar-equinoxes/solstices 3 displayed-year))) "Midwinter"))
+
+	;; FIXME New Year is based on date of vernal equinox
+	holiday-bahai-holidays '(
+	  (holiday-fixed 3 (floor (nth 1 (solar-equinoxes/solstices 1 displayed-year)))
+	  (format "Bahá’í New Year (Naw-Ruz) %d" (- displayed-year (1- 1844)))))
+
+	holiday-oriental-holidays '(
+	  (holiday-chinese-new-year)
+	  (if calendar-chinese-all-holidays-flag (append
+	    (holiday-chinese 1 15 "Lantern Festival")
+	    (holiday-chinese-qingming)
+	    (holiday-chinese 5 5 "Dragon Boat Festival")
+	    (holiday-chinese 7 7 "Double Seventh Festival")
+	    (holiday-chinese 7 15 "Ghost Festival")
+	    (holiday-chinese 8 15 "Mid-Autumn Festival")
+	    (holiday-chinese 9 9 "Double Ninth Festival"))))
+
+	holiday-islamic-holidays '(
+	  (holiday-islamic-new-year)
+	  (holiday-islamic 9 1 "Ramadan Begins")
+	  (holiday-islamic 10 1 "Id-al-Fitr")))
+
+(keymap-set calendar-mode-map "m" nil)
+(keymap-set calendar-mode-map "q" 'calendar-exit-kill)
+(keymap-set calendar-mode-map "w" 'calendar-world-clock)
+(keymap-set calendar-mode-map "y" 'list-holidays-this-year)
+
+(easy-menu-remove-item calendar-mode-map '(menu-bar diary) "Mark All")
+(easy-menu-add-item calendar-mode-map '(menu-bar goto)
+  ["World clock" calendar-world-clock] "Beginning of Week")
+(easy-menu-add-item calendar-mode-map '(menu-bar holidays)
+  ["Yearly Holidays" list-holidays-this-year])
+
+(advice-add 'calendar-exit :before #'save-diary-before-calendar-exit)
+(advice-add 'calendar-goto-info-node
+  :after (lambda (&rest r) (calendar-exit-kill) (delete-other-windows)))
+
+(require 'diary-lib)
+(setopt diary-file "~/Documents/diary"
+	diary-list-include-blanks t)
+(keymap-set diary-mode-map "C-c C-q" 'kill-current-buffer)
+(add-to-list 'auto-mode-alist '("diary" . diary-mode))
+(add-hook 'diary-list-entries-hook 'diary-sort-entries t)
+(add-hook 'diary-fancy-display-mode-hook 'alt-clean-equal-signs)
+
+(require 'time)
+(setopt world-clock-time-format "%a %e %b %R %Z"
+	zoneinfo-style-world-list '(
+	  ("Pacific/Honolulu" "Hawai'i")
+	  ("America/Los_Angeles" "Cupertino")
+	  ("America/Vancouver" "Vancouver")
+	  ("America/Edmonton" "Edmonton")
+	  ("America/Regina" "Saskatoon")
+	  ("America/Winnipeg" "Winnipeg")
+	  ("America/Toronto" "Ottawa")
+	  ("America/Halifax" "Halifax")
+	  ("America/St_Johns" "St. John's")
+	  ("America/Marigot" "St. Martin")
+	  ("UTC" "UTC")
+	  ("Europe/London" "Edinburgh")
+	  ("Europe/Lisbon" "Lisbon")
+	  ("Europe/Paris" "Paris")
+	  ("Europe/Rome" "Rome")
+	  ("Europe/Istanbul" "Ankara")
+	  ("Asia/Kolkata" "New Delhi")
+	  ("Asia/Shanghai" "Beijing")
+	  ("Asia/Tokyo" "Tokyo")
+	  ("Australia/Sydney" "Sydney")
+	  ("NZ" "Wellington")))
+
+(require 'lunar)
+(setopt lunar-phase-names '(
+  "● New Moon"
+  "☽ First Quarter Moon"
+  "○ Full Moon"
+  "☾ Last Quarter Moon"))
 
 
 ;; Initialize packages
@@ -626,18 +731,21 @@
   :config (which-key-mode)
   	  (defalias 'which-key-alias 'which-key-add-key-based-replacements))
 
+;; Transient keyboard user interfaces
 (use-package casual
+  :demand t
   :bind (("M-o" . casual-editkit-main-tmenu)
 	 :map calendar-mode-map
 	 ("M-o" . casual-calendar-tmenu)
-	 ("z" . casual-timezone-planner)
 	 :map dired-mode-map
 	 ("M-o" . casual-dired-tmenu)
 	 :map Info-mode-map
 	 ("M-o" . casual-info-tmenu))
-  :config (advice-add 'casual-timezone-planner
-	  :after (lambda (&rest r) (calendar-exit-kill) (delete-other-windows)))
-)
+  :config (require 'casual-timezone-utils)
+  	  (setopt casual-timezone-datestamp-format "%a %e %b %Y %R")
+          (advice-add 'casual-timezone-planner
+            :after (lambda (&rest r) (calendar-exit-kill)))
+	  (keymap-set casual-timezone-planner-mode-map "q" 'kill-current-buffer))
 
 (use-package dictionary
   :ensure nil
@@ -1000,6 +1108,7 @@
 	org-fold-catch-invisible-edits 'smart
 	org-footnote-auto-adjust t
 	org-footnote-define-inline t
+	org-hidden-keywords '(title subtitle author date)
 	org-hide-emphasis-markers t
 	org-image-actual-width '(300)
 	org-list-allow-alphabetical t
@@ -1008,6 +1117,7 @@
 	org-log-repeat nil
 	org-log-state-notes-into-drawer nil
 	org-pretty-entities t
+	org-pretty-entities-include-sub-superscripts t
 	org-return-follows-link t
 	org-special-ctrl-a/e t
 	org-startup-folded 'content ; folded children content all
@@ -1030,16 +1140,18 @@
 	org-agenda-todo-ignore-deadlines t
 	org-agenda-todo-ignore-scheduled t)
 
-(setq	org-export-with-author t
+(require 'ox)
+(require 'ox-ascii)
+(require 'ox-latex)
+(require 'ox-md)
+(setopt	org-export-with-author t
 	org-export-with-broken-links t
 	org-export-with-date t
 	org-export-with-properties nil
-	;org-export-with-section-numbers nil
 	org-export-with-smart-quotes t
 	org-export-with-sub-superscripts t
 	org-export-with-tables t
 	org-export-with-timestamps t
-	;org-export-with-toc nil
 
 	org-export-date-timestamp-format "%Y-%m-%d"
 	org-export-time-stamp-file t
@@ -1069,6 +1181,10 @@
 (define-key org-mode-map (kbd "S-<right>") nil)
 (define-key org-mode-map (kbd "S-<up>") nil)
 (define-key org-mode-map (kbd "S-<down>") nil)
+
+(define-key org-mode-map (kbd "C-S-<left>") nil)  ; do the same for left-word
+(define-key org-mode-map (kbd "C-S-<right>") nil) ; and right-word
+
 (define-key org-mode-map (kbd "S-<home>") 'org-shiftleft)
 (define-key org-mode-map (kbd "S-<end>") 'org-shiftright)
 (define-key org-mode-map (kbd "S-<prior>") 'org-shiftup)

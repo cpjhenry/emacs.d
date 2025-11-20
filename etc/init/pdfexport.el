@@ -22,8 +22,8 @@
   (update-other-buffer))
 
 (defun latex-compile-and-update-other-buffer ()
-  "Has as a premise that it's run from a latex-mode buffer and the
-   other buffer already has the PDF open"
+  "Has as a premise that it's run from a `latex-mode' buffer and
+   that the other buffer already has the PDF open."
   (interactive)
   (save-buffer)
   (shell-command (concat "pdflatex " (buffer-file-name)))

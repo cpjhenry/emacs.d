@@ -21,18 +21,18 @@
 
 (define-abbrev-table 'org-mode-abbrev-table
   '(
-    ("asterism" "#+LATEX: \\begin{center}\\asterism\\end{center}" nil :count 6)
+    ("asterism" "#+LATEX: \\begin{center}\\asterism\\end{center}" nil :count 7)
     ("begc" "#+BEGIN_COMMENT
-#+END_COMMENT" nil :count 2)
-    ("begq" "#+BEGIN_QUOTE" nil :count 9)
+#+END_COMMENT" nil :count 4)
+    ("begq" "#+BEGIN_QUOTE" nil :count 10)
     ("begsp" "#+LATEX: \\begin{samepage}" nil :count 4)
     ("begv" "#+LATEX: \\begin{verse}" nil :count 2)
     ("dinkus" "#+LATEX: \\begin{center}* * *\\end{center}" nil :count 2)
-    ("endq" "#+END_QUOTE" nil :count 8)
+    ("endq" "#+END_QUOTE" nil :count 9)
     ("endsp" "#+LATEX: \\end{samepage}" nil :count 4)
     ("endv" "#+LATEX: \\end{verse}" nil :count 0)
-    ("hdr" "#+LATEX_HEADER:" nil :count 134)
-    ("lat" "#+LATEX:" nil :count 41)
+    ("hdr" "#+LATEX_HEADER:" nil :count 139)
+    ("lat" "#+LATEX:" nil :count 46)
     ("lsvc" "# This is the letter-size version. Adjust page definition, margins, and font-sizes above to change." nil :count 0)
     ("mapleleaf" "\\twemoji{maple leaf}" nil :count 0)
     ("myabstract" "#+LATEX: \\begin{abstract}
@@ -43,7 +43,7 @@
 #+STARTUP: nofold
 #+OPTIONS: num:nil
 #+OPTIONS: toc:nil
-#+LATEX_CLASS_OPTIONS: [a5paper,twoside]
+#+LATEX_CLASS_OPTIONS: [a5paper]
 #+LATEX_HEADER: \\usepackage{fontspec}
 #+LATEX_HEADER: \\setmainfont{EB Garamond}
 #+LATEX_HEADER: \\usepackage[english]{babel}
@@ -60,31 +60,31 @@
 
 #+LATEX_HEADER: \\makeatletter
 #+LATEX_HEADER: \\renewcommand{\\makethanksmark}{%
-#+LATEX_HEADER:   \\setbox\\@tempboxa\\hbox{%
-#+LATEX_HEADER:     \\ifdim\\footnotemargin>0pt
-#+LATEX_HEADER:       \\hb@xt@\\footnotemargin{\\thanksfootmark\\hss}%
-#+LATEX_HEADER:     \\else
-#+LATEX_HEADER:       \\thanksfootmark
-#+LATEX_HEADER:     \\fi}
-#+LATEX_HEADER:   \\leftmargin\\wd\\@tempboxa
-#+LATEX_HEADER:   \\rightmargin\\z@
-#+LATEX_HEADER:   \\linewidth \\columnwidth
-#+LATEX_HEADER:   \\advance \\linewidth -\\leftmargin
-#+LATEX_HEADER:   \\parshape \\@ne \\leftmargin \\linewidth
-#+LATEX_HEADER:   \\footnotesize
-#+LATEX_HEADER:   \\@setpar{{\\@@par}}%
-#+LATEX_HEADER:   \\leavevmode\\raggedright %%% <--- add \\raggedright
-#+LATEX_HEADER:   \\llap{\\box\\@tempboxa}%
-#+LATEX_HEADER:   \\parskip\\hangfootparskip\\relax
-#+LATEX_HEADER:   \\parindent\\hangfootparindent\\relax}
+#+LATEX_HEADER:  \\setbox\\@tempboxa\\hbox{%
+#+LATEX_HEADER:   \\ifdim\\footnotemargin>0pt
+#+LATEX_HEADER:    \\hb@xt@\\footnotemargin{\\thanksfootmark\\hss}%
+#+LATEX_HEADER:   \\else
+#+LATEX_HEADER:    \\thanksfootmark
+#+LATEX_HEADER:   \\fi}
+#+LATEX_HEADER:  \\leftmargin\\wd\\@tempboxa
+#+LATEX_HEADER:  \\rightmargin\\z@
+#+LATEX_HEADER:  \\linewidth \\columnwidth
+#+LATEX_HEADER:  \\advance \\linewidth -\\leftmargin
+#+LATEX_HEADER:  \\parshape \\@ne \\leftmargin \\linewidth
+#+LATEX_HEADER:  \\footnotesize
+#+LATEX_HEADER:  \\@setpar{{\\@@par}}%
+#+LATEX_HEADER:  \\leavevmode\\raggedright %%% <--- add \\raggedright
+#+LATEX_HEADER:  \\llap{\\box\\@tempboxa}%
+#+LATEX_HEADER:  \\parskip\\hangfootparskip\\relax
+#+LATEX_HEADER:  \\parindent\\hangfootparindent\\relax}
 #+LATEX_HEADER: \\makeatother
 
 #+LATEX_HEADER: \\renewcommand{\\thanksfootmark}{%
-#+LATEX_HEADER:   {\\normalfont\\thanksscript{\\thanksfootpre\\tamark\\thanksfootpost}}}
+#+LATEX_HEADER:  {\\normalfont\\thanksscript{\\thanksfootpre\\tamark\\thanksfootpost}}}
 #+LATEX_HEADER: \\renewcommand{\\thanksscript}[1]{\\textsuperscript{#1}} % remove 'textsuperscript' if needed
 
 #+LATEX_HEADER: \\usepackage[hang,ragged,symbol*]{footmisc}
-#+LATEX_HEADER: \\setlength{\\footnotemargin}{1em}     % figure out how to display fn w/o superscript
+#+LATEX_HEADER: \\setlength{\\footnotemargin}{1em}   % figure out how to display fn w/o superscript
 
 #+LATEX_HEADER: \\usepackage{sectsty}
 #+LATEX_HEADER: \\sectionfont{\\normalsize\\selectfont}
@@ -96,26 +96,28 @@
 
 #+LATEX_HEADER: \\usepackage[australian]{datetime2}
 #+LATEX_HEADER: \\hypersetup{hidelinks}
-#+LATEX_HEADER: \\usepackage[title]{appendix}
 #+LATEX_HEADER: \\setcounter{secnumdepth}{0} % Turn section numbering off
 #+LATEX_HEADER: \\usepackage{fancyhdr}
-#+LATEX_HEADER: \\usepackage{lastpage}
 #+LATEX_HEADER: \\usepackage{framed}
-#+LATEX_HEADER: \\usepackage{marginnote} % \\begin{multicols}{2} / \\end{multicols} / \\columnbreak
 #+LATEX_HEADER: \\usepackage{multicol}
 #+LATEX_HEADER: \\usepackage{circledsteps}
 #+LATEX_HEADER: \\usepackage{twemojis}
 #+LATEX_HEADER: \\usepackage{ArtNouvc}
+#+LATEX_HEADER: \\usepackage[all]{nowidow}
 
-#+LATEX_HEADER: \\newcommand{\\asterism}{\\smash{%
+#+LATEX_HEADER: \\newcommand{\\asterism}{
+#+LATEX_HEADER:   \\begin{center}\\smash{%
 #+LATEX_HEADER:   \\raisebox{-.5ex}{%
-#+LATEX_HEADER:     \\setlength{\\tabcolsep}{1pt}%
-#+LATEX_HEADER:     \\begin{tabular}{@{}cc@{}}%
-#+LATEX_HEADER:       \\multicolumn2c*\\\\[-2ex]*&*%
-#+LATEX_HEADER:     \\end{tabular}}}}
+#+LATEX_HEADER:   \\setlength{\\tabcolsep}{1pt}%
+#+LATEX_HEADER:   \\begin{tabular}{@{}cc@{}}%
+#+LATEX_HEADER:   \\multicolumn2c*\\\\[-2ex]*&*%
+#+LATEX_HEADER:   \\end{tabular}}}\\end{center}}
 
-#+LATEX_HEADER: \\def\\opn{\\ensuremath{\\mathrel{\\subseteq\\!\\!\\!\\!\\!\\raisebox{1pt}{$\\circ$}}}}
-#+LATEX_HEADER: \\def\\cls{\\ensuremath{\\mathrel{\\subseteq\\!\\!\\!\\!\\!\\raisebox{1pt}{$\\bullet$}}}}
+#+LATEX_HEADER: \\newcommand{\\ritual}{
+#+LATEX_HEADER:   \\setmainfont{Courier Prime}
+#+LATEX_HEADER:   \\newgeometry{margin=.25in,top=.35in,includefoot}}
+
+#+LATEX_HEADER: \\def\\td{...}
 #+LATEX_HEADER: \\def\\fd{.....}
 #+LATEX_HEADER: \\def\\longdash{\\textemdash{}\\textemdash{}\\textemdash{}}
 
@@ -128,7 +130,7 @@
 #+LATEX: \\fancyhead{}
 #+LATEX: \\renewcommand{\\headrulewidth}{0pt}
 #+LATEX: \\fancyfootinit{\\small\\selectfont}
-:END:" nil :count 2)
+:END:" nil :count 0)
     ("mytitle" "#+TITLE: 
 #+AUTHOR: Paul J Henry
 #+AUTHOR: MM RAM FRC

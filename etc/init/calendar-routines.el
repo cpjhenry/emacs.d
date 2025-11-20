@@ -2,97 +2,6 @@
 ;;; Commentary:
 ;;; Code:
 
-(setq holiday-local-holidays '( ; National / Provincial Holidays and Commemorations
-	(holiday-fixed 01 01  "New Year's Day")
-	(holiday-fixed 02 02  "Groundhog Day")
-	(holiday-fixed 02 14  "Valentine's Day")
-	(holiday-fixed 04 01  "April Fools' Day")
-	(holiday-float 05 0 2 "Mother's Day")
-	(holiday-float 06 0 3 "Father's Day")
-	(holiday-fixed 07 01  "Canada Day")
-	(holiday-float 08 1 1 "Civic Holiday")
-	(holiday-float 09 1 1 "Labour Day")
-	(holiday-float 10 1 2 "Thanksgiving")
-	(holiday-fixed 10 31  "Halloween")
-	(holiday-fixed 11 11  "Remembrance Day")
-
-	(holiday-fixed 01 21  "Lincoln Alexander Day")
-	(holiday-float 02 1 3 "Family Day")
-	(holiday-fixed 02 15  "National Flag Day")
-	(holiday-float 03 1 2 "Commonwealth Day")
-	(holiday-fixed 04 06  "Tartan Day")
-	(holiday-fixed 04 09  "Vimy Ridge Day")
-	(holiday-fixed 06 21  "Indigenous Peoples Day")
-	(holiday-fixed 09 30  "Truth and Reconciliation")
-	(holiday-float 11 0 2 "Remembrance Sunday")
-	(holiday-fixed 12 11  "Statute of Westminster")))
-
-(setq holiday-other-holidays '(
-	(holiday-float 1 1 3 "Martin Luther King Day")
-	;; first Saturday of June following the Summer Solstice
-	(holiday-float 6 6 1 "Midsummer" (floor (nth 1 (solar-equinoxes/solstices 1 displayed-year))))
-	;; first Tuesday in November after the first Monday, every four even-numbered years
-	;; (between November 2 and 8th)
-	(holiday-sexp '(if (zerop (% year 4)) (calendar-gregorian-from-absolute (1+
-		(calendar-dayname-on-or-before 1 (+ 6 (calendar-absolute-from-gregorian
-		(list 11 1 year)))))))
-		"US Presidential Election")
-	(holiday-float 11 4 4 "US Thanksgiving")
-	(holiday-advent -11 "Prayer & Repentance")
-	(holiday-fixed 12 (floor (nth 1 (solar-equinoxes/solstices 3 displayed-year))) "Midwinter")))
-
-;; FIXME New Year is based on date of vernal equinox
-(setq holiday-bahai-holidays '(
-	(holiday-fixed 3 (floor (nth 1 (solar-equinoxes/solstices 1 displayed-year)))
-	(format "Bahá’í New Year (Naw-Ruz) %d" (- displayed-year (1- 1844))))))
-
-(setq holiday-oriental-holidays '(
-	(holiday-chinese-new-year)
-	(if calendar-chinese-all-holidays-flag (append
-		(holiday-chinese 1 15 "Lantern Festival")
-		(holiday-chinese-qingming)
-		(holiday-chinese 5 5 "Dragon Boat Festival")
-		(holiday-chinese 7 7 "Double Seventh Festival")
-		(holiday-chinese 7 15 "Ghost Festival")
-		(holiday-chinese 8 15 "Mid-Autumn Festival")
-		(holiday-chinese 9 9 "Double Ninth Festival")))))
-
-(setq holiday-islamic-holidays '(
-	(holiday-islamic-new-year)
-	(holiday-islamic 9 1 "Ramadan Begins")
-	(holiday-islamic 10 1 "Id-al-Fitr")))
-
-(require 'lunar)
-(setq lunar-phase-names '(
-	"● New Moon"
-	"☽ First Quarter Moon"
-	"○ Full Moon"
-	"☾ Last Quarter Moon"))
-
-(setq zoneinfo-style-world-list '(
-	("Pacific/Honolulu" "Hawai'i")
-	("America/Los_Angeles" "Cupertino")
-	("America/Vancouver" "Vancouver")
-	("America/Edmonton" "Edmonton")
-	("America/Regina" "Saskatoon")
-	("America/Winnipeg" "Winnipeg")
-	("America/Toronto" "Ottawa")
-	("America/Halifax" "Halifax")
-	("America/St_Johns" "St. John's")
-	("America/Marigot" "St. Martin")
-	("UTC" "UTC")
-	("Europe/London" "Edinburgh")
-	("Europe/Lisbon" "Lisbon")
-	("Europe/Paris" "Paris")
-	("Europe/Rome" "Rome")
-	("Europe/Istanbul" "Ankara")
-	("Asia/Calcutta" "Bangalore")
-	("Asia/Shanghai" "Beijing")
-	("Asia/Tokyo" "Tokyo")
-	("Australia/Sydney" "Sydney")
-	("NZ" "Wellington")))
-
-;; functions
 (defun calendar-exit-kill ()
 	(interactive)
 	(calendar-exit 'kill)
@@ -118,11 +27,6 @@
 	(next-window-any-frame)
 	(fit-window-to-buffer))
 
-;; (defun calendar-timezone-planner () ""
-;;        (interactive)
-;;        (casual-timezone-planner)
-;;        (setq-local cursor-type t))
-
 ;; https://www.emacswiki.org/emacs/DiaryMode
 (defun alt-clean-equal-signs () "Make lines of = signs invisible."
 	(goto-char (point-min))
@@ -131,6 +35,41 @@
 		(while (not (eobp)) (search-forward-regexp "^=+$" nil 'move)
 		(add-text-properties (match-beginning 0) (match-end 0) '(invisible t)))
 		(when state (setq buffer-read-only t))))
+
+;; https://tlestang.github.io/blog/customizing-calendar.html
+(defun is-weekend (date)
+  "Evaluate to t or nil whether of not DATE falls in a weekend.
+DATE is a list of the form (MONTH DAY YEAR)"
+  (or (equal (calendar-day-of-week date) 6)
+      (equal (calendar-day-of-week date) 0)))
+
+(defun add-one-day (date)
+  "Evaluate to (MONTH DAY YEAR) for the day following DATE. DATE should also
+be provided in the (MONTH DAY YEAR) format."
+  (calendar-gregorian-from-absolute
+   (+ (calendar-absolute-from-gregorian date) 1)))
+
+(defun find-next-weekday (date)
+  "Evaluate to (MONTH DAY YEAR) for the first next weekday after or including DATE.
+
+If DATE corresponds to a Saturday or Sunday, then evaluates to
+following Monday.  If DATE is a weekday, then evaluates to DATE.
+
+This function is useful to compute bank holidays in the United
+Kingdom, which are pushed to first following non-bank holiday
+weekday (usually Monday) if the bank holiday falls inside a
+weekend. Caveat: do not use function to compute the substitute
+day for a Sunday bank holiday that follows a Saturday bank
+holiday (e.g. boxing day on a Sunday) or the substitute day for a
+Saturday bank holiday t hat precedes a Monday bank
+holiday (e.g. Christmas day on a Saturday). See functions
+`set-boxing-day` and `set-christmas-day` for dealing with these
+special cases."
+  (let ((next-day-date
+         (add-one-day date)))
+    (if (is-weekend date)
+        (find-next-weekday next-day-date)
+      date)))
 
 ;; Local Variables:
 ;; truncate-lines: -1
