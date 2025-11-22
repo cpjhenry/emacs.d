@@ -245,8 +245,8 @@
 
 ;; startup time
 (defun efs/display-startup-time ()
-	(message "GNU Emacs %s loaded in %s with %d garbage collections." emacs-version
-	(format "%.2f seconds" (float-time (time-subtract after-init-time before-init-time))) gcs-done))
+  (message "GNU Emacs %s loaded in %s with %d garbage collection(s)." emacs-version
+    (format "%.2f seconds" (float-time (time-subtract after-init-time before-init-time))) gcs-done))
 (add-hook 'emacs-startup-hook 'efs/display-startup-time)
 
 
