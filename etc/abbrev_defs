@@ -41,8 +41,7 @@
 #+LATEX: \\end{abstract}" nil :count 0)
     ("myheader" ":HEADER:
 #+STARTUP: nofold
-#+OPTIONS: num:nil
-#+OPTIONS: toc:nil
+#+OPTIONS: num:nil toc:nil
 #+LATEX_CLASS_OPTIONS: [a5paper]
 #+LATEX_HEADER: \\usepackage{fontspec}
 #+LATEX_HEADER: \\setmainfont{EB Garamond}
@@ -131,9 +130,13 @@
 #+LATEX: \\renewcommand{\\headrulewidth}{0pt}
 #+LATEX: \\fancyfootinit{\\small\\selectfont}
 :END:" nil :count 0)
+    ("mykeywords" ":KEYWORDS:
+#+DESCRIPTION:
+#+KEYWORDS:
+:END:" nil :count 0)
     ("mytitle" "#+TITLE: 
 #+AUTHOR: Paul J Henry
-#+AUTHOR: MM RAM FRC
+#+AUTHOR: MM RAM AMD
 #+DATE: 
 Goodwood Lodge\\\\
 \\textnumero159 AF&AM GRC

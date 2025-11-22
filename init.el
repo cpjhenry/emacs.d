@@ -1,11 +1,11 @@
 ;;; init.el --- Emacs configuration -*- no-byte-compile: t; lexical-binding: t; -*-
 
-;;; Commentary:
+;;; commentary:
 ;; brew install emacs-plus --with-modern-black-dragon-icon --with-mailutils --with-imagemagick
 
 ;; /usr/local/share/emacs/site-lisp
 
-;;; Code:
+;;; code:
 ;; Initialize terminal
 (blink-cursor-mode -1)
 (delete-selection-mode t)
@@ -1205,7 +1205,9 @@
 ;; :hook
 (add-hook 'org-agenda-finalize-hook 'delete-other-windows)
 (if (featurep 'visual-fill-column)
-	(add-hook 'org-mode-hook 'visual-fill-column-mode--disable))
+    (add-hook 'org-mode-hook 'visual-fill-column-mode--disable))
+(if (featurep 'hl-todo)
+    (add-hook 'org-mode-hook 'hl-todo-mode))
 
 ;; :config
 ;; Ispell should not check code blocks in org mode
@@ -1217,21 +1219,19 @@
 (add-to-list 'org-entities-user '("textnumero" "\\textnumero" nil "&numero;" "No." "No." "№"))
 
 ;; FIXME - Errors with EMACS30
-;; (use-package org-appear ; automatic visibility toggling of Org elements
-;; 	:disabled
-;; 	:hook (org-mode . org-appear-mode))
-
-;; FIXME - Errors with EMACS30
 ;; (use-package org-autolist ; pressing "Return" will insert a new list item automatically
 ;; 	:hook (org-mode . org-autolist-mode))
+;; -- LOCALLY --
+;; (require 'org-autolist)
+;; (add-hook 'org-mode-hook (lambda () (org-autolist-mode)))
 
 (use-package org-autoexport
   :defer t
   :hook (org-mode . org-autoexport-mode))
 
 (use-package org-chef
-	:disabled
-	:if *natasha* :defer t)
+  :disabled
+  :if *natasha* :defer t)
 
 (use-package org-cliplink) ; insert org-mode links from the clipboard
 
@@ -1240,12 +1240,20 @@
 		(ox-extras-activate '(ignore-headlines)))
 
 (use-package org-download ; org-download-yank
-	:if	*natasha*
-	:custom	(org-download-heading-lvl nil)
+  :if *natasha*
+  :custom	(org-download-heading-lvl nil)
 		(org-download-image-org-width 925))
+
+(use-package org-expose-emphasis-markers
+  :hook (org-mode . (lambda () (org-expose-emphasis-markers 'paragraph))))
+
+(require 'org-inline-footnote "init/org-inline-footnote-mode")
 
 (require 'org-pretty-table)
 (add-hook 'org-mode-hook (lambda () (org-pretty-table-mode)))
+
+(use-package org-ref)
+(define-key org-mode-map (kbd "C-=") 'org-ref-insert-link-menu)
 
 (require 'ox-latex)
 (add-to-list 'org-latex-classes '("letter" "\\documentclass{letter}") t)
