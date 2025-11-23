@@ -385,6 +385,41 @@ C-M-S-v			scroll-other-window-down")
 
 (kf-gen-displayer tencodes "Ten-codes" "*Ten-codes*")
 
+(defconst ninetwo
+  "92 CODE
+|------+---------------------------------------+------+-------------------------------------------|
+| Code | Text                                  | Code | Text                                      |
+|------+---------------------------------------+------+-------------------------------------------|
+|   1  | Wait a minute.                        |  25  | Busy on another wire.                     |
+|   2  | Very Important.                       |  26  | Put on ground wire.                       |
+|   3  | What time is it?                      |  27  | Priority, very important.                 |
+|   4  | Where shall I go ahead?               |  28  | Do you get my writing?.                   |
+|   5  | Anything? (Have you business for me?) |  29  | Private, deliver in sealed envelope.      |
+|   6  | I am ready.                           |  30  | No more --- the end.                      |
+|   7  | Are you ready?                        |  31  | Form 31 train order.                      |
+|   8  | Close your key, stop breaking.        |  32  | I understand that I am to ....            |
+|   9  | Priority business. Wire Chief's call. |  33  | Answer is paid.                           |
+|  10  | Keep this circuit closed.             |  34  | Message for all officers.                 |
+|  12  | Do you understand?                    |  35  | You may use my signal to answer this.     |
+|  13  | Understand?                           |  37  | Inform all interested.                    |
+|  14  | What is the weather?                  |  39  | Important, with priority on through wire. |
+|  15  | For you and others to copy.           |  44  | Answer promptly by wire.                  |
+|  17  | Lightning here.                       |  55  | Important.                                |
+|  18  | What's the trouble?                   |  73  | Best Regards.                             |
+|  19  | Form 19 train order.                  |  77  | I have a message for you.                 |
+|  21  | Stop for meal.                        |  88  | Love and kisses.                          |
+|  22  | Wire test.                            |  91  | Superintendent's signal.                  |
+|  23  | All stations copy.                    |  92  | Deliver Promptly.                         |
+|  24  | Repeat this back.                     | 134  | Who is at the key?                        |
+|------+---------------------------------------+------+-------------------------------------------|
+
+A wire signal is a brevity code used by telegraphers to save time and cost when sending long
+messages. The best-known code was the 92 Code adopted by Western Union in 1859. The code was
+designed to reduce bandwidth consumption over telegraph lines, thus speeding transmissions by
+using a numerical code system for frequently used phrases.")
+
+(kf-gen-displayer ninetwo "92 Code" "*92 CODE*")
+
 ;; Local Variables:
 ;; tab-width: 4
 ;; End:

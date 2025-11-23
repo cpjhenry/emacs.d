@@ -827,7 +827,8 @@
 		("NOTE"       success bold)
 		("DEPRECATED" font-lock-doc-face bold)))
   :hook		(prog-mode . hl-todo-mode)
-		(emacs-lisp-mode . hl-todo-mode))
+		(emacs-lisp-mode . hl-todo-mode)
+		(org-mode . hl-todo-mode))
 
 (use-package list-projects)
 
@@ -1147,7 +1148,6 @@
 (setopt	org-export-with-author t
 	org-export-with-broken-links t
 	org-export-with-date t
-	org-export-with-properties nil
 	org-export-with-smart-quotes t
 	org-export-with-sub-superscripts t
 	org-export-with-tables t
@@ -1206,8 +1206,6 @@
 (add-hook 'org-agenda-finalize-hook 'delete-other-windows)
 (if (featurep 'visual-fill-column)
     (add-hook 'org-mode-hook 'visual-fill-column-mode--disable))
-(if (featurep 'hl-todo)
-    (add-hook 'org-mode-hook 'hl-todo-mode))
 
 ;; :config
 ;; Ispell should not check code blocks in org mode
@@ -1247,7 +1245,7 @@
 (use-package org-expose-emphasis-markers
   :hook (org-mode . (lambda () (org-expose-emphasis-markers 'paragraph))))
 
-(require 'org-inline-footnote "init/org-inline-footnote-mode")
+(require 'org-hide-inline-footnotes "init/org-hide-inline-footnotes")
 
 (require 'org-pretty-table)
 (add-hook 'org-mode-hook (lambda () (org-pretty-table-mode)))
@@ -1592,6 +1590,11 @@
 
 (bind-key "C-c z"	'my/agenda)
 
+(global-set-key (kbd "C-c 8 0") 'zero-width-space)
+(defun zero-width-space () "Insert ZERO WIDTH SPACE."
+  (interactive)
+  (insert-char (char-from-name "ZERO WIDTH SPACE"))
+  (message "ZWS"))
 (global-set-key (kbd "C-c 8 c") (kbd "✓"))
 (global-set-key (kbd "C-c 8 n") (kbd "№"))
 (global-set-key (kbd "C-c 8 p") (kbd "¶"))
