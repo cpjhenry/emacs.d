@@ -574,8 +574,8 @@
 
 ;; calendar
 (require 'calendar)
-(load "init/calendar-routines")
 (require 'local-holidays "init/calendar-local-holidays")
+(load "init/calendar-routines")
 
 (setq calendar-date-style 'iso
       calendar-mark-holidays-flag t
