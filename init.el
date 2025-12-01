@@ -148,6 +148,7 @@
 	delete-by-moving-to-trash t
 	enable-recursive-minibuffers t
 	enable-remote-dir-locals t ; .dir-locals.el
+	fill-nobreak-predicate '(fill-single-word-nobreak-p fill-single-char-nobreak-p fill-french-nobreak-p)
 	find-file-visit-truename t
 	goto-address-mail-face 'default
 	grep-use-headings t
@@ -574,85 +575,31 @@
 ;; calendar
 (require 'calendar)
 (load "init/calendar-routines")
+(require 'local-holidays "init/calendar-local-holidays")
 
-;; `setq' is used here to override persistent defaults.
-(setq	calendar-date-style 'iso
-	calendar-mark-holidays-flag t
-	calendar-month-header '(propertize
-	  (format "%s %d" (calendar-month-name month) year)
-	  'font-lock-face 'calendar-month-header)
+(setq calendar-date-style 'iso
+      calendar-mark-holidays-flag t
+      calendar-month-header '(propertize
+	(format "%s %d" (calendar-month-name month) year)
+	'font-lock-face 'calendar-month-header)
 
-	holiday-general-holidays nil
-	calendar-chinese-all-holidays-flag t
-	calendar-christian-all-holidays-flag t
+      calendar-chinese-all-holidays-flag t
+      calendar-christian-all-holidays-flag t
 
-	holiday-local-holidays '( ; National / Provincial Holidays and Commemorations
-	  (holiday-fixed 1 1    "New Year's Day")
-	  (holiday-fixed 2 2    "Groundhog Day")
-	  (holiday-fixed 2 14   "Valentine's Day")
-	  (holiday-fixed 4 1    "April Fools' Day")
-	  (holiday-float 5 0 2  "Mother's Day")
-	  (holiday-float 6 0 3  "Father's Day")
-	  (holiday-fixed 7 1    "Canada Day")
-	  (holiday-float 8 1 1  "Civic Holiday")
-	  (holiday-float 9 1 1  "Labour Day")
-	  (holiday-float 10 1 2 "Thanksgiving")
-	  (holiday-fixed 10 31  "Halloween")
-	  (holiday-fixed 11 11  "Remembrance Day")
-	  (holiday-fixed 1 21   "Lincoln Alexander Day")
-	  (holiday-float 2 1 3  "Family Day")
-	  (holiday-fixed 2 15   "National Flag Day")
-	  (holiday-float 3 1 2  "Commonwealth Day")
-	  (holiday-fixed 4 6    "Tartan Day")
-	  (holiday-fixed 4 9    "Vimy Ridge Day")
-	  (holiday-fixed 6 21   "Indigenous Peoples Day")
-	  (holiday-fixed 9 30   "Truth and Reconciliation")
-	  (holiday-float 11 0 2 "Remembrance Sunday")
-	  (holiday-fixed 12 11  "Statute of Westminster"))
-
-	holiday-other-holidays '(
-	  ;; third Monday of January
-	  (holiday-float 1 1 3 "Martin Luther King Day")
-	  ;; first Saturday of June following the Summer Solstice
-	  (holiday-float 6 6 1 "Midsummer"
-	    (floor (nth 1 (solar-equinoxes/solstices 1 displayed-year))))
-	  ;; first Tuesday in November after the first Monday, every four even-numbered years
-	  ;; (between November 2 and 8th)
-	  (holiday-sexp '(if (zerop (% year 4)) (calendar-gregorian-from-absolute (1+
-	    (calendar-dayname-on-or-before 1 (+ 6 (calendar-absolute-from-gregorian
-	    (list 11 1 year)))))))
-	    "US Presidential Election")
-	  (holiday-float 11 4 4 "US Thanksgiving")
-
-	  (holiday-fixed
-	    (calendar-extract-month (add-one-day (car (car (holiday-float 11 4 4 "")))))
-	    (calendar-extract-day   (add-one-day (car (car (holiday-float 11 4 4 "")))))
-	    "Black Friday")
-
-	  (holiday-advent -11 "Prayer & Repentance")
-	  (holiday-fixed 12
-	    (floor (nth 1 (solar-equinoxes/solstices 3 displayed-year))) "Midwinter"))
-
-	;; FIXME New Year is based on date of vernal equinox
-	holiday-bahai-holidays '(
-	  (holiday-fixed 3 (floor (nth 1 (solar-equinoxes/solstices 1 displayed-year)))
-	  (format "Bahá’í New Year (Naw-Ruz) %d" (- displayed-year (1- 1844)))))
-
-	holiday-oriental-holidays '(
-	  (holiday-chinese-new-year)
-	  (if calendar-chinese-all-holidays-flag (append
-	    (holiday-chinese 1 15 "Lantern Festival")
-	    (holiday-chinese-qingming)
-	    (holiday-chinese 5 5 "Dragon Boat Festival")
-	    (holiday-chinese 7 7 "Double Seventh Festival")
-	    (holiday-chinese 7 15 "Ghost Festival")
-	    (holiday-chinese 8 15 "Mid-Autumn Festival")
-	    (holiday-chinese 9 9 "Double Ninth Festival"))))
-
-	holiday-islamic-holidays '(
-	  (holiday-islamic-new-year)
-	  (holiday-islamic 9 1 "Ramadan Begins")
-	  (holiday-islamic 10 1 "Id-al-Fitr")))
+      holiday-other-holidays '(
+	;; third Monday of January
+	(holiday-float 1 1 3 "Martin Luther King Day")
+	;; first Saturday of June following the Summer Solstice
+	(holiday-float 6 6 1 "Midsummer" (floor (nth 1 (solar-equinoxes/solstices 1 displayed-year))))
+	;; first Tuesday in November after the first Monday, every four even-numbered years
+	;; (between November 2 and 8th)
+	(holiday-sexp '(if (zerop (% year 4)) (calendar-gregorian-from-absolute (1+
+	  (calendar-dayname-on-or-before 1 (+ 6 (calendar-absolute-from-gregorian (list 11 1 year)))))))
+	  "US Presidential Election")
+	(holiday-float 11 4 4 "US Thanksgiving")
+	(holiday-float 11 5 4 "Black Friday")
+	(holiday-advent -11 "Prayer & Repentance")
+	(holiday-fixed 12 (floor (nth 1 (solar-equinoxes/solstices 3 displayed-year))) "Midwinter")))
 
 (keymap-set calendar-mode-map "m" nil)
 (keymap-set calendar-mode-map "q" 'calendar-exit-kill)
