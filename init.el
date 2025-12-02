@@ -145,6 +145,7 @@
 	case-fold-search t
 	confirm-kill-processes nil ; quit Emacs directly even if there are running processes
 	cursor-in-non-selected-windows nil
+	custom-buffer-done-kill t
 	delete-by-moving-to-trash t
 	enable-recursive-minibuffers t
 	enable-remote-dir-locals t ; .dir-locals.el
@@ -574,11 +575,11 @@
 
 ;; calendar
 (require 'calendar)
-(require 'local-holidays "init/calendar-local-holidays")
+(require 'local-holidays)
 (load "init/calendar-routines")
 
-(setq calendar-date-style 'iso
-      calendar-mark-holidays-flag t
+(calendar-set-date-style 'iso)
+(setq calendar-mark-holidays-flag t
       calendar-month-header '(propertize
 	(format "%s %d" (calendar-month-name month) year)
 	'font-lock-face 'calendar-month-header)
@@ -592,7 +593,6 @@
 	;; first Saturday of June following the Summer Solstice
 	(holiday-float 6 6 1 "Midsummer" (floor (nth 1 (solar-equinoxes/solstices 1 displayed-year))))
 	;; first Tuesday in November after the first Monday, every four even-numbered years
-	;; (between November 2 and 8th)
 	(holiday-sexp '(if (zerop (% year 4)) (calendar-gregorian-from-absolute (1+
 	  (calendar-dayname-on-or-before 1 (+ 6 (calendar-absolute-from-gregorian (list 11 1 year)))))))
 	  "US Presidential Election")
@@ -613,8 +613,7 @@
   ["Yearly Holidays" list-holidays-this-year])
 
 (advice-add 'calendar-exit :before #'save-diary-before-calendar-exit)
-(advice-add 'calendar-goto-info-node
-  :after (lambda (&rest r) (calendar-exit-kill) (delete-other-windows)))
+(advice-add 'calendar-goto-info-node :after (lambda (&rest r) (calendar-exit-kill) (delete-other-windows)))
 
 (require 'diary-lib)
 (setopt diary-file "~/Documents/diary"

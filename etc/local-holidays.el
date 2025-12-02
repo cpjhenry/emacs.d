@@ -1,9 +1,10 @@
-;;; calendar-local-holidays.el --- National / Provincial Holidays and Commemorations
+;;; local-holidays.el --- Site-specific settings
 ;;; commentary:
 
 ;;; code:
 (setq holiday-general-holidays nil
-      holiday-local-holidays '(
+
+      holiday-local-holidays '( ;; National / Provincial Holidays and Commemorations
 	  (holiday-fixed 1 1    "New Year's Day")
 	  (holiday-fixed 2 2    "Groundhog Day")
 	  (holiday-fixed 2 14   "Valentine's Day")
@@ -49,4 +50,4 @@
 	  (holiday-islamic 10 1 "Id-al-Fitr")))
 
 (provide 'local-holidays)
-;;; calendar-local-holidays.el ends here.
+;;; local-holidays.el ends here.
