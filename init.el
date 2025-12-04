@@ -157,7 +157,7 @@
 	help-enable-variable-value-editing t
 	help-window-select t
 	indicate-empty-lines t
-	inhibit-default-init t
+	inhibit-default-init nil
 	inhibit-startup-message t ; 'About Emacs'
 	inhibit-startup-buffer-menu t ; Don't show *Buffer list*
 	initial-scratch-message nil ; Makes *scratch* empty
@@ -575,7 +575,6 @@
 
 ;; calendar
 (require 'calendar)
-(require 'local-holidays)
 (load "init/calendar-routines")
 
 (calendar-set-date-style 'iso)
@@ -1005,10 +1004,10 @@
 (add-to-list 'auto-mode-alist '("\\.html$" . html-mode))
 
 ;; XML
-(setq auto-mode-alist (cons '("\\.xml$" . nxml-mode) auto-mode-alist))
-(setq auto-mode-alist (cons '("\\.xsl$" . nxml-mode) auto-mode-alist))
-(setq auto-mode-alist (cons '("\\.xhtml$" . nxml-mode) auto-mode-alist))
-(setq auto-mode-alist (cons '("\\.page$" . nxml-mode) auto-mode-alist))
+(add-to-list 'auto-mode-alist '("\\.xml$" . nxml-mode))
+(add-to-list 'auto-mode-alist '("\\.xsl$" . nxml-mode))
+(add-to-list 'auto-mode-alist '("\\.xhtml$" . nxml-mode))
+(add-to-list 'auto-mode-alist '("\\.page$" . nxml-mode))
 
 (autoload 'xml-mode "nxml" "XML editing mode" t)
 ;; (add-hook 'nxml-mode-hook 'show-parens-local-mode)
