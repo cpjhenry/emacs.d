@@ -576,29 +576,31 @@
 ;; calendar
 (require 'calendar)
 (load "init/calendar-routines")
+(require 'moon-holidays "init/moon-holidays")
 
 (calendar-set-date-style 'iso)
 (setq calendar-mark-holidays-flag t
-      calendar-month-header '(propertize
-	(format "%s %d" (calendar-month-name month) year)
-	'font-lock-face 'calendar-month-header)
+  calendar-month-header '(propertize
+    (format "%s %d" (calendar-month-name month) year)
+    'font-lock-face 'calendar-month-header)
 
-      calendar-chinese-all-holidays-flag t
-      calendar-christian-all-holidays-flag t
+  calendar-chinese-all-holidays-flag t
+  calendar-christian-all-holidays-flag t
 
-      holiday-other-holidays '(
-	;; third Monday of January
-	(holiday-float 1 1 3 "Martin Luther King Day")
-	;; first Saturday of June following the Summer Solstice
-	(holiday-float 6 6 1 "Midsummer" (floor (nth 1 (solar-equinoxes/solstices 1 displayed-year))))
-	;; first Tuesday in November after the first Monday, every four even-numbered years
-	(holiday-sexp '(if (zerop (% year 4)) (calendar-gregorian-from-absolute (1+
-	  (calendar-dayname-on-or-before 1 (+ 6 (calendar-absolute-from-gregorian (list 11 1 year)))))))
-	  "US Presidential Election")
-	(holiday-float 11 4 4 "US Thanksgiving")
-	(holiday-float 11 5 4 "Black Friday")
-	(holiday-advent -11 "Prayer & Repentance")
-	(holiday-fixed 12 (floor (nth 1 (solar-equinoxes/solstices 3 displayed-year))) "Midwinter")))
+  holiday-other-holidays '(
+    ;; third Monday of January
+    (holiday-float 1 1 3 "Martin Luther King Day")
+    ;; first Saturday of June following the Summer Solstice
+    (holiday-float 6 6 1 "Midsummer" (floor (nth 1 (solar-equinoxes/solstices 1 displayed-year))))
+    ;; first Tuesday in November after the first Monday, every four even-numbered years
+    (holiday-sexp '(if (zerop (% year 4)) (calendar-gregorian-from-absolute (1+
+      (calendar-dayname-on-or-before 1 (+ 6 (calendar-absolute-from-gregorian (list 11 1 year)))))))
+      "US Presidential Election")
+    (holiday-float 11 4 4 "US Thanksgiving")
+    (holiday-float 11 5 4 "Black Friday")
+    (holiday-advent -11 "Prayer & Repentance")
+    (holiday-fixed 12 (floor (nth 1 (solar-equinoxes/solstices 3 displayed-year))) "Midwinter")
+    (holiday-buddhist-full-moons)))
 
 (keymap-set calendar-mode-map "m" nil)
 (keymap-set calendar-mode-map "q" 'calendar-exit-kill)
@@ -1619,4 +1621,4 @@
 ; LocalWords:  vcusepackage latexmk synctex bibtex cond xah dirs Ctrl
 ; LocalWords:  remotehost flycheck modeline mori featurep cbc smex
 ; LocalWords:  setq's setopt mailutils imagemagick usr dunnet Async
-; LocalWords:  dir fullscreen dropbox keymap toc
+; LocalWords:  dir fullscreen dropbox keymap toc buddhist
