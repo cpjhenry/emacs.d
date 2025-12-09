@@ -2,6 +2,7 @@
 ;;; commentary:
 
 ;;; code:
+(require 'calendar)
 (require 'lunar)
 (require 'cl-lib)
 
@@ -21,6 +22,7 @@ This function is meant to be used in `calendar-holidays` /
 `holiday-other-holidays` as a (function ...) holiday form, and it
 only returns dates that are visible in the current 3-month
 calendar window."
+
   (let* ((mid-m displayed-month)
          (mid-y displayed-year)
          ;; Compute previous and next months for the 3-month window
@@ -66,20 +68,21 @@ calendar window."
                       (push (list next-date next-name) holidays)))))))))
       holidays)))
 
-(defun holiday-buddhist-full-moons ()
+(defun holiday-buddhist-moons ()
   "Return all Theravadin full-moon holidays for the visible window.
 
 This uses `holiday-named-full-moons' for each relevant month and
 concatenates the results."
   (append
-   (holiday-named-full-moons '(2  "Magha (Sangha)"))
-   (holiday-named-full-moons '(5  "Vesak (Buddha)"))
-   (holiday-named-full-moons '(7  "Asalha (Dhamma)" "Vassa"))
-   (holiday-named-full-moons '(10 "Pavarana"))))
+   (holiday-fixed 4 13 "Traditional Buddhist Calendar")
+   (holiday-named-full-moons '(5  "Vesak (Buddha Day)"))
+   (holiday-named-full-moons '(7  "Asalha (Dhamma Day)" "Vassa"))
+   (holiday-named-full-moons '(10 "Pavarana"))
+   (holiday-named-full-moons '(2  "Magha (Sangha Day)"))))
 
 ;;;###autoload
 (defcustom holiday-buddhist-holidays
-  '(holiday-buddhist-full-moons)
+  '(holiday-buddhist-moons)
   "Buddhist (Theravadin) lunar holidays based on full moons."
   :type 'sexp)
 

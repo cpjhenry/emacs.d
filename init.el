@@ -192,6 +192,7 @@
 	use-short-answers t
 	view-read-only nil ; turn on view mode when buffer is read-only
 	what-cursor-show-names t
+	whois-server-name "whois.ca.fury.ca"
 	x-stretch-cursor t
 
 	;; completion
@@ -391,6 +392,10 @@
 	"\\`\\*\\(Warnings\\|Compile-Log\\)\\*\\'"
 	(display-buffer-no-window)
 	(allow-no-window . t)))
+
+;; whois
+;; HACK - when executing command, resultant buffer needs local-key set.
+;(advice-add 'whois :after (keymap-local-set "q" 'kill-current-buffer))
 
 
 ;; IDO
@@ -600,7 +605,7 @@
     (holiday-float 11 5 4 "Black Friday")
     (holiday-advent -11 "Prayer & Repentance")
     (holiday-fixed 12 (floor (nth 1 (solar-equinoxes/solstices 3 displayed-year))) "Midwinter")
-    (holiday-buddhist-full-moons)))
+    (holiday-buddhist-moons)))
 
 (keymap-set calendar-mode-map "m" nil)
 (keymap-set calendar-mode-map "q" 'calendar-exit-kill)
@@ -655,6 +660,14 @@
   "☽ First Quarter Moon"
   "○ Full Moon"
   "☾ Last Quarter Moon"))
+
+;; Roman clock
+(require 'roman-clock "init/roman-clock")
+(global-set-key (kbd "C-c d r") #'roman-clock)
+(global-set-key (kbd "C-c d R") #'roman-clock-ante-diem)
+
+(require 'roman-clock-period-notify-mode "init/roman-clock-period-notify-mode")
+(if (featurep 'roman-clock-period-notify-mode) (roman-clock-period-notify-mode))
 
 
 ;; Initialize packages
@@ -1190,6 +1203,7 @@
 		(org-download-image-org-width 925))
 
 (use-package org-expose-emphasis-markers
+  :disabled ; doesn't work with org DONE tags
   :hook (org-mode . (lambda () (org-expose-emphasis-markers 'paragraph))))
 
 (require 'org-hide-inline-footnotes "init/org-hide-inline-footnotes")

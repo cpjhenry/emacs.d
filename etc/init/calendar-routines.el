@@ -1,8 +1,10 @@
 ;;; calendar --- settings / functions
 ;;; Commentary:
-;;; Code:
 
-(defun calendar-exit-kill ()
+;;; Code:
+(require 'calendar)
+
+(defun calendar-exit-kill () "Kill Calendar when exiting."
 	(interactive)
 	(calendar-exit 'kill)
 	(let ((buffer "*wclock*"))(and (get-buffer buffer) (kill-buffer buffer))))
@@ -70,6 +72,9 @@ special cases."
     (if (is-weekend date)
         (find-next-weekday next-day-date)
       date)))
+
+(provide 'calendar-routines)
+;;; calendar-routines.el ends here.
 
 ;; Local Variables:
 ;; truncate-lines: -1
