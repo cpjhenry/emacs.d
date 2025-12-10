@@ -1,25 +1,59 @@
-;; Elfeed routines
+;;; elfeed-routines.el --- Elfeed routines
+;;; commentary:
+;;; code:
+(require 'elfeed)
+
 (defun elfeed-mark-all-as-read ()
-	(interactive)
-	(mark-whole-buffer)
-	(elfeed-search-untag-all-unread))
+  (interactive)
+  (mark-whole-buffer)
+  (elfeed-search-untag-all-unread))
 
 (defun elfeed-beginning-to-point-as-read ()
-	(interactive)
-	(mark-from-beginning-of-buffer)
-	(elfeed-search-untag-all-unread))
+  (interactive)
+  (mark-from-beginning-of-buffer)
+  (elfeed-search-untag-all-unread))
 
 (defun elfeed-show-visit-secondary-browser ()
-	(interactive)
-	(elfeed-show-visit '(4)))
+  (interactive)
+  (elfeed-show-visit '(4)))
 
 (defun elfeed-copy-edit (buff)
-	(if (boundp 'buffer-read-only) (read-only-mode -1))
-	(replace-string "&#38;" "&" nil (point-min) (point-max))
-	(if (not (boundp 'buffer-read-only)) (read-only-mode))
-	(goto-char (point-min))
-	(message nil))
+  "Fixes `\&' and other spurious typesetting errors in BUFF.
 
+Use: (advice-add \\='elfeed-search-show-entry :after \\='elfeed-copy-edit)"
+
+  (if (boundp 'buffer-read-only) (read-only-mode -1))
+
+  (while (search-forward "&#38;" nil t)
+    (replace-match "&"))
+  (while (search-forward ",  " nil t nil)
+    (replace-match ", "))
+
+  (if (not (boundp 'buffer-read-only)) (read-only-mode))
+  (goto-char (point-min))
+  (message nil))
+
+(defun elfeed-search-set-filter-nil ()
+  "Reset Elfeed search filter."
+  (interactive)
+  (elfeed-search-set-filter nil))
+
+(require 'shr)
+(defun elfeed-toggle-images ()
+  "Toggle images in `elfeed-show'."
+  (interactive)
+  (setq shr-inhibit-images (not shr-inhibit-images))
+  (elfeed-show-refresh))
+
+(advice-add 'elfeed-search-quit-window :override
+  (lambda() "Save the database, kill elfeed buffers."
+  (interactive)
+  (elfeed-db-save)
+  (kill-current-buffer)
+  (let ((buffer elfeed-log-buffer-name))
+  (and (get-buffer buffer) (kill-buffer buffer)))))
+
+;;; others
 ;; https://noonker.github.io/posts/2020-04-22-elfeed/
 (defun todo (text &optional body)
 	(interactive "sTodo: ")
@@ -52,18 +86,6 @@
 	(replace (replace-regexp-in-string "#38;" "" original)))
 	(setf (elfeed-entry-content entry) (elfeed-ref replace))))
 ;(add-hook 'elfeed-new-entry-hook #'hundred-times-better)
-
-(advice-add 'elfeed-search-quit-window :override
-	(lambda() "Save the database, kill elfeed buffers."
-	(interactive)
-	(elfeed-db-save)
-	(kill-current-buffer)
-	(let ((buffer elfeed-log-buffer-name))
-	(and (get-buffer buffer) (kill-buffer buffer)))))
-
-(defun elfeed-search-set-filter-nil () "Reset Elfeed search filter."
-	(interactive)
-	(elfeed-search-set-filter nil))
 
 ;; https://takeonrules.com/2024/08/11/exporting-org-mode-elfeed-links/
 (org-link-set-parameters "elfeed"
@@ -108,4 +130,5 @@
 	(scroll-down-command arg)
 	(error (elfeed-show-prev)))))
 
+;;; elfeed-routines.el ends here
 ; LocalWords:  elfeed

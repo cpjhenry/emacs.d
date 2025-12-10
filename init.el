@@ -669,6 +669,8 @@
 (require 'roman-clock-period-notify-mode "init/roman-clock-period-notify-mode")
 (if (featurep 'roman-clock-period-notify-mode) (roman-clock-period-notify-mode))
 
+(use-package sparkweather :after calendar)
+
 
 ;; Initialize packages
 
@@ -878,7 +880,8 @@
 		("]" . end-of-buffer)
 		("TAB" . shr-next-link)
 		("SPC" . scroll-up-half)
-		("B" . elfeed-show-visit-secondary-browser))
+		("B" . elfeed-show-visit-secondary-browser)
+		("i" . elfeed-toggle-images))
 	:init	(easy-menu-add-item global-map '(menu-bar tools)
 			["Read RSS Feeds" elfeed :help "Read RSS Feeds"] "Read Mail")
 	:config	(setq
@@ -894,9 +897,6 @@
 	(eval-after-load 'elfeed `(make-directory ,(concat user-emacs-directory "var/elfeed/") t))
 	(advice-add 'elfeed-search-update--force :after (lambda() (goto-char (point-min))))
 	(advice-add 'elfeed-search-show-entry :after 'elfeed-copy-edit)
-
-	;; HACK Figure this one out
-	;; (add-to-list 'prettify-symbols-alist '("\\&\\#38\\;" . "&"))
 
 	(load "rc/feeds" 'noerror 'nomessage)
 	(load "init/elfeed-routines"))
@@ -1201,6 +1201,10 @@
   :if *natasha*
   :custom	(org-download-heading-lvl nil)
 		(org-download-image-org-width 925))
+
+(use-package org-drill
+  :if *natasha*
+  :disabled)
 
 (use-package org-expose-emphasis-markers
   :disabled ; doesn't work with org DONE tags
