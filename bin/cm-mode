@@ -5,4 +5,4 @@
 cond_source() { [ -f $1 ] && . $1; }
 cond_source $HOME/.bash_routines
 
-calps
+calm $(date +"%m %Y")

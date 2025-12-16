@@ -84,6 +84,7 @@ concatenates the results."
 (defcustom holiday-buddhist-holidays
   '(holiday-buddhist-moons)
   "Buddhist (Theravadin) lunar holidays based on full moons."
+  :group 'holidays
   :type 'sexp)
 
 (provide 'moon-holidays)

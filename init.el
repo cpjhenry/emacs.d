@@ -9,7 +9,6 @@
 ;; Initialize terminal
 (blink-cursor-mode -1)
 (delete-selection-mode t)
-(electric-indent-mode -1)
 (show-paren-mode -1)
 (tooltip-mode -1)
 (toggle-frame-maximized)
@@ -267,6 +266,8 @@
 	bookmark-set-fringe-mark nil
 	bookmark-sort-flag nil
 	bookmark-default-file	(concat user-emacs-directory "etc/bookmarks"))
+
+(electric-indent-mode -1)
 
 (require 'em-alias)
 (require 'esh-mode)
@@ -607,6 +608,13 @@
     (holiday-fixed 12 (floor (nth 1 (solar-equinoxes/solstices 3 displayed-year))) "Midwinter")
     (holiday-buddhist-moons)))
 
+;; HACK
+;; add Scottish Quarter Days
+;;  2 Feb  Candlemas
+;; 15 May  Whitsun
+;;  1 Aug  Lammas
+;; 11 Nov  Martinmas
+
 (keymap-set calendar-mode-map "m" nil)
 (keymap-set calendar-mode-map "q" 'calendar-exit-kill)
 (keymap-set calendar-mode-map "w" 'calendar-world-clock)
@@ -669,7 +677,10 @@
 (require 'roman-clock-period-notify-mode "init/roman-clock-period-notify-mode")
 (if (featurep 'roman-clock-period-notify-mode) (roman-clock-period-notify-mode))
 
-(use-package sparkweather :after calendar)
+(use-package sparkweather
+  :after calendar
+  :bind (:map sparkweather-mode-map
+	 ("q" . quit-window-kill)))
 
 
 ;; Initialize packages
@@ -715,7 +726,7 @@
   :custom (dictionary-server "dict.org"))
 
 (use-package elpher
-  :bind   (	:map elpher-mode-map
+  :bind   (:map elpher-mode-map
 	  ("[" . elpher-back))
   :hook	  (elpher-mode . (lambda()
 	  (setq-local left-margin-width 10)
@@ -755,7 +766,10 @@
   :custom (flycheck-keymap-prefix "!")
   :hook	  (emacs-lisp-mode . flycheck-mode)
   :init	  (require 'checkdoc)
-  	  (setq checkdoc-force-docstrings-flag nil)
+  	  (setq
+		checkdoc-column-zero-backslash-before-paren nil
+	   	checkdoc-force-docstrings-flag nil
+		checkdoc--argument-missing-flag nil)
   :config (which-key-alias "C-x !" "flycheck")
   	  (if (featurep 'ibuf-ext)
 	    (add-to-list 'ibuffer-never-show-predicates "^\\*Flycheck error messages\\*"))
@@ -1057,6 +1071,19 @@
 ;; HACK  convert to use-package (using :ensure nil)
 ;; FIXME both setq below fail as setopt
 
+;; HACK --- fix DEFCUSTOM for hidden keywords
+;; (defcustom org-hidden-keywords nil
+;;   "List of symbols corresponding to keywords to be hidden in the Org buffer.
+;; For example, a value (title) for this list makes the document's title
+;; appear in the buffer without the initial \"#+TITLE:\" part."
+;;   :group 'org-appearance
+;;   :package-version '(Org . "9.5")
+;;   :type '(set (const :tag "#+AUTHOR " myauthor)
+;; 	      (const :tag "#+DATE " mydate)
+;; 	      (const :tag "#+EMAIL " myemail)
+;; 	      (const :tag "#+SUBTITLE " mysubtitle)
+;; 	      (const :tag "#+TITLE " mytitle)))
+
 (require 'org)
 
 ;; :custom
@@ -1215,7 +1242,9 @@
 (require 'org-pretty-table)
 (add-hook 'org-mode-hook (lambda () (org-pretty-table-mode)))
 
-(use-package org-ref)
+(use-package org-ref
+  :if *natasha*
+  :disabled)
 (define-key org-mode-map (kbd "C-=") 'org-ref-insert-link-menu)
 
 (require 'ox-latex)

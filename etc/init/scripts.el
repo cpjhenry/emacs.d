@@ -1,6 +1,7 @@
 ;;; scripts.el --- execute bash scripts -*- lexical-binding: t -*-
 
 ;;; commentary:
+
 ;;; code:
 
 (defun di () "Daily information."
@@ -20,6 +21,12 @@
 	(interactive)
 	(switch-to-buffer "*alert*")
 	(shell-command "alert -f" (current-buffer))
+	(view-mode))
+
+(defun maritime () "Maritime alerts from Environment Canada."
+	(interactive)
+	(switch-to-buffer "*maritime alerts*")
+	(shell-command "alert -m |sed '1s/$/\\n/'" (current-buffer))
 	(view-mode))
 
 (defun cbc () "Today's headlines from CBC Ottawa."

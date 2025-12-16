@@ -12,7 +12,7 @@
 (require 'calendar)
 
 (defgroup roman-clock nil
-  "Roman-style 6-hour clock using local time.
+"Roman-style 6-hour clock using local time.
 The Roman day begins at 18:00 local, and the *date label*
 advances at 18:00 (i.e., after 18:00 it shows 'tomorrow')."
   :group 'time)
@@ -22,12 +22,12 @@ advances at 18:00 (i.e., after 18:00 it shows 'tomorrow')."
 ;;; ------------------------------------------------------------
 
 (defun roman-clock--sec-since-midnight (sec min hour)
-  "Return number of seconds since midnight from SEC, MIN, HOUR.
-\(Kept for possible reuse; not used in the core logic now.\)"
+"Return number of seconds since midnight from SEC, MIN, HOUR.
+(Kept for possible reuse; not used in the core logic now.)"
   (+ sec (* 60 min) (* 3600 hour)))
 
 (defun roman-clock--int-to-roman (n)
-  "Convert positive integer N to a Roman numeral string."
+"Convert positive integer N to a Roman numeral string."
   (let ((pairs '((1000 . "M") (900 . "CM") (500 . "D") (400 . "CD")
                  (100 . "C") (90 . "XC") (50 . "L") (40 . "XL")
                  (10 . "X") (9 . "IX") (5 . "V") (4 . "IV") (1 . "I")))
@@ -74,8 +74,20 @@ advances at 18:00 (i.e., after 18:00 it shows 'tomorrow')."
    "Decembribus"] ; Dec
   )
 
+(defconst roman-clock--latin-day
+  ;; 1..7
+  [nil
+   "dies Lunae"	   ; Monday (The Moon)
+   "dies Martis"   ; Tuesday (Mars)
+   "dies Mercurii" ; Wednesday (Mercury)
+   "dies Iovis"	   ; Thursday (Jupiter)
+   "dies Veneris"  ; Friday (Venus)
+   "dies Saturni"  ; Saturday (Saturn)
+   "dies Solis"]   ; Sunday (The Sun)
+  )
+
 (defun roman-clock--roman-calendar-string (day mon year)
-  "Return the Roman 'ante diem' style date string for DAY/MON/YEAR.
+"Return the Roman 'ante diem' style date string for DAY/MON/YEAR.
 
 Examples:
   1 Dec  → \"Kalendis Decembribus\"
@@ -163,7 +175,7 @@ Examples:
                       roman-n key-name acc-month-target))))))))))
 
 (defun roman-clock--roman-numeral (n)
-  "Return a Roman numeral string for positive integer N (up to ~3999)."
+"Return a Roman numeral string for positive integer N (up to ~3999)."
   (let ((pairs '((1000 . "M") (900 . "CM")
                  (500 . "D")  (400 . "CD")
                  (100 . "C")  (90 . "XC")
@@ -178,23 +190,23 @@ Examples:
               n   (- n (car p)))))))
 
 (defun roman-clock--month-abbrev (mon)
-  "Return a short Latin-ish month label for MON (1–12)."
+"Return a short Latin-ish month label for MON (1–12)."
   (nth (1- mon)
        '("Ian." "Feb." "Mart." "Apr." "Mai." "Iun."
          "Iul." "Aug." "Sept." "Oct." "Nov." "Dec.")))
 
 (defun roman-clock--nones-and-ides (mon)
-  "Return (Nones Ides) day numbers for month MON."
+"Return (Nones Ides) day numbers for month MON."
   (if (memq mon '(3 5 7 10))        ; March, May, July, October
       (list 7 15)
     (list 5 13)))
 
 (defun roman-clock--days-in-month (mon year)
-  "Return number of days in month MON of YEAR."
+"Return number of days in month MON of YEAR."
   (calendar-last-day-of-month mon year))
 
-(defun roman-clock--ante-diem-from-ymd (day mon year)
-  "Return a Roman 'ante diem' date string for DAY/MON/YEAR.
+(defun roman-clock--ante-diem-from-dmy (day mon year)
+"Return a Roman 'ante diem' date string for DAY/MON/YEAR.
 
 Examples (not exhaustive):
   1 March  → \"Kal. Mart.\"
@@ -251,13 +263,13 @@ Examples (not exhaustive):
           (format "a.d. %s Kal. %s" roman next-name)))))))
 
 (defun roman-clock-ante-diem-string (&optional abbreviated)
-  "Return ante diem-style Roman calendar date for the *current Roman day*.
+"Return ante diem-style Roman calendar date for the *current Roman day*.
 
 Roman day: begins at local 18:00. After 18:00, the \"day\" is
 treated as tomorrow’s civil date.
 
 If ABBREVIATED is non-nil, return the abbreviated format
-\(using `roman-clock--ante-diem-from-ymd`). Otherwise, return the
+(using `roman-clock--ante-diem-from-dmy`). Otherwise, return the
 long form (using `roman-clock--roman-calendar-string`)."
 
   (let* ((now-time (current-time))
@@ -271,14 +283,14 @@ long form (using `roman-clock--roman-calendar-string`)."
          (month (nth 4 roman-fields))
          (year  (nth 5 roman-fields)))
     (if abbreviated
-        (roman-clock--ante-diem-from-ymd day month year)
+        (roman-clock--ante-diem-from-dmy day month year)
       (roman-clock--roman-calendar-string day month year))))
 
 ;;; ------------------------------------------------------------
 ;;; Core function: compute Roman time and format it
 ;;; ------------------------------------------------------------
 (defun roman-clock-current-string ()
-  "Return the current local Roman 6-hour clock as a string.
+"Return the current local Roman 6-hour clock as a string.
 
 Roman day:
   - Begins at local 18:00.
@@ -359,12 +371,20 @@ Format example:
 ;;; Interactive command
 ;;; ------------------------------------------------------------
 (defun roman-clock ()
-  "Display the current local Roman 6-hour clock in the echo area."
+"Display the current local Roman 6-hour clock in the echo area."
   (interactive)
   (message "%s" (roman-clock-current-string)))
 
+(defun roman-clock- ()
+"Echo ante diem-style Roman calendar date and abbreviation for current Roman day.
+
+Roman day begins at 18:00 local time. After 18:00, the date is treated as tomorrow’s civil date."
+
+  (interactive)
+  (message "%s (%s)" (roman-clock-ante-diem-string) (roman-clock-ante-diem-string '(4))))
+
 (defun roman-clock-ante-diem (&optional prefix)
-  "Echo ante diem-style Roman calendar date for the current Roman day.
+"Echo ante diem-style Roman calendar date for the current Roman day.
 
 Roman day begins at 18:00 local time. After 18:00, the date is
 treated as tomorrow’s civil date.
