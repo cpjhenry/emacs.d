@@ -606,14 +606,12 @@
     (holiday-float 11 5 4 "Black Friday")
     (holiday-advent -11 "Prayer & Repentance")
     (holiday-fixed 12 (floor (nth 1 (solar-equinoxes/solstices 3 displayed-year))) "Midwinter")
+    (append ;; Scottish Quarter Days
+      (holiday-fixed  2  2 "Candlemas")
+      (holiday-fixed  5 15 "Whitsun")
+      (holiday-fixed  8  1 "Lammas")
+      (holiday-fixed 11 11 "Martinmas"))
     (holiday-buddhist-moons)))
-
-;; HACK
-;; add Scottish Quarter Days
-;;  2 Feb  Candlemas
-;; 15 May  Whitsun
-;;  1 Aug  Lammas
-;; 11 Nov  Martinmas
 
 (keymap-set calendar-mode-map "m" nil)
 (keymap-set calendar-mode-map "q" 'calendar-exit-kill)
