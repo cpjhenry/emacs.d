@@ -48,7 +48,44 @@
       holiday-islamic-holidays '(
 	(holiday-islamic-new-year)
 	(holiday-islamic 9 1 "Ramadan Begins")
-	(holiday-islamic 10 1 "Id-al-Fitr")))
+	(holiday-islamic 10 1 "Id-al-Fitr"))
+
+      zoneinfo-style-world-list '(
+	("Pacific/Honolulu" "Hawai'i")
+	("America/Los_Angeles" "Cupertino")
+	("America/Vancouver" "Vancouver")
+	("America/Edmonton" "Edmonton")
+	("America/Regina" "Saskatoon")
+	("America/Winnipeg" "Winnipeg")
+	("America/Toronto" "Ottawa")
+	("America/Halifax" "Halifax")
+	("America/St_Johns" "St. John's")
+	("America/Marigot" "St. Martin")
+	("UTC" "UTC")
+	("Europe/London" "Edinburgh")
+	("Europe/Lisbon" "Lisbon")
+	("Europe/Paris" "Paris")
+	("Europe/Rome" "Rome")
+	("Europe/Istanbul" "Ankara")
+	("Asia/Kolkata" "New Delhi")
+	("Asia/Shanghai" "Beijing")
+	("Asia/Tokyo" "Tokyo")
+	("Australia/Sydney" "Sydney")
+	("NZ" "Wellington"))
+
+      lunar-phase-names '(
+	"● New Moon"
+	"☽ First Quarter Moon"
+	"○ Full Moon"
+	"☾ Last Quarter Moon"))
+
+(defun scottish-quarter-days ()
+"Return Scottish Quarter Days."
+  (append ;; Scottish Quarter Days
+    (holiday-fixed 2  2  "Candlemas")
+    (holiday-fixed 5  15 "Whitsun")
+    (holiday-fixed 8  1  "Lammas")
+    (holiday-fixed 11 11 "Martinmas")))
 
 (provide 'local-holidays)
 ;;; default.el ends here.

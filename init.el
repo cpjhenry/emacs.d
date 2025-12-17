@@ -606,12 +606,8 @@
     (holiday-float 11 5 4 "Black Friday")
     (holiday-advent -11 "Prayer & Repentance")
     (holiday-fixed 12 (floor (nth 1 (solar-equinoxes/solstices 3 displayed-year))) "Midwinter")
-    (append ;; Scottish Quarter Days
-      (holiday-fixed  2  2 "Candlemas")
-      (holiday-fixed  5 15 "Whitsun")
-      (holiday-fixed  8  1 "Lammas")
-      (holiday-fixed 11 11 "Martinmas"))
-    (holiday-buddhist-moons)))
+    (scottish-quarter-days)
+    (holiday-buddhist-holidays)))
 
 (keymap-set calendar-mode-map "m" nil)
 (keymap-set calendar-mode-map "q" 'calendar-exit-kill)
@@ -636,36 +632,7 @@
 (add-hook 'diary-fancy-display-mode-hook 'alt-clean-equal-signs)
 
 (require 'time)
-(setopt world-clock-time-format "%a %e %b %R %Z"
-	zoneinfo-style-world-list '(
-	  ("Pacific/Honolulu" "Hawai'i")
-	  ("America/Los_Angeles" "Cupertino")
-	  ("America/Vancouver" "Vancouver")
-	  ("America/Edmonton" "Edmonton")
-	  ("America/Regina" "Saskatoon")
-	  ("America/Winnipeg" "Winnipeg")
-	  ("America/Toronto" "Ottawa")
-	  ("America/Halifax" "Halifax")
-	  ("America/St_Johns" "St. John's")
-	  ("America/Marigot" "St. Martin")
-	  ("UTC" "UTC")
-	  ("Europe/London" "Edinburgh")
-	  ("Europe/Lisbon" "Lisbon")
-	  ("Europe/Paris" "Paris")
-	  ("Europe/Rome" "Rome")
-	  ("Europe/Istanbul" "Ankara")
-	  ("Asia/Kolkata" "New Delhi")
-	  ("Asia/Shanghai" "Beijing")
-	  ("Asia/Tokyo" "Tokyo")
-	  ("Australia/Sydney" "Sydney")
-	  ("NZ" "Wellington")))
-
-(require 'lunar)
-(setopt lunar-phase-names '(
-  "● New Moon"
-  "☽ First Quarter Moon"
-  "○ Full Moon"
-  "☾ Last Quarter Moon"))
+(setopt world-clock-time-format "%a %e %b %R %Z")
 
 ;; Roman clock
 (require 'roman-clock "init/roman-clock")

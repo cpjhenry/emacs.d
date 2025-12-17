@@ -68,24 +68,16 @@ calendar window."
                       (push (list next-date next-name) holidays)))))))))
       holidays)))
 
-(defun holiday-buddhist-moons ()
-  "Return all Theravadin full-moon holidays for the visible window.
+(defun holiday-buddhist-holidays ()
+"Return all Buddhist (Theravadin) full-moon holidays for the visible window.
 
-This uses `holiday-named-full-moons' for each relevant month and
-concatenates the results."
+This uses `holiday-named-full-moons' for each relevant month and concatenates
+the results."
   (append
-   (holiday-fixed 4 13 "Traditional Buddhist Calendar")
    (holiday-named-full-moons '(5  "Vesak (Buddha Day)"))
    (holiday-named-full-moons '(7  "Asalha (Dhamma Day)" "Vassa"))
    (holiday-named-full-moons '(10 "Pavarana"))
    (holiday-named-full-moons '(2  "Magha (Sangha Day)"))))
-
-;;;###autoload
-(defcustom holiday-buddhist-holidays
-  '(holiday-buddhist-moons)
-  "Buddhist (Theravadin) lunar holidays based on full moons."
-  :group 'holidays
-  :type 'sexp)
 
 (provide 'moon-holidays)
 ;;; moon-holidays.el ends here
