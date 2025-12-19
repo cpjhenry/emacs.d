@@ -82,10 +82,10 @@
 (defun scottish-quarter-days ()
 "Return Scottish Quarter Days."
   (append ;; Scottish Quarter Days
-    (holiday-fixed 2  2  "Candlemas")
-    (holiday-fixed 5  15 "Whitsun")
-    (holiday-fixed 8  1  "Lammas")
-    (holiday-fixed 11 11 "Martinmas")))
+    (holiday-fixed 2  2  "Candlemas (¼)")
+    (holiday-fixed 5  15 "Whitsun (¼)")
+    (holiday-fixed 8  1  "Lammas (¼)")
+    (holiday-fixed 11 11 "Martinmas (¼)")))
 
 (provide 'local-holidays)
 ;;; default.el ends here.

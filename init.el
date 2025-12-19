@@ -351,6 +351,8 @@
 
 	backup-by-copying t
 	delete-old-versions t
+	;(setq backup-directory-alist '(("." . ".~")))
+
 	make-backup-files t
 	vc-make-backup-files nil ; don't make back-ups in git-controlled dirs
 	version-control nil)
@@ -581,8 +583,10 @@
 
 ;; calendar
 (require 'calendar)
-(load "init/calendar-routines")
+(require 'lunar)
+(require 'time)
 (require 'moon-holidays "init/moon-holidays")
+(load "init/calendar-routines")
 
 (calendar-set-date-style 'iso)
 (setq calendar-mark-holidays-flag t
@@ -609,6 +613,8 @@
     (scottish-quarter-days)
     (holiday-buddhist-holidays)))
 
+(setopt world-clock-time-format "%a %e %b %R %Z")
+
 (keymap-set calendar-mode-map "m" nil)
 (keymap-set calendar-mode-map "q" 'calendar-exit-kill)
 (keymap-set calendar-mode-map "w" 'calendar-world-clock)
@@ -631,16 +637,13 @@
 (add-hook 'diary-list-entries-hook 'diary-sort-entries t)
 (add-hook 'diary-fancy-display-mode-hook 'alt-clean-equal-signs)
 
-(require 'time)
-(setopt world-clock-time-format "%a %e %b %R %Z")
-
 ;; Roman clock
 (require 'roman-clock "init/roman-clock")
 (global-set-key (kbd "C-c d r") #'roman-clock)
 (global-set-key (kbd "C-c d R") #'roman-clock-ante-diem)
 
-(require 'roman-clock-period-notify-mode "init/roman-clock-period-notify-mode")
-(if (featurep 'roman-clock-period-notify-mode) (roman-clock-period-notify-mode))
+;; (require 'roman-clock-period-notify-mode "init/roman-clock-period-notify-mode")
+;; (if (featurep 'roman-clock-period-notify-mode) (roman-clock-period-notify-mode))
 
 (use-package sparkweather
   :after calendar
