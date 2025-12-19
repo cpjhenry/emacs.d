@@ -351,7 +351,7 @@
 
 	backup-by-copying t
 	delete-old-versions t
-	;(setq backup-directory-alist '(("." . ".~")))
+	backup-directory-alist '(("." . ".~"))
 
 	make-backup-files t
 	vc-make-backup-files nil ; don't make back-ups in git-controlled dirs
