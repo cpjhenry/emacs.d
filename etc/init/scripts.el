@@ -40,7 +40,7 @@
 (defun /. () "/."
 	(interactive)
 	(switch-to-buffer "*/.*")
-	(shell-command "slashdot" (current-buffer))
+	(shell-command "slashdot-mode" (current-buffer))
 	(org-mode)
 	(view-mode)
 	(jinx-mode -1)
