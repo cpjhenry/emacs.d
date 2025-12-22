@@ -2,6 +2,8 @@
 ;;; commentary:
 
 ;;; code:
+(require 'kfhelp "init/kfhelp")
+
 (defconst my/emacs-help
 "EMACS
 
@@ -76,7 +78,69 @@ Calendar
 C-<spc> ... M-=			number of days between mark and point")
 (kf-gen-displayer my/emacs-help "Display Emacs help." "*Emacs cheat-sheet*")
 
-(defconst Hanke-Henry
+(defconst vt-escapes
+"vt sequences:
+
+<esc>[1~    - Home     <esc>[16~   -          <esc>[31~   - F17
+<esc>[2~    - Insert   <esc>[17~   - F6       <esc>[32~   - F18
+<esc>[3~    - Delete   <esc>[18~   - F7       <esc>[33~   - F19
+<esc>[4~    - End      <esc>[19~   - F8       <esc>[34~   - F20
+<esc>[5~    - PgUp     <esc>[20~   - F9       <esc>[35~   -
+<esc>[6~    - PgDn     <esc>[21~   - F10
+<esc>[7~    - Home     <esc>[22~   -
+<esc>[8~    - End      <esc>[23~   - F11
+<esc>[9~    -          <esc>[24~   - F12
+<esc>[10~   - F0       <esc>[25~   - F13
+<esc>[11~   - F1       <esc>[26~   - F14
+<esc>[12~   - F2       <esc>[27~   -
+<esc>[13~   - F3       <esc>[28~   - F15
+<esc>[14~   - F4       <esc>[29~   - F16
+<esc>[15~   - F5       <esc>[30~   -")
+
+(kf-gen-displayer vt-escapes "vt terminal escape sequences" "*vt sequences*")
+
+(defconst cm-keys
+"C-M-<delete>	backward-kill-sexp
+C-M-<home>		beginning-of-defun
+C-M-<end>		end-of-defun
+C-M-<up>		backward-up-list
+C-M-<down>		down-list
+C-M-@			mark-sexp
+C-M-a			beginning-of-defun
+C-M-b			backward-sexp
+C-M-c			exit-recursive-edit
+C-M-d			down-list
+C-M-e			end-of-defun
+C-M-f			forward-sexp
+C-M-h			mark-defun
+C-M-i			complete-symbol
+C-M-j			default-indent-new-line
+C-M-k			kill-sexp
+C-M-l			reposition-window
+C-M-n			forward-list
+C-M-o			split-line
+C-M-p			backward-list
+C-M-r			isearch-backward-regexp
+C-M-s			isearch-forward-regexp
+C-M-u			backward-up-list
+C-M-v			scroll-other-window
+C-M-w			append-next-kill
+C-M-y			undo-yank
+C-M-\\			indent-region
+C-M-_			undo-redo
+C-M-SPC			mark-sexp
+C-M-%			query-replace-regexp
+C-M-,			xref-go-forward
+C-M-.			xref-find-apropos
+C-M-/			dabbrev-completion
+C-M-;			eval-r
+
+C-M-S-l			recenter-other-window
+C-M-S-v			scroll-other-window-down")
+
+(kf-gen-displayer cm-keys "C-M key bindings" "*C-M keys*")
+
+(defconst cpj/Hanke-Henry
 "                                Hanke-Henry Permanent Calendar (HHPC)
 
     January                         February                        March
@@ -115,10 +179,9 @@ C-<spc> ... M-=			number of days between mark and point")
                                                                     Mo  Tu  We  Th  Fr  Sa  Su
                                                                      1   2   3   4   5   6   7")
 
-(kf-gen-displayer Hanke-Henry "Display Hanke-Henry Permanent Calendar." "*HHPC*")
-(defalias 'hanke 'Hanke-Henry)
+(kf-gen-displayer cpj/Hanke-Henry "Display Hanke-Henry Permanent Calendar." "*HHPC*")
 
-(defconst british-currency
+(defconst cpj/british-currency
 "BRITISH CURRENCY
 
 PRE-DECIMAL £-s-d
@@ -170,9 +233,9 @@ A common slang term for the pound unit is 'quid' (singular and
 plural). The term may have come from Latin quid via the common
 phrase quid pro quo, literally, 'what for what'.")
 
-(kf-gen-displayer british-currency "British and Canadian Currency." "*currency*")
+(kf-gen-displayer cpj/british-currency "British and Canadian Currency." "*currency*")
 
-(defconst measurements
+(defconst cpj/measurements
 "UNITS OF MEASURE
 
 LENGTH												AREA
@@ -281,71 +344,9 @@ CANADIAN MEASUREMENTS
 | shot          | jig    |        | 1.5 fl oz  |  43 ml | 1.5 fl oz  |  44 ml |
 ")
 
-(kf-gen-displayer measurements "Units of measurement." "*measurements*")
+(kf-gen-displayer cpj/measurements "Units of measurement." "*measurements*")
 
-(defconst vt-escapes
-"vt sequences:
-
-<esc>[1~    - Home     <esc>[16~   -          <esc>[31~   - F17
-<esc>[2~    - Insert   <esc>[17~   - F6       <esc>[32~   - F18
-<esc>[3~    - Delete   <esc>[18~   - F7       <esc>[33~   - F19
-<esc>[4~    - End      <esc>[19~   - F8       <esc>[34~   - F20
-<esc>[5~    - PgUp     <esc>[20~   - F9       <esc>[35~   -
-<esc>[6~    - PgDn     <esc>[21~   - F10
-<esc>[7~    - Home     <esc>[22~   -
-<esc>[8~    - End      <esc>[23~   - F11
-<esc>[9~    -          <esc>[24~   - F12
-<esc>[10~   - F0       <esc>[25~   - F13
-<esc>[11~   - F1       <esc>[26~   - F14
-<esc>[12~   - F2       <esc>[27~   -
-<esc>[13~   - F3       <esc>[28~   - F15
-<esc>[14~   - F4       <esc>[29~   - F16
-<esc>[15~   - F5       <esc>[30~   -")
-
-(kf-gen-displayer vt-escapes "vt terminal escape sequences" "*vt sequences*")
-
-(defconst cmkeys
-"C-M-<delete>	backward-kill-sexp
-C-M-<home>		beginning-of-defun
-C-M-<end>		end-of-defun
-C-M-<up>		backward-up-list
-C-M-<down>		down-list
-C-M-@			mark-sexp
-C-M-a			beginning-of-defun
-C-M-b			backward-sexp
-C-M-c			exit-recursive-edit
-C-M-d			down-list
-C-M-e			end-of-defun
-C-M-f			forward-sexp
-C-M-h			mark-defun
-C-M-i			complete-symbol
-C-M-j			default-indent-new-line
-C-M-k			kill-sexp
-C-M-l			reposition-window
-C-M-n			forward-list
-C-M-o			split-line
-C-M-p			backward-list
-C-M-r			isearch-backward-regexp
-C-M-s			isearch-forward-regexp
-C-M-u			backward-up-list
-C-M-v			scroll-other-window
-C-M-w			append-next-kill
-C-M-y			undo-yank
-C-M-\\			indent-region
-C-M-_			undo-redo
-C-M-SPC			mark-sexp
-C-M-%			query-replace-regexp
-C-M-,			xref-go-forward
-C-M-.			xref-find-apropos
-C-M-/			dabbrev-completion
-C-M-;			eval-r
-
-C-M-S-l			recenter-other-window
-C-M-S-v			scroll-other-window-down")
-
-(kf-gen-displayer cmkeys "C-M key bindings" "*C-M keys*")
-
-(defconst tencodes
+(defconst cpj/tencodes
 "TEN-CODES
 
  1   Receiving poorly                             44   Arriving on scene
@@ -383,9 +384,9 @@ C-M-S-v			scroll-other-window-down")
 42   Vehicle location                             107  Lot watch
 43   Fight in progress")
 
-(kf-gen-displayer tencodes "Ten-codes" "*Ten-codes*")
+(kf-gen-displayer cpj/tencodes "Ten-codes" "*Ten-codes*")
 
-(defconst ninetwo
+(defconst cpj/ninetwo
   "92 CODE
 |------+---------------------------------------+------+-------------------------------------------|
 | Code | Text                                  | Code | Text                                      |
@@ -418,7 +419,9 @@ messages. The best-known code was the 92 Code adopted by Western Union in 1859. 
 designed to reduce bandwidth consumption over telegraph lines, thus speeding transmissions by
 using a numerical code system for frequently used phrases.")
 
-(kf-gen-displayer ninetwo "92 Code" "*92 CODE*")
+(kf-gen-displayer cpj/ninetwo "92 Code" "*92 CODE*")
+
+;;; cpjhelp.el ends here.
 
 ;; Local Variables:
 ;; tab-width: 4

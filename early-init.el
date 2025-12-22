@@ -1,4 +1,7 @@
-;;; early init file / pjh
+;;; early-init.el --- cpj
+;;; commentary:
+
+;;; code:
 (add-to-list 'default-frame-alist '(undecorated . t))
 
 ;; Don't show Emacs frame until initialized
@@ -58,3 +61,9 @@
 
 ;; caching nonsense
 (startup-redirect-eln-cache (concat user-emacs-directory "var/cache"))
+
+;; suppress lexical cookie
+(setq warning-suppress-log-types '((missing-lexbind-cookie)))
+
+(provide 'early-init)
+;;; early-init.el ends here

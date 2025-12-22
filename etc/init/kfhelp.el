@@ -1,6 +1,8 @@
-;;; On-demand help panels for obscure topics. ;;;
+;;; kfhelp.el --- On-demand help panels for obscure topics.
+;;; commentary:
 ;; https://svn.red-bean.com/repos/kfogel/trunk/.emacs
 
+;;; code:
 (defconst kf-ascii
   "
        Decimal - Character
@@ -1683,3 +1685,8 @@ Images:
 (kf-gen-displayer kf-org-mode-help
                  "I know there's a manual, but I've only got this week."
                  "*Org Mode: Like Lisp, but with asterisks not parentheses.*")
+
+(provide 'kfhelp)
+
+;;; kfhelp.el ends here.
+; LocalWords:  kfhelp
