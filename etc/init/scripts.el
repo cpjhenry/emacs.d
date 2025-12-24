@@ -56,6 +56,12 @@
 	(interactive)
 	(shell-command "wx-mode"))
 
+(defun wttr () "Local weather / forecast"
+  (interactive)
+  (switch-to-buffer "*wttr*")
+  (shell-command "curl -s https://wttr.in/Ottawa?1nqT |head -n -2" (current-buffer))
+  (view-mode))
+
 (defun fw () "Weekly Forecast."
   (interactive)
   (switch-to-buffer "*Virgo*")

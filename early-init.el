@@ -1,4 +1,4 @@
-;;; early-init.el --- cpj
+;;; early-init.el --- cpj -*- flycheck-disabled-checkers: (emacs-lisp emacs-lisp-checkdoc); -*-
 ;;; commentary:
 
 ;;; code:
@@ -11,11 +11,8 @@
 ;; https://github.com/jimeh/.emacs.d/blob/master/early-init.el
 ;; Native-Comp
 (setq native-comp-speed 2
-      comp-speed 2)
-(setq native-comp-async-report-warnings-errors nil
-      comp-async-report-warnings-errors nil)
-(setq native-comp-async-query-on-exit t
-      comp-async-query-on-exit t)
+      native-comp-async-report-warnings-errors nil
+      native-comp-async-query-on-exit t)
 
 ;; Prevent native-compiling .dir-locals.el files.
 (let ((deny-list '("\\(?:[/\\\\]\\.dir-locals\\.el$\\)")))
@@ -35,8 +32,8 @@
     ;; sized *.eln files behind. Hence delete such files during startup.
     (when find-exec
       (call-process find-exec nil nil nil eln-cache-dir
-                    "-name" "*.eln" "-size" "0" "-delete" "-or"
-                    "-name" "*.eln.tmp" "-size" "0" "-delete"))))
+        "-name" "*.eln" "-size" "0" "-delete" "-or"
+        "-name" "*.eln.tmp" "-size" "0" "-delete"))))
 
 ;; Defer garbage collection further back in the startup process
 (setq gc-cons-threshold most-positive-fixnum)
@@ -67,3 +64,5 @@
 
 (provide 'early-init)
 ;;; early-init.el ends here
+
+; LocalWords:  checkdoc flycheck

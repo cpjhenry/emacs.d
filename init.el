@@ -36,78 +36,76 @@
 
 ;; Customize
 (when *mac*
-	(setopt	mac-function-modifier nil
-		mac-control-modifier 'control	; Control
-		mac-option-modifier 'meta	; Meta
-		mac-command-modifier 'super	; Super
-		mac-right-command-modifier 'alt	; Alt
-		mac-right-option-modifier nil)	; pass-thru
+  (setopt mac-function-modifier nil
+	  mac-control-modifier 'control	; Control
+	  mac-option-modifier 'meta	; Meta
+	  mac-command-modifier 'super	; Super
+	  mac-right-command-modifier 'alt	; Alt
+	  mac-right-option-modifier nil	; pass-thru
+	  ns-use-native-fullscreen nil)
 
-	(keymap-global-set "s-c" 'ns-copy-including-secondary)	; ⌘-c = Copy
-	(keymap-global-set "s-x" 'kill-region)			; ⌘-x = Cut
-	(keymap-global-set "s-v" 'yank)				; ⌘-v = Paste
-	(keymap-global-set "s-y" 'ns-paste-secondary)
+  (keymap-global-set "s-c" 'ns-copy-including-secondary)	; ⌘-c = Copy
+  (keymap-global-set "s-x" 'kill-region)			; ⌘-x = Cut
+  (keymap-global-set "s-v" 'yank)				; ⌘-v = Paste
+  (keymap-global-set "s-y" 'ns-paste-secondary)
 
-	(keymap-global-set "s-a" 'mark-whole-buffer)
-	(keymap-global-set "s-E" 'edit-abbrevs)
-	(keymap-global-set "s-f" 'isearch-forward-regexp)
-	(keymap-global-set "s-h" 'ns-do-hide-emacs)
-	(keymap-global-set "s-k" 'kill-current-buffer)
-	(keymap-global-set "s-l" 'goto-line)
-	(keymap-global-set "s-o" 'find-file)
-	(keymap-global-set "s-S" 'write-file)
-	(keymap-global-set "s-s" 'save-buffer)
-	(keymap-global-set "s-u" 'revert-buffer)
-	(keymap-global-set "s-W" 'delete-frame)
-	(keymap-global-set "s-w" 'kill-current-buffer)
-	(keymap-global-set "s-z" 'undo)
+  (keymap-global-set "s-a" 'mark-whole-buffer)
+  (keymap-global-set "s-E" 'edit-abbrevs)
+  (keymap-global-set "s-f" 'isearch-forward-regexp)
+  (keymap-global-set "s-h" 'ns-do-hide-emacs)
+  (keymap-global-set "s-k" 'kill-current-buffer)
+  (keymap-global-set "s-l" 'goto-line)
+  (keymap-global-set "s-o" 'find-file)
+  (keymap-global-set "s-S" 'write-file)
+  (keymap-global-set "s-s" 'save-buffer)
+  (keymap-global-set "s-u" 'revert-buffer)
+  (keymap-global-set "s-W" 'delete-frame)
+  (keymap-global-set "s-w" 'kill-current-buffer)
+  (keymap-global-set "s-z" 'undo)
 
-	(keymap-global-set "s-1" "C-x 1")
+  (keymap-global-set "s-1" "C-x 1")
 
-	(dolist (key '("s-C" "s-D" "s-d" "s-e" "s-F" "s-f" "s-g" "s-j" "s-L"
-		       "s-M" "s-m" "s-n" "s-p" "s-q" "s-t" "s-^" "s-&" "s-|"))
-		(keymap-global-unset key))
+  (dolist (key '("s-C" "s-D" "s-d" "s-e" "s-F" "s-f" "s-g" "s-j" "s-L"
+		 "s-M" "s-m" "s-n" "s-p" "s-q" "s-t" "s-^" "s-&" "s-|"))
+	  (keymap-global-unset key))
 
-	;; Disable suspend-frame
-	(keymap-global-unset "C-z")
+  ;; Disable suspend-frame
+  (keymap-global-unset "C-z")
 
-	;; Disable toggle-frame-fullscreen
-	(keymap-global-unset "<f11>")
-	;; FIXME - Errors with EMACS30
-	(put 'toggle-frame-fullscreen 'disabled t)
+  ;; Line movement
+  (keymap-global-set "<home>" nil) ; 'move-beginning-of-line
+  (keymap-global-set "<end>"  nil) ; 'move-end-of-line
 
-	;; Line movement
-	(keymap-global-set "<home>" nil) ; 'move-beginning-of-line
-	(keymap-global-set "<end>"  nil) ; 'move-end-of-line
+  ;; Alternates
+  (keymap-global-set "C-<f11>" 'display-battery-mode)
 
-	;; Alternates
-	(keymap-global-set "A-<left>" "s-<left>")
-	(keymap-global-set "A-<right>" "s-<right>")
-	(keymap-global-set "A-k" "s-k")
-	(keymap-global-set "A-=" "s-=")
+  (keymap-global-set "A-<left>" "s-<left>")
+  (keymap-global-set "A-<right>" "s-<right>")
+  (keymap-global-set "A-k" "s-k")
+  (keymap-global-set "A-=" "s-=")
 
-	;; Emojis
-	(easy-menu-add-item global-map '(menu-bar edit) ["Emoji & Symbols"
-		ns-do-show-character-palette
-		:help "Show macOS Character Palette."
-		:visible (eq window-system 'ns)])
+  ;; Emojis
+  (easy-menu-add-item global-map '(menu-bar edit) ["Emoji & Symbols"
+	ns-do-show-character-palette
+	:help "Show macOS Character Palette."
+	:visible (eq window-system 'ns)])
 
-	;; Font
-	(add-to-list 'default-frame-alist '(font . "Inconsolata 21")))
+  ;; Font
+  (add-to-list 'default-frame-alist '(font . "Inconsolata 21")))
 
 (when *gnu*
-	(add-to-list 'default-frame-alist '(font . "Monospace 17"))
-	(message "Running on GNU/Linux."))
+  (add-to-list 'default-frame-alist '(font . "Monospace 17"))
+  (message "Running on GNU/Linux."))
 
 (when *w32*
-	(setopt	w32-apps-modifier 'super)
+  (setopt w32-apps-modifier 'super)
 
-	(keymap-global-set "<f11>" 'toggle-frame-maximized)
-	(defalias 'restart-emacs 'save-buffers-kill-terminal)
+  (keymap-global-set "<f11>" 'toggle-frame-maximized)
+  (defalias 'restart-emacs 'save-buffers-kill-terminal)
 
-	(add-to-list 'default-frame-alist '(font . "Consolas 12"))
-	(menu-bar-mode 1)
-	(message "Running on Windows."))
+  (add-to-list 'default-frame-alist '(font . "Consolas 12"))
+  (menu-bar-mode 1)
+  (message "Running on Windows."))
 
 ;; Initialize package manager
 (require 'package)
@@ -223,6 +221,13 @@
 ;; garbage collection
 (use-package gcmh :config (gcmh-mode 1))
 
+;; icon files
+;; (use-package all-the-icons)
+
+;; (use-package all-the-icons-dired
+;;   :after all-the-icons
+;;   :hook (dired-mode . all-the-icons-dired-mode))
+
 
 ;; modeline
 (use-package doom-modeline
@@ -230,6 +235,7 @@
 	(doom-modeline-enable-word-count t)
 	(doom-modeline-continuous-word-count-modes '(markdown-mode gfm-mode org-mode text-mode))
 	(doom-modeline-icon nil)
+	(doom-modeline-project-name nil)
 	(doom-modeline-time-icon nil)
   :hook (after-init . doom-modeline-mode))
 
@@ -240,10 +246,23 @@
 	mode-line-position (list mode-line-percent-position " " "(%l,%C)")
 	mode-line-right-align-edge 'right-fringe)
 (if EMACS30 (setopt project-mode-line t))
+
 (column-number-mode)
-(display-battery-mode)
+;; (display-battery-mode)
 ;; (display-time-mode)
 ;; (load "rc/mm" 'noerror) ; memento-mori
+
+(use-package ewth
+  ;; https://github.com/chubin/wttr.in for deets
+  ;; https://wttr.in/:help for options
+  ;:disabled
+  :if *natasha*
+  :ensure nil
+  :load-path "opt/ewth/"
+  :defer 2
+  :config
+  (setq ewth-url "http://wttr.in/Ottawa?format=2&d&T")
+  (ewth-mode))
 
 ;; startup time
 (defun efs/display-startup-time ()
@@ -647,6 +666,7 @@
 
 (use-package sparkweather
   :after calendar
+  :custom (sparkweather-add-footer nil)
   :bind (:map sparkweather-mode-map
 	 ("q" . quit-window-kill)))
 
@@ -1457,6 +1477,12 @@
   ;(keymap-global-unset (concat prefix "-")) ; negative-argument
   (dotimes (i 10) (keymap-global-unset (concat prefix (number-to-string i)))))
 
+;; Cleanup abbrev menu
+(dolist (key '("C-a" "+" "-" "'"))
+  (keymap-global-unset (concat "C-x a " key)))
+
+;; Disable <f10> options
+
 ;; <f10>	menu-bar-open
 ;; S-<f10>	context-menu-open
 ;; C-<f10>	buffer-menu-open
@@ -1464,10 +1490,6 @@
 
 (dolist (key '("C-<f10>"))
   (global-unset-key (kbd key)))
-
-;; Cleanup abbrev menu
-(dolist (key '("C-a" "+" "-" "'"))
-  (keymap-global-unset (concat "C-x a " key)))
 
 
 ;; Disabled functions
@@ -1636,4 +1658,4 @@
 ; LocalWords:  vcusepackage latexmk synctex bibtex cond xah dirs Ctrl
 ; LocalWords:  remotehost flycheck modeline mori featurep cbc smex
 ; LocalWords:  setq's setopt mailutils imagemagick usr dunnet Async
-; LocalWords:  dir fullscreen dropbox keymap toc buddhist
+; LocalWords:  dir fullscreen dropbox keymap toc buddhist ewth

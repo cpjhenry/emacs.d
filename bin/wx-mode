@@ -2,7 +2,11 @@
 # Weather back-end for Emacs
 # 2024-01-13
 
-cond_source() { [ -f $1 ] && . $1; }
-cond_source $HOME/.bash_routines
+function wx() {
+	local wURL="https://weather.gc.ca/rss/city/on-118_e.xml" # Ottawa
+	curl -s $wURL |xml2 |grep "title=Current Conditions" |sed 's/^.*: //;$s/[^.]$/&./'
+	curl -s $wURL |xml2 |grep -m1 -A3 'term=Weather Forecasts' |
+		sed -n '/summary=/s/^.*summary=//p' |
+		sed 's/ Forecast issued.*$//' |fold -s$(tput cols); }
 
 wx
