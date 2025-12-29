@@ -153,15 +153,20 @@
 	(message "Maximum width."))
 
 (defun toggle-fill-column-center ()
-  "Toggle fill-column-center when in visual-fill-column-mode."
+"Toggle `visual-fill-column-center-text'.
+
+If `visual-fill-column-mode' isn't activated, activates it. Disables this
+mode when toggled off."
   (interactive)
-  (if (bound-and-true-p visual-fill-column-mode) (progn
-     (if (bound-and-true-p visual-fill-column-center-text)
-	(progn	(setq visual-fill-column-center-text nil)
-		(visual-fill-column-mode -1))
-		(progn	(setq visual-fill-column-center-text t)))
-		(visual-fill-column-adjust))
-	(message "`visual-fill-column-mode' not enabled.")))
+  (if (bound-and-true-p visual-fill-column-mode)
+    (progn
+      (if (bound-and-true-p visual-fill-column-center-text)
+	  (progn (setq visual-fill-column-center-text nil)
+		 (visual-fill-column-mode -1))
+	  (progn (setq visual-fill-column-center-text t)))
+      (visual-fill-column-adjust))
+    (progn (visual-fill-column-mode)
+	   (toggle-fill-column-center))))
 
 ;; See: https://emacs.stackexchange.com/questions/81361/how-to-switch-to-a-buffer-from-terminal-with-a-unique-partial-name
 (defun switch-to-buffer-matching (regular-expression)

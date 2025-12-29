@@ -1,8 +1,0 @@
-#!/bin/bash
-# Formatted Calendar back-end for Emacs
-# 2024-01-13
-
-cond_source() { [ -f $1 ] && . $1; }
-cond_source $HOME/.bash_routines
-
-calm $(date +"%m %Y")

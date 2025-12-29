@@ -43,18 +43,19 @@
 	(shell-command "slashdot-mode" (current-buffer))
 	(org-mode)
 	(view-mode)
-	(jinx-mode -1)
+	(if (featurep 'jinx) (jinx-mode -1))
 	(goto-char (point-min)))
 
 (defun cm () "Print version of monthly calendar."
 	(interactive)
 	(switch-to-buffer "*calm(p)*")
-	(shell-command "cm-mode" (current-buffer))
+	(shell-command ". $HOME/.bash_routines; calm $(date +'%m %Y')"
+	  (current-buffer))
 	(view-mode))
 
 (defun wx () "Local weather."
 	(interactive)
-	(shell-command "wx-mode"))
+	(shell-command "alert -dw"))
 
 (defun wttr () "Local weather / forecast"
   (interactive)

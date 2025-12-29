@@ -122,10 +122,6 @@
 		(use-package-compute-statistics t)
 		(use-package-verbose t))
 
-;(require 'gnutls)
-;(setopt gnutls-algorithm-priority "normal:-vers-tls1.3"
-;	gnutls-verify-error nil)
-
 ;; settings
 (set-language-environment 'utf-8)
 
@@ -258,7 +254,7 @@
   ;:disabled
   :if *natasha*
   :ensure nil
-  :load-path "opt/ewth/"
+  :load-path "opt/"
   :defer 2
   :config
   (setq ewth-url "http://wttr.in/Ottawa?format=2&d&T")
@@ -272,6 +268,7 @@
 
 
 ;; buffers
+(use-package s)
 (use-package dash) ; for `-find', `-compose' and `-partial'
 (load "init/filesandbuffers")
 
@@ -708,6 +705,13 @@
             :after (lambda (&rest r) (calendar-exit-kill)))
 	  (keymap-set casual-timezone-planner-mode-map "q" 'kill-current-buffer))
 
+(use-package deadgrep
+  :bind (("<f5>" . 'deadgrep)
+	 :map deadgrep-mode-map
+	 ("f" . delete-other-windows))
+  :config (defalias 'find-grep 'deadgrep)
+	  (advice-add 'deadgrep :after (lambda (&rest r) (delete-other-windows))))
+
 (use-package dictionary
   :ensure nil
   :defer  t
@@ -781,6 +785,9 @@
   :init	(which-key-alias "C-c t" "google-translate")
 	(setq google-translate-translation-directions-alist '(
 	  ("fr" . "en") ("en" . "fr"))))
+
+(use-package highlight-defined
+  :hook (emacs-lisp-mode-hook . highlight-defined-mode))
 
 (use-package hl-todo
   :custom	(hl-todo-keyword-faces `(
@@ -922,7 +929,7 @@
 
 ;; Others
 (use-package chatgpt-shell
-	:disabled
+	;:disabled
 	:if	*natasha*
 	:defer t)
 
@@ -983,8 +990,7 @@
 ;(define-key text-mode-map (kbd "C-M-i") nil)
 
 (use-package visual-fill-column
-	:bind (	("<f5>" . visual-fill-column-mode)
-		("<f6>"	. toggle-fill-column-center))
+  :bind (("<f6>"  . toggle-fill-column-center))
 	;; :hook	(visual-line-mode . visual-fill-column-mode)
 	:config (advice-add 'text-scale-adjust :after #'visual-fill-column-adjust))
 
@@ -1544,7 +1550,7 @@
 (which-key-alias "C-c d" "dates")
 
 (bind-key "C-c e"	'elpher) ; gopher / gemini
-(bind-key "C-c g"	'grep-completing-read)
+;(bind-key "C-c g"	'grep-completing-read)
 (bind-key "C-c i"	'my/init)
 
 (bind-key "C-c m"	'menu-bar-read-mail)
