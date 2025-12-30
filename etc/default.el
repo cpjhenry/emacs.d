@@ -28,7 +28,8 @@
 	(holiday-fixed 9 30   "Truth and Reconciliation")
 	(holiday-float 11 0 2 "Remembrance Sunday")
 	(holiday-fixed 12 11  "Statute of Westminster")
-	(holiday-fixed 12 26  "Boxing Day"))
+	(holiday-fixed 12 26  "Boxing Day")
+	(holiday-fixed 12 31  "Hogmanay"))
 
       holiday-bahai-holidays '( ;; New Year is based on date of vernal equinox
 	(holiday-fixed 3 (floor (nth 1 (solar-equinoxes/solstices 1 displayed-year)))

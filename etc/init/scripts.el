@@ -1,61 +1,65 @@
 ;;; scripts.el --- execute bash scripts -*- lexical-binding: t -*-
-
 ;;; commentary:
 
 ;;; code:
 
 (defun di () "Daily information."
-	(interactive)
-	(switch-to-buffer "*daily-info*")
-	(shell-command "di-mode&" (current-buffer))
-	(view-mode)
+  (interactive)
+  (switch-to-buffer "*daily-info*")
+  (shell-command "di-mode&" (current-buffer))
+  (view-mode)
 
-	(alert)
+  (alert)
 
-	(diary-list-entries (calendar-current-date) diary-number-of-entries)
-	(kill-buffer "diary")
+  (diary-list-entries (calendar-current-date) diary-number-of-entries)
+  (kill-buffer "diary")
 
-	(message "'cbc' / 'xkcd' / 'elfeed'"))
+  (message "'cbc' / 'xkcd' / 'elfeed'"))
 
 (defun alert () "Weather alerts from Environment Canada."
-	(interactive)
-	(switch-to-buffer "*alert*")
-	(shell-command "alert -f" (current-buffer))
-	(view-mode))
+  (interactive)
+  (switch-to-buffer "*alert*")
+  (shell-command "alert -f" (current-buffer))
+  (view-mode))
 
 (defun maritime () "Maritime alerts from Environment Canada."
-	(interactive)
-	(switch-to-buffer "*maritime alerts*")
-	(shell-command "alert -m |sed '1s/$/\\n/'" (current-buffer))
-	(view-mode))
+  (interactive)
+  (switch-to-buffer "*maritime alerts*")
+  (shell-command "alert -m |sed '1s/$/\\n/'" (current-buffer))
+  (view-mode))
 
 (defun cbc () "Today's headlines from CBC Ottawa."
-	(interactive)
-	(switch-to-buffer "*CBC*")
-	(shell-command "cbc-mode" (current-buffer))
-	(org-mode)
-	(view-mode)
-	(goto-char (point-min)))
+  (interactive)
+  (switch-to-buffer "*CBC*")
+  (shell-command "cbc-mode" (current-buffer))
+  (org-mode)
+  (view-mode)
+  (goto-char (point-min)))
 
 (defun /. () "/."
-	(interactive)
-	(switch-to-buffer "*/.*")
-	(shell-command "slashdot-mode" (current-buffer))
-	(org-mode)
-	(view-mode)
-	(if (featurep 'jinx) (jinx-mode -1))
-	(goto-char (point-min)))
+  (interactive)
+  (switch-to-buffer "*/.*")
+  (shell-command "slashdot-mode" (current-buffer))
+  (org-mode)
+  (view-mode)
+  (if (featurep 'jinx) (jinx-mode -1))
+  (goto-char (point-min)))
 
 (defun cm () "Print version of monthly calendar."
-	(interactive)
-	(switch-to-buffer "*calm(p)*")
-	(shell-command ". $HOME/.bash_routines; calm $(date +'%m %Y')"
-	  (current-buffer))
-	(view-mode))
+  (interactive)
+  (switch-to-buffer "*Monthly Calendar*")
+  (shell-command ". $HOME/.bash_routines; calm $(date +'%m %Y')" (current-buffer))
+  (view-mode))
 
 (defun wx () "Local weather."
-	(interactive)
-	(shell-command "alert -dw"))
+  (interactive)
+  (shell-command "alert -dq"))
+
+(defun wxs () "Local weather + forecast."
+  (interactive)
+  (switch-to-buffer "*wx*")
+  (shell-command "alert -dqs" (current-buffer))
+  (view-mode))
 
 (defun wttr () "Local weather / forecast"
   (interactive)
@@ -113,8 +117,8 @@
     (setq-local inhibit-read-only t)))
 
 (defun wwv () "Geophysical alerts and space weather."
-       (interactive)
-       (eww "https://services.swpc.noaa.gov/text/"))
+  (interactive)
+  (eww "https://services.swpc.noaa.gov/text/"))
 
 ;;; scripts.el ends here
 
