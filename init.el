@@ -1090,7 +1090,7 @@
 	org-fold-catch-invisible-edits 'smart
 	org-footnote-auto-adjust t
 	org-footnote-define-inline t
-	org-hidden-keywords '(title subtitle author date)
+	org-hidden-keywords nil ;'(title subtitle author date)
 	org-hide-emphasis-markers t
 	org-image-actual-width '(300)
 	org-list-allow-alphabetical t
@@ -1209,7 +1209,7 @@
   :hook (org-mode . org-autoexport-mode))
 
 (use-package org-chef
-  :disabled
+  ;:disabled
   :if *natasha* :defer t)
 
 (use-package org-cliplink) ; insert org-mode links from the clipboard

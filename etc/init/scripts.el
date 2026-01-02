@@ -16,10 +16,10 @@
 
   (message "'cbc' / 'xkcd' / 'elfeed'"))
 
-(defun alert () "Weather alerts from Environment Canada."
+(defun alert () "Weather from Environment Canada."
   (interactive)
-  (switch-to-buffer "*alert*")
-  (shell-command "alert -f" (current-buffer))
+  (switch-to-buffer "*WX*")
+  (shell-command "alert -sf" (current-buffer))
   (view-mode))
 
 (defun maritime () "Maritime alerts from Environment Canada."
