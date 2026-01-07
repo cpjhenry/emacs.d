@@ -35,6 +35,16 @@
 	(holiday-fixed 3 (floor (nth 1 (solar-equinoxes/solstices 1 displayed-year)))
 	(format "Bahá’í New Year (Naw-Ruz) %d" (- displayed-year (1- 1844)))))
 
+      holiday-christian-holidays '(
+	(holiday-easter-etc) ; respects calendar-christian-all-holidays-flag
+	(holiday-fixed 12 25 "Christmas")
+	(if calendar-christian-all-holidays-flag (append
+          (holiday-fixed 1 6 "Epiphany")
+          ;(holiday-julian 12 25 "Christmas (Julian calendar)")
+          (holiday-greek-orthodox-easter)
+          (holiday-fixed 8 15 "Assumption")
+          (holiday-advent 0 "Advent"))))
+
       holiday-oriental-holidays '(
 	(holiday-chinese-new-year)
 	(if calendar-chinese-all-holidays-flag (append

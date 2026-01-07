@@ -22,6 +22,22 @@
   (shell-command "alert -sf" (current-buffer))
   (view-mode))
 
+(defun wx () "Local weather."
+  (interactive)
+  (shell-command "alert -dq"))
+
+(defun wxs () "Local weather + forecast."
+  (interactive)
+  (switch-to-buffer "*wx*")
+  (shell-command "alert -dqs" (current-buffer))
+  (view-mode))
+
+(defun wttr () "Local weather / forecast."
+  (interactive)
+  (switch-to-buffer "*wttr*")
+  (shell-command "curl -s https://wttr.in/Ottawa?1nqT |head -n -2" (current-buffer))
+  (view-mode))
+
 (defun maritime () "Maritime alerts from Environment Canada."
   (interactive)
   (switch-to-buffer "*maritime alerts*")
@@ -49,22 +65,6 @@
   (interactive)
   (switch-to-buffer "*Monthly Calendar*")
   (shell-command ". $HOME/.bash_routines; calm $(date +'%m %Y')" (current-buffer))
-  (view-mode))
-
-(defun wx () "Local weather."
-  (interactive)
-  (shell-command "alert -dq"))
-
-(defun wxs () "Local weather + forecast."
-  (interactive)
-  (switch-to-buffer "*wx*")
-  (shell-command "alert -dqs" (current-buffer))
-  (view-mode))
-
-(defun wttr () "Local weather / forecast"
-  (interactive)
-  (switch-to-buffer "*wttr*")
-  (shell-command "curl -s https://wttr.in/Ottawa?1nqT |head -n -2" (current-buffer))
   (view-mode))
 
 (defun fw () "Weekly Forecast."
