@@ -62,7 +62,8 @@ Reference URL: https://github.com/chubin/wttr.in?tab=readme-ov-file#one-line-out
                (lambda (&key data &allow-other-keys)
                  (setq ewth--weather (ewth--clean-string data))
                  (force-mode-line-update)
-                 (message "[ewth] Weather updated: %s" ewth--weather)))
+                 ;(message "[ewth] Weather updated: %s" ewth--weather)
+		 ))
      :error (cl-function
              (lambda (&key error-thrown &allow-other-keys)
                (message "[ewth] Weather update error: %S" error-thrown))))))
