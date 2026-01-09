@@ -43,7 +43,8 @@ Use: (advice-add \\='elfeed-search-show-entry :after \\='elfeed-copy-edit)"
   "Toggle images in `elfeed-show'."
   (interactive)
   (setq shr-inhibit-images (not shr-inhibit-images))
-  (elfeed-show-refresh))
+  (elfeed-show-refresh)
+  (elfeed-copy-edit (current-buffer)))
 
 (advice-add 'elfeed-search-quit-window :override
   (lambda() "Save the database, kill elfeed buffers."

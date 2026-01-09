@@ -64,9 +64,10 @@ Reference URL: https://github.com/chubin/wttr.in?tab=readme-ov-file#one-line-out
                  (force-mode-line-update)
                  ;(message "[ewth] Weather updated: %s" ewth--weather)
 		 ))
-     :error (cl-function
-             (lambda (&key error-thrown &allow-other-keys)
-               (message "[ewth] Weather update error: %S" error-thrown))))))
+     ;; :error (cl-function
+     ;;         (lambda (&key error-thrown &allow-other-keys)
+     ;;           (message "[ewth] Weather update error: %S" error-thrown)))
+     )))
 
 (defun ewth--start-timer ()
   "Start or restart the weather update timer."
