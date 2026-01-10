@@ -251,7 +251,7 @@
 (use-package ewth
   ;; https://github.com/chubin/wttr.in for deets
   ;; https://wttr.in/:help for options
-  ;:disabled
+  :disabled
   :if *natasha*
   :ensure nil
   :load-path "opt/"

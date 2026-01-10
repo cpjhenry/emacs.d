@@ -29,6 +29,9 @@ Use: (advice-add \\='elfeed-search-show-entry :after \\='elfeed-copy-edit)"
   (while (search-forward ",  " nil t nil)
     (replace-match ", "))
 
+  ;; remove successive blank lines
+  (replace-regexp "^[[:space:]]*\n" "\n")
+
   (if (not (boundp 'buffer-read-only)) (read-only-mode))
   (goto-char (point-min))
   (message nil))
