@@ -17,6 +17,9 @@
 
 (defvar ps-printer-line-length 50)
 (when *mac* (setq
+	printer-name "Brother_HL_L2370DW"
+	lpr-switches '("-o media=a5")
+
 	ps-printer-name "Brother_HL_L2370DW"
 	ps-lpr-switches '("-o media=a5")
 	ps-paper-type 'a5

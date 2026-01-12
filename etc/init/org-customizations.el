@@ -21,9 +21,9 @@
 	("H" "Home NA Lists"((agenda)(tags-todo "HOME")(tags-todo "COMPUTER"))))
 
 	org-capture-templates '(
-	("c" "Cookbook" entry (file "~/Documents/org/cookbook.org")
+	("c" "Cookbook" entry (file "~/Documents/Recipes/cookbook.org")
 	"%(org-chef-get-recipe-from-url)" :empty-lines 1)
-	("m" "Manual Cookbook" entry (file "~/Documents/org/cookbook.org")
+	("m" "Manual Cookbook" entry (file "~/Documents/Recipes/cookbook.org")
 	"* %^{Recipe title: }\n:PROPERTIES:\n:provenance:\n:source-url:\n:servings:\n:prep-time:\n:cook-time:\n:ready-in:\n:END:\n** Ingredients\n%?\n** Directions\n\n\n** Notes\n\n")
 
 	;; https://benadha.com/notes/how-i-manage-my-reading-list-with-org-mode/
