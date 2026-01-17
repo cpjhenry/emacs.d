@@ -340,23 +340,23 @@ mode when toggled off."
 		(and err1 err2)))
 
 (defun ibuffer-next-header ()
-	(interactive)
-	(while (ibuffer-next-line)))
+  (interactive)
+  (while (ibuffer-next-line)))
 
 (defun ibuffer-previous-header ()
-	(interactive)
-	(while (ibuffer-previous-line)))
+  (interactive)
+  (while (ibuffer-previous-line)))
 
 (defun ibuffer-ido-find-file (file &optional wildcards)
-"Like `ido-find-file', but default to the directory of the buffer at point."
-	(interactive
-	(let ((default-directory
-		(let ((buf (ibuffer-current-buffer)))
-		(if (buffer-live-p buf)
-			(with-current-buffer buf default-directory)
-			default-directory))))
-		(list (ido-read-file-name "Find file: " default-directory) t)))
-	(find-file file wildcards))
+  "Like `ido-find-file', but default to the directory of the buffer at point."
+  (interactive
+   (let ((default-directory
+	  (let ((buf (ibuffer-current-buffer)))
+	    (if (buffer-live-p buf)
+		(with-current-buffer buf default-directory)
+	      default-directory))))
+     (list (ido-read-file-name "Find file: " default-directory) t)))
+  (find-file file wildcards))
 
 
 ;; scrolling
@@ -367,14 +367,20 @@ mode when toggled off."
 
 ;; web browsing
 (defun elpher:eww-browse-url (original url &optional new-window) "Handle gemini links."
-	(cond ((string-match-p "\\`\\(gemini\\|gopher\\)://" url) (elpher-go url))
-		(t (funcall original url new-window))))
+  (cond ((string-match-p "\\`\\(gemini\\|gopher\\)://" url) (elpher-go url))
+    (t (funcall original url new-window))))
 
-(defun eww-unfill-paragraph () "Re-flow text in eww buffer."
-	(interactive)
-	(read-only-mode -1)
-	(unfill-paragraph)
-	(read-only-mode))
+(defun eww-reddit-redirect (url)
+  "Redirect reddit.com to old.reddit.com automatically."
+  (replace-regexp-in-string "https://www.reddit.com" "https://old.reddit.com" url))
+(setq eww-url-transformers '(eww-remove-tracking eww-reddit-redirect))
+
+(defun eww-unfill-paragraph ()
+  "Re-flow text in eww buffer."
+  (interactive)
+  (read-only-mode -1)
+  (unfill-paragraph)
+  (read-only-mode))
 
 ;; https://old.reddit.com/r/emacs/comments/17h4h4k/how_to_preview_buffer_with_html_in_ewwbrowser/
 (defun eww-render-buffer ()

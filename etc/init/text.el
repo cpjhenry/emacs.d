@@ -2,22 +2,6 @@
 ;;; commentary:
 
 ;;; code:
-(defun insert-tab-char ()
-	"Insert a tab char. (ASCII 9, \t)."
-	(interactive)
-	(insert "\t"))
-
-(defun unfill-paragraph ()
-	"Take a multi-line paragraph and make it into a single line of text."
-	(interactive)
-	(let ((beg (point-min))
-	      (end (point-max))
-	      (fill-column (point-max)))
-	(when (region-active-p)
-	  (setq beg (region-beginning))
-	  (setq end (region-end)))
-	(fill-region beg end)))
-
 (defun insert-iso-date ()
 	"Insert ISO-formatted date."
 	(interactive)
@@ -232,13 +216,6 @@ from point."
   (save-excursion
     (save-restriction
       (indent-region (point-min) (point-max)))))
-
-;; eww functions
-
-(defun eww-reddit-redirect (url)
-	"Redirect reddit.com to old.reddit.com automatically."
-	(replace-regexp-in-string "https://www.reddit.com" "https://old.reddit.com" url))
-	(setq eww-url-transformers '(eww-remove-tracking eww-reddit-redirect))
 
 ;; prog-mode functions
 

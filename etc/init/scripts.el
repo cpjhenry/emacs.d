@@ -26,12 +26,6 @@
   (interactive)
   (shell-command "alert -dq"))
 
-(defun wxs () "Local weather + forecast."
-  (interactive)
-  (switch-to-buffer "*wx*")
-  (shell-command "alert -dqs" (current-buffer))
-  (view-mode))
-
 (defun wttr () "Local weather / forecast."
   (interactive)
   (switch-to-buffer "*wttr*")

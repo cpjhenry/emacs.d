@@ -1,7 +1,7 @@
 ;;; init.el --- Emacs configuration -*- no-byte-compile: t; lexical-binding: t; -*-
 
 ;;; commentary:
-;; brew install emacs-plus --with-modern-black-dragon-icon --with-mailutils --with-imagemagick
+;; brew install emacs-plus
 
 ;; /usr/local/share/emacs/site-lisp
 
@@ -41,8 +41,10 @@
 	  mac-option-modifier 'meta	; Meta
 	  mac-command-modifier 'super	; Super
 	  mac-right-command-modifier 'alt	; Alt
-	  mac-right-option-modifier nil	; pass-thru
-	  ns-use-native-fullscreen nil)
+	  mac-right-option-modifier nil); pass-thru
+
+  ;; suppress mac frame refocus
+  (setq ns-use-native-fullscreen nil)
 
   (keymap-global-set "s-c" 'ns-copy-including-secondary)	; ⌘-c = Copy
   (keymap-global-set "s-x" 'kill-region)			; ⌘-x = Cut
@@ -728,30 +730,30 @@
   :config (advice-add 'eww-browse-url :around 'elpher:eww-browse-url))
 
 (use-package eww
-  :ensure	nil
-  :custom	(browse-url-browser-function 'eww-browse-url)
-		(eww-auto-rename-buffer t)
-		(eww-bookmarks-directory (concat user-emacs-directory "etc/"))
-		(eww-readable-adds-to-history nil)
-		(eww-search-prefix "https://duckduckgo.com/html?q=")
-		(shr-inhibit-images t)
-		(shr-use-colors nil)
-		(shr-use-fonts nil)
-		(shr-bullet "• ")
-		(shr-folding-mode t)
-		(shr-indentation 2)	; Left-side margin
-		(shr-width nil)		; Fold text for comfiness
-		(url-privacy-level '(email agent lastloc))
-  :bind (	("C-x g" . browse-url-at-point)
-		:map eww-mode-map
-		("[" . eww-back-url)
-		("]" . eww-forward-url)
-		("Q" . eww-unfill-paragraph)
-		:map eww-bookmark-mode-map
-		("w" . eww))
+  :ensure nil
+  :custom (browse-url-browser-function 'eww-browse-url)
+  (eww-auto-rename-buffer t)
+  (eww-bookmarks-directory (concat user-emacs-directory "etc/"))
+  (eww-readable-adds-to-history nil)
+  (eww-search-prefix "https://duckduckgo.com/html?q=")
+  (shr-inhibit-images t)
+  (shr-use-colors nil)
+  (shr-use-fonts nil)
+  (shr-bullet "• ")
+  (shr-folding-mode t)
+  (shr-indentation 2)	; Left-side margin
+  (shr-width nil)		; Fold text for comfiness
+  (url-privacy-level '(email agent lastloc))
+  :bind (("C-x g" . browse-url-at-point)
+	:map eww-mode-map
+	("[" . eww-back-url)
+	("]" . eww-forward-url)
+	("Q" . eww-unfill-paragraph)
+	:map eww-bookmark-mode-map
+	("w" . eww))
   :config	(url-setup-privacy-info)
-  		(add-hook 'eww-after-render-hook 'eww-readable) ;; default to 'readable-mode'
-		(use-package ace-link :config (ace-link-setup-default))) ;; alternative to tabbing
+  (add-hook 'eww-after-render-hook 'eww-readable) ;; default to 'readable-mode'
+  (use-package ace-link :config (ace-link-setup-default))) ;; alternative to tabbing
 
 (use-package flycheck ; on-the-fly syntax checking
   :unless *w32*
@@ -1000,6 +1002,9 @@
 (use-package hl-sentence) ; highlight current sentence
 
 (use-package typo) ; minor mode for typographic editing
+
+(use-package unfill
+  :bind (("M-q" . unfill-toggle)))
 
 ;; prog-mode
 (add-hook 'prog-mode-hook (lambda()
@@ -1528,7 +1533,6 @@
 
 (bind-key "M-q"		'my/fill-paragraph)
 (defun my/fill-paragraph () (interactive) (fill-paragraph nil t))
-(bind-key "M-Q"		'unfill-paragraph)
 
 (bind-key "C-M-;"	'eval-r)
 (bind-key "C-M-y"	'undo-yank)
