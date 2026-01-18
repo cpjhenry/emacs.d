@@ -1,5 +1,7 @@
-;;; org-functions
+;;; org-functions.el --- Org functions
+;;; commentary:
 
+;;; code:
 ;; remaps
 (defun org-todo-left () (interactive)(org-call-with-arg 'org-todo 'left))
 (defun org-todo-right() (interactive)(org-call-with-arg 'org-todo 'right))
@@ -213,3 +215,5 @@ extension."
 	(format "pandoc -f markdown_mmd -t org -o '%s'"
 	(concat (file-name-sans-extension (buffer-file-name)) ".org")))
 	(find-file (concat (file-name-sans-extension (buffer-file-name)) ".org")))
+
+;;; org-functions.el ends here

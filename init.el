@@ -1084,6 +1084,7 @@
 ;; 	      (const :tag "#+TITLE " mytitle)))
 
 (require 'org)
+(add-to-list 'org-modules 'tempo t)
 
 ;; :custom
 (setopt	org-directory "~/Documents/org"
@@ -1171,6 +1172,10 @@
 (define-key org-mode-map (kbd "C-S-<left>") nil)  ; do the same for left-word
 (define-key org-mode-map (kbd "C-S-<right>") nil) ; and right-word
 
+(define-key org-mode-map (kbd "C-S-<up>") nil)    ; and for good measure...
+(define-key org-mode-map (kbd "C-S-<down>") nil)
+(define-key org-mode-map (kbd "S-<return>") nil)
+
 (define-key org-mode-map (kbd "S-<home>") 'org-shiftleft)
 (define-key org-mode-map (kbd "S-<end>") 'org-shiftright)
 (define-key org-mode-map (kbd "S-<prior>") 'org-shiftup)
@@ -1192,6 +1197,9 @@
 (add-hook 'org-agenda-finalize-hook 'delete-other-windows)
 (if (featurep 'visual-fill-column)
     (add-hook 'org-mode-hook 'visual-fill-column-mode--disable))
+
+(require 'org-macro-display "init/org-macro-display")
+(add-hook 'org-mode-hook #'org-macro-display-mode)
 
 ;; :config
 ;; Ispell should not check code blocks in org mode
