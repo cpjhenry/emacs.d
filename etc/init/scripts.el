@@ -30,7 +30,8 @@
   (interactive)
   (switch-to-buffer "*wttr*")
   (shell-command "curl -s https://wttr.in/Ottawa?1nqT |head -n -2" (current-buffer))
-  (view-mode))
+  (view-mode)
+  (turn-off-cursor))
 
 (defun maritime () "Maritime alerts from Environment Canada."
   (interactive)
@@ -43,6 +44,7 @@
   (switch-to-buffer "*CBC*")
   (shell-command "cbc-mode" (current-buffer))
   (org-mode)
+  (toggle-truncate-lines)
   (view-mode)
   (goto-char (point-min)))
 

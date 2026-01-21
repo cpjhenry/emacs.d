@@ -9,5 +9,9 @@ echo "Today's headlines from CBC Ottawa"
 echo "$(date)"
 curl -s https://www.cbc.ca/webfeed/rss/rss-canada-ottawa |xml2 |etoa |
 	egrep "item/title|item/link" |
-	gsed -e 's|/rss/channel/item/title=|\n- |' -e 's|/rss/channel/item/link=|[[|' |
-	gsed '/\[\[/s/$/][link]]/;s/\?cmp=rss//'
+	gsed -e 's|/rss/channel/item/title=|\n- |' \
+		 -e 's|/rss/channel/item/link=||' \
+		 -e 's/\?cmp=rss//'
+
+#		-e 's|/rss/channel/item/link=|[[|' |
+#	gsed '/\[\[/s/$/][link]]/;s/\?cmp=rss//'

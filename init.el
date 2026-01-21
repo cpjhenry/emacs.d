@@ -1191,7 +1191,7 @@
 (with-eval-after-load 'view
 	(define-key view-mode-map (kbd "[") 'org-previous-link)
 	(define-key view-mode-map (kbd "]") 'org-next-link)
-	(define-key view-mode-map (kbd "RET") nil))
+	(define-key view-mode-map (kbd "RET") 'goto-address-at-point))
 
 ;; :hook
 (add-hook 'org-agenda-finalize-hook 'delete-other-windows)

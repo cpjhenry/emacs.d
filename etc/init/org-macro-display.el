@@ -4,9 +4,8 @@
 ;; Version: 0.1
 ;; Package-Requires: ((emacs "26.1"))
 ;; Keywords: org, convenience
-;; URL: nil
 
-;;; Commentary:
+;;; commentary:
 ;; Displays certain literal macro strings (e.g. "\fd{}") as nicer text (e.g. ".....")
 ;; in Org buffers, without changing the underlying buffer contents.
 
@@ -21,14 +20,15 @@
 ;; Or all open org buffers:
 ;;	C-u M-x org-macro-display-refresh
 
-;;; Code:
+;;; code:
 (defgroup org-macro-display nil
   "Display selected LaTeX-style macros in Org buffers."
   :group 'org)
 
 (defcustom org-macro-displays
   '(("\\fd{}" . ".....")
-    ("\\td{}" . "..."))
+    ("\\td{}" . "...")
+    ("#+LATEX: \\newpage" . "====="))
   "Alist of exact Org/LaTeX macro strings and their display replacements.
 Keys are matched literally (exact string match) and may include braces."
   :type '(alist :key-type string :value-type string)
