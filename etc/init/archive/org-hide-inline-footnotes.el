@@ -1,12 +1,8 @@
 ;;; org-hide-inline-footnotes.el --- Inline Org footnotes folding to [*], including nested ones.
 ;;; commentary:
-
 ;;; code:
-(require 'org-element)
 
-(defface org-inline-footnote-placeholder-face
-  '((t :inherit shadow :underline nil))
-  "Face for the collapsed inline-footnote placeholder [*].")
+(require 'org-element)
 
 (defvar org-inline-footnote-overlay-category 'org-inline-footnote
   "Overlay category for hiding inline Org footnote text.")
@@ -29,25 +25,20 @@ footnotes like [fn::outer [fn::inner] more]."
         (let ((ast (org-element-parse-buffer 'object)))
           (org-element-map ast 'footnote-reference
             (lambda (ref)
+              ;; We only care about inline-style footnotes [fn:: ...]
+              ;; or similar, not plain [fn:1] references that point to
+              ;; a separate definition.
               (let ((type (org-element-property :type ref)))
                 (when (memq type '(inline anonymous))
-		  (let* ((beg  (org-element-property :begin ref))
-			 (end  (org-element-property :end ref))
-			 (post (or (org-element-property :post-blank ref) 0))
-			 (end0 (max beg (- end post)))
-			 (ov   (make-overlay beg end0)))
-		    (overlay-put ov 'category org-inline-footnote-overlay-category)
-		    (overlay-put ov 'evaporate t)
-		    (overlay-put ov 'priority 1000) ;; make sure it wins
-		    (overlay-put ov 'my-footnote-beg beg)
-		    (overlay-put ov 'my-footnote-end end0)
-
-		    ;; FORCE the placeholder face (prevents underline from underlying org faces)
-		    (overlay-put ov 'face 'org-inline-footnote-placeholder-face)
-		    (overlay-put ov 'font-lock-face 'org-inline-footnote-placeholder-face)
-
-		    ;; Collapsed display
-		    (overlay-put ov 'display "[*]")) )))))))))
+                  (let* ((beg (org-element-property :begin ref))
+                         (end (org-element-property :end ref))
+                         (ov  (make-overlay beg end)))
+                    (overlay-put ov 'category org-inline-footnote-overlay-category)
+                    (overlay-put ov 'evaporate t)
+                    (overlay-put ov 'my-footnote-beg beg)
+                    (overlay-put ov 'my-footnote-end end)
+                    ;; Collapsed display (what you see when not editing)
+                    (overlay-put ov 'display "[*]")))))))))))
 
 (defun org-inline-footnote--update-visibility ()
   "Show or hide inline footnotes depending on point position."

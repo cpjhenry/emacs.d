@@ -3,7 +3,8 @@
 ;;; commentary:
 ;; brew install emacs-plus
 
-;; /usr/local/share/emacs/site-lisp
+;; - /usr/local/share/emacs/site-lisp
+;; - `auto-insert-mode' inserts code templates, including GPL notice.
 
 ;;; code:
 ;; Initialize terminal
@@ -40,7 +41,7 @@
 	  mac-control-modifier 'control	; Control
 	  mac-option-modifier 'meta	; Meta
 	  mac-command-modifier 'super	; Super
-	  mac-right-command-modifier 'alt	; Alt
+	  mac-right-command-modifier 'alt ; Alt
 	  mac-right-option-modifier nil); pass-thru
 
   ;; suppress mac frame refocus
@@ -151,6 +152,7 @@
 	help-clean-buttons t
 	help-enable-variable-value-editing t
 	help-window-select t
+	history-delete-duplicates t
 	indicate-empty-lines t
 	inhibit-default-init nil
 	inhibit-startup-message t ; 'About Emacs'
@@ -292,8 +294,9 @@
 (setopt	eshell-aliases-file	(concat user-emacs-directory "etc/eshell/aliases")
 	eshell-directory-name	(concat user-emacs-directory "var/eshell/"))
 
-(require 'formfeed-hline)
-(if (featurep 'formfeed-hline)	(formfeed-hline-mode))
+;;; FIXME - collides with `org-ellipsis'
+;; (require 'formfeed-hline)
+;; (if (featurep 'formfeed-hline) (formfeed-hline-mode))
 
 (require 'man)
 (setopt	Man-notify-method 'pushy)
@@ -1084,7 +1087,10 @@
 ;; 	      (const :tag "#+TITLE " mytitle)))
 
 (require 'org)
-(add-to-list 'org-modules 'tempo t)
+(require 'org-tempo)
+
+;; FIXME - cleanup
+(load "init/org-functions")
 
 ;; :custom
 (setopt	org-directory "~/Documents/org"
@@ -1092,12 +1098,13 @@
 	org-id-locations-file (concat user-emacs-directory "var/org-id-locations")
 
 	org-ctrl-k-protect-subtree t
-	org-ellipsis "$"
+	org-ellipsis "​*"
 	org-fold-catch-invisible-edits 'smart
 	org-footnote-auto-adjust t
 	org-footnote-define-inline t
 	org-hidden-keywords nil ;'(title subtitle author date)
 	org-hide-emphasis-markers t
+	org-highlight-latex-and-related '(native entities)
 	org-image-actual-width '(300)
 	org-list-allow-alphabetical t
 	org-list-demote-modify-bullet '(("+" . "-") ("-" . "+") ("*" . "+"))
@@ -1107,8 +1114,10 @@
 	org-pretty-entities t
 	org-pretty-entities-include-sub-superscripts t
 	org-return-follows-link t
+	org-src-fontify-natively t
+	org-src-tab-acts-natively t
 	org-special-ctrl-a/e t
-	org-startup-folded 'content ; folded children content all
+	org-startup-folded 'content ; fold children content all
 	org-startup-indented nil
 	org-startup-shrink-all-tables t
 
@@ -1117,6 +1126,8 @@
 
 	org-auto-align-tags nil
 	org-tags-column 0)
+
+(set-face-underline 'org-ellipsis nil)
 
 (defvar org-agenda-file (concat org-directory "/daily.org") "Default agenda file.")
 (setopt	org-agenda-files (list org-agenda-file)
@@ -1163,6 +1174,22 @@
 (define-key org-mode-map (kbd "C-M-[" ) 'outline-up-heading)
 (define-key org-mode-map (kbd "C-M-]") (lambda()(interactive)(org-end-of-subtree)))
 
+(define-key org-mode-map (kbd "C-c '") 'org-edit-special-no-fill)
+
+;; org-emphasis
+(define-key org-mode-map (kbd "A-b") 'org-emphasize-bold)
+  (defun org-emphasize-bold ()
+    "Bold current word."
+    (interactive)
+    (unless (region-active-p) (mark-whole-word))
+    (org-emphasize ?*))
+(define-key org-mode-map (kbd "A-i") 'org-emphasize-italic)
+  (defun org-emphasize-italic ()
+    "Italicize current word."
+    (interactive)
+    (unless (region-active-p) (mark-whole-word))
+    (org-emphasize ?/))
+
 ;; alternative mapping for 'org-support-shift-select'
 (define-key org-mode-map (kbd "S-<left>") nil)
 (define-key org-mode-map (kbd "S-<right>") nil)
@@ -1180,8 +1207,6 @@
 (define-key org-mode-map (kbd "S-<end>") 'org-shiftright)
 (define-key org-mode-map (kbd "S-<prior>") 'org-shiftup)
 (define-key org-mode-map (kbd "S-<next>") 'org-shiftdown)
-
-(define-key org-mode-map (kbd "C-c '") 'org-edit-special-no-fill)
 
 ;; fix 'Ctrl-a' binding in org-mode
 (if (fboundp 'back-to-indentation-or-beginning-of-line) (org-remap org-mode-map
@@ -1201,6 +1226,21 @@
 (require 'org-macro-display "init/org-macro-display")
 (add-hook 'org-mode-hook #'org-macro-display-mode)
 
+(require 'org-quote-indent "init/org-quote-indent")
+(add-hook 'org-mode-hook #'org-quote-indent-mode)
+
+(require 'org-hide-inline-footnotes "init/org-hide-inline-footnotes")
+(add-hook 'org-mode-hook #'org-hide-inline-footnotes-mode)
+
+(require 'org-comment-placeholder "init/org-comment-placeholder")
+(add-hook 'org-mode-hook #'org-comment-placeholder-mode)
+
+(require 'org-pretty-table) ; 'opt'
+(add-hook 'org-mode-hook #'org-pretty-table-mode)
+
+;; `org-functions'
+(add-hook 'org-mode-hook #'org-hide-comment-blocks)
+
 ;; :config
 ;; Ispell should not check code blocks in org mode
 (add-to-list 'ispell-skip-region-alist '(":\\(PROPERTIES\\|LOGBOOK\\):" . ":END:"))
@@ -1209,6 +1249,9 @@
 (add-to-list 'ispell-skip-region-alist '("^#\\+begin_example " . "#\\+end_example$"))
 (add-to-list 'ispell-skip-region-alist '("^#\\+BEGIN_EXAMPLE " . "#\\+END_EXAMPLE$"))
 (add-to-list 'org-entities-user '("textnumero" "\\textnumero" nil "&numero;" "No." "No." "№"))
+
+;; outline mode doesn't auto-interpret org entities, so use it to view org-entities
+(advice-add 'org-entities-help :after (lambda (&rest r) (outline-mode) (view-mode)))
 
 ;; FIXME - Errors with EMACS30
 ;; (use-package org-autolist ; pressing "Return" will insert a new list item automatically
@@ -1244,11 +1287,6 @@
   :disabled ; doesn't work with org DONE tags
   :hook (org-mode . (lambda () (org-expose-emphasis-markers 'paragraph))))
 
-(require 'org-hide-inline-footnotes "init/org-hide-inline-footnotes")
-
-(require 'org-pretty-table)
-(add-hook 'org-mode-hook (lambda () (org-pretty-table-mode)))
-
 (use-package org-ref
   :if *natasha*
   :disabled)
@@ -1265,9 +1303,6 @@
 (advice-add 'org-latex-export-as-latex :after (lambda (&rest r) (delete-other-windows)))
 
 (require 'ox-md)
-
-;; FIXME - cleanup
-(load "init/org-functions")
 
 ;; fix table.el error
 ;; https://github.com/doomemacs/doomemacs/issues/6980
@@ -1667,6 +1702,13 @@
       (which-key-alias "C-c Z" "work-agenda"))
 
 ;;; init.el ends here
+
+;;=================================================================================
+;; DEBUG TOOL --- stops processing of .el file.
+;; https://emacs.stackexchange.com/questions/19385/how-to-exit-from-emacs-init-file
+;(with-current-buffer " *load*" (goto-char (point-max)))
+;;=================================================================================
+
 ; LocalWords:  canadian sug aspell memq eval RET kfhelppanels init FN
 ; LocalWords:  pdfexport melpa vers tls dg defs eshell multisession
 ; LocalWords:  persistency ido Ibuffer elfeed rc rmh elfeedroutines

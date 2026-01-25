@@ -149,7 +149,7 @@ Prefix removes numbering."
 
 ;; https://www2.lib.uchicago.edu/keith/emacs/init.el
 (defun undo-yank (arg)
-  "Undo the yank you just did. Really, adjust just-yanked text
+"Undo the yank you just did. Really, adjust just-yanked text
 like \\[yank-pop] does, but in the opposite direction."
   (interactive "p")
   (yank-pop (- arg)))
@@ -216,6 +216,19 @@ from point."
   (save-excursion
     (save-restriction
       (indent-region (point-min) (point-max)))))
+
+;; https://github.com/jakebox/jake-emacs/blob/main/jake-emacs/jib-funcs.el
+(defun calc-speaking-time ()
+  "Calculate how long it would take me to speak aloud the selection."
+  (interactive)
+  (if (use-region-p)
+      (let* ((wpm 150)
+	     (word-count (float (count-words-region (region-beginning) (region-end))))
+	     (raw-time (* 60 (/ word-count wpm))))
+	(message "%s minutes, %s seconds to speak at %d wpm (%d words)"
+		 (format-seconds "%m" raw-time)
+		 (floor (mod raw-time 60)) wpm word-count))
+    (error "Error: select a region")))
 
 ;; prog-mode functions
 
