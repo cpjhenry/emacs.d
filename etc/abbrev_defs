@@ -23,9 +23,8 @@
   '(
     ("a5vc" "# Set for A5 paper. You can still print this to booklet format." nil :count 0)
     ("asterism" "#+LATEX: \\begin{center}\\asterism\\end{center}" nil :count 7)
-    ("begsp" "#+LATEX: \\begin{samepage}" nil :count 4)
+    ("ccc" "#+AUTHOR:/Capital City Council \\textnumero154/" nil :count 0)
     ("dinkus" "#+LATEX: \\begin{center}* * *\\end{center}" nil :count 2)
-    ("endsp" "#+LATEX: \\end{samepage}" nil :count 4)
     ("hdr" "#+LATEX_HEADER:" nil :count 140)
     ("lat" "#+LATEX:" nil :count 48)
     ("lsvc" "# This is the letter-size version.
@@ -45,11 +44,9 @@
 #+AUTHOR: Paul J Henry
 #+AUTHOR: MM RAM AMD
 #+DATE: 
-Goodwood Lodge\\\\
-\\textnumero159 AF&AM GRC
 
 CHECK AGAINST DELIVERY" nil :count 5)
     ("referencemark" "#+LATEX: {\\fontspec{NewCM10-Book} \\large \\textreferencemark}" nil :count 0)
-    ("wmye" "WM,YE." nil :count 0)
+    ("wmye" "WMYE." nil :count 0)
    ))
 

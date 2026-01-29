@@ -136,7 +136,7 @@ Header line shows label + line count. Preview is on its own line, indented by
 4 fixed-pitch columns (display-only)."
   (let* ((preview (org-comment-placeholder--preview-from content-beg content-end))
          (nlines  (org-comment-placeholder--line-count content-beg content-end))
-         (header  (format "%s - %d -" org-comment-placeholder-prefix nlines))
+         (header  (format "%s" org-comment-placeholder-prefix)) ; nlines
          (hface   org-comment-placeholder-face)
          (pface   org-comment-placeholder-face)
          ;; Exactly 4 monospace columns, regardless of preview font:
@@ -167,7 +167,7 @@ Header line shows label + line count. Preview is on its own line, indented by
     (push ov org-comment-placeholder--overlays)))
 
 (defun org-comment-placeholder-hide-all ()
-  "Hide all #+begin_comment blocks, replace the begin line with a placeholder,
+"Hide all #+begin_comment blocks, replace the begin line with a placeholder,
 and hide the #+end_comment line (including its newline)."
   (interactive)
   (org-comment-placeholder--clear)

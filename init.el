@@ -438,6 +438,8 @@
 	(add-to-list 'ido-ignore-buffers "^*tramp/")
 	(add-to-list 'ido-ignore-buffers "^*Compile-Log*")
 	(add-to-list 'ido-ignore-buffers "^*.*[Nn]ative-compile-[Ll]og*")
+	(add-to-list 'ido-ignore-buffers "^*Backtrace*")
+	(add-to-list 'ido-ignore-buffers "^*Warnings*")
 	(add-to-list 'ido-ignore-files ".DS_Store")
 	(add-to-list 'ido-ignore-files "ido.last")
 
@@ -691,6 +693,7 @@
 
 (use-package which-key
   :custom (which-key-idle-delay 0.5)
+  :bind ( ("C-h C-h" . nil))
   :config (which-key-mode)
   	  (defalias 'which-key-alias 'which-key-add-key-based-replacements))
 
@@ -1098,15 +1101,14 @@
 	org-id-locations-file (concat user-emacs-directory "var/org-id-locations")
 
 	org-ctrl-k-protect-subtree t
-	org-ellipsis "​*"
+	org-ellipsis "​";*
 	org-fold-catch-invisible-edits 'smart
 	org-footnote-auto-adjust t
 	org-footnote-define-inline t
 	org-hidden-keywords nil ;'(title subtitle author date)
 	org-hide-emphasis-markers t
 	org-highlight-latex-and-related '(native entities)
-	org-image-actual-width '(300)
-	org-list-allow-alphabetical t
+x	org-list-allow-alphabetical t
 	org-list-demote-modify-bullet '(("+" . "-") ("-" . "+") ("*" . "+"))
 	org-log-done 'time
 	org-log-repeat nil
@@ -1120,6 +1122,10 @@
 	org-startup-folded 'content ; fold children content all
 	org-startup-indented nil
 	org-startup-shrink-all-tables t
+
+	org-startup-with-inline-images t
+	org-cycle-inline-images-display t
+	org-image-actual-width t; '(300)
 
 	org-use-speed-commands (lambda() (and (looking-at org-outline-regexp) (looking-back "^\**")))
 	org-use-sub-superscripts '{}
@@ -1522,6 +1528,7 @@
 ;; quit cleanly
 (global-set-key (kbd "C-x C-g") 'keyboard-quit)
 (global-set-key (kbd "C-c C-g") 'keyboard-quit)
+(global-set-key (kbd "C-h C-g") 'keyboard-quit)
 
 ;; Disable alternate suspend-frame
 (global-unset-key (kbd "C-x C-z"))
