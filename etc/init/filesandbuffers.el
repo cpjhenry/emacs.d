@@ -1,14 +1,19 @@
 ;;; filesandbuffers.el --- FILE/BUFFER functions
-
 ;;; Commentary:
 
 ;;; Code:
-
 (if (< emacs-major-version 29)(defun scratch-buffer ()
 "Switch to the *scratch* buffer.
 	If the buffer doesn't exist, create it first."
 	(interactive)
 	(pop-to-buffer-same-window (get-scratch-buffer-create))))
+
+(defun scratch ()
+  "Make a new temporary scratch file.
+
+Useful if your *scratch* is already holding something important."
+  (interactive)
+  (switch-to-buffer (make-temp-name "*scratch*-")))
 
 (defun new-empty-buffer ()
 "Create new empty buffer."
@@ -95,8 +100,7 @@
 	(set-buffer-file-coding-system 'utf-8-unix)
 	(set-buffer-modified-p nil))
 
-
-;; modeline functions
+;; modeline functions
 ;; https://jiewawa.me/2024/10/useful-emacs-commands-for-reading/
 (defun kill-modeline ()
 	(setq-local mode-line-format nil))
@@ -109,8 +113,7 @@
 	(if (null mode-line-format) (restore-modeline)
 	(kill-modeline)))
 
-
-;; macOS frame functions
+;; macOS frame functions
 (defun ns-raise-emacs ()
 "Raise Emacs."
 	(ns-do-applescript "tell application \"Emacs\" to activate"))
@@ -122,8 +125,7 @@
 		(ns-raise-emacs)
 		(toggle-frame-maximized))))
 
-
-;; misc. functions
+;; misc. functions
 
 (defun set-window-width (n)
 "Set the selected window's width as 'N'."
@@ -240,68 +242,69 @@ mode when toggled off."
 	(View-scroll-line-backward)
 	(move-to-window-line-top-bottom))
 
-
-;; org-mode functions
+;; DIRED functions
+(defun dired-home ()
+  "Go to first line in Dired buffer."
+  (interactive)
+  (beginning-of-buffer)
+  (dired-next-line 1))
 
-(defun org-edit-special-no-fill () "Call a special editor for the element at point; turn off fill."
-	(interactive)
-	(org-edit-special)
-	(if (featurep 'visual-fill-column) (visual-fill-column-mode -1)))
-
-
-;; DIRED functions
+(defun dired-end ()
+  "Go to last line in Dired buffer."
+  (interactive)
+  (end-of-buffer)
+  (dired-previous-line 1))
 
 (defun kill-dired-buffers ()
-	(interactive)
-	(mapc (lambda (buffer)
-		(when (eq 'dired-mode (buffer-local-value 'major-mode buffer))
-		(kill-buffer buffer)))
-		(buffer-list)))
+  (interactive)
+  (mapc (lambda (buffer)
+	  (when (eq 'dired-mode (buffer-local-value 'major-mode buffer))
+	    (kill-buffer buffer)))
+	(buffer-list)))
 
 (defun rename-file-and-buffer (new-name)
-"Renames both current buffer and file it's visiting to NEW-NAME."
-	(interactive "sNew name: ")
-	(let ((name (buffer-name))
-		(filename (buffer-file-name)))
-	(if (not filename)
-		(message "Buffer '%s' is not visiting a file!" name)
-	(if (get-buffer new-name)
-		(message "A buffer named '%s' already exists!" new-name)
+  "Renames both current buffer and file it's visiting to NEW-NAME."
+  (interactive "sNew name: ")
+  (let ((name (buffer-name))
+	(filename (buffer-file-name)))
+    (if (not filename)
+	(message "Buffer '%s' is not visiting a file!" name)
+      (if (get-buffer new-name)
+	  (message "A buffer named '%s' already exists!" new-name)
 	(progn
-		(rename-file filename new-name 1)
-		(rename-buffer new-name)
-		(set-visited-file-name new-name)
-		(set-buffer-modified-p nil))))))
+	  (rename-file filename new-name 1)
+	  (rename-buffer new-name)
+	  (set-visited-file-name new-name)
+	  (set-buffer-modified-p nil))))))
 
 (defun move-buffer-file (dir)
-"Moves both current buffer and file it's visiting to DIR."
-	(interactive "DNew directory: ")
-	(let* ((name (buffer-name))
-		(filename (buffer-file-name))
-		(dir
-		(if (string-match dir "\\(?:/\\|\\\\)$")
-		(substring dir 0 -1) dir))
-		(newname (concat dir "/" name)))
-	(if (not filename)
-		(message "Buffer '%s' is not visiting a file!" name)
-	(progn
-		(copy-file filename newname 1)
-		(delete-file filename)
-		(set-visited-file-name newname)
-		(set-buffer-modified-p nil) t))))
+  "Move both current buffer and file it's visiting to DIR."
+  (interactive "DNew directory: ")
+  (let* ((name (buffer-name))
+	 (filename (buffer-file-name))
+	 (dir
+	  (if (string-match dir "\\(?:/\\|\\\\)$")
+	      (substring dir 0 -1) dir))
+	 (newname (concat dir "/" name)))
+    (if (not filename)
+	(message "Buffer '%s' is not visiting a file!" name)
+      (progn
+	(copy-file filename newname 1)
+	(delete-file filename)
+	(set-visited-file-name newname)
+	(set-buffer-modified-p nil) t))))
 
 ;; dired extension "% s"
 ;; https://social.tchncs.de/@stackeffect/113431684014013180
 (defun my-substspaces (str)
-	(subst-char-in-string ?\s ?_ str))
+  (subst-char-in-string ?\s ?_ str))
 
 (defun my-dired-substspaces (&optional arg)
-"Rename all marked (or next ARG) files so that spaces are replaced with underscores."
-	(interactive "P")
-	(dired-rename-non-directory #'my-substspaces "Rename by substituting spaces" arg))
+  "Rename all marked (or next ARG) files so that spaces are replaced with underscores."
+  (interactive "P")
+  (dired-rename-non-directory #'my-substspaces "Rename by substituting spaces" arg))
 
-
-;; iBuffer functions
+;; iBuffer functions
 
 (defun ibuffer-advance-motion (direction)
 	(forward-line direction)
@@ -358,14 +361,12 @@ mode when toggled off."
      (list (ido-read-file-name "Find file: " default-directory) t)))
   (find-file file wildcards))
 
-
-;; scrolling
+;; scrolling
 (defun window-half-height ()	(max 1 (/ (1- (window-height (selected-window))) 2)))
 (defun scroll-up-half ()	(interactive) (scroll-up (window-half-height)))
 (defun scroll-down-half ()	(interactive) (scroll-down (window-half-height)))
 
-
-;; web browsing
+;; web browsing
 (defun elpher:eww-browse-url (original url &optional new-window) "Handle gemini links."
   (cond ((string-match-p "\\`\\(gemini\\|gopher\\)://" url) (elpher-go url))
     (t (funcall original url new-window))))
@@ -398,13 +399,23 @@ mode when toggled off."
 
 ;; https://vishesh.github.io/emacs/editors/2023/01/25/lean-emacs-config.html
 ;; (see bindings for: "C-a" "C-w" "M-w" "M-j")
+;; with mods by cpj -> note: "^" interactive modifier allows `shift-select'
+;; to work properly.
 
-(defun back-to-indentation-or-beginning-of-line ()
-  "Move cursor to beginning of line, taking indentation into account."
-  (interactive)
-  (if (= (point) (save-excursion (back-to-indentation) (point)))
-      (beginning-of-line)
-    (back-to-indentation)))
+(defun back-to-indentation-or-beginning-of-line (&optional arg)
+  "Move point to indentation, or to bol if already at indentation.
+
+With prefix ARG, operate on the ARGth line forward (like
+`move-beginning-of-line')."
+
+  (interactive "^p")
+  (setq arg (or arg 1))
+  (when (/= arg 1)
+    (forward-line (1- arg)))
+  (let ((indent-pos (save-excursion (back-to-indentation) (point))))
+    (if (= (point) indent-pos)
+        (beginning-of-line)
+      (goto-char indent-pos))))
 
 (defun match-paren (&optional arg)
   "Go to the matching parenthesis character if one is adjacent to point."

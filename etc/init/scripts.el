@@ -71,7 +71,6 @@
 
   (turn-off-cursor)
   (text-scale-increase 1)
-  (visual-fill-column-mode)
   (toggle-fill-column-center)
   (view-mode)
 
@@ -82,15 +81,6 @@
   (shell-command "fw -uf aries |perl -p -e 'chomp if eof'" (current-buffer))
   (text-mode)
 
-  ;; First approach, automate spell and copying.
-  ;; Doesn't work, at least not with Jinx, which spawns its own process.
-
-  ;(ispell-buffer)
-  ;(kill-ring-save (point-min) (point-max))
-  ;(kill-buffer (current-buffer))
-  ;(message "Forecast saved to clipboard.")
-
-  ;; Second approach, leaving spell-checking and copying to user.
   (view-mode)
   (setq-local inhibit-read-only t))
 
@@ -104,10 +94,7 @@
     (kill-buffer output)
 
     (switch-to-buffer-matching output)
-    (visual-line-mode)
-    (eww-unfill-paragraph)
-    (visual-fill-column-mode)
-    (toggle-fill-column-center)
+    (text-scale-increase 1)
 
     ;; leaves view-mode 'on' (keys work), but otherwise modifiable by spell-checker
     (setq-local inhibit-read-only t)))

@@ -1,4 +1,4 @@
-;;; text.el --- text functions
+;;; text-mods.el --- text functions
 ;;; commentary:
 
 ;;; code:
@@ -19,70 +19,105 @@
 		(shell-quote-argument (buffer-file-name)))
 		nil nil))
 
-(defun flush-blank-lines (start end)
-	"Remove blank lines in a buffer."
-	(interactive "r")
-	(flush-lines "^\\s-*$" start end nil))
+(defun flush-blank-lines (beg end)
+  "Remove blank lines in a buffer.
+
+BEG and END mark the limits of the region."
+  (interactive "r")
+  (flush-lines "^\\s-*$" beg end nil))
 
 (defun delete-duplicate-words ()
-	"Delete duplicate words via `query-replace-regexp'."
-	(interactive nil text-mode)
-	(save-excursion
-		(goto-char (point-min))
-		(query-replace-regexp "\\(\\b\\w+\\b\\)\\W+\\1\\b" "\\1")))
+  "Delete duplicate words via `query-replace-regexp'."
+  (interactive nil text-mode)
+  (save-excursion
+    (goto-char (point-min))
+    (query-replace-regexp "\\(\\b\\w+\\b\\)\\W+\\1\\b" "\\1")))
 
-;; https://www.emacswiki.org/emacs/ReplaceGarbageChars
-(defun replace-garbage-chars ()
-  "Replace goofy MS and other garbage characters with Latin1 equivalents."
-	(interactive)
-	(let ((beg (point-min))
-	      (end (point-max)))
-	  (when (region-active-p)
-	    (setq beg (region-beginning))
-	    (setq end (region-end)))
-	  (save-excursion ;save the current point
-	    (replace-string "΄" "'" nil beg end)
-	    (replace-string "‘" "'" nil beg end)
-	    (replace-string "’" "'" nil beg end)
-	    (replace-string "“" "\"" nil beg end)
-	    (replace-string "”" "\"" nil beg end)
-	    (replace-string "" "'" nil beg end)
-	    (replace-string "" "'" nil beg end)
-	    (replace-string "" "\"" nil beg end)
-	    (replace-string "" "\"" nil beg end)
-	    (replace-string "" "\"" nil beg end)
-	    (replace-string "" "\"" nil beg end)
-	    (replace-string "‘" "\"" nil beg end)
-	    (replace-string "’" "'" nil beg end)
-	    (replace-string "¡\"" "\"" nil beg end)
-	    (replace-string "¡­" "..." nil beg end)
-	    (replace-string "" "..." nil beg end)
-	    (replace-string "" " " nil beg end) ; M-SPC
-	    (replace-string "" "`" nil beg end)  ; \221
-	    (replace-string "" "'" nil beg end)  ; \222
-	    (replace-string "" "``" nil beg end)
-	    (replace-string "" "''" nil beg end)
-	    (replace-string "" "*" nil beg end)
-	    (replace-string "" "--" nil beg end)
-	    (replace-string "" "--" nil beg end)
-	    (replace-string " " " " nil beg end) ; M-SPC
-	    (replace-string "¡" "\"" nil beg end)
-	    (replace-string "´" "\"" nil beg end)
-	    (replace-string "»" "<<" nil beg end)
-	    (replace-string "Ç" "'" nil beg end)
-	    (replace-string "È" "\"" nil beg end)
-	    (replace-string "é" "e" nil beg end) ;; &eacute;
-	    (replace-string "ó" "-" nil beg end)
+;; Inspired by https://www.emacswiki.org/emacs/ReplaceGarbageChars
+(defvar replace-garbage-chars-alist
+  '(("΄" . "'")
+    ("‘" . "'")
+    ("’" . "'")
+    ("“" . "\"")
+    ("”" . "\"")
+    ("" . "'")
+    ("" . "'")
+    ("" . "\"")
+    ("" . "\"")
+    ("¡\"" . "\"")
+    ("¡­" . "...")
+    ("" . "...")
+    ("" . " ")
+    ("" . "`")
+    ("" . "'")
+    ("" . "``")
+    ("" . "''")
+    ("" . "*")
+    ("" . "--")
+    ("" . "--")
+    ("¡" . "\"")
+    ("´" . "\"")
+    ("»" . "<<")
+    ("Ç" . "'")
+    ("È" . "\"")
+    ("é" . "e")
+    ("ó" . "-")
+    ("•" . "-")
+    ("–" . "--")
+    ("—" . "---")
+    ("&#x27;" . "'")
+    ("&#38;" . "&")
+    ("&#39;" . "'")
 
-	    ;; mine
-	    (replace-string "•" "-" nil beg end)
-	    (replace-string "–" "--" nil beg end)
-	    (replace-string "—" "---" nil beg end) ; multi-byte
-	    (replace-string "…" "..." nil beg end)
-	    (replace-string "&#38;" "&" nil beg end)
-	    (replace-string "&#39;" "'" nil beg end)
+    ;; Ellipsis normalization
+    ("…"   . "...")
+    ("… "  . "... ")     ; sometimes comes with trailing space
+    (". . ." . "...")    ; spaced dots
+    (". . . " . "... ")
+    (" . . ." . "...")   ; leading space variants
+    (" . . . " . "... ")
+    ("&#8230;" . "...")  ; HTML decimal entity
+    ("&#x2026;" . "...") ; HTML hex entity
+    ("&hellip;" . "...") ; named HTML entity
+    )
+  "Alist of (FROM . TO) replacements for `replace-garbage-chars`.")
 
-	    (message "Garbage in, garbage out.") )))
+(defun replace-garbage-chars (&optional beg end quiet)
+  "Replace MS/CP1252 and other garbage characters with plain equivalents.
+
+If region is active (BEG END), operate on region; otherwise on whole buffer.
+
+When called interactively:
+- no prefix → report replacement count
+- \\[universal-argument] → suppress count message
+
+When called from Lisp:
+- QUIET non-nil suppresses the message.
+
+Returns the number of replacements made."
+  (interactive
+   (list (if (region-active-p) (region-beginning))
+         (if (region-active-p) (region-end))
+         current-prefix-arg))
+  (let* ((beg (or beg (point-min)))
+         (end (or end (point-max)))
+         (count 0)
+         (suppress (and quiet t)))   ; normalize truthiness
+    (atomic-change-group
+      (save-excursion
+        (save-restriction
+          (narrow-to-region beg end)
+          (dolist (pair replace-garbage-chars-alist)
+            (goto-char (point-min))
+            (let ((from (car pair))
+                  (to   (cdr pair)))
+              (while (search-forward from nil t)
+                (replace-match to t t)
+                (setq count (1+ count))))))))
+    (unless suppress
+      (message "Garbage in, garbage out. %d replacement%s made."
+               count (if (= count 1) "" "s")))
+    count))
 
 ;; https://emacs.stackexchange.com/questions/51629/add-paragraph-numbers
 (defun number-paragraphs (parg &optional takefirst)
@@ -134,26 +169,6 @@ Prefix removes numbering."
     (narrow-to-region (region-beginning) (region-end))
     (deactivate-mark)))
 
-(defun replace-double-spaces ()
-  "Replace double spaces in the buffer with single ones."
-  (interactive)
-  (save-excursion
-    ;; HACK - region only, if selected.
-    (goto-char (point-min))
-    (replace-regexp "  " " ")))
-
-(defun mark-from-beginning-of-buffer ()
-  "Marks the region from the beginning of the buffer to point."
-  (interactive)
-  (push-mark (point-min) nil t))
-
-;; https://www2.lib.uchicago.edu/keith/emacs/init.el
-(defun undo-yank (arg)
-"Undo the yank you just did. Really, adjust just-yanked text
-like \\[yank-pop] does, but in the opposite direction."
-  (interactive "p")
-  (yank-pop (- arg)))
-
 ;; https://speechcode.com/blog/narrow-to-focus/
 (defun narrow-to-focus (start end)
 "If the region is active, narrow to region, marking it (and only
@@ -171,6 +186,26 @@ region that was the most recent focus."
 	(when focus
 		(narrow-to-region (overlay-start focus)
 		(overlay-end focus)))))))
+
+(defun replace-double-spaces ()
+  "Replace double spaces in the buffer with single ones."
+  (interactive)
+  (save-excursion
+    ;; HACK - region only, if selected.
+    (goto-char (point-min))
+    (replace-regexp "  " " ")))
+
+(defun mark-from-beginning-of-buffer ()
+  "Mark the region from the beginning of the buffer to point."
+  (interactive)
+  (push-mark (point-min) nil t))
+
+;; https://www2.lib.uchicago.edu/keith/emacs/init.el
+(defun undo-yank (arg)
+"Undo the yank you just did. Really, adjust just-yanked text
+like \\[yank-pop] does, but in the opposite direction."
+  (interactive "p")
+  (yank-pop (- arg)))
 
 ;; https://emacs.stackexchange.com/questions/35069/best-way-to-select-a-word
 (defun mark-whole-word (&optional arg allow-extend)
@@ -232,6 +267,12 @@ from point."
 
 ;; prog-mode functions
 
-(defun align-equals (begin end)
-	(interactive "r")
-	(align-regexp begin end "\\(\\s-*\\)=" 1 1))
+(defun align-equals (beg end)
+  "Line up equal signs.
+
+BEG and END mark the limits of the region."
+  (interactive "r")
+  (align-regexp beg end "\\(\\s-*\\)=" 1 1))
+
+(provide 'text-mods)
+;;; text-mods.el ends here

@@ -2,6 +2,7 @@
 ;;; that you wouldn’t ordinarily be able to type with your keyboard layout.
 
 ;;; commentary:
+;; https://www.masteringemacs.org/article/inserting-emoji-input-methods
 
 ;;; code:
 (quail-define-package

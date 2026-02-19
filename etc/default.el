@@ -2,7 +2,10 @@
 ;;; commentary:
 
 ;;; code:
-(message "Loading local-holidays.")
+(require 'calendar)
+(require 'lunar)
+(require 'time)
+
 (setq holiday-general-holidays nil
 
       holiday-local-holidays '( ;; National / Provincial Holidays and Commemorations
@@ -84,11 +87,13 @@
 	("Australia/Sydney" "Sydney")
 	("NZ" "Wellington"))
 
-      lunar-phase-names '(
-	"● New Moon"
-	"☽ First Quarter Moon"
-	"○ Full Moon"
-	"☾ Last Quarter Moon"))
+      lunar-phase-names
+      '(
+	"New Moon"	; 🌑
+	"First Qtr"	; 🌓
+	"Full Moon"	; 🌕
+	"Last Qtr"	; 🌗
+	))
 
 (defun scottish-quarter-days ()
 "Return Scottish Quarter Days."

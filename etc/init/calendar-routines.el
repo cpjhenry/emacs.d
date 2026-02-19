@@ -73,6 +73,59 @@ special cases."
         (find-next-weekday next-day-date)
       date)))
 
+;; Add sunrise/sunset times to the agenda
+;; https://orgmode.org/worg/org-hacks.html
+;; You also need to add a couple of diary s-expressions in one of your agenda files:
+
+;;	%%(diary-sunrise) Sunrise in %s
+;;	%%(diary-sunset)
+
+;; This will show sunrise with the location and sunset without it.
+
+(defun diary-sunrise ()
+  "Local time of sunrise as a diary entry.
+The diary entry can contain `%s' which will be replaced with
+`calendar-location-name'."
+  (let ((l (solar-sunrise-sunset date)))
+    (when (car l)
+      (concat
+       (if (string= entry "")
+           "Sunrise"
+         (format entry (eval calendar-location-name))) " "
+         (solar-time-string (caar l) nil)))))
+
+(defun diary-sunset ()
+  "Local time of sunset as a diary entry.
+The diary entry can contain `%s' which will be replaced with
+`calendar-location-name'."
+  (let ((l (solar-sunrise-sunset date)))
+    (when (cadr l)
+      (concat
+       (if (string= entry "")
+           "Sunset"
+         (format entry (eval calendar-location-name))) " "
+         (solar-time-string (caadr l) nil)))))
+
+(defun diary-lunar-phase-symbol-only (&optional mark)
+  "Moon phases diary entry.
+An optional parameter MARK specifies a face or single-character string to
+use when highlighting the day in the calendar."
+  ;; This function is designed to be used in sexp diary entries, and
+  ;; may be present in users' diary files, so suppress the warning
+  ;; about this prefix-less dynamic variable.  It's called from
+  ;; `diary-list-sexp-entries', which binds the variable.
+  (with-suppressed-warnings ((lexical date))
+    (defvar date))
+  (let* ((index (lunar-index date))
+         (phase (lunar-phase index)))
+    (while (calendar-date-compare phase (list date))
+      (setq index (1+ index)
+            phase (lunar-phase index)))
+    (and (calendar-date-equal (car phase) date)
+         (cons mark
+               (let ((eclipse (nth 3 phase)))
+                 (lunar-phase-name (nth 2 phase)))))))
+
 (provide 'calendar-routines)
 ;;; calendar-routines.el ends here.
 

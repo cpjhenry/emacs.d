@@ -35,9 +35,6 @@
         "-name" "*.eln" "-size" "0" "-delete" "-or"
         "-name" "*.eln.tmp" "-size" "0" "-delete"))))
 
-;; Defer garbage collection further back in the startup process
-(setq gc-cons-threshold most-positive-fixnum)
-
 ;; Disable Emacs 27's automatic package.el initialization before the init.el
 ;; file is loaded. I use straight.el instead of package.el.
 ;(setq package-enable-at-startup nil)
@@ -60,7 +57,21 @@
 (startup-redirect-eln-cache (concat user-emacs-directory "var/cache"))
 
 ;; suppress lexical cookie
-(setq warning-suppress-log-types '((missing-lexbind-cookie)))
+(setq warning-suppress-log-types '((missing-lexbind-cookie))
+      warning-suppress-types '((missing-lexbind-cookie)))
+
+;; Defer garbage collection further back in the startup process
+;(setq gc-cons-threshold most-positive-fixnum)
+
+;; in early-init.el
+;; https://old.reddit.com/r/emacs/comments/1jtja9s/emacs_startup_time_doesnt_matter/
+(defun restore-gc-cons-threshold ()
+  (setq gc-cons-threshold (* 16 1024 1024)
+    gc-cons-percentage 0.1))
+
+(setq gc-cons-threshold most-positive-fixnum
+      gc-cons-percentage 0.6)
+(add-hook 'emacs-startup-hook #'restore-gc-cons-threshold 105)
 
 (provide 'early-init)
 ;;; early-init.el ends here

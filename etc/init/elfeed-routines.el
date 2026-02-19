@@ -2,52 +2,21 @@
 ;;; commentary:
 ;;; code:
 (require 'elfeed)
+(require 'elfeed-show)
 
-(defun elfeed-mark-all-as-read ()
-  (interactive)
-  (mark-whole-buffer)
-  (elfeed-search-untag-all-unread))
-
-(defun elfeed-beginning-to-point-as-read ()
+(defun elfeed-search-beginning-to-point-as-read ()
+  "Mark from the beginning to point."
   (interactive)
   (mark-from-beginning-of-buffer)
   (elfeed-search-untag-all-unread))
 
-(defun elfeed-show-visit-secondary-browser ()
+(defun elfeed-search-mark-all-as-read ()
+  "Mark all as read."
   (interactive)
-  (elfeed-show-visit '(4)))
-
-(defun elfeed-copy-edit (buff)
-  "Fixes `\&' and other spurious typesetting errors in BUFF.
-
-Use: (advice-add \\='elfeed-search-show-entry :after \\='elfeed-copy-edit)"
-
-  (if (boundp 'buffer-read-only) (read-only-mode -1))
-
-  (while (search-forward "&#38;" nil t)
-    (replace-match "&"))
-  (while (search-forward ",  " nil t nil)
-    (replace-match ", "))
-
-  ;; remove successive blank lines
-  (replace-regexp "^[[:space:]]*\n" "\n")
-
-  (if (not (boundp 'buffer-read-only)) (read-only-mode))
   (goto-char (point-min))
-  (message nil))
-
-(defun elfeed-search-set-filter-nil ()
-  "Reset Elfeed search filter."
-  (interactive)
-  (elfeed-search-set-filter nil))
-
-(require 'shr)
-(defun elfeed-toggle-images ()
-  "Toggle images in `elfeed-show'."
-  (interactive)
-  (setq shr-inhibit-images (not shr-inhibit-images))
-  (elfeed-show-refresh)
-  (elfeed-copy-edit (current-buffer)))
+  (push-mark (point-max) nil t)
+  (activate-mark)
+  (elfeed-search-untag-all-unread))
 
 (advice-add 'elfeed-search-quit-window :override
   (lambda() "Save the database, kill elfeed buffers."
@@ -57,7 +26,78 @@ Use: (advice-add \\='elfeed-search-show-entry :after \\='elfeed-copy-edit)"
   (let ((buffer elfeed-log-buffer-name))
   (and (get-buffer buffer) (kill-buffer buffer)))))
 
-;;; others
+(defun elfeed-show-visit-secondary-browser ()
+  "Visit buffer in secondary browser."
+  (interactive)
+  (elfeed-show-visit '(4)))
+
+(require 'shr)
+(defun elfeed-show-toggle-images ()
+  "Toggle images in `elfeed-show'."
+  (interactive)
+  (setq shr-inhibit-images (not shr-inhibit-images))
+  (elfeed-show-refresh)
+  (elfeed-show-tidy-buffer)
+  (message "Inhibit images: %s" shr-inhibit-images))
+
+;;; Clean-up routines
+(defun elfeed-copy-edit ()
+  "Fixes spurious typesetting errors in Elfeed buffers."
+  (save-excursion
+    ;; remove `*' nonsense...
+    (goto-char (point-min))
+    (while (re-search-forward "^[[:blank:]]*[[*]]*[[:blank:]]*$" nil t nil)
+      (replace-match ""))
+
+    ;; remove successive blank lines and trailing whitespace
+    (goto-char (point-min))
+    (while (re-search-forward "^[[:space:]]*\n" nil t nil)
+      (replace-match "\n")))
+  (delete-trailing-whitespace))
+
+(defun elfeed-show--header-faces ()
+  "Return (KEYFACE VALUEFACE) used in the current Elfeed header."
+  (save-excursion
+    (goto-char (point-min))
+    (when (re-search-forward "^Date:[ \t]*\\(.*\\)$" nil t)
+      (list
+       (get-text-property (match-beginning 0) 'face)
+       (get-text-property (match-beginning 1) 'face)))))
+
+(defun elfeed-show-rewrite-date ()
+  (when (and (derived-mode-p 'elfeed-show-mode)
+             (bound-and-true-p elfeed-show-entry))
+    (pcase-let* ((`(,keyface ,valface)
+                  (or (elfeed-show--header-faces)
+                      '(message-header-name message-header-other)))
+                 (time (seconds-to-time
+                        (elfeed-entry-date elfeed-show-entry)))
+                 (new  (format-time-string "%A, %-d %B %Y %H:%M" time)))
+      (save-excursion
+        (goto-char (point-min))
+        (when (re-search-forward "^Date:[ \t]*\\(.*\\)$" nil t)
+          (replace-match
+           (concat
+            (propertize "Date:" 'face keyface)
+            " "
+            (propertize new 'face valface))
+           t t))))))
+
+(defun elfeed-show-tidy-buffer ()
+  (when (and (derived-mode-p 'elfeed-show-mode)
+             (bound-and-true-p elfeed-show-entry))
+    (with-silent-modifications
+      (let ((inhibit-read-only t))
+        (elfeed-show-rewrite-date)
+        (elfeed-copy-edit)
+        (replace-garbage-chars nil nil t)
+        (text-scale-set 1)
+	)))
+  (goto-char (point-min)))
+
+(advice-add 'elfeed-search-show-entry :after (lambda (&rest _) (elfeed-show-tidy-buffer)))
+
+;;; others
 ;; https://noonker.github.io/posts/2020-04-22-elfeed/
 (defun todo (text &optional body)
 	(interactive "sTodo: ")
@@ -82,15 +122,21 @@ Use: (advice-add \\='elfeed-search-show-entry :after \\='elfeed-copy-edit)"
 ;; https://pragmaticemacs.wordpress.com/2016/09/16/star-and-unstar-articles-in-elfeed/
 (defalias 'elfeed-toggle-star
 	(elfeed-expose #'elfeed-search-toggle-all 'star))
-(eval-after-load 'elfeed-search
-	'(define-key elfeed-search-mode-map (kbd "s") 'elfeed-toggle-star))
 
+(defface elfeed-search-star-title-face
+  '((t :foreground "#f77"))
+  "Marks a starred Elfeed entry.")
+
+(push '(star elfeed-search-star-title-face) elfeed-search-face-alist)
+
+;; https://nullprogram.com/blog/2013/11/26/
 (defun hundred-times-better (entry)
 	(let* ((original (elfeed-deref (elfeed-entry-content entry)))
 	(replace (replace-regexp-in-string "#38;" "" original)))
 	(setf (elfeed-entry-content entry) (elfeed-ref replace))))
 ;(add-hook 'elfeed-new-entry-hook #'hundred-times-better)
 
+;; Export links to org-mode files
 ;; https://takeonrules.com/2024/08/11/exporting-org-mode-elfeed-links/
 (org-link-set-parameters "elfeed"
   :follow #'elfeed-link-open

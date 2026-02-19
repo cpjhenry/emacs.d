@@ -22,13 +22,14 @@
 
 	org-capture-templates '(
 	("c" "Cookbook" entry (file "~/Documents/Recipes/cookbook.org")
-	"%(org-chef-get-recipe-from-url)" :empty-lines 1)
+	 "%(org-chef-get-recipe-from-url)" :empty-lines 0)
+	;; HACK · Adjust spacing in `org-chef-recipe-to-org-element' when upgrading.
 	("m" "Manual Cookbook" entry (file "~/Documents/Recipes/cookbook.org")
-	"* %^{Recipe title: }\n:PROPERTIES:\n:provenance:\n:source-url:\n:servings:\n:prep-time:\n:cook-time:\n:ready-in:\n:END:\n** Ingredients\n%?\n** Directions\n\n\n** Notes\n\n")
+	"* %^{Recipe title: }\n:PROPERTIES:\n:provenance:\n:source-url:\n:servings:\n:prep-time:\n:cook-time:\n:ready-in:\n:END:\n** Ingredients%?\n\n** Directions\n\n** Notes\n")
 
 	;; https://benadha.com/notes/how-i-manage-my-reading-list-with-org-mode/
 	("i" "📥 Inbox" entry (file "~/Documents/org/inbox.org") "* %?\n  %i\n" :prepend t)
-	("j" "📔 Journal" entry (file+datetree "~/Documents/org/journal.org") "* %? %^G\nEntered on %U\n  %i\n")
+	("j" "📔 Journal" entry (file+datetree "~/Documents/org/journal.org") "* %? %^G\n%U\n  %i\n")
 	("b" "📑 Bookmark" entry (file "~/Documents/org/bookmarks.org") "* %? %^g\n  %i\n" :prepend t)
 	("s" "🛒 Shopping List" entry (file+headline "~/Documents/org/shoppinglist.org" "SHOPPING LIST") "* TODO %?\n  %i\n" :prepend t)
 

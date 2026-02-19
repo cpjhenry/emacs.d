@@ -7,6 +7,7 @@
 
 (define-abbrev-table 'global-abbrev-table
   '(
+    ("midot" "·" nil :count 6)
     ("spd" "Salutem plurimam dicit." nil :count 3)
     ("sqpd" "Salutem quam plurimam dicit." nil :count 0)
     ("svb" "Si vales, bene est; ego valeo." nil :count 5)
@@ -25,8 +26,8 @@
     ("asterism" "#+LATEX: \\begin{center}\\asterism\\end{center}" nil :count 7)
     ("ccc" "#+AUTHOR:/Capital City Council \\textnumero154/" nil :count 0)
     ("dinkus" "#+LATEX: \\begin{center}* * *\\end{center}" nil :count 2)
-    ("hdr" "#+LATEX_HEADER:" nil :count 140)
-    ("lat" "#+LATEX:" nil :count 48)
+    ("hdr" "#+LATEX_HEADER:" nil :count 141)
+    ("lat" "#+LATEX:" nil :count 50)
     ("lsvc" "# This is the letter-size version.
 #+LATEX_CLASS_OPTIONS: [letterpaper]
 #+LATEX: \\lettersize" nil :count 2)
@@ -35,7 +36,7 @@
 #+LATEX: \\noindent\\parindent=0pt\\parskip=.5\\baselineskip plus 2pt
 
 #+LATEX: \\end{abstract}" nil :count 0)
-    ("myheader" "#+INCLUDE: \"~/Documents/org/latexhdr.org\"" nil :count 0)
+    ("myheader" "#+INCLUDE: \"~/Documents/org/latexhdr.org\"" nil :count 2)
     ("mykeywords" ":KEYWORDS:
 #+DESCRIPTION:
 #+KEYWORDS:
@@ -47,6 +48,7 @@
 
 CHECK AGAINST DELIVERY" nil :count 5)
     ("referencemark" "#+LATEX: {\\fontspec{NewCM10-Book} \\large \\textreferencemark}" nil :count 0)
+    ("sufold" "#+STARTUP: fold" nil :count 0)
     ("wmye" "WMYE." nil :count 0)
    ))
 

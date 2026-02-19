@@ -61,52 +61,11 @@
 	(copy-current-to-temp-buffer)
 	(text-mode)
 	(let ((prefix (car parg))) (cond
-		((not prefix)(setq fill-column 50))
+		((not prefix)(setq fill-column ps-printer-line-length))
 		((= prefix 4)(setq fill-column 32)) ))
 	(fill-region (point-min) (point-max)))
 
-(defun print-buffer-or-region (parg)
-"Print buffer or region.
-
-- With no prefix, use a5 printer.
-- With one prefix arg, use POS printer."
-	(interactive "P")
-	(let ((prefix (car parg))) (cond
-		((not prefix)(setq
-			printer-name "Brother_HL_L2370DW"
-			lpr-switches '("-o media=a5 -o cpi=9.5 -o lpi=7")))
-		((= prefix 4)(setq
-			printer-name "Munbyn_ITPP047"
-			lpr-switches '("-o media=pos80 cpi=13 -o lpi=9")))
-		))
-	(let ((beg (point-min)) (end (point-max)))
-	(when (region-active-p)
-		(setq beg (region-beginning))
-		(setq end (region-end)))
-	(print-region beg end)))
-
-(defun ps-print-buffer-or-region ()
-  "Convert buffer or region to pdf, and print it. Ghostscript is required."
-	(interactive)
-	;; create temp buffer and auto-fill, if needed
-	(if (> (longest-line-in-buffer) ps-printer-line-length)
-	  (fill-to-printer) ; otherwise, just
-	  (copy-current-to-temp-buffer))
-
-	;; print temp buffer and discard
-	(let ((filename (buffer-name)))
-	(ps-print-buffer (concat filename ".ps"))
-	(kill-buffer)
-
-	(when (executable-find "gs")
-	  (shell-command (concat "ps2pdfwr " filename ".ps"))
-	  (shell-command (concat "pdfcrop " filename ".pdf " filename "-cropped.pdf"))
-	  (shell-command (concat "lp -d " ps-printer-name " -o media=" (symbol-name 'ps-paper-type)
-		" -o fit-to-page " filename "-cropped.pdf"))
-
-	  (delete-file (concat filename ".ps") t)
-	  (delete-file (concat filename ".pdf") t)
-	  (delete-file (concat filename "-cropped.pdf") t))))
+(load "init/print-buffer-or-region.el")
 
 ;; Local Variables:
 ;; truncate-lines: -1
