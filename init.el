@@ -21,6 +21,7 @@
 (add-to-list 'load-path (directory-file-name (expand-file-name "var/" user-emacs-directory)))
 
 ;; Environmental constants
+(message "→ Configuring environment.")
 (defconst *mac* (eq system-type 'darwin))
 (defconst *gnu* (eq system-type 'gnu/linux))
 (defconst *w32* (eq system-type 'windows-nt))
@@ -238,6 +239,7 @@
 ;;   :hook (dired-mode . all-the-icons-dired-mode))
 
 ;; modeline
+(message "→ Configuring modeline.")
 (use-package doom-modeline
   :custom (doom-modeline-column-zero-based nil)
 	(doom-modeline-enable-word-count t)
@@ -279,6 +281,7 @@
 (add-hook 'emacs-startup-hook 'efs/display-startup-time)
 
 ;; buffers
+(message "→ Configuring buffers.")
 (use-package s)
 (use-package dash) ; for `-find', `-compose' and `-partial'
 (load "filesandbuffers")
@@ -604,6 +607,7 @@
 	(if (boundp 'server-process) (message "Server running.")))
 
 ;; calendar
+(message "→ Configuring calendar-mode.")
 (require 'calendar)
 (require 'lunar)
 (require 'time)
@@ -701,6 +705,7 @@
 	 ("q" . quit-window-kill)))
 
 ;; Initialize packages
+(message "→ Initializing packages.")
 
 ;; use-package directives in this order:
 ;; :disabled
