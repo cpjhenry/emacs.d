@@ -1,5 +1,4 @@
 ;;; org-comment-placeholder.el --- Auto-hide comment blocks with a preview placeholder -*- lexical-binding: t; -*-
-
 ;;; commentary:
 
 ;;; code:

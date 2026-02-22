@@ -1,4 +1,4 @@
-;;; print.el --- PRINT functions
+;;; print-functions.el --- PRINT functions
 ;;; commentary:
 
 ;;; code:
@@ -65,12 +65,10 @@
 		((= prefix 4)(setq fill-column 32)) ))
 	(fill-region (point-min) (point-max)))
 
-(load "init/print-buffer-or-region.el")
-
 ;; Local Variables:
 ;; truncate-lines: -1
 ;; End:
 
 ; LocalWords:  Ghostscript Munbyn
 
-;;; print.el ends here
+;;; print-functions.el ends here

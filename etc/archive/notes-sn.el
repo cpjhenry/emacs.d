@@ -1,5 +1,5 @@
 (use-package simplenote2
-		:bind (("<f8>" . sn)) )
+  :bind (("<f8>" . sn)) )
 (load "rc/sn" 'noerror)
 (simplenote2-setup)
 (setq simplenote2-directory	(concat user-emacs-directory "var/simplenote2/"))

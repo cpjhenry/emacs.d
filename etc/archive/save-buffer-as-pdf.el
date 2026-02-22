@@ -9,21 +9,10 @@
       (put-text-property (point) (1+ (point)) 'hard t)
       (forward-char))))
 
-;;    (defun spool-buffer-given-name (name)
-;;      (load "ps-print")
-;;      (let ((tmp ps-left-header))
-;;        (unwind-protect
-;;            (progn
-;;              (setq ps-left-header
-;;                    (list (lambda () name) 'ps-header-dirpart))
-;;              (ps-spool-buffer-with-faces))
-;;          (setf ps-left-header tmp))))
-
 (defun spool-buffer-given-name (name)
   (let ((ps-left-header (list (format "(%s)" name))))
     (ps-spool-buffer-with-faces)))
 
-(load "longlines")
 (defun print-to-pdf (pdf-file-name)
   "Print the current file to the given file."
   (interactive "FWrite PDF file: ")

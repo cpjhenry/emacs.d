@@ -1,4 +1,4 @@
-;;; misc.el --- Miscellaneous routines
+;;; misc.el --- Miscellaneous functions
 ;;; commentary:
 ;; My miscellaneous routines moved to: cpjhelp.el.
 
@@ -6,7 +6,6 @@
 ;; Compatibility settings
 (when (< emacs-major-version 28) (defalias 'show-paren-local-mode 'show-paren-mode))
 
-
 ;; https://www.emacswiki.org/emacs/DisabledCommands
 
 (defun enable-all-commands ()

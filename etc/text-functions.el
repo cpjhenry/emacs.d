@@ -1,4 +1,4 @@
-;;; text-mods.el --- text functions
+;;; text-functions.el --- text functions
 ;;; commentary:
 
 ;;; code:
@@ -274,5 +274,4 @@ BEG and END mark the limits of the region."
   (interactive "r")
   (align-regexp beg end "\\(\\s-*\\)=" 1 1))
 
-(provide 'text-mods)
-;;; text-mods.el ends here
+;;; text-functions.el ends here
