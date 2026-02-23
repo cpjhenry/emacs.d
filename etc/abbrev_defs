@@ -53,10 +53,9 @@
     ("mykeywords" ":KEYWORDS:
 #+DESCRIPTION:
 #+KEYWORDS:
-:END:" nil :count 0)
+:END:" nil :count 1)
     ("mytitle" "#+TITLE: 
 #+AUTHOR: Paul J Henry
-#+AUTHOR: MM RAM AMD
 #+DATE: 
 
 CHECK AGAINST DELIVERY" nil :count 5)
