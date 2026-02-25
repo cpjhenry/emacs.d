@@ -187,13 +187,32 @@ region that was the most recent focus."
 		(narrow-to-region (overlay-start focus)
 		(overlay-end focus)))))))
 
-(defun replace-double-spaces ()
-  "Replace double spaces in the buffer with single ones."
-  (interactive)
+;; (defun replace-double-spaces ()
+;;   "Replace double spaces in the buffer with single ones."
+;;   (interactive)
+;;   (save-excursion
+;;     ;; HACK - region only, if selected.
+;;   (if (use-region-p)
+;;   (while (search-forward "  " nil t)
+;;     (replace-match " " nil nil)))))
+
+(defun collapse-multiple-spaces-in-region (beg end)
+  "Collapse runs of 2+ literal spaces to one space in the active region.
+Tabs untouched. Skips Org tables/src/fixed-width blocks.
+Requires Transient Mark Mode with a visibly active region."
+  (interactive "r")
+  (unless (and transient-mark-mode (use-region-p))
+    (user-error "No active region (Transient Mark Mode required)"))
   (save-excursion
-    ;; HACK - region only, if selected.
-    (goto-char (point-min))
-    (replace-regexp "  " " ")))
+    (save-restriction
+      (narrow-to-region beg end)
+      (goto-char (point-min))
+      (while (re-search-forward "  +" nil t)
+        (unless (or (and (derived-mode-p 'org-mode)
+                         (or (org-at-table-p)
+                             (org-in-src-block-p)
+                             (org-in-fixed-width-region-p))))
+          (replace-match " " t t))))))
 
 (defun mark-from-beginning-of-buffer ()
   "Mark the region from the beginning of the buffer to point."
