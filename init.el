@@ -35,7 +35,6 @@
 (defconst EMACS31 (>= emacs-major-version 31) "Running Emacs 31 or greater.")
 
 (when (bound-and-true-p ns-emacs-plus-version)
-    ;; Emacs Plus specific configuration
   (message "Running 'Emacs Plus %s'." ns-emacs-plus-version))
 (load "rc/me" 'noerror)
 
@@ -98,7 +97,7 @@
 	:visible (eq window-system 'ns)])
 
   ;; Font
-  (add-to-list 'default-frame-alist '(font . "Inconsolata 21")))
+  (add-to-list 'default-frame-alist '(font . "Inconsolata 22")))
 
 (when *gnu*
   (add-to-list 'default-frame-alist '(font . "Monospace 17"))
@@ -287,6 +286,7 @@
 (use-package s)
 (use-package dash) ; for `-find', `-compose' and `-partial'
 (load "filesandbuffers")
+(load "render-buffers")
 
 (require 'abbrev)
 (setopt	abbrev-file-name (concat user-emacs-directory "etc/abbrev_defs")
@@ -1115,6 +1115,7 @@
   (load "org-functions")
   (load "org-links")
   (load "org-customizations")
+  (load "org-converters")
 
   ;; org-emphasis
   (keymap-set org-mode-map "A-b" 'org-emphasize-bold)
