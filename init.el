@@ -34,7 +34,9 @@
 (defconst EMACS30 (>= emacs-major-version 30) "Running Emacs 30 or greater.")
 (defconst EMACS31 (>= emacs-major-version 31) "Running Emacs 31 or greater.")
 
-(if (boundp 'emacs-edition) (message "Running '%s'." emacs-edition))
+(when (bound-and-true-p ns-emacs-plus-version)
+    ;; Emacs Plus specific configuration
+  (message "Running 'Emacs Plus %s'." ns-emacs-plus-version))
 (load "rc/me" 'noerror)
 
 ;; Customize
@@ -222,11 +224,11 @@
 
 ;; path
 (use-package exec-path-from-shell
-	:disabled
 	:if	*mac*
 	:custom	(shell-file-name "/usr/local/bin/bash")
 		(exec-path-from-shell-variables '("PATH" "MANPATH" "PKG_CONFIG_PATH"))
-	:init	(exec-path-from-shell-initialize))
+	:init (unless (bound-and-true-p ns-emacs-plus-injected-path)
+		(exec-path-from-shell-initialize)))
 
 ;; garbage collection
 (use-package gcmh :config (gcmh-mode 1))
