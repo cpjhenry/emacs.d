@@ -26,13 +26,14 @@
   :group 'org)
 
 (defcustom org-macro-displays
-  '(("\\fd{}" . ".....")
-    ("\\td{}" . "...")
+  '(("\\td{}" . "...")
+    ("\\fd{}" . ".....")
     ("\\longdash{}" . "---------")
-    ("#+LATEX: \\newpage" . "=====")
     ("\\first{}" . "(1st)")
     ("\\second{}" . "(2nd)")
-    ("\\third{}" . "(3rd)"))
+    ("\\third{}" . "(3rd)")
+    ("#+LATEX: \\newpage" . "=====")
+    ("#+LATEX: \\asterism" . "* * *"))
   "Alist of exact Org/LaTeX macro strings and their display replacements.
 Keys are matched literally (exact string match) and may include braces."
   :type '(alist :key-type string :value-type string)

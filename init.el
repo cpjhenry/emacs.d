@@ -427,6 +427,9 @@
 	(display-buffer-no-window)
 	(allow-no-window . t)))
 
+;; search
+(keymap-set search-map "b" #'browser-search)
+
 ;; whois
 ;; HACK · when executing command, resultant buffer needs local-key set.
 ;(advice-add 'whois :after (keymap-local-set "q" 'kill-current-buffer))
@@ -452,7 +455,7 @@
 	(add-to-list 'ido-ignore-buffers "^*Warnings*")
 	(add-to-list 'ido-ignore-files ".DS_Store")
 	(add-to-list 'ido-ignore-files "ido.last")
-	(add-to-list 'ido-ignore-files ".*.synctex.gz")
+	(add-to-list 'completion-ignored-extensions ".synctex.gz")
 
 	(use-package ido-sort-mtime :config (ido-sort-mtime-mode 1)))
 
@@ -559,6 +562,27 @@
 	:custom	(ls-lisp-use-string-collate nil)
 		(ls-lisp-ignore-case t)
 	:config	(unless *w32* (setopt ls-lisp-use-insert-directory-program nil)))
+
+(use-package dired-narrow
+  :bind ( :map dired-mode-map
+          ("/" . dired-narrow))
+  :config
+  (easy-menu-add-item dired-mode-map '(menu-bar immediate)
+    ["Narrow dired buffer" dired-narrow :help "Narrow to the files matching a string"]))
+
+(use-package quick-preview
+  :bind ( :map dired-mode-map
+          ("<SPC>" . quick-preview-at-point))
+  :config
+  (easy-menu-add-item dired-mode-map '(menu-bar immediate)
+    ["Quick Preview" quick-preview-at-point :help "Preview file at point with quick preview tool"]))
+
+(use-package reveal-in-osx-finder
+  :bind ( :map dired-mode-map
+	  ("r" . reveal-in-osx-finder))
+  :config
+  (easy-menu-add-item dired-mode-map '(menu-bar immediate)
+    ["Reveal in Finder" reveal-in-osx-finder :help "Reveal the file in the OS X Finder"]))
 
 ;; Tramp
 (require 'tramp)
@@ -753,7 +777,8 @@
 (use-package dictionary
   :ensure nil
   :defer  t
-  :custom (dictionary-server "dict.org"))
+  :custom (dictionary-server "dict.org")
+  :bind (("M-s d" . dictionary-search)))
 
 (use-package dwim-shell-command
   :ensure t
@@ -784,19 +809,20 @@
 
 (use-package eww
   :ensure nil
+  :demand t
   :custom (browse-url-browser-function 'eww-browse-url)
   (eww-auto-rename-buffer t)
   (eww-bookmarks-directory (concat user-emacs-directory "etc/"))
   (eww-readable-adds-to-history nil)
-  (eww-search-prefix "https://duckduckgo.com/html?q=")
+  (eww-url-transformers '(eww-remove-tracking eww-reddit-redirect))
+  (url-privacy-level '(email lastloc))
+
+  ;; look-and-feel
+  (shr-folding-mode t)
   (shr-inhibit-images t)
   (shr-use-colors nil)
   (shr-use-fonts nil)
   (shr-bullet "• ")
-  (url-privacy-level '(email agent lastloc))
-
-  ;; look-and-feel
-  (shr-folding-mode t)
   (shr-indentation 2)	; Left-side margin
   (shr-width nil)	; Fold text for comfiness
   (shr-max-width 94)	; Controls fold-column in web-derived pages (ie. Elfeed)
@@ -806,12 +832,15 @@
 	:map eww-mode-map
 	("[" . eww-back-url)
 	("]" . eww-forward-url)
-	("Q" . eww-unfill-paragraph)
+	("y" . eww-copy-page-url)
 	:map eww-bookmark-mode-map
 	("w" . eww))
-  :config	(url-setup-privacy-info)
+  ;:hook
+  :config
+  (url-setup-privacy-info)
   (add-hook 'eww-after-render-hook 'eww-readable) ;; default to 'readable-mode'
   (use-package ace-link :config (ace-link-setup-default))) ;; alternative to tabbing
+
 
 (use-package flycheck ; on-the-fly syntax checking
   :unless *w32*
@@ -985,275 +1014,249 @@
 (load "text-functions")
 
 ;; Org-mode
-;; HACK  convert to use-package (using :ensure nil)
-;; FIXME both setq below fail as setopt
-
-;; HACK --- fix DEFCUSTOM for hidden keywords
-;; (defcustom org-hidden-keywords nil
-;;   "List of symbols corresponding to keywords to be hidden in the Org buffer.
-;; For example, a value (title) for this list makes the document's title
-;; appear in the buffer without the initial \"#+TITLE:\" part."
-;;   :group 'org-appearance
-;;   :package-version '(Org . "9.5")
-;;   :type '(set (const :tag "#+AUTHOR " myauthor)
-;; 	      (const :tag "#+DATE " mydate)
-;; 	      (const :tag "#+EMAIL " myemail)
-;; 	      (const :tag "#+SUBTITLE " mysubtitle)
-;; 	      (const :tag "#+TITLE " mytitle)))
-
-(require 'org)
-(require 'org-tempo)
-
-;; FIXME - cleanup
-(load "org-functions")
-(load "org-links")
-
-;; :custom
-(setopt	org-directory "~/Documents/org"
-	org-default-notes-file (concat org-directory "/notes.org")
-	org-id-locations-file (concat user-emacs-directory "var/org-id-locations")
-
-	org-ctrl-k-protect-subtree t
-	org-ellipsis "·"
-	org-fold-catch-invisible-edits 'smart
-	org-footnote-auto-adjust t
-	org-footnote-define-inline t
-	org-hidden-keywords nil ;'(title subtitle author date)
-	org-hide-emphasis-markers t
-	org-highlight-latex-and-related '(native entities)
-	org-list-allow-alphabetical t
-	org-list-demote-modify-bullet '(("+" . "-") ("-" . "+") ("*" . "+"))
-	org-log-done 'time
-	org-log-repeat nil
-	org-log-state-notes-into-drawer nil
-	org-pretty-entities t
-	org-pretty-entities-include-sub-superscripts t
-	org-return-follows-link t
-	org-src-fontify-natively t
-	org-src-tab-acts-natively t
-	org-special-ctrl-a/e t
-	org-startup-folded 'content ; fold children content all
-	org-startup-indented nil
-	org-startup-shrink-all-tables t
-
-	org-startup-with-inline-images t
-	org-cycle-inline-images-display t
-	org-image-actual-width t; '(300)
-
-	org-use-speed-commands (lambda() (and (looking-at org-outline-regexp) (looking-back "^\**")))
-	org-use-sub-superscripts '{}
-
-	org-auto-align-tags nil
-	org-tags-column 0)
-
-(set-face-underline 'org-ellipsis nil)
-
+(setopt org-directory "~/Documents/org")
 (defvar org-agenda-file (concat org-directory "/daily.org") "Default agenda file.")
-(setopt	org-agenda-files (list org-agenda-file)
-	org-agenda-include-diary nil
-	org-agenda-skip-deadline-if-done t
-	org-agenda-skip-scheduled-if-done t
-	org-agenda-start-on-weekday nil
-	org-agenda-text-search-extra-files '(agenda-archives)
-	org-agenda-todo-ignore-deadlines t
-	org-agenda-todo-ignore-scheduled t)
+(setopt	org-default-notes-file (concat org-directory "/notes.org")
+	org-id-locations-file (concat user-emacs-directory "var/org-id-locations"))
+(use-package org
+  :ensure nil
+  :demand t
+  :custom
+  (org-ctrl-k-protect-subtree t)
+  (org-ellipsis "·")
+  (org-fold-catch-invisible-edits 'smart)
+  (org-footnote-auto-adjust t)
+  (org-footnote-define-inline t)
+  (org-hidden-keywords nil) ;'(title subtitle author date)
+  (org-hide-emphasis-markers t)
+  (org-highlight-latex-and-related '(native entities))
+  (org-list-allow-alphabetical t)
+  (org-list-demote-modify-bullet '(("+" . "-") ("-" . "+") ("*" . "+")))
+  (org-log-done 'time)
+  (org-log-repeat nil)
+  (org-log-state-notes-into-drawer nil)
+  (org-pretty-entities t)
+  (org-pretty-entities-include-sub-superscripts t)
+  (org-return-follows-link t)
+  (org-src-fontify-natively t)
+  (org-src-tab-acts-natively t)
+  (org-special-ctrl-a/e t)
+  (org-startup-folded 'content) ; fold children content all
+  (org-startup-indented nil)
+  (org-startup-shrink-all-tables t)
 
-(require 'ox)
-(require 'ox-ascii)
-(require 'ox-latex)
-(require 'ox-md)
-(setopt	org-export-with-author t
-	org-export-with-broken-links t
-	org-export-with-date t
-	org-export-with-section-numbers nil
-	org-export-with-smart-quotes t
-	org-export-with-sub-superscripts t
-	org-export-with-tables t
-	org-export-with-toc nil
-	org-export-with-timestamps t
+  (org-startup-with-inline-images t)
+  (org-cycle-inline-images-display t)
+  (org-image-actual-width t); '(300)
 
-	org-export-date-timestamp-format "%Y-%m-%d"
-	org-export-time-stamp-file t
+  (org-use-speed-commands (lambda() (and (looking-at org-outline-regexp) (looking-back "^\**"))))
+  (org-use-sub-superscripts '{})
 
-	org-ascii-text-width 50
-	org-ascii-inner-margin 2
-	org-ascii-quote-margin 4
-	org-ascii-headline-spacing '(0 . 1)
+  (org-auto-align-tags nil)
+  (org-tags-column 0)
 
-	org-latex-compiler "xelatex"
-	org-latex-pdf-process
-	  (list (concat "latexmk -" org-latex-compiler " -recorder -synctex=1 -bibtex-cond %b"))
+  (org-agenda-files (list org-agenda-file))
+  (org-agenda-include-diary nil)
+  (org-agenda-skip-deadline-if-done t)
+  (org-agenda-skip-scheduled-if-done t)
+  (org-agenda-start-on-weekday nil)
+  (org-agenda-text-search-extra-files '(agenda-archives))
+  (org-agenda-todo-ignore-deadlines t)
+  (org-agenda-todo-ignore-scheduled t)
 
-	org-md-headline-style 'atx)
+  (org-export-with-author t)
+  (org-export-with-broken-links t)
+  (org-export-with-date t)
+  (org-export-with-section-numbers nil)
+  (org-export-with-smart-quotes t)
+  (org-export-with-sub-superscripts t)
+  (org-export-with-tables t)
+  (org-export-with-toc nil)
+  (org-export-with-timestamps t)
 
-(load "org-customizations")
+  (org-export-date-timestamp-format "%Y-%m-%d")
+  (org-export-time-stamp-file t)
 
-;; :bind
-(bind-key "M-<f4>" 'org-speed-command-help org-mode-map)
-(bind-key "M-["    'org-backward-heading-same-level org-mode-map)
-(bind-key "M-]"    'org-forward-heading-same-level org-mode-map)
-(bind-key "C-M-["  'outline-up-heading org-mode-map)
-(bind-key "C-M-]"  'my/org-end-of-subtree org-mode-map)
-(defun my/org-end-of-subtree ()
-  (interactive)
-  (org-end-of-subtree))
+  (org-ascii-text-width 50)
+  (org-ascii-inner-margin 2)
+  (org-ascii-quote-margin 4)
+  (org-ascii-headline-spacing '(0 . 1))
 
-(keymap-set org-mode-map "C-c '" 'org-edit-special-no-fill)
-(defun org-edit-special-no-fill ()
-  "Call a special editor for the element at point; turn off fill."
-  (interactive)
-  (org-edit-special)
-  (if (featurep 'visual-fill-column) (visual-fill-column-mode -1)))
+  (org-latex-compiler "xelatex")
+  (org-latex-pdf-process (list
+    (concat "latexmk -" org-latex-compiler " -recorder -synctex=1 -bibtex-cond %b")))
 
-;; org-emphasis
-(keymap-set org-mode-map "A-b" 'org-emphasize-bold)
-(defun org-emphasize-bold ()
-  "Bold current word."
-  (interactive)
-  (unless (region-active-p) (mark-whole-word))
-  (org-emphasize ?*))
+  (org-md-headline-style 'atx)
 
-(keymap-set org-mode-map "A-i" 'org-emphasize-italic)
-(defun org-emphasize-italic ()
-  "Italicize current word."
-  (interactive)
-  (unless (region-active-p) (mark-whole-word))
-  (org-emphasize ?/))
+  :bind ( :map org-mode-map
+	  ("M-<f4>" . org-speed-command-help)
+	  ("M-["    . org-backward-heading-same-level)
+	  ("M-]"    . org-forward-heading-same-level)
+	  ("C-M-["  . outline-up-heading)
+	  ("C-M-]"  . my/org-end-of-subtree)
+	  ("C-c '"  . org-edit-special-no-fill))
 
-;; alternative mapping for 'org-support-shift-select'
-(keymap-set org-mode-map "S-<left>" nil)
-(keymap-set org-mode-map "S-<right>" nil)
-(keymap-set org-mode-map "S-<up>" nil)
-(keymap-set org-mode-map "S-<down>" nil)
+  :config
+  (set-face-underline 'org-ellipsis nil)
 
-(keymap-set org-mode-map "C-S-<left>" nil)  ; do the same for left-word
-(keymap-set org-mode-map "C-S-<right>" nil) ; and right-word
+  (defun my/org-end-of-subtree ()
+    (interactive)
+    (org-end-of-subtree))
 
-(keymap-set org-mode-map "C-S-<up>" nil)    ; and for good measure...
-(keymap-set org-mode-map "C-S-<down>" nil)
-(keymap-set org-mode-map "S-<return>" nil)
+  (defun org-edit-special-no-fill ()
+    "Call a special editor for the element at point; turn off fill."
+    (interactive)
+    (org-edit-special)
+    (if (featurep 'visual-fill-column) (visual-fill-column-mode -1)))
 
-(keymap-set org-mode-map "S-<home>" 'org-shiftleft)
-(keymap-set org-mode-map "S-<end>" 'org-shiftright)
-(keymap-set org-mode-map "S-<prior>" 'org-shiftup)
-(keymap-set org-mode-map "S-<next>" 'org-shiftdown)
+  (require 'org-tempo)
+  (load "org-functions")
+  (load "org-links")
+  (load "org-customizations")
 
-;; fix 'Ctrl-a' binding in org-mode
-(if (fboundp 'back-to-indentation-or-beginning-of-line) (org-remap org-mode-map
-  'back-to-indentation-or-beginning-of-line 'org-beginning-of-line))
+  ;; org-emphasis
+  (keymap-set org-mode-map "A-b" 'org-emphasize-bold)
+  (defun org-emphasize-bold ()
+    "Bold current word."
+    (interactive)
+    (unless (region-active-p) (mark-whole-word))
+    (org-emphasize ?*))
 
-;; ;; primarily for cbc-mode, but also useful for other org files in view-mode
-(with-eval-after-load 'view
-  (define-key view-mode-map (kbd "[") 'org-previous-link)
-  (define-key view-mode-map (kbd "]") 'org-next-link)
-  (define-key view-mode-map (kbd "RET") 'goto-address-at-point))
+  (keymap-set org-mode-map "A-i" 'org-emphasize-italic)
+  (defun org-emphasize-italic ()
+    "Italicize current word."
+    (interactive)
+    (unless (region-active-p) (mark-whole-word))
+    (org-emphasize ?/))
 
-;; :hook
-(add-hook 'org-agenda-finalize-hook 'delete-other-windows)
-(if (featurep 'visual-fill-column)
-    (add-hook 'org-mode-hook 'visual-fill-column-mode--disable))
+  ;; alternative mapping for 'org-support-shift-select'
+  (keymap-set org-mode-map "S-<left>" nil)    ; clear needed keys
+  (keymap-set org-mode-map "S-<right>" nil)
+  (keymap-set org-mode-map "S-<up>" nil)
+  (keymap-set org-mode-map "S-<down>" nil)
 
-(require 'org-macro-display) ; usr/
-(add-hook 'org-mode-hook #'org-macro-display-mode)
+  (keymap-set org-mode-map "C-S-<left>" nil)  ; do the same for left-word
+  (keymap-set org-mode-map "C-S-<right>" nil) ; and right-word
 
-(require 'org-quote-indent) ; usr/
-(add-hook 'org-mode-hook #'org-quote-indent-mode)
+  (keymap-set org-mode-map "C-S-<up>" nil)    ; and for good measure...
+  (keymap-set org-mode-map "C-S-<down>" nil)
+  (keymap-set org-mode-map "S-<return>" nil)
 
-(require 'org-hide-inline-footnotes) ; usr/
-(add-hook 'org-mode-hook #'org-hide-inline-footnotes-mode)
+  (keymap-set org-mode-map "S-<home>" 'org-shiftleft)
+  (keymap-set org-mode-map "S-<end>" 'org-shiftright)
+  (keymap-set org-mode-map "S-<prior>" 'org-shiftup)
+  (keymap-set org-mode-map "S-<next>" 'org-shiftdown)
 
-(require 'org-comment-placeholder); usr/
-(add-hook 'org-mode-hook #'org-comment-placeholder-mode)
+  ;; fix 'Ctrl-a' binding in org-mode
+  (if (fboundp 'back-to-indentation-or-beginning-of-line) (org-remap org-mode-map
+    'back-to-indentation-or-beginning-of-line 'org-beginning-of-line))
 
-(require 'org-pretty-table) ; opt/
-(add-hook 'org-mode-hook #'org-pretty-table-mode)
+  ;; primarily for cbc-mode, but also useful for other org files in view-mode
+  (with-eval-after-load 'view
+    (define-key view-mode-map (kbd "[") 'org-previous-link)
+    (define-key view-mode-map (kbd "]") 'org-next-link)
+    (define-key view-mode-map (kbd "RET") 'goto-address-at-point))
 
-;; `org-functions'
-(add-hook 'org-mode-hook #'org-hide-comment-blocks)
+  (add-hook 'org-agenda-finalize-hook 'delete-other-windows)
+  (if (featurep 'visual-fill-column)
+      (add-hook 'org-mode-hook 'visual-fill-column-mode--disable))
 
-;; :config
-;; Ispell should not check code blocks in org mode
-(add-to-list 'ispell-skip-region-alist '(":\\(PROPERTIES\\|LOGBOOK\\):" . ":END:"))
-(add-to-list 'ispell-skip-region-alist '("#\\+BEGIN_SRC" . "#\\+END_SRC"))
-(add-to-list 'ispell-skip-region-alist '("#\\+begin_src" . "#\\+end_src"))
-(add-to-list 'ispell-skip-region-alist '("^#\\+begin_example " . "#\\+end_example$"))
-(add-to-list 'ispell-skip-region-alist '("^#\\+BEGIN_EXAMPLE " . "#\\+END_EXAMPLE$"))
-(add-to-list 'org-entities-user '("textnumero" "\\textnumero" nil "&numero;" "No." "No." "№"))
+  (require 'org-macro-display) ; usr/
+  (add-hook 'org-mode-hook #'org-macro-display-mode)
 
-;; outline mode doesn't auto-interpret org entities, so use it to view org-entities
-(advice-add 'org-entities-help :after (lambda (&rest r)
-  (outline-mode)
-  (read-only-mode -1)
-  (flush-blank-lines (point-min) (point-max))
-  (outline-cycle-buffer)
-  (view-mode)))
+  (require 'org-quote-indent) ; usr/
+  (add-hook 'org-mode-hook #'org-quote-indent-mode)
 
-;; FIXME - Errors with EMACS30
-;; (use-package org-autolist ; pressing "Return" will insert a new list item automatically
-;; 	:hook (org-mode . org-autolist-mode))
-;; -- LOCALLY --
-;; (require 'org-autolist)
-;; (add-hook 'org-mode-hook (lambda () (org-autolist-mode)))
+  (require 'org-hide-inline-footnotes) ; usr/
+  (add-hook 'org-mode-hook #'org-hide-inline-footnotes-mode)
 
-(use-package org-autoexport
+  (require 'org-comment-placeholder); usr/
+  (add-hook 'org-mode-hook #'org-comment-placeholder-mode)
+
+  (require 'org-pretty-table) ; opt/
+  (add-hook 'org-mode-hook #'org-pretty-table-mode)
+
+  ;; `org-functions'
+  (add-hook 'org-mode-hook #'org-hide-comment-blocks)
+
+  ;; Ispell should not check code blocks in org mode
+  (add-to-list 'ispell-skip-region-alist '(":\\(PROPERTIES\\|LOGBOOK\\):" . ":END:"))
+  (add-to-list 'ispell-skip-region-alist '("#\\+BEGIN_SRC" . "#\\+END_SRC"))
+  (add-to-list 'ispell-skip-region-alist '("#\\+begin_src" . "#\\+end_src"))
+  (add-to-list 'ispell-skip-region-alist '("^#\\+begin_example " . "#\\+end_example$"))
+  (add-to-list 'ispell-skip-region-alist '("^#\\+BEGIN_EXAMPLE " . "#\\+END_EXAMPLE$"))
+
+  ;; custom entities
+  (add-to-list 'org-entities-user '("textnumero" "\\textnumero" nil "&numero;" "No." "No." "№"))
+
+  ;; outline mode doesn't auto-interpret org entities, so use it to view org-entities
+  (advice-add 'org-entities-help :after (lambda (&rest r)
+    (outline-mode)
+    (read-only-mode -1)
+    (flush-blank-lines (point-min) (point-max))
+    (outline-cycle-buffer)
+    (view-mode)))
+
+  (require 'ox-latex)
+  (add-to-list 'org-latex-classes '("letter" "\\documentclass{letter}") t)
+  (add-to-list 'org-latex-classes '("memoir" "\\documentclass{memoir}"
+				    ("\\chapter{%s}" . "\\chapter*{%s}")
+				    ("\\section{%s}" . "\\section*{%s}")
+				    ("\\subsection{%s}" . "\\subsection*{%s}")
+				    ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))
+	t)
+  (advice-add 'org-latex-export-as-latex :after (lambda (&rest r) (delete-other-windows)))
+
+  (require 'ox-md)
+
+;; fix table.el error
+;; https://github.com/doomemacs/doomemacs/issues/6980
+  (defun myfunc/check_table_p (oldfunc) (funcall oldfunc t))
+  (advice-add 'org-at-table-p :around 'myfunc/check_table_p)) ; end of org-mode configuration
+
+(use-package org-autoexport ; #+auto_export:
   :defer t
+  :after org
   :hook (org-mode . org-autoexport-mode))
 
 (use-package org-chef
   :if *natasha*
-  :defer t)
+  :defer t
+  :after org)
 
-(use-package org-cliplink) ; insert org-mode links from the clipboard
+(use-package org-cliplink ; insert org-mode links from the clipboard
+  :after org)
 
 (use-package org-contrib ; use ':ignore:' tag to exclude heading (but not content) from export
-	:config	(require 'ox-extra)
-		(ox-extras-activate '(ignore-headlines)))
+  :after org
+  :config (require 'ox-extra)
+  (ox-extras-activate '(ignore-headlines)))
 
 (use-package org-download ; org-download-yank
   :if *natasha*
-  :custom	(org-download-heading-lvl nil)
-		(org-download-image-org-width 925))
+  :after org
+  :custom (org-download-heading-lvl nil)
+	  (org-download-image-org-width 925))
 
-(use-package org-drill
+(use-package org-drill ; aka 'flashcard' mode
   :if *natasha*
-  :disabled)
-
-(use-package org-expose-emphasis-markers
-  :disabled ; doesn't work with org DONE tags
-  :hook (org-mode . (lambda () (org-expose-emphasis-markers 'paragraph))))
+  :disabled
+  :after org)
 
 (use-package org-ref
   :if *natasha*
-  :disabled)
+  :disabled
+  :after org)
 (define-key org-mode-map (kbd "C-=") 'org-ref-insert-link-menu)
 
-(require 'ox-latex)
-(add-to-list 'org-latex-classes '("letter" "\\documentclass{letter}") t)
-(add-to-list 'org-latex-classes '("memoir" "\\documentclass{memoir}"
-  ("\\chapter{%s}" . "\\chapter*{%s}")
-  ("\\section{%s}" . "\\section*{%s}")
-  ("\\subsection{%s}" . "\\subsection*{%s}")
-  ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))
-  t)
-(advice-add 'org-latex-export-as-latex :after
-	    (lambda (&rest r)
-	      (delete-other-windows)))
-
-(require 'ox-md)
-
 (use-package ox-gemini)
-
-;; fix table.el error
-;; https://github.com/doomemacs/doomemacs/issues/6980
-(defun myfunc/check_table_p (oldfunc) (funcall oldfunc t))
-(advice-add 'org-at-table-p :around 'myfunc/check_table_p)
 
 ;; TeX
 (use-package tex
   ;:disabled
   :unless *w32*
   :ensure auctex
-  :defer t
+  ;:defer t
   :mode ("\\.tex\\'" . LaTeX-mode)
   :hook
   (LaTeX-mode . (lambda () ;; Make the prettify addition buffer-local and avoid duplicates
@@ -1270,15 +1273,7 @@
   ;; AUCTeX Preview (customizable vars)
   (preview-leave-open-previews-visible t)
   (preview-locating-previews-message nil)
-  (preview-protect-point t)
-  :config
-  (use-package latex-extra
-    :defer t
-    :hook (LaTeX-mode . latex-extra-mode))
-
-  (use-package latex-pretty-symbols
-    :defer t
-    :hook (LaTeX-mode . latex-pretty-symbols-mode)))
+  (preview-protect-point t))
 
 ;; spell checking
 (bind-key "<f7>" 'my/ispell-buffer)
@@ -1325,7 +1320,8 @@
 (message "Configuring specific machines.")
 (when *natasha*
 	(setopt	browse-url-secondary-browser-function 'browse-url-generic
-		browse-url-generic-program "/Applications/Waterfox.app/Contents/MacOS/waterfox"))
+		;browse-url-generic-program "/Applications/Waterfox.app/Contents/MacOS/waterfox"
+		browse-url-generic-program "open"))
 
 ;; Mail / News
 (use-package rmail
@@ -1496,6 +1492,10 @@
 		("D" . pdf-annot-delete))
 	:magic	("%PDF" . pdf-view-mode)
 	:config	(pdf-tools-install :no-query))
+
+(use-package org-pdftools
+  :after org pdf-tools
+  :hook (org-mode . org-pdftools-setup-link))
 
 ;; arrow keys (Darwin)
 (message "→ Configuring UX.")
@@ -1672,7 +1672,7 @@
 (bind-key "M-<f2>"	'describe-personal-keybindings)
 (bind-key "M-<f3>"	'shortdoc)
 
-(bind-key "M-q"		'my/fill-paragraph)
+(bind-key "M-q"		'unfill-toggle)
 (defun my/fill-paragraph () (interactive) (fill-paragraph nil t))
 
 (bind-key "C-M-;"	'eval-r)
@@ -1708,12 +1708,11 @@
 (bind-key "C-c o t"	'org-toggle-link-display)
 (which-key-alias "C-c o" "org")
 
-(bind-key "C-c q"	'dictionary-search)
 (bind-key "C-c w"	'eww-list-bookmarks) ; WWW
 (which-key-alias "C-c w" "eww")
 
 (bind-key "C-c x b"	'flush-blank-lines)
-(bind-key "C-c x d"	'delete-duplicate-lines)
+(bind-key "C-c x d"	'delete-duplicate-blank-lines)
 (bind-key "C-c x g"	'replace-garbage-chars)
 (bind-key "C-c x l"	'lorem-ipsum-insert-paragraphs)
 (bind-key "C-c x n"	'number-paragraphs)

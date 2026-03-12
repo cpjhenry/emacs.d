@@ -26,6 +26,33 @@ BEG and END mark the limits of the region."
   (interactive "r")
   (flush-lines "^\\s-*$" beg end nil))
 
+(defun delete-duplicate-blank-lines (&optional quiet)
+  "Remove duplicate blank lines in region or buffer.
+
+When called interactively:
+- no prefix → report number removed
+- \\[universal-argument] → suppress message
+
+When called from Lisp:
+- QUIET non-nil suppresses message.
+
+Returns the number of duplicate blank lines removed."
+  (interactive "P")
+  (let* ((beg (if (region-active-p) (region-beginning) (point-min)))
+         (end (if (region-active-p) (region-end)       (point-max)))
+         (inhibit-read-only t)
+         (before (count-lines beg end)))
+    (delete-duplicate-lines beg end nil t)
+    ;; Buffer may have shrunk; clamp END again before recounting.
+    (let* ((end (max (point-min) (min end (point-max))))
+           (after (count-lines beg end))
+           (removed (- before after)))
+      (unless quiet
+        (message "Removed %d duplicate blank line%s."
+                 removed
+                 (if (= removed 1) "" "s")))
+      removed)))
+
 (defun delete-duplicate-words ()
   "Delete duplicate words via `query-replace-regexp'."
   (interactive nil text-mode)
@@ -272,7 +299,7 @@ from point."
       (indent-region (point-min) (point-max)))))
 
 ;; https://github.com/jakebox/jake-emacs/blob/main/jake-emacs/jib-funcs.el
-(defun calc-speaking-time ()
+(defun speaking-time ()
   "Calculate how long it would take me to speak aloud the selection."
   (interactive)
   (if (use-region-p)
@@ -283,6 +310,27 @@ from point."
 		 (format-seconds "%m" raw-time)
 		 (floor (mod raw-time 60)) wpm word-count))
     (error "Error: select a region")))
+
+;; https://emacs.stackexchange.com/questions/45584/count-the-number-of-paragraphs
+(defun count-paragraphs (start end)
+  "Return number of paragraphs between START and END."
+  (save-excursion
+    (save-restriction
+      (narrow-to-region start end)
+      (goto-char (point-min))
+      (- (buffer-size) (forward-paragraph (buffer-size))))))
+
+(defun count-paragraphs-region-or-buffer ()
+  "Report number of paragraphs in the region (if it's active) or the entire buffer."
+  (declare (interactive-only count-paragraphs))
+  (interactive)
+  (let ((paragraphs (if (use-region-p)
+                        (count-paragraphs (region-beginning) (region-end))
+                        (count-paragraphs (point-min) (point-max)))))
+    (message "%s has %d paragraph%s"
+             (if (use-region-p) "Region" "Buffer")
+             paragraphs
+             (if (> paragraphs 1) "s" ""))))
 
 ;; prog-mode functions
 

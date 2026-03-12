@@ -36,14 +36,12 @@
 (define-abbrev-table 'org-mode-abbrev-table
   '(
     ("a5vc" "# Set for A5 paper. You can still print this to booklet format." nil :count 0)
-    ("asterism" "#+LATEX: \\begin{center}\\asterism\\end{center}" nil :count 7)
     ("ccc" "#+AUTHOR:/Capital City Council \\textnumero154/" nil :count 0)
-    ("dinkus" "#+LATEX: \\begin{center}* * *\\end{center}" nil :count 2)
     ("hdr" "#+LATEX_HEADER:" nil :count 141)
     ("lat" "#+LATEX:" nil :count 50)
     ("lsvc" "# This is the letter-size version.
 #+LATEX_CLASS_OPTIONS: [letterpaper]
-#+LATEX: \\lettersize" nil :count 2)
+#+LATEX_HEADER: \\lettersize" nil :count 2)
     ("mapleleaf" "\\twemoji{maple leaf}" nil :count 0)
     ("myabstract" "#+LATEX: \\begin{abstract}
 #+LATEX: \\noindent\\parindent=0pt\\parskip=.5\\baselineskip plus 2pt
@@ -54,13 +52,13 @@
 #+DESCRIPTION:
 #+KEYWORDS:
 :END:" nil :count 1)
+    ("mylayout" ":LAYOUT:
+:END:" nil :count 0)
     ("mytitle" "#+TITLE: 
 #+AUTHOR: Paul J Henry
 #+DATE: 
 
 CHECK AGAINST DELIVERY" nil :count 5)
-    ("referencemark" "#+LATEX: {\\fontspec{NewCM10-Book} \\large \\textreferencemark}" nil :count 0)
     ("sufold" "#+STARTUP: fold" nil :count 0)
-    ("wmye" "WMYE." nil :count 0)
    ))
 

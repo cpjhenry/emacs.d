@@ -304,8 +304,16 @@ mode when toggled off."
   (interactive "P")
   (dired-rename-non-directory #'my-substspaces "Rename by substituting spaces" arg))
 
-;; iBuffer functions
+;; https://old.reddit.com/r/emacs/comments/91xnv9/noob_delete_buffer_automatically_after_removing/
+(defun dired-kill-before-delete (file &rest rest)
+  "Automatically delete the buffer of the FILE that's being deleted."
+  (if-let ((buf (get-file-buffer file)))
+      (kill-buffer buf)
+    (dolist (dired-buf (dired-buffers-for-dir file))
+      (kill-buffer dired-buf))))
+(advice-add 'dired-delete-file :before 'dired-kill-before-delete)
 
+;; iBuffer functions
 (defun ibuffer-advance-motion (direction)
 	(forward-line direction)
 	(beginning-of-line)
@@ -374,14 +382,6 @@ mode when toggled off."
 (defun eww-reddit-redirect (url)
   "Redirect reddit.com to old.reddit.com automatically."
   (replace-regexp-in-string "https://www.reddit.com" "https://old.reddit.com" url))
-(setq eww-url-transformers '(eww-remove-tracking eww-reddit-redirect))
-
-(defun eww-unfill-paragraph ()
-  "Re-flow text in eww buffer."
-  (interactive)
-  (read-only-mode -1)
-  (unfill-paragraph)
-  (read-only-mode))
 
 ;; https://old.reddit.com/r/emacs/comments/17h4h4k/how_to_preview_buffer_with_html_in_ewwbrowser/
 (defun eww-render-buffer ()
@@ -396,11 +396,45 @@ mode when toggled off."
       (eww-display-html 'utf-8 source nil nil buf))
     (switch-to-buffer buf)))
 
+;; Lookup words in browser
+;; cpj / Sage
+(defvar search-engine-query-url "https://duckduckgo.com/?q="
+  "Base query URL for browser searches.")
+
+(defun search-on-browser (&optional term)
+  "Search TERM in a web browser.
+
+When called interactively:
+- use the active region, if any;
+- otherwise use symbol at point;
+- otherwise use word at point;
+- otherwise do nothing.
+
+Prefers `browse-url-secondary-browser-function' if available,
+falling back to `browse-url-browser-function'."
+  (interactive)
+  (let* ((term (or term
+                   (when (use-region-p)
+                     (buffer-substring-no-properties
+                      (region-beginning)
+                      (region-end)))
+                   (thing-at-point 'symbol t)
+                   (thing-at-point 'word t)))
+         (term (and term (string-trim term))))
+    (if (string-blank-p (or term ""))
+        (message "No searchable term at point.")
+      (let ((browse-url-browser-function
+             (or browse-url-secondary-browser-function
+                 browse-url-browser-function)))
+        (message "Searching for %s..." term)
+        (browse-url
+         (concat search-engine-query-url
+                 (url-hexify-string term)))))))
+
 
 ;; https://vishesh.github.io/emacs/editors/2023/01/25/lean-emacs-config.html
 ;; (see bindings for: "C-a" "C-w" "M-w" "M-j")
-;; with mods by cpj -> note: "^" interactive modifier allows `shift-select'
-;; to work properly.
+;; cpj -> "^" in interactive modifier allows `shift-select' to work properly.
 
 (defun back-to-indentation-or-beginning-of-line (&optional arg)
   "Move point to indentation, or to bol if already at indentation.
@@ -692,4 +726,4 @@ buffer, you can use `C-SPC' to set the mark, then use this
                       (buffer-file-name)))))))
 
 ;;; filesandbuffers.el ends here
-; LocalWords:  filesandbuffers
+; LocalWords:  filesandbuffers bol ARGth
