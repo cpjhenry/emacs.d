@@ -15,10 +15,10 @@
 (toggle-frame-maximized)
 
 ;; Add directories to load-path
-(add-to-list 'load-path (directory-file-name (expand-file-name "etc/" user-emacs-directory)))
-(add-to-list 'load-path (directory-file-name (expand-file-name "opt/" user-emacs-directory)))
-(add-to-list 'load-path (directory-file-name (expand-file-name "usr/" user-emacs-directory)))
-(add-to-list 'load-path (directory-file-name (expand-file-name "var/" user-emacs-directory)))
+(dolist (dir '("etc" "opt" "usr" "var"))
+  (let ((path (expand-file-name dir user-emacs-directory)))
+    (when (file-directory-p path)
+      (add-to-list 'load-path (directory-file-name path)))))
 
 ;; Environmental constants
 (message "→ Configuring environment.")
@@ -35,7 +35,7 @@
 (defconst EMACS31 (>= emacs-major-version 31) "Running Emacs 31 or greater.")
 
 (when (bound-and-true-p ns-emacs-plus-version)
-  (message "Running 'Emacs Plus %s'." ns-emacs-plus-version))
+  (message "→ Running 'Emacs Plus %s'." ns-emacs-plus-version))
 (load "rc/me" 'noerror)
 
 ;; Customize
@@ -97,11 +97,11 @@
 	:visible (eq window-system 'ns)])
 
   ;; Font
-  (add-to-list 'default-frame-alist '(font . "Inconsolata 22")))
+  (add-to-list 'default-frame-alist '(font . "Inconsolata 23")))
 
 (when *gnu*
   (add-to-list 'default-frame-alist '(font . "Monospace 17"))
-  (message "Running on GNU/Linux."))
+  (message "→ Running on GNU/Linux."))
 
 (when *w32*
   (setopt w32-apps-modifier 'super)
@@ -111,7 +111,7 @@
 
   (add-to-list 'default-frame-alist '(font . "Consolas 12"))
   (menu-bar-mode 1)
-  (message "Running on Windows."))
+  (message "→ Running on Windows."))
 
 ;; Initialize package manager
 (require 'package)
@@ -323,7 +323,7 @@
 (add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
 
 ;; remove trailing whitespace on-save
-(add-hook 'write-file-hooks 'delete-trailing-whitespace)
+;(add-hook 'write-file-hooks 'delete-trailing-whitespace)
 
 ;; Emacs really suffers when you open large files.
 (add-hook 'find-file-hook 'large-find-file-hook)
@@ -452,7 +452,7 @@
 	(add-to-list 'ido-ignore-buffers "*Shell Command Output*")
 	(add-to-list 'ido-ignore-buffers "^*tramp/")
 	(add-to-list 'ido-ignore-buffers "^*Compile-Log*")
-	(add-to-list 'ido-ignore-buffers "^*.*[Nn]ative-compile-[Ll]og*")
+	(add-to-list 'ido-ignore-buffers "^*Async-native-compile-log*")
 	(add-to-list 'ido-ignore-buffers "^*Backtrace*")
 	(add-to-list 'ido-ignore-buffers "^*Warnings*")
 	(add-to-list 'ido-ignore-files ".DS_Store")
@@ -630,7 +630,7 @@
 	  (save-buffers-kill-terminal)))
 
 	(if (not (boundp 'server-process)) (server-start))
-	(if (boundp 'server-process) (message "Server running.")))
+	(if (boundp 'server-process) (message "→ Server running.")))
 
 ;; calendar
 (message "→ Configuring calendar-mode.")
@@ -1014,6 +1014,7 @@
 	:config (add-to-list 'markdown-uri-types "gemini"))
 
 (load "text-functions")
+(require 'replace-garbage-chars)
 
 ;; Org-mode
 (setopt org-directory "~/Documents/org")
