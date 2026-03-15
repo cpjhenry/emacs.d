@@ -212,14 +212,13 @@
 
 ;; files
 (setopt	custom-file			(concat user-emacs-directory "custom.el")
-	dun-log-file			(concat user-emacs-directory "var/games/dunnet-scores"))
-(setq	multisession-directory		(concat user-emacs-directory "var/multisession")
 	nsm-settings-file		(concat user-emacs-directory "var/network-security.data")
-	request-storage-directory	(concat user-emacs-directory "var/request/storage/")
 	transient-history-file		(concat user-emacs-directory "var/transient/history.el")
 	transient-levels-file		(concat user-emacs-directory "var/transient/levels.el")
 	transient-values-file		(concat user-emacs-directory "var/transient/values.el")
 	url-configuration-directory	(concat user-emacs-directory "var/url/configuration/"))
+(setq	multisession-directory		(concat user-emacs-directory "var/multisession")
+	request-storage-directory	(concat user-emacs-directory "var/request/storage/"))
 
 ;; path
 (use-package exec-path-from-shell
@@ -782,6 +781,11 @@
   :custom (dictionary-server "dict.org")
   :bind (("M-s d" . dictionary-search)))
 
+(use-package dunnet
+  :ensure nil
+  :defer t
+  :custom dun-log-file (concat user-emacs-directory "var/games/dunnet-scores"))
+
 (use-package dwim-shell-command
   :ensure t
   :bind (([remap shell-command] . dwim-shell-command)
@@ -1017,9 +1021,9 @@
 (require 'replace-garbage-chars)
 
 ;; Org-mode
-(setopt org-directory "~/Documents/org")
-(defvar org-agenda-file (concat org-directory "/daily.org") "Default agenda file.")
-(setopt	org-default-notes-file (concat org-directory "/notes.org")
+(setopt org-directory "~/Documents/org/")
+(defvar org-agenda-file (concat org-directory "daily.org") "Default agenda file.")
+(setopt	org-default-notes-file (concat org-directory "notes.org")
 	org-id-locations-file (concat user-emacs-directory "var/org-id-locations"))
 (use-package org
   :ensure nil
@@ -1066,6 +1070,11 @@
   (org-agenda-text-search-extra-files '(agenda-archives))
   (org-agenda-todo-ignore-deadlines t)
   (org-agenda-todo-ignore-scheduled t)
+  (org-agenda-custom-commands
+   '(("P" "Project List" ((tags "PROJECT")))
+     ("O" "Office" ((agenda)(tags-todo "OFFICE")))
+     ("W" "Weekly Plan" ((agenda)(todo "TODO")(tags "PROJECT")))
+     ("H" "Home NA Lists" ((agenda)(tags-todo "HOME")(tags-todo "COMPUTER")))))
 
   (org-export-with-author t)
   (org-export-with-broken-links t)
@@ -1091,6 +1100,25 @@
 
   (org-md-headline-style 'atx)
 
+  (org-tags-exclude-from-inheritance '("PROJECT"))
+  (org-todo-keywords '((sequence "TODO" "DONE")))
+  (org-todo-keyword-faces '(("INPROGRESS" . (:foreground "blue" :weight bold))))
+  (org-emphasis-alist
+   '(("*" bold)
+     ("**" bold)
+     ("/" italic)
+     ("_" italic)
+     ("=" (:background "maroon" :foreground "white"))
+     ("~" (:background "deep sky blue" :foreground "MidnightBlue"))
+     ("+" (:strike-through t))))
+
+  (org-capture-templates
+   '( ;; https://github.com/sprig/org-capture-extension
+     ("p" "Protocol" entry (file+headline org-default-notes-file "Inbox")
+      "* %?[[%:link][%(transform-square-brackets-to-round-ones \"%:description\")]]\n%i\n")
+     ("L" "Protocol Link" entry (file+headline org-default-notes-file "Inbox")
+      "* %?[[%:link][%(transform-square-brackets-to-round-ones \"%:description\")]]\n")))
+
   :bind ( :map org-mode-map
 	  ("M-<f4>" . org-speed-command-help)
 	  ("M-["    . org-backward-heading-same-level)
@@ -1115,8 +1143,6 @@
   (require 'org-tempo)
   (load "org-functions")
   (load "org-links")
-  (load "org-customizations")
-  (load "org-converters")
 
   ;; org-emphasis
   (keymap-set org-mode-map "A-b" 'org-emphasize-bold)
@@ -1183,6 +1209,8 @@
   ;; `org-functions'
   (add-hook 'org-mode-hook #'org-hide-comment-blocks)
 
+  (require 'org-protocol)
+
   ;; Ispell should not check code blocks in org mode
   (add-to-list 'ispell-skip-region-alist '(":\\(PROPERTIES\\|LOGBOOK\\):" . ":END:"))
   (add-to-list 'ispell-skip-region-alist '("#\\+BEGIN_SRC" . "#\\+END_SRC"))
@@ -1226,10 +1254,40 @@
 (use-package org-chef
   :if *natasha*
   :defer t
-  :after org)
+  :after org
+  :config
+  (defvar org-chef-recipe-book "~/Documents/Recipes/cookbook.org" "Default recipe book.")
+
+  (add-to-list 'org-capture-templates '("c" "Cookbook" entry (file org-chef-recipe-book)
+					"%(org-chef-get-recipe-from-url)" :empty-lines 0) t)
+  ;; HACK · Adjust spacing in `org-chef-recipe-to-org-element' when upgrading ('pre-' to 'post-'.
+  (add-to-list 'org-capture-templates '("m" "Manual Cookbook" entry (file org-chef-recipe-book)
+					"* %^{Recipe title: }
+:PROPERTIES:\n:provenance:\n:source-url:\n:servings:\n:prep-time:\n:cook-time:\n:ready-in:\n:END:
+** Ingredients%?\n\n** Directions\n\n** Notes\n") t))
 
 (use-package org-cliplink ; insert org-mode links from the clipboard
-  :after org)
+  :after org
+  :bind (("C-c o k" . my/org-cliplink))
+  :config
+  ;; https://github.com/rexim/org-cliplink
+  (add-to-list 'org-capture-templates '("K" "Cliplink capture task" entry (file "")
+					"* TODO %(org-cliplink-capture) \n  SCHEDULED: %t\n" :empty-lines 1) t)
+  (defun my/org-cliplink ()
+    (interactive)
+    (org-cliplink-insert-transformed-title
+     (org-cliplink-clipboard-content)     ;take the URL from the CLIPBOARD
+     (lambda (url title)
+       (let* ((parsed-url (url-generic-parse-url url)) ;parse the url
+              (clean-title
+               (cond
+		;; if the host is github.com, cleanup the title
+		((string= (url-host parsed-url) "github.com")
+		 (replace-regexp-in-string "GitHub - .*: \\(.*\\)" "\\1" title))
+		;; otherwise keep the original title
+		(t title))))
+	 ;; forward the title to the default org-cliplink transformer
+	 (org-cliplink-org-mode-link-transformer url clean-title))))))
 
 (use-package org-contrib ; use ':ignore:' tag to exclude heading (but not content) from export
   :after org
@@ -1427,7 +1485,7 @@
 
 (use-package chess
   :if 	*natasha*
-  :defer	t
+  :defer t
   :custom
   (chess-default-engine 'chess-gnuchess)
   (chess-images-default-size 80))
@@ -1706,7 +1764,6 @@
 ;(bind-key "C-c n"	'newsticker-show-news)
 
 (bind-key "C-c o c"	'org-capture)
-(bind-key "C-c o k"	'org-cliplink)
 (bind-key "C-c o l"	'org-store-link)
 (bind-key "C-c o r"	'org-mode-restart)
 (bind-key "C-c o t"	'org-toggle-link-display)

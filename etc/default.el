@@ -3,6 +3,7 @@
 
 ;;; code:
 (require 'calendar)
+(require 'holidays)
 (require 'lunar)
 (require 'time)
 

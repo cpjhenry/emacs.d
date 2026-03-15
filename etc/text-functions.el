@@ -3,21 +3,21 @@
 
 ;;; code:
 (defun insert-iso-date ()
-	"Insert ISO-formatted date."
-	(interactive)
-	(insert (format-time-string "%Y-%m-%d")))
+  "Insert ISO-formatted date."
+  (interactive)
+  (insert (format-time-string "%Y-%m-%d")))
 
 (defun insert-date ()
-	"Insert European-formatted date."
-	(interactive)
-	(insert (format-time-string "%-d %B %Y")))
+  "Insert European-formatted date."
+  (interactive)
+  (insert (format-time-string "%-d %B %Y")))
 
 (defun markdown-preview-file ()
-	"Run `Marked' on the current file and revert the buffer."
-	(interactive)
-	(shell-command (format "open -a /Applications/Marked\\ 2.app %s"
-		(shell-quote-argument (buffer-file-name)))
-		nil nil))
+  "Run `Marked' on the current file and revert the buffer."
+  (interactive)
+  (shell-command (format "open -a /Applications/Marked\\ 2.app %s"
+		 (shell-quote-argument (buffer-file-name)))
+		 nil nil))
 
 (defun flush-blank-lines (beg end)
   "Remove blank lines in a buffer.
@@ -96,46 +96,22 @@ Prefix removes numbering."
 	(save-excursion
 	(replace-regexp "^[0-9]+\. " "")))
 
-(defun narrow-to-section ()
-  "Narrow buffer to text section."
-  (interactive)
-  (save-excursion
-    (push-mark)
-
-    ;; HACK - do something at end of file,
-    ;; or when there's no marker
-
-    (search-forward "") ; group separator
-    (left-char)
-    (narrow-to-region (region-beginning) (region-end))
-    (deactivate-mark)))
-
 ;; https://speechcode.com/blog/narrow-to-focus/
 (defun narrow-to-focus (start end)
-"If the region is active, narrow to region, marking it (and only
-it) for the future. If the mark is not active, narrow to the
-region that was the most recent focus."
-	(interactive "r")
-	(cond ((use-region-p)
-	(remove-overlays (point-min) (point-max) 'focus t)
-	(let ((overlay (make-overlay start end)))
-		(overlay-put overlay 'focus t)
-		(narrow-to-region start end)))
+  "If the region is active, narrow to region, marking it for the future.
+If the mark is not active, narrow to the region that was the most recent focus."
+  (interactive "r")
+  (cond ((use-region-p)
+	 (remove-overlays (point-min) (point-max) 'focus t)
+	 (let ((overlay (make-overlay start end)))
+	   (overlay-put overlay 'focus t)
+	   (narrow-to-region start end)))
 	(t (let ((focus
-		(seq-find (lambda (o) (overlay-get o 'focus))
-		(overlays-in (point-min) (point-max)))))
-	(when focus
-		(narrow-to-region (overlay-start focus)
-		(overlay-end focus)))))))
-
-;; (defun replace-double-spaces ()
-;;   "Replace double spaces in the buffer with single ones."
-;;   (interactive)
-;;   (save-excursion
-;;     ;; HACK - region only, if selected.
-;;   (if (use-region-p)
-;;   (while (search-forward "  " nil t)
-;;     (replace-match " " nil nil)))))
+		  (seq-find (lambda (o) (overlay-get o 'focus))
+			    (overlays-in (point-min) (point-max)))))
+	     (when focus
+	       (narrow-to-region (overlay-start focus)
+				 (overlay-end focus)))))))
 
 (defun collapse-multiple-spaces-in-region (beg end)
   "Collapse runs of 2+ literal spaces to one space in the active region.
@@ -245,6 +221,11 @@ from point."
              (if (use-region-p) "Region" "Buffer")
              paragraphs
              (if (> paragraphs 1) "s" ""))))
+
+;; https://github.com/sprig/org-capture-extension
+(defun transform-square-brackets-to-round-ones (string-to-transform)
+  "Transforms `\[' into `\(' and `\]' into `\)', other chars left unchanged."
+  (concat (mapcar #'(lambda (c) (if (equal c ?\[) ?\( (if (equal c ?\]) ?\) c))) string-to-transform)))
 
 ;; prog-mode functions
 
