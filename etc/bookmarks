@@ -12,10 +12,10 @@
  (handler . Info-bookmark-jump))
 ("org-capture-last-stored"
  (filename . "~/Documents/Recipes/cookbook.org")
- (front-context-string . "* 5-Ingredient L")
- (rear-context-string . "d sesame seeds.\n")
- (position . 48260)
- (last-modified 27063 4239 158042 0))
+ (front-context-string . "* Pad See Ew (St")
+ (rear-context-string . "ing, and enjoy!\n")
+ (position . 55077)
+ (last-modified 27064 52232 200677 0))
 ("2023-05-10 - Six years of gopher"
  (position . 684)
  (location . "gemini://zaibatsu.circumlunar.space/users/solderpunk/gemlog/six-years-of-gopher.gmi")

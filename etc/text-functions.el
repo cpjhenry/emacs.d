@@ -2,6 +2,10 @@
 ;;; commentary:
 
 ;;; code:
+(defun my/fill-paragraph ()
+  (interactive)
+  (fill-paragraph nil t))
+
 (defun insert-iso-date ()
   "Insert ISO-formatted date."
   (interactive)
@@ -226,6 +230,11 @@ from point."
 (defun transform-square-brackets-to-round-ones (string-to-transform)
   "Transforms `\[' into `\(' and `\]' into `\)', other chars left unchanged."
   (concat (mapcar #'(lambda (c) (if (equal c ?\[) ?\( (if (equal c ?\]) ?\) c))) string-to-transform)))
+
+(defun zero-width-space () "Insert ZERO WIDTH SPACE."
+  (interactive)
+  (insert-char (char-from-name "ZERO WIDTH SPACE"))
+  (message "ZWS"))
 
 ;; prog-mode functions
 

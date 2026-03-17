@@ -2,12 +2,65 @@
 ;;; Commentary:
 
 ;;; Code:
-(if (< emacs-major-version 29)(defun scratch-buffer ()
-"Switch to the *scratch* buffer.
-	If the buffer doesn't exist, create it first."
-	(interactive)
-	(pop-to-buffer-same-window (get-scratch-buffer-create))))
+(defun my/backward-paragraph ()
+  "Backward paragraph."
+  (interactive)
+  (backward-paragraph)
+  (recenter-top-bottom))
 
+(defun my/forward-paragraph ()
+  "Forward paragraph."
+  (interactive)
+  (forward-paragraph)
+  (recenter-top-bottom))
+
+(defun my/backward-page ()
+  "Backward page."
+  (interactive)
+  (backward-page)
+  (recenter-top-bottom)
+  (beginning-of-line))
+
+(defun my/forward-page ()
+  "Forward page."
+  (interactive)
+  (next-line)
+  (forward-page)
+  (recenter-top-bottom)
+  (beginning-of-line))
+
+(defun my/init ()
+  "Load init-file."
+  (interactive)
+  (find-file user-init-file))
+
+(defun my/outline-previous-heading ()
+  (interactive)
+  (outline-previous-heading)
+  (recenter-top-bottom))
+
+(defun my/outline-next-heading ()
+  (interactive)
+  (outline-next-heading)
+  (recenter-top-bottom))
+
+(defun my/shell ()
+  (interactive)
+  (let ((default-directory "~"))
+    (mistty)))
+
+(defun my/View-scroll-line-backward ()
+  "Scroll line backward, jump to new top of screen."
+  (interactive)
+  (View-scroll-line-backward)
+  (move-to-window-line-top-bottom))
+
+(defun quit-window-kill ()
+  "Kill when quitting."
+  (interactive)
+  (quit-window t))
+
+;; buffers
 (defun scratch ()
   "Make a new temporary scratch file.
 
@@ -16,28 +69,28 @@ Useful if your *scratch* is already holding something important."
   (switch-to-buffer (make-temp-name "*scratch*-")))
 
 (defun new-empty-buffer ()
-"Create new empty buffer."
-	(interactive)
-	(let ((buf (generate-new-buffer "untitled")))
-		(switch-to-buffer buf)
-		(funcall (and default-major-mode))
-		(setq buffer-offer-save t) ))
+  "Create new empty buffer."
+  (interactive)
+  (let ((buf (generate-new-buffer "untitled")))
+    (switch-to-buffer buf)
+    (funcall (and default-major-mode))
+    (setq buffer-offer-save t) ))
 
 (defun new-markdown-buffer ()
 "Create new empty `markdown-mode' buffer."
-	(interactive)
-	(let ((buf (generate-new-buffer "untitled\.md")))
-		(switch-to-buffer buf)
-		(markdown-mode)
-		(setq buffer-offer-save t) ))
+(interactive)
+(let ((buf (generate-new-buffer "untitled\.md")))
+  (switch-to-buffer buf)
+  (markdown-mode)
+  (setq buffer-offer-save t) ))
 
 (defun new-org-buffer ()
 "Create new empty `org-mode' buffer."
-	(interactive)
-	(let ((buf (generate-new-buffer "untitled\.org")))
-		(switch-to-buffer buf)
-		(org-mode)
-		(setq buffer-offer-save t) ))
+(interactive)
+(let ((buf (generate-new-buffer "untitled\.org")))
+  (switch-to-buffer buf)
+  (org-mode)
+  (setq buffer-offer-save t) ))
 
 (defun copy-current-to-temp-buffer ()
   "Copy the current buffer or region, create temp buffer, paste it there."
@@ -64,29 +117,24 @@ Useful if your *scratch* is already holding something important."
   (mapc 'kill-buffer (delq (current-buffer) (buffer-list)))
   (kill-dired-buffers))
 
-(defun quit-window-kill ()
-  "Kill when quitting."
-  (interactive)
-  (quit-window t))
-
 (defun shell-command-on-buffer ()
-"Asks for a command and execute it in inferior shell with current buffer as input."
-	(interactive)
-	(shell-command-on-region (point-min) (point-max)
-	(read-shell-command "Shell command on buffer: ")))
+  "Asks for a command and execute it in inferior shell with current buffer as input."
+  (interactive)
+  (shell-command-on-region (point-min) (point-max)
+			   (read-shell-command "Shell command on buffer: ")))
 
 ;; http://xahlee.info/emacs/emacs/emacs_auto_save.html
 (defun save-all-unsaved ()
-"Save all unsaved files. No ask."
-	(interactive)
-	(save-some-buffers t))
+  "Save all unsaved files. No ask."
+  (interactive)
+  (save-some-buffers t))
 
 ;; https://emacs.stackexchange.com/questions/3116/how-to-display-a-message-in-echo-area-only
 (defun echo-and-ignore-message-buffer (message)
-	(let ((prev-msg-log-max message-log-max))
-	(unwind-protect (progn (setq message-log-max nil)
-		(message message))
-	(setq message-log-max prev-msg-log-max))))
+  (let ((prev-msg-log-max message-log-max))
+    (unwind-protect (progn (setq message-log-max nil)
+			   (message message))
+      (setq message-log-max prev-msg-log-max))))
 
 (defun shell-other-frame ()
   "Open a `shell' in a new frame."
@@ -96,60 +144,66 @@ Useful if your *scratch* is already holding something important."
     (switch-to-buffer-other-frame buf)))
 
 (defun buf-to-LF()
-	(interactive)
-	(set-buffer-file-coding-system 'utf-8-unix)
-	(set-buffer-modified-p nil))
+  (interactive)
+  (set-buffer-file-coding-system 'utf-8-unix)
+  (set-buffer-modified-p nil))
+
+;; See: https://emacs.stackexchange.com/questions/81361/how-to-switch-to-a-buffer-from-terminal-with-a-unique-partial-name
+(defun switch-to-buffer-matching (regular-expression)
+  "Switch to the first buffer that matches REGULAR-EXPRESSION."
+  (switch-to-buffer (-find (-compose (-partial #'string-match-p regular-expression) #'buffer-name)
+			   (buffer-list))))
 
 ;; modeline functions
 ;; https://jiewawa.me/2024/10/useful-emacs-commands-for-reading/
 (defun kill-modeline ()
-	(setq-local mode-line-format nil))
+  (setq-local mode-line-format nil))
 
 (defun restore-modeline ()
-	(kill-local-variable 'mode-line-format))
+  (kill-local-variable 'mode-line-format))
 
 (defun toggle-modeline () "Toggle modeline."
-	(interactive)
-	(if (null mode-line-format) (restore-modeline)
-	(kill-modeline)))
+       (interactive)
+       (if (null mode-line-format) (restore-modeline)
+	 (kill-modeline)))
 
 ;; macOS frame functions
 (defun ns-raise-emacs ()
-"Raise Emacs."
-	(ns-do-applescript "tell application \"Emacs\" to activate"))
+  "Raise Emacs."
+  (ns-do-applescript "tell application \"Emacs\" to activate"))
 
 (defun ns-raise-emacs-with-frame (frame)
-"Raise Emacs and select the provided frame."
-	(with-selected-frame frame
-	(when (display-graphic-p)
-		(ns-raise-emacs)
-		(toggle-frame-maximized))))
+  "Raise Emacs and select the provided frame."
+  (with-selected-frame frame
+    (when (display-graphic-p)
+      (ns-raise-emacs)
+      (toggle-frame-maximized))))
 
 ;; misc. functions
 (defun set-window-width (n)
-"Set the selected window's width as 'N'."
-	(adjust-window-trailing-edge (selected-window) (- n (window-width)) t))
+  "Set the selected window's width as 'N'."
+  (adjust-window-trailing-edge (selected-window) (- n (window-width)) t))
 
 (defun set-80-columns ()
-"Set the selected window to 80 columns."
-	(interactive)
-	(set-window-width 80))
+  "Set the selected window to 80 columns."
+  (interactive)
+  (set-window-width 80))
 
 (defun toggle-fill-column ()
-"Toggle `fill-column' values between 32 and 70."
-    (interactive)
-    (setq fill-column (if (= fill-column 70) 32 70))
-	;; three values: (setq fill-column (if (= fill-column 8) 4 (if (= fill-column 4) 2 8)))
-	(message "'fill-column' set to: %s" fill-column))
+  "Toggle `fill-column' values between 32 and 70."
+  (interactive)
+  (setq fill-column (if (= fill-column 70) 32 70))
+  ;; three values: (setq fill-column (if (= fill-column 8) 4 (if (= fill-column 4) 2 8)))
+  (message "'fill-column' set to: %s" fill-column))
 
 (defun fill-max-column ()
-"Set `fill-column' to maximum width."
-	(interactive)
-	(setq fill-column 0)
-	(message "Maximum width."))
+  "Set `fill-column' to maximum width."
+  (interactive)
+  (setq fill-column 0)
+  (message "Maximum width."))
 
 (defun toggle-fill-column-center ()
-"Toggle `visual-fill-column-center-text'.
+  "Toggle `visual-fill-column-center-text'.
 
 If `visual-fill-column-mode' isn't activated, activates it. Disables this
 mode when toggled off."
@@ -164,77 +218,29 @@ mode when toggled off."
     (progn (visual-fill-column-mode)
 	   (toggle-fill-column-center))))
 
-;; See: https://emacs.stackexchange.com/questions/81361/how-to-switch-to-a-buffer-from-terminal-with-a-unique-partial-name
-(defun switch-to-buffer-matching (regular-expression)
-  "Switch to the first buffer that matches REGULAR-EXPRESSION."
-	(switch-to-buffer (-find (-compose (-partial #'string-match-p regular-expression) #'buffer-name)
-		(buffer-list))))
+(defun preview-html ()
+  "Render buffer as HTML."
+  (interactive)
+  (shr-render-buffer (current-buffer)))
 
-(defun preview-html () "Render buffer as HTML."
-	(interactive)
-	(shr-render-buffer (current-buffer)))
+(defun eval-r (b e)
+  "Evaluate region."
+  (interactive "r")
+  (eval-region b e)
+  (deactivate-mark)
+  (message "Region evaluated."))
 
-(defun eval-r (b e) "Evaluate region."
-	(interactive "r")
-	(eval-region b e)
-	(deactivate-mark)
-	(message "Region evaluated."))
+(defun turn-off-cursor ()
+  "Hides cursor locally."
+  (interactive)
+  (setq-local cursor-type nil))
 
-(defun turn-off-cursor () "Hides cursor locally."
-	(interactive)
-	(setq-local cursor-type nil))
-
-(defun toggle-cursor-off/on () "Toggle cursor visibility."
-       (interactive)
-       (if (bound-and-true-p cursor-type)
-	   (setq-local cursor-type nil)
-	 (setq-local cursor-type t)))
-
-(defun my/agenda () "Load `org-agenda' file."
-	(interactive)
-	(find-file org-agenda-file))
-
-(defun my/init () "Load init-file."
-	(interactive)
-	(find-file user-init-file))
-
-(defun my/backward-paragraph () "Backward paragraph."
-	(interactive)
-	(backward-paragraph)
-	(recenter-top-bottom))
-
-(defun my/forward-paragraph () "Forward paragraph."
-	(interactive)
-	(forward-paragraph)
-	(recenter-top-bottom))
-
-(defun my/backward-page () "Backward page."
-	(interactive)
-	(backward-page)
-	(recenter-top-bottom)
-	(beginning-of-line))
-
-(defun my/forward-page () "Forward page."
-	(interactive)
-	(next-line)
-	(forward-page)
-	(recenter-top-bottom)
-	(beginning-of-line))
-
-(defun my/outline-previous-heading ()
-	(interactive)
-	(outline-previous-heading)
-	(recenter-top-bottom))
-
-(defun my/outline-next-heading ()
-	(interactive)
-	(outline-next-heading)
-	(recenter-top-bottom))
-
-(defun my/View-scroll-line-backward () "Scroll line backward, jump to new top of screen."
-	(interactive)
-	(View-scroll-line-backward)
-	(move-to-window-line-top-bottom))
+(defun toggle-cursor-off/on ()
+  "Toggle cursor visibility."
+  (interactive)
+  (if (bound-and-true-p cursor-type)
+      (setq-local cursor-type nil)
+    (setq-local cursor-type t)))
 
 ;; DIRED functions
 (defun dired-home ()
@@ -291,6 +297,7 @@ mode when toggled off."
 ;; dired extension "% s"
 ;; https://social.tchncs.de/@stackeffect/113431684014013180
 (defun my-substspaces (str)
+  "Replace spaces in filename with underscores."
   (subst-char-in-string ?\s ?_ str))
 
 (defun my-dired-substspaces (&optional arg)
@@ -309,40 +316,40 @@ mode when toggled off."
 
 ;; iBuffer functions
 (defun ibuffer-advance-motion (direction)
-	(forward-line direction)
-	(beginning-of-line)
-	(if (not (get-text-property (point) 'ibuffer-filter-group-name)) t
-		(ibuffer-skip-properties '(ibuffer-filter-group-name) direction)
-		nil))
+  (forward-line direction)
+  (beginning-of-line)
+  (if (not (get-text-property (point) 'ibuffer-filter-group-name)) t
+    (ibuffer-skip-properties '(ibuffer-filter-group-name) direction)
+    nil))
 
 (defun ibuffer-previous-line (&optional arg)
-"Move backwards ARG lines, wrapping around the list if necessary."
-	(interactive "P")
-	(or arg (setq arg 1))
-	(let (err1 err2) (while (> arg 0)
-		(cl-decf arg)
-		(setq   err1 (ibuffer-advance-motion -1)
-			err2 (if (not (get-text-property (point) 'ibuffer-title)) t
-				(goto-char (point-max))
-				(beginning-of-line)
-				(ibuffer-skip-properties '(ibuffer-summary ibuffer-filter-group-name) -1)
-					nil)))
-		(and err1 err2)))
+  "Move backwards ARG lines, wrapping around the list if necessary."
+  (interactive "P")
+  (or arg (setq arg 1))
+  (let (err1 err2) (while (> arg 0)
+		     (cl-decf arg)
+		     (setq   err1 (ibuffer-advance-motion -1)
+			     err2 (if (not (get-text-property (point) 'ibuffer-title)) t
+				    (goto-char (point-max))
+				    (beginning-of-line)
+				    (ibuffer-skip-properties '(ibuffer-summary ibuffer-filter-group-name) -1)
+				    nil)))
+       (and err1 err2)))
 
 (defun ibuffer-next-line (&optional arg)
-"Move forward ARG lines, wrapping around the list if necessary."
-	(interactive "P")
-	(or arg (setq arg 1))
-	(let (err1 err2) (while (> arg 0)
-		(cl-decf arg)
-		(setq   err1 (ibuffer-advance-motion 1)
-			err2 (if (not (get-text-property (point) 'ibuffer-summary)) t
-				(goto-char (point-min))
-				(beginning-of-line)
-				(ibuffer-skip-properties '(ibuffer-summary ibuffer-filter-group-name
-					ibuffer-title) 1)
-					nil)))
-		(and err1 err2)))
+  "Move forward ARG lines, wrapping around the list if necessary."
+  (interactive "P")
+  (or arg (setq arg 1))
+  (let (err1 err2) (while (> arg 0)
+		     (cl-decf arg)
+		     (setq   err1 (ibuffer-advance-motion 1)
+			     err2 (if (not (get-text-property (point) 'ibuffer-summary)) t
+				    (goto-char (point-min))
+				    (beginning-of-line)
+				    (ibuffer-skip-properties '(ibuffer-summary ibuffer-filter-group-name
+									       ibuffer-title) 1)
+				    nil)))
+       (and err1 err2)))
 
 (defun ibuffer-next-header ()
   (interactive)
@@ -369,9 +376,10 @@ mode when toggled off."
 (defun scroll-down-half ()	(interactive) (scroll-down (window-half-height)))
 
 ;; web browsing
-(defun elpher:eww-browse-url (original url &optional new-window) "Handle gemini links."
+(defun elpher:eww-browse-url (original url &optional new-window)
+  "Handle gemini links."
   (cond ((string-match-p "\\`\\(gemini\\|gopher\\)://" url) (elpher-go url))
-    (t (funcall original url new-window))))
+	(t (funcall original url new-window))))
 
 (defun eww-reddit-redirect (url)
   "Redirect reddit.com to old.reddit.com automatically."
@@ -442,7 +450,7 @@ With prefix ARG, operate on the ARGth line forward (like
         ((looking-back "\\s(" 1) (backward-char) (forward-sexp arg))))
 
 (defun kill-region-or-backward-word ()
-"If the region is active and non-empty, call `kill-region'.
+  "If the region is active and non-empty, call `kill-region'.
 Otherwise, call `backward-kill-word'."
   (interactive)
   (call-interactively
@@ -456,15 +464,6 @@ Otherwise, call `backward-kill-word'."
       (setq beg (re-search-backward "\\_<" nil t))
       (setq end (re-search-forward "\\_>" nil t))))
   (kill-ring-save beg end))
-
-(defun match-paren (&optional arg)
-  "Go to the matching parenthesis character if one is adjacent to point."
-  (interactive "^p")
-  (cond ((looking-at "\\s(") (forward-sexp arg))
-        ((looking-back "\\s)" 1) (backward-sexp arg))
-        ;; Now, try to succeed from inside of a bracket
-        ((looking-at "\\s)") (forward-char) (backward-sexp arg))
-        ((looking-back "\\s(" 1) (backward-char) (forward-sexp arg))))
 
 (defun open-line-below ()
   "Starts a new line below the current line."
@@ -480,24 +479,6 @@ Otherwise, call `backward-kill-word'."
   (newline)
   (forward-line -1)
   (indent-according-to-mode))
-
-(defun grep-completing-read ()
-"Execute grep/ripgrep search using `completing-read'."
-	(interactive)
-	(let* ((default-term (if (region-active-p)
-			(substring-no-properties (buffer-substring (mark) (point)))
-			(thing-at-point 'symbol)))
-		(term (read-string "search for: " default-term))
-		(execute-search (lambda (term) (if (executable-find "rg")
-			(process-lines "rg" "--line-number" term)
-			(process-lines "git" "grep" "-niH" "-e" term))))
-		(results (funcall execute-search term))
-		(line-list (split-string (completing-read "results: " results) ":"))
-		(rfile (car line-list))
-		(rlnum (string-to-number (car (cdr line-list)))))
-	(find-file rfile)
-	(goto-line rlnum)
-	(recenter)))
 
 (defun fast-file-view-mode ()
   "Make the buffer read-only and disable font-lock and other bells and whistles for faster viewing."
@@ -515,21 +496,22 @@ Otherwise, call `backward-kill-word'."
 
 ;; https://www.emacswiki.org/emacs/DeletingWhitespace
 (defun whack-whitespace (arg)
-"Delete all white space from point to the next word. With prefix ARG
-delete across newlines as well. The only danger in this is that you
-don't have to actually be at the end of a word to make it work. It
-skips over to the next whitespace and then whacks it all to the next
-word."
-(interactive "P")
-      (let ((regexp (if arg "[ \t\n]+" "[ \t]+")))
-        (re-search-forward regexp nil t)
-        (replace-match "" nil nil)))
+  "Delete all white space from point to the next word.
+
+With prefix ARG delete across newlines as well. The only danger in this
+is that you don't have to actually be at the end of a word to make it
+work. It skips over to the next whitespace and then whacks it all to the
+next word."
+  (interactive "P")
+  (let ((regexp (if arg "[ \t\n]+" "[ \t]+")))
+    (re-search-forward regexp nil t)
+    (replace-match "" nil nil)))
 
 ;; https://emacs.stackexchange.com/questions/3022/reset-custom-variable-to-default-value-programmatically
 ;; usage: (custom/reset-var 'somevar)
 (defun custom/reset-var (symbl)
   "Reset SYMBL to its standard value."
-	(set symbl (eval (car (get symbl 'standard-value)))))
+  (set symbl (eval (car (get symbl 'standard-value)))))
 
 ;; https://old.reddit.com/r/emacs/comments/1im8etu/set_fill_column_to_longest_line_in_buffer/
 (defun longest-line-in-buffer ()

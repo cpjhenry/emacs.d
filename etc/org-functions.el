@@ -4,6 +4,11 @@
 ;;; code:
 (require 'org)
 
+(defun my/agenda ()
+  "Load `org-agenda' file."
+  (interactive)
+  (find-file org-agenda-file))
+
 ;; org check-boxes
 ;; see https://orgmode.org/list/87r5718ytv.fsf@sputnik.localhost
 (eval-after-load 'org-list

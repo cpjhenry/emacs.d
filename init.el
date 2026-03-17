@@ -3,7 +3,6 @@
 ;;; commentary:
 ;; brew install emacs-plus
 
-;; - /usr/local/share/emacs/site-lisp
 ;; - `auto-insert' inserts code templates, including GPL notice.
 
 ;;; code:
@@ -1119,16 +1118,22 @@
      ("L" "Protocol Link" entry (file+headline org-default-notes-file "Inbox")
       "* %?[[%:link][%(transform-square-brackets-to-round-ones \"%:description\")]]\n")))
 
-  :bind ( :map org-mode-map
+  :bind ( ("C-c a"  . org-agenda)
+	  ("C-c k"  . org-capture)
+	  ("C-c l"  . org-store-link)
+	  :map org-mode-map
 	  ("M-<f4>" . org-speed-command-help)
 	  ("M-["    . org-backward-heading-same-level)
 	  ("M-]"    . org-forward-heading-same-level)
 	  ("C-M-["  . outline-up-heading)
 	  ("C-M-]"  . my/org-end-of-subtree)
-	  ("C-c '"  . org-edit-special-no-fill))
+	  ("C-c '"  . org-edit-special-no-fill)
+	  ("C-c o r" . org-mode-restart)
+	  ("C-c o t" . org-toggle-link-display))
 
   :config
   (set-face-underline 'org-ellipsis nil)
+  (which-key-alias "C-c o" "org")
 
   (defun my/org-end-of-subtree ()
     (interactive)
@@ -1209,7 +1214,7 @@
   ;; `org-functions'
   (add-hook 'org-mode-hook #'org-hide-comment-blocks)
 
-  (require 'org-protocol)
+  (require 'org-protocol) ; org-capture
 
   ;; Ispell should not check code blocks in org mode
   (add-to-list 'ispell-skip-region-alist '(":\\(PROPERTIES\\|LOGBOOK\\):" . ":END:"))
@@ -1246,21 +1251,20 @@
   (defun myfunc/check_table_p (oldfunc) (funcall oldfunc t))
   (advice-add 'org-at-table-p :around 'myfunc/check_table_p)) ; end of org-mode configuration
 
+;; org-mode packages
 (use-package org-autoexport ; #+auto_export:
   :defer t
   :after org
   :hook (org-mode . org-autoexport-mode))
 
-(use-package org-chef
+(use-package org-chef ; manage recipes in org-mode
   :if *natasha*
-  :defer t
   :after org
   :config
   (defvar org-chef-recipe-book "~/Documents/Recipes/cookbook.org" "Default recipe book.")
-
   (add-to-list 'org-capture-templates '("c" "Cookbook" entry (file org-chef-recipe-book)
 					"%(org-chef-get-recipe-from-url)" :empty-lines 0) t)
-  ;; HACK · Adjust spacing in `org-chef-recipe-to-org-element' when upgrading ('pre-' to 'post-'.
+  ;; HACK · Adjust spacing in `org-chef-recipe-to-org-element' after upgrading ('pre-' to 'post-').
   (add-to-list 'org-capture-templates '("m" "Manual Cookbook" entry (file org-chef-recipe-book)
 					"* %^{Recipe title: }
 :PROPERTIES:\n:provenance:\n:source-url:\n:servings:\n:prep-time:\n:cook-time:\n:ready-in:\n:END:
@@ -1270,17 +1274,15 @@
   :after org
   :bind (("C-c o k" . my/org-cliplink))
   :config
-  ;; https://github.com/rexim/org-cliplink
-  (add-to-list 'org-capture-templates '("K" "Cliplink capture task" entry (file "")
-					"* TODO %(org-cliplink-capture) \n  SCHEDULED: %t\n" :empty-lines 1) t)
   (defun my/org-cliplink ()
+    "Takes a URL from the clipboard and inserts an org-mode link with the
+title of a page found by the URL into the current buffer."
     (interactive)
     (org-cliplink-insert-transformed-title
      (org-cliplink-clipboard-content)     ;take the URL from the CLIPBOARD
      (lambda (url title)
        (let* ((parsed-url (url-generic-parse-url url)) ;parse the url
-              (clean-title
-               (cond
+              (clean-title (cond
 		;; if the host is github.com, cleanup the title
 		((string= (url-host parsed-url) "github.com")
 		 (replace-regexp-in-string "GitHub - .*: \\(.*\\)" "\\1" title))
@@ -1291,7 +1293,8 @@
 
 (use-package org-contrib ; use ':ignore:' tag to exclude heading (but not content) from export
   :after org
-  :config (require 'ox-extra)
+  :config
+  (require 'ox-extra)
   (ox-extras-activate '(ignore-headlines)))
 
 (use-package org-download ; org-download-yank
@@ -1305,12 +1308,14 @@
   :disabled
   :after org)
 
-(use-package org-ref
+(use-package org-ref ; setup bibliography, cite, ref, and label org-mode links
   :if *natasha*
   :disabled
-  :after org)
-(define-key org-mode-map (kbd "C-=") 'org-ref-insert-link-menu)
+  :after org
+  :init
+  (define-key org-mode-map (kbd "C-=") 'org-ref-insert-link-menu))
 
+(use-package ox-epub)
 (use-package ox-gemini)
 
 ;; TeX
@@ -1651,9 +1656,9 @@
 ;(winner-mode t)
 
 ;; alternate keys
+(bind-key "M-j" 'join-line) ; default-indent-new-line (see 'C-M-j')
 (bind-key "C-w" 'kill-region-or-backward-word) ; kill-region
 (bind-key "M-w" 'kill-region-or-thing-at-point) ; kill-ring-save
-(bind-key "M-j" 'join-line) ; default-indent-new-line (see 'C-M-j')
 
 (global-set-key (kbd "C-s")	'isearch-forward-regexp)
 (global-set-key (kbd "C-r")	'isearch-backward-regexp)
@@ -1728,21 +1733,15 @@
 
 (bind-key "C-`"		'scratch-buffer)
 (bind-key "C-<escape>"	'my/shell)
-(defun my/shell () (interactive) (let ((default-directory "~")) (mistty)))
 
 (bind-key "M-<f1>"	'my/emacs-help)
 (bind-key "M-<f2>"	'describe-personal-keybindings)
 (bind-key "M-<f3>"	'shortdoc)
 
-(bind-key "M-q"		'unfill-toggle)
-(defun my/fill-paragraph () (interactive) (fill-paragraph nil t))
-
 (bind-key "C-M-;"	'eval-r)
 (bind-key "C-M-y"	'undo-yank)
 
 ;; Ctrl-c (personal keybindings)
-(bind-key "C-c a"	'org-agenda)
-
 (bind-key "C-c b m"	'new-markdown-buffer)
 (bind-key "C-c b n"	'new-empty-buffer)
 (bind-key "C-c b o"	'new-org-buffer)
@@ -1756,18 +1755,11 @@
 (which-key-alias "C-c d" "dates")
 
 (bind-key "C-c e"	'elpher) ; gopher / gemini
-;(bind-key "C-c g"	'grep-completing-read)
 (bind-key "C-c i"	'my/init)
 
 (bind-key "C-c m"	'menu-bar-read-mail)
 (which-key-alias "C-c m" "read-mail")
 ;(bind-key "C-c n"	'newsticker-show-news)
-
-(bind-key "C-c o c"	'org-capture)
-(bind-key "C-c o l"	'org-store-link)
-(bind-key "C-c o r"	'org-mode-restart)
-(bind-key "C-c o t"	'org-toggle-link-display)
-(which-key-alias "C-c o" "org")
 
 (bind-key "C-c w"	'eww-list-bookmarks) ; WWW
 (which-key-alias "C-c w" "eww")
@@ -1784,18 +1776,18 @@
 
 (bind-key "C-c z"	'my/agenda)
 
-(global-set-key (kbd "C-c 8 0") 'zero-width-space)
-(defun zero-width-space () "Insert ZERO WIDTH SPACE."
-  (interactive)
-  (insert-char (char-from-name "ZERO WIDTH SPACE"))
-  (message "ZWS"))
 (global-set-key (kbd "C-c 8 c") (kbd "✓"))
 (global-set-key (kbd "C-c 8 x") (kbd "⨯"))
-(global-set-key (kbd "C-c 8 n") (kbd "№"))
-(global-set-key (kbd "C-c 8 p") (kbd "¶"))
-(which-key-alias "C-c 8" "key translations")
+(which-key-alias "C-c 8" "keys")
 
 ;; Ctrl-x (buffer functions)
+(bind-key "C-x 8 0" (kbd "​")) ; zero-width-space
+(bind-key "C-x 8 <left>" (kbd "←"))
+(bind-key "C-x 8 <right>" (kbd "→"))
+(which-key-alias "C-x 8" "keys")
+(which-key-alias "C-x 8 0" "ZWS")
+(which-key-alias "C-x 8 e" "emojis")
+
 (bind-key "C-x c"	'kill-current-buffer)
 (bind-key "C-x n f"	'narrow-to-focus)
 
@@ -1812,8 +1804,6 @@
 (which-key-alias "C-x x" "buffers")
 
 ;; Additional which-key aliases
-(which-key-alias "C-x 8" "key translations")
-(which-key-alias "C-x 8 e" "emojis")
 (which-key-alias "C-x a" "abbrev")
 (which-key-alias "C-x a i" "inverse")
 (which-key-alias "C-x n" "narrow")
