@@ -427,7 +427,7 @@
 	(display-buffer-no-window)
 	(allow-no-window . t)))
 
-;; search
+;; search TERM in a web browser.
 (keymap-set search-map "b" #'browser-search)
 
 ;; whois
