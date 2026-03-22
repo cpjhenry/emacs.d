@@ -231,6 +231,26 @@ from point."
   "Transforms `\[' into `\(' and `\]' into `\)', other chars left unchanged."
   (concat (mapcar #'(lambda (c) (if (equal c ?\[) ?\( (if (equal c ?\]) ?\) c))) string-to-transform)))
 
+(defun remove-wikipedia-footnotes (&optional beg end)
+  "Remove Wikipedia-style numeric footnotes like [1], [23].
+
+Operate on region if active, otherwise entire buffer."
+  (interactive
+   (list (when (region-active-p) (region-beginning))
+         (when (region-active-p) (region-end))))
+  (let ((beg (or beg (point-min)))
+        (end (or end (point-max)))
+        (count 0))
+    (save-excursion
+      (let ((inhibit-read-only t))
+        (goto-char beg)
+        (while (re-search-forward "\\[[0-9]+\\|[a-zA-Z]\\(?:[-–][a-zA-Z]\\)?\\]" end t)
+          (replace-match "")
+          (setq count (1+ count)))))
+    (when (called-interactively-p 'interactive)
+      (message "Removed %d footnotes." count))
+    count))
+
 (defun zero-width-space () "Insert ZERO WIDTH SPACE."
   (interactive)
   (insert-char (char-from-name "ZERO WIDTH SPACE"))
