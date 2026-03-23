@@ -19,12 +19,13 @@
 (defun alert () "Weather forecast from Environment Canada."
   (interactive)
   (switch-to-buffer "*WX*")
-  (shell-command "alert -sf" (current-buffer))
+  (shell-command "alert -sfm" (current-buffer))
+  (text-scale-increase 1)
   (view-mode))
 
 (defun wx () "Local weather."
   (interactive)
-  (shell-command "alert -dq"))
+  (shell-command "alert -d"))
 
 (defun wttr () "Local weather / forecast."
   (interactive)
