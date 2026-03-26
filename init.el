@@ -480,8 +480,9 @@
 			("Shell" (or (mode . sh-mode)
 			        (mode . mistty-mode)))
 			("Text" (or (name . "\\.txt")
-				(name . "\\.text")))
-			("Markdown" (name . "\\.md"))
+				    (name . "\\.text")))
+			("Markdown" (or (name . "\\.md")
+					(name . "\\.ronn")))
 			("Org"  (name . "\\.org"))
 			("TeX"  (name . "\\.tex"))
 			("ePub" (mode . nov-mode))
@@ -1011,7 +1012,8 @@
 	:mode	(("README\\.md\\'" . gfm-mode)
 		("\\.md\\'" . markdown-mode)
 		("\\.markdown\\'" . markdown-mode)
-		("\\.gmi\\'" . markdown-mode))
+		("\\.gmi\\'" . markdown-mode)
+		("\\.ronn\\'" . markdown-mode))
 	:commands (markdown-mode gfm-mode)
 	:init 	(setopt markdown-hide-urls t)
 	:config (add-to-list 'markdown-uri-types "gemini"))
@@ -1865,5 +1867,5 @@ title of a page found by the URL into the current buffer."
 ; LocalWords:  vcusepackage latexmk synctex bibtex cond xah dirs Ctrl
 ; LocalWords:  remotehost flycheck modeline mori featurep cbc smex
 ; LocalWords:  setq's setopt mailutils imagemagick usr dunnet Async
-; LocalWords:  dir fullscreen dropbox keymap toc buddhist ewth
+; LocalWords:  dir fullscreen dropbox keymap toc buddhist ewth ronn
 ; LocalWords:  enscript
