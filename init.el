@@ -449,6 +449,7 @@
 	(add-to-list 'ido-ignore-buffers "*Messages*")
 	(add-to-list 'ido-ignore-buffers "*Shell Command Output*")
 	(add-to-list 'ido-ignore-buffers "^*tramp/")
+	(add-to-list 'ido-ignore-buffers "^*debug ")
 	(add-to-list 'ido-ignore-buffers "^*Compile-Log*")
 	(add-to-list 'ido-ignore-buffers "^*Async-native-compile-log*")
 	(add-to-list 'ido-ignore-buffers "^*Backtrace*")
