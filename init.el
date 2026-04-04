@@ -1672,6 +1672,7 @@ title of a page found by the URL into the current buffer."
 (global-set-key (kbd "M-<f11>")	'toggle-modeline)
 
 (global-set-key (kbd "A-<return>") (kbd "M-<return>"))
+(global-set-key (kbd "A-S-<return>") (kbd "M-S-<return>"))
 
 ;; https://www.matem.unam.mx/~omar/apropos-emacs.html#writing-experience
 (bind-key "C-d" 'delete-forward-char) ; better replacement for delete-char

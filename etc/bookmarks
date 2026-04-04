@@ -11,11 +11,11 @@
  (info-node . "Projects")
  (handler . Info-bookmark-jump))
 ("org-capture-last-stored"
- (filename . "~/Documents/org/notes.org")
- (front-context-string . "** [[https://en.")
- (rear-context-string . "][use-package]]\n")
- (position . 1097)
- (last-modified 27078 17705 955375 0))
+ (filename . "~/Documents/Recipes/cookbook.org")
+ (front-context-string . "* Mexican Rice\n:")
+ (rear-context-string . " thicker sauce.\n")
+ (position . 69112)
+ (last-modified 27084 35040 334696 0))
 ("2023-05-10 - Six years of gopher"
  (position . 684)
  (location . "gemini://zaibatsu.circumlunar.space/users/solderpunk/gemlog/six-years-of-gopher.gmi")
