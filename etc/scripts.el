@@ -2,6 +2,8 @@
 ;;; commentary:
 
 ;;; code:
+(require 'diary-lib)
+(require 'markdown-mode)
 
 (defun di () "Daily information."
   (interactive)
@@ -106,4 +108,4 @@
 
 ;;; scripts.el ends here
 
-; LocalWords:  cbc
+; LocalWords:  cbc sfm slashdot fw uf wttr aries perl eof az

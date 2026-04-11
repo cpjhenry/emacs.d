@@ -7,6 +7,8 @@
 (require 'lunar)
 (require 'time)
 
+(message "→ Setting holidays and time defaults.")
+
 (setq holiday-general-holidays nil
 
       holiday-local-holidays '( ;; National / Provincial Holidays and Commemorations

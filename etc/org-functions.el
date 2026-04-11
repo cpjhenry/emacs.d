@@ -31,17 +31,6 @@
 		(org-todo 'done)
 	      (org-todo 'todo)))))))
 
-;; Sage/cpj
-(defun org-hide-comment-blocks ()
-  "Hide all #+begin_comment blocks in the current Org buffer."
-  (save-excursion
-    (goto-char (point-min))
-    (let ((case-fold-search t))
-      (while (re-search-forward "^[ \t]*#\\+begin_comment\\b" nil t)
-        (goto-char (match-beginning 0))     ; must be on the #+begin line
-        (org-hide-block-toggle t)           ; hide this block
-        (forward-line 1)))))
-
 ;; https://orgmode.org/worg/org-hacks.html
 (require 'cl-lib)
 (with-no-warnings (defvar date))
@@ -56,6 +45,16 @@
                         (substring (nth 1 phase) 0 5))))))
 
 ;; Sage/cpj
+(defun org-hide-comment-blocks ()
+  "Hide all #+begin_comment blocks in the current Org buffer."
+  (save-excursion
+    (goto-char (point-min))
+    (let ((case-fold-search t))
+      (while (re-search-forward "^[ \t]*#\\+begin_comment\\b" nil t)
+        (goto-char (match-beginning 0))     ; must be on the #+begin line
+        (org-hide-block-toggle t)           ; hide this block
+        (forward-line 1)))))
+
 (require 'org-element)
 (defun org-count-paragraphs-in-region (beg end)
   "Count Org \='paragraph' elements between BEG and END."
@@ -90,6 +89,18 @@ If point is not in a heading, count in the whole buffer."
           (setq end (point)))
         (let ((n (org-count-paragraphs-in-region beg end)))
           (message "%s has %d paragraph%s" scope-label n (if (= n 1) "" "s")))))))
+
+(defun org-open-link-at-point-external ()
+  "Open the Org link at point in the secondary browser."
+  (interactive)
+  (let* ((context (org-element-context))
+         (url (and (eq (org-element-type context) 'link)
+                   (org-element-property :raw-link context))))
+    (if url
+        (progn
+          (message "Opening externally: %s" url)
+          (funcall browse-url-secondary-browser-function url))
+      (user-error "No Org link at point"))))
 
 ;; Convert to org-mode from other formats
 ;; https://jao.io/blog/eww-to-org.html

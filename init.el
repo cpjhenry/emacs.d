@@ -15,7 +15,7 @@
 
 ;; Add directories to load-path
 (dolist (dir '("etc" "opt" "usr" "var"))
-  (let ((path (expand-file-name dir user-emacs-directory)))
+  (let* ((path (expand-file-name dir user-emacs-directory)))
     (when (file-directory-p path)
       (add-to-list 'load-path (directory-file-name path)))))
 
@@ -36,8 +36,9 @@
 (when (bound-and-true-p ns-emacs-plus-version)
   (message "→ Running 'Emacs Plus %s'." ns-emacs-plus-version))
 (load "rc/me" 'noerror)
+(require 'local-holidays)
 
-;; Customize
+;; Customize
 (when *mac*
   (setopt mac-function-modifier nil
 	  mac-control-modifier 'control	; Control
@@ -134,7 +135,7 @@
   	  (quelpa-melpa-dir (expand-file-name "var/quelpa/melpa/" user-emacs-directory)))
 (use-package quelpa-use-package)
 
-;; settings
+;; settings
 (set-language-environment 'utf-8)
 
 (defvar	default-major-mode 'text-mode "Mode when creating new buffers.")
@@ -164,11 +165,12 @@
 	help-window-select t
 	history-delete-duplicates t
 	indicate-empty-lines t
-	inhibit-default-init nil
+	inhibit-default-init t
 	inhibit-startup-message t ; 'About Emacs'
 	inhibit-startup-buffer-menu t ; Don't show *Buffer list*
 	initial-scratch-message nil ; Makes *scratch* empty
 	isearch-allow-scroll t
+	kill-do-not-save-duplicates t
 	kill-read-only-ok t
 	kill-ring-max 512
 	kill-whole-line t
@@ -1125,14 +1127,15 @@
 	  ("C-c k"  . org-capture)
 	  ("C-c l"  . org-store-link)
 	  :map org-mode-map
-	  ("M-<f4>" . org-speed-command-help)
-	  ("M-["    . org-backward-heading-same-level)
-	  ("M-]"    . org-forward-heading-same-level)
-	  ("C-M-["  . outline-up-heading)
-	  ("C-M-]"  . my/org-end-of-subtree)
-	  ("C-c '"  . org-edit-special-no-fill)
-	  ("C-c o r" . org-mode-restart)
-	  ("C-c o t" . org-toggle-link-display))
+	  ("S-<return>" . org-open-link-at-point-external)
+	  ("M-<f4>"     . org-speed-command-help)
+	  ("M-["        . org-backward-heading-same-level)
+	  ("M-]"        . org-forward-heading-same-level)
+	  ("C-M-["      . outline-up-heading)
+	  ("C-M-]"      . my/org-end-of-subtree)
+	  ("C-c '"      . org-edit-special-no-fill)
+	  ("C-c o r"    . org-mode-restart)
+	  ("C-c o t"    . org-toggle-link-display))
 
   :config
   (set-face-underline 'org-ellipsis nil)
