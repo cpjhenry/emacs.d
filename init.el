@@ -9,6 +9,7 @@
 ;; Initialize terminal
 (blink-cursor-mode -1)
 (delete-selection-mode t)
+(electric-indent-mode -1)
 (show-paren-mode -1)
 (tooltip-mode -1)
 (toggle-frame-maximized)
@@ -36,7 +37,6 @@
 (when (bound-and-true-p ns-emacs-plus-version)
   (message "→ Running 'Emacs Plus %s'." ns-emacs-plus-version))
 (load "rc/me" 'noerror)
-(require 'local-holidays)
 
 ;; Customize
 (when *mac*
@@ -132,8 +132,9 @@
 
 (use-package quelpa
   :custom (quelpa-packages-dir (expand-file-name "var/quelpa/" user-emacs-directory))
-  	  (quelpa-melpa-dir (expand-file-name "var/quelpa/melpa/" user-emacs-directory)))
-(use-package quelpa-use-package)
+	  (quelpa-melpa-dir (expand-file-name "var/quelpa/melpa/" user-emacs-directory)))
+(use-package quelpa-use-package
+  :after quelpa)
 
 ;; settings
 (set-language-environment 'utf-8)
@@ -232,13 +233,6 @@
 ;; garbage collection
 (use-package gcmh :config (gcmh-mode 1))
 
-;; icon files
-;; (use-package all-the-icons)
-
-;; (use-package all-the-icons-dired
-;;   :after all-the-icons
-;;   :hook (dired-mode . all-the-icons-dired-mode))
-
 ;; modeline
 (message "→ Configuring modeline.")
 (use-package doom-modeline
@@ -297,14 +291,12 @@
 (setopt	bookmark-save-flag 1
 	bookmark-set-fringe-mark nil
 	bookmark-sort-flag nil
-	bookmark-default-file	(concat user-emacs-directory "etc/bookmarks"))
-
-(electric-indent-mode -1)
+	bookmark-default-file (concat user-emacs-directory "etc/bookmarks"))
 
 (require 'em-alias)
 (require 'esh-mode)
-(setopt	eshell-aliases-file	(concat user-emacs-directory "etc/eshell/aliases")
-	eshell-directory-name	(concat user-emacs-directory "var/eshell/"))
+(setopt	eshell-aliases-file (concat user-emacs-directory "etc/eshell/aliases")
+	eshell-directory-name (concat user-emacs-directory "var/eshell/"))
 
 ;;; FIXME - collides with `org-ellipsis'
 ;; (require 'formfeed-hline)
@@ -330,9 +322,9 @@
 
 ;; Mode hooks
 (add-hook 'doc-view-mode-hook 'auto-revert-mode)
-(add-hook 'help-mode-hook (lambda()
-	(setq-local font-lock-keywords-only t)
-	(goto-address-mode)))
+(add-hook 'help-mode-hook
+	  (lambda () (setq-local font-lock-keywords-only t)
+	    (goto-address-mode)))
 (add-hook 'pdf-view-mode-hook 'auto-revert-mode)
 (remove-hook 'file-name-at-point-functions 'ffap-guess-file-name-at-point)
 
@@ -345,32 +337,33 @@
 ;; mode-hooks execute once for every buffer in which the mode is enabled
 
 (with-eval-after-load 'emacs-news-mode
-	(define-key emacs-news-view-mode-map (kbd "[") 'my/outline-previous-heading)
-	(define-key emacs-news-view-mode-map (kbd "]") 'my/outline-next-heading)
-	(define-key emacs-news-view-mode-map (kbd "{") 'outline-backward-same-level)
-	(define-key emacs-news-view-mode-map (kbd "}") 'outline-forward-same-level))
+  (define-key emacs-news-view-mode-map (kbd "[") 'my/outline-previous-heading)
+  (define-key emacs-news-view-mode-map (kbd "]") 'my/outline-next-heading)
+  (define-key emacs-news-view-mode-map (kbd "{") 'outline-backward-same-level)
+  (define-key emacs-news-view-mode-map (kbd "}") 'outline-forward-same-level))
 
 (with-eval-after-load 'help-mode
-	(define-key help-mode-map (kbd "[")	'help-go-back)
-	(define-key help-mode-map (kbd "]")	'help-go-forward)
-	(define-key help-mode-map (kbd "M-RET")	'goto-address-at-point))
+  (define-key help-mode-map (kbd "[")	'help-go-back)
+  (define-key help-mode-map (kbd "]")	'help-go-forward)
+  (define-key help-mode-map (kbd "M-RET") 'goto-address-at-point))
 
 (with-eval-after-load 'info
-	(define-key Info-mode-map (kbd "q")	'kill-current-buffer)
-	(define-key Info-mode-map (kbd "[" )	'Info-history-back)
-	(define-key Info-mode-map (kbd "]")	'Info-history-forward)
-	(define-key Info-mode-map (kbd "{")	'Info-backward-node)
-	(define-key Info-mode-map (kbd "}")	'Info-forward-node))
+  (define-key Info-mode-map (kbd "q")	'kill-current-buffer)
+  (define-key Info-mode-map (kbd "[" )	'Info-history-back)
+  (define-key Info-mode-map (kbd "]")	'Info-history-forward)
+  (define-key Info-mode-map (kbd "{")	'Info-backward-node)
+  (define-key Info-mode-map (kbd "}")	'Info-forward-node))
 
 (with-eval-after-load 'view
-	(define-key view-mode-map (kbd "j")	'View-scroll-line-forward)
-	(define-key view-mode-map (kbd "k")	'my/View-scroll-line-backward)
-	(define-key view-mode-map (kbd "q")	'View-kill-and-leave))
+  (define-key view-mode-map (kbd "j")	'View-scroll-line-forward)
+  (define-key view-mode-map (kbd "k")	'my/View-scroll-line-backward)
+  (define-key view-mode-map (kbd "q")	'View-kill-and-leave))
 
 ;; removes *Completions* buffer when done
-(add-hook 'minibuffer-exit-hook (lambda()
-	(let ((buffer "*Completions*"))
-	(and (get-buffer buffer) (kill-buffer buffer)))))
+(add-hook 'minibuffer-exit-hook
+	  (lambda ()
+	    (let ((buffer "*Completions*"))
+	      (and (get-buffer buffer) (kill-buffer buffer)))))
 
 ;; opening multiple files
 (add-hook 'window-setup-hook 'delete-other-windows) ; Show only one active window
@@ -396,38 +389,51 @@
 
 ;; http://xahlee.info/emacs/emacs/emacs_auto_save.html
 ;; (when (>= emacs-major-version 26)
-;; 	;; real auto save
-;; 	(auto-save-visited-mode t))
+;;	;; real auto save
+;;	(auto-save-visited-mode t))
 
 (if (version< emacs-version "27.1")
-	(add-hook 'focus-out-hook 'save-all-unsaved)
-	(setq after-focus-change-function 'save-all-unsaved))
-	;; to undo this, run: (setq after-focus-change-function 'ignore)
+    (add-hook 'focus-out-hook 'save-all-unsaved)
+  (setq after-focus-change-function 'save-all-unsaved))
+;; to undo this, run: (setq after-focus-change-function 'ignore)
 
 ;; https://protesilaos.com/codelog/2024-12-11-emacs-diff-save-some-buffers/
 (add-to-list 'save-some-buffers-action-alist
-	(list "d" (lambda (buffer) (diff-buffer-with-file (buffer-file-name buffer)))
-		"show diff between the buffer and its file"))
+	     (list "d"
+		   (lambda (buffer)
+		     (diff-buffer-with-file
+		      (buffer-file-name buffer)))
+		   "show diff between the buffer and its file"))
 
 ;; automatically save buffers associated with files on buffer or window switch
 (defadvice switch-to-buffer (before save-buffer-now activate)
-	(when buffer-file-name (save-buffer)))
+  (when buffer-file-name (save-buffer)))
 (defadvice other-window (before other-window-now activate)
-	(when buffer-file-name (save-buffer)))
+  (when buffer-file-name (save-buffer)))
 (defadvice windmove-left (before other-window-now activate)
-	(when buffer-file-name (save-buffer)))
+  (when buffer-file-name (save-buffer)))
 (defadvice windmove-right (before other-window-now activate)
-	(when buffer-file-name (save-buffer)))
+  (when buffer-file-name (save-buffer)))
 (defadvice windmove-up (before other-window-now activate)
-	(when buffer-file-name (save-buffer)))
+  (when buffer-file-name (save-buffer)))
 (defadvice windmove-down (before other-window-now activate)
-	(when buffer-file-name (save-buffer)))
+  (when buffer-file-name (save-buffer)))
 
 ;; don't immediately display these buffers
-(add-to-list 'display-buffer-alist '(
-	"\\`\\*\\(Warnings\\|Compile-Log\\)\\*\\'"
-	(display-buffer-no-window)
-	(allow-no-window . t)))
+(add-to-list 'display-buffer-alist
+	     '("\\`\\*\\(Warnings\\|Compile-Log\\)\\*\\'"
+	       (display-buffer-no-window)
+	       (allow-no-window . t)))
+
+;; comment continuation
+(keymap-set emacs-lisp-mode-map "S-<return>" 'default-indent-new-line)
+
+;; display available keybindings in popup
+(use-package which-key
+  :custom (which-key-idle-delay 0.5)
+  :bind ( ("C-h C-h" . nil))
+  :config (which-key-mode)
+	  (defalias 'which-key-alias 'which-key-add-key-based-replacements))
 
 ;; search TERM in a web browser.
 (keymap-set search-map "b" #'browser-search)
@@ -464,124 +470,132 @@
 
 ;; M-x enhancement
 (use-package smex
-	:custom	(smex-save-file (concat user-emacs-directory "var/smex.history"))
-	:bind (	("M-x" . smex))
-	:config	(smex-initialize))
+  :custom (smex-save-file (concat user-emacs-directory "var/smex.history"))
+  :bind ( ("M-x" . smex))
+  :config (smex-initialize))
 
 ;; Ibuffer
 ;; https://www.emacswiki.org/emacs/IbufferMode
 (use-package ibuffer
-	:ensure	nil
-	:demand	t
-	:custom	(ibuffer-default-sorting-mode 'alphabetic)
-		(ibuffer-expert t)
-		(ibuffer-saved-filter-groups (quote (("home"
-			("Emacs" (or (name . "^\\*scratch\\*$")
-			        (name . "^\\*Messages\\*$")
-				(name . "\\.el")))
-			("Dired" (mode . dired-mode))
-			("Shell" (or (mode . sh-mode)
-			        (mode . mistty-mode)))
-			("Text" (or (name . "\\.txt")
-				    (name . "\\.text")))
-			("Markdown" (or (name . "\\.md")
-					(name . "\\.ronn")))
-			("Org"  (name . "\\.org"))
-			("TeX"  (name . "\\.tex"))
-			("ePub" (mode . nov-mode))
-			("Planner" (or (mode . calendar-mode)
-				(mode . diary-mode)
-				(mode . diary-fancy-display-mode)
-				(name . "^\\*daily-info\\*")
-				(name . "^\\*Org Agenda\\*")
-				(name . "^\\*Virgo\\*")
-				(name . "^calendar@*")))
-			;("erc" (mode . erc-mode))
-			("Eww"  (mode . eww-mode))
-			("gnus" (or (mode . message-mode)
-				(mode . bbdb-mode)
-				(mode . mail-mode)
-				(mode . gnus-group-mode)
-				(mode . gnus-summary-mode)
-				(mode . gnus-article-mode)
-				(name . "\\.bbdb$")
-				(name . "^\\.newsrc-dribble"))) ))))
-	:bind ( :map ibuffer-mode-map
-		("C-x C-f" . ibuffer-ido-find-file)
-		("<up>" . ibuffer-previous-line)
-		("<down>" . ibuffer-next-line)
-		("<left>" . ibuffer-previous-header)
-		("<right>" . ibuffer-next-header)
-		("<return>" . my/ibuffer-visit-buffer))
-	:init	(defalias 'list-buffers 'ibuffer) ; always use Ibuffer
-	:config	(defun my/ibuffer-visit-buffer ()
-		(interactive)
-		(ibuffer-visit-buffer)
-		(let ((buffer "*Ibuffer*")) (and (get-buffer buffer)
-			(kill-buffer buffer))))
-	(add-hook 'ibuffer-mode-hook (lambda()
-		(ibuffer-switch-to-saved-filter-groups "home")
-		(ibuffer-update nil t)))
-	(require 'ibuf-ext)
-	(add-to-list 'ibuffer-never-show-predicates "^\\*Messages\\*")
-	(add-to-list 'ibuffer-never-show-predicates "^\\*Shell Command Output\\*")
-	(add-to-list 'ibuffer-never-show-predicates "^\\*tramp/")
-	(add-to-list 'ibuffer-never-show-predicates "^\\*Latex Preview Pane Welcome\\*"))
+  :ensure nil
+  :demand t
+  :custom (ibuffer-default-sorting-mode 'alphabetic)
+  (ibuffer-expert t)
+  (ibuffer-saved-filter-groups
+   '(("home"
+      ("Emacs" (or (name . "^\\*scratch\\*$")
+                   (name . "^\\*Messages\\*$")
+                   (name . "\\.el")))
+      ("Dired" (mode . dired-mode))
+      ("Shell" (or (mode . sh-mode)
+                   (mode . mistty-mode)))
+      ("Text" (or (name . "\\.txt")
+                  (name . "\\.text")))
+      ("Markdown" (or (name . "\\.md")
+                      (name . "\\.ronn")))
+      ("Org"  (name . "\\.org"))
+      ("TeX"  (name . "\\.tex"))
+      ("ePub" (mode . nov-mode))
+      ("Planner" (or (mode . calendar-mode)
+                     (mode . diary-mode)
+                     (mode . diary-fancy-display-mode)
+                     (name . "^\\*daily-info\\*")
+                     (name . "^\\*Org Agenda\\*")
+                     (name . "^\\*Virgo\\*")
+                     (name . "^calendar@*")))
+      ;("erc" (mode . erc-mode))
+      ("Eww"  (mode . eww-mode))
+      ("gnus" (or (mode . message-mode)
+                  (mode . bbdb-mode)
+                  (mode . mail-mode)
+                  (mode . gnus-group-mode)
+                  (mode . gnus-summary-mode)
+                  (mode . gnus-article-mode)
+                  (name . "\\.bbdb$")
+                  (name . "^\\.newsrc-dribble"))) )))
+  :bind ( :map ibuffer-mode-map
+          ("C-x C-f" . ibuffer-ido-find-file)
+          ("<up>" . ibuffer-previous-line)
+          ("<down>" . ibuffer-next-line)
+          ("<left>" . ibuffer-previous-header)
+          ("<right>" . ibuffer-next-header)
+          ("<return>" . my/ibuffer-visit-buffer))
+  :init   (defalias 'list-buffers 'ibuffer) ; always use Ibuffer
+  :config (defun my/ibuffer-visit-buffer ()
+            (interactive)
+            (ibuffer-visit-buffer)
+            (let ((buffer "*Ibuffer*"))
+              (and (get-buffer buffer)
+                   (kill-buffer buffer))))
+  (add-hook 'ibuffer-mode-hook
+	    (lambda ()
+	      (ibuffer-switch-to-saved-filter-groups "home")
+	      (ibuffer-update nil t)))
+  (require 'ibuf-ext)
+  (add-to-list 'ibuffer-never-show-predicates "^\\*Messages\\*")
+  (add-to-list 'ibuffer-never-show-predicates "^\\*Shell Command Output\\*")
+  (add-to-list 'ibuffer-never-show-predicates "^\\*tramp/")
+  (add-to-list 'ibuffer-never-show-predicates "^\\*Latex Preview Pane Welcome\\*"))
 
 ;; Dired
 (use-package dired
-	:ensure nil
-	:demand t)
+  :ensure nil
+  :demand t)
 
 (use-package dired-x
-	:ensure	nil
-	:demand	t
-	:custom	(dired-dwim-target t) ; suggest other visible Dired buffer
-		(dired-listing-switches "-laGhv  --group-directories-first")
-		(dired-garbage-files-regexp (concat dired-garbage-files-regexp
-		  "\\|\\.DS_Store\\|\\.old\\|\\.synctex\\.gz\\|\\.log\\|\\.tex"))
-		(dired-omit-verbose nil)
-		(image-dired-thumbnail-storage 'standard)
-	:bind (	:map dired-mode-map
-		("q" . kill-dired-buffers)
-		("C-<home>" . dired-home)
-		("C-<end>" . dired-end))
-	:hook	(dired-mode . dired-omit-mode)
-	:config	(unless *w32* (setq dired-kill-when-opening-new-dired-buffer t))
-		(defalias 'dired-find-file 'dired-find-alternate-file)
-		(advice-add 'dired-find-file-other-window :after
-		  (lambda (&rest r) (delete-other-windows)))
+  :ensure nil
+  :demand t
+  :custom (dired-dwim-target t) ; suggest other visible Dired buffer
+          (dired-listing-switches "-laGhv  --group-directories-first")
+          (dired-garbage-files-regexp (concat dired-garbage-files-regexp
+            "\\|\\.DS_Store\\|\\.old\\|\\.synctex\\.gz\\|\\.log\\|\\.tex"))
+  (dired-omit-verbose nil)
+  (image-dired-thumbnail-storage 'standard)
+  :bind ( :map dired-mode-map
+          ("q" . kill-dired-buffers)
+          ("C-<home>" . dired-home)
+          ("C-<end>" . dired-end))
+  :hook   (dired-mode . dired-omit-mode)
+  :config (unless *w32* (setq dired-kill-when-opening-new-dired-buffer t))
+  (defalias 'dired-find-file 'dired-find-alternate-file)
+  (advice-add 'dired-find-file-other-window :after
+	      (lambda (&rest r) (delete-other-windows)))
 
-		(if (keymap-lookup dired-mode-map "% s")
-		  (message "Error: %% s already defined in dired-mode-map")
-		  (define-key dired-mode-map "%s" 'my-dired-substspaces))
+  (if (keymap-lookup dired-mode-map "% s")
+      (message "Error: %% s already defined in dired-mode-map")
+    (define-key dired-mode-map "%s" 'my-dired-substspaces))
 
-		(setopt dired-omit-files (concat dired-omit-files "\\|^.DS_Store\\|^.localized"))
-		(add-to-list 'dired-omit-extensions ".synctex.gz")
-		(delete "~" dired-omit-extensions)); show backup files
+  (setopt dired-omit-files (concat dired-omit-files "\\|^.DS_Store\\|^.localized"))
+  (add-to-list 'dired-omit-extensions ".synctex.gz")
+  (delete "~" dired-omit-extensions)); show backup files
 
 ;; improve file sorting
 (use-package ls-lisp
-	:ensure	nil
-	:custom	(ls-lisp-use-string-collate nil)
-		(ls-lisp-ignore-case t)
-	:config	(unless *w32* (setopt ls-lisp-use-insert-directory-program nil)))
+  :ensure nil
+  :custom (ls-lisp-use-string-collate nil)
+          (ls-lisp-ignore-case t)
+  :config (unless *w32* (setopt ls-lisp-use-insert-directory-program nil)))
 
 (use-package dired-narrow
+  :after dired
+  :demand t
   :bind ( :map dired-mode-map
-          ("/" . dired-narrow))
-  :config
-  (easy-menu-add-item dired-mode-map '(menu-bar immediate)
-    ["Narrow dired buffer" dired-narrow :help "Narrow to the files matching a string"]))
+	  ("/" . dired-narrow))
+  :config (easy-menu-add-item dired-mode-map '(menu-bar immediate)
+	    ["Narrow dired buffer" dired-narrow :help "Narrow to the files matching a string"]))
 
 (use-package quick-preview
+  :after dired
+  :demand t
   :bind ( :map dired-mode-map
-          ("<SPC>" . quick-preview-at-point))
+	  ("<SPC>" . quick-preview-at-point))
   :config
   (easy-menu-add-item dired-mode-map '(menu-bar immediate)
     ["Quick Preview" quick-preview-at-point :help "Preview file at point with quick preview tool"]))
 
 (use-package reveal-in-osx-finder
+  :after dired
+  :demand t
   :bind ( :map dired-mode-map
 	  ("r" . reveal-in-osx-finder))
   :config
@@ -622,52 +636,29 @@
 (when (featurep 'ns) (add-hook 'after-make-frame-functions 'ns-raise-emacs-with-frame))
 
 (when *mac* ;; start Emacs server
-	(use-package mac-pseudo-daemon :config (mac-pseudo-daemon-mode)
-	(global-set-key (kbd "C-x C-c") 'kill-daemon-save-buffers-kill-terminal)
+  (use-package mac-pseudo-daemon :config (mac-pseudo-daemon-mode)
+    (global-set-key (kbd "C-x C-c") 'kill-daemon-save-buffers-kill-terminal)
 
-	(defun kill-daemon-save-buffers-kill-terminal ()
-	  "Kill daemon (if running), then trigger normal exit."
-	  (interactive)
-	  (if (boundp 'mac-pseudo-daemon-mode) (mac-pseudo-daemon-mode -1))
-	  (save-buffers-kill-terminal)))
+    (defun kill-daemon-save-buffers-kill-terminal ()
+      "Kill daemon (if running), then trigger normal exit."
+      (interactive)
+      (if (boundp 'mac-pseudo-daemon-mode) (mac-pseudo-daemon-mode -1))
+      (save-buffers-kill-terminal)))
 
-	(if (not (boundp 'server-process)) (server-start))
-	(if (boundp 'server-process) (message "→ Server running.")))
+  (if (not (boundp 'server-process)) (server-start))
+  (if (boundp 'server-process) (message "→ Server running.")))
 
 ;; calendar
-(message "→ Configuring calendar-mode.")
-(require 'calendar)
-(require 'lunar)
-(require 'time)
-(require 'moon-holidays) ; usr/
+(message "→ Configuring calendar.")
 (load "calendar-functions")
+(require 'moon-holidays) ; usr/
+(require 'local-holidays)
 
 (calendar-set-date-style 'iso)
-(setq calendar-mark-holidays-flag t
-  calendar-month-header '(propertize
-    (format "%s %d" (calendar-month-name month) year)
-    'font-lock-face 'calendar-month-header)
-
-  calendar-chinese-all-holidays-flag t
-  calendar-christian-all-holidays-flag t
-
-  holiday-other-holidays '(
-    ;; third Monday of January
-    (holiday-float 1 1 3 "Martin Luther King Day")
-    ;; first Saturday of June following the Summer Solstice
-    (holiday-float 6 6 1 "Midsummer" (floor (nth 1 (solar-equinoxes/solstices 1 displayed-year))))
-    ;; first Tuesday in November after the first Monday, every four even-numbered years
-    (holiday-sexp '(if (zerop (% year 4)) (calendar-gregorian-from-absolute (1+
-      (calendar-dayname-on-or-before 1 (+ 6 (calendar-absolute-from-gregorian (list 11 1 year)))))))
-      "US Presidential Election")
-    (holiday-float 11 4 4 "US Thanksgiving")
-    (holiday-float 11 5 4 "Black Friday")
-    (holiday-advent -11 "Prayer & Repentance")
-    (holiday-fixed 12 (floor (nth 1 (solar-equinoxes/solstices 3 displayed-year))) "Midwinter")
-    (scottish-quarter-days)
-    (holiday-buddhist-holidays)))
-
-(setopt world-clock-time-format "%a %e %b %R %Z")
+(setopt calendar-mark-holidays-flag t
+	calendar-month-header '(propertize
+	  (format "%s %d" (calendar-month-name month) year)
+	  'font-lock-face 'calendar-month-header))
 
 (keymap-set calendar-mode-map "m" nil)
 (keymap-set calendar-mode-map "q" 'calendar-exit-kill)
@@ -681,7 +672,8 @@
   ["Yearly Holidays" list-holidays-this-year])
 
 (advice-add 'calendar-exit :before #'save-diary-before-calendar-exit)
-(advice-add 'calendar-goto-info-node :after (lambda (&rest r) (calendar-exit-kill) (delete-other-windows)))
+(advice-add 'calendar-goto-info-node :after
+	    (lambda (&rest r) (calendar-exit-kill) (delete-other-windows)))
 
 (require 'diary-lib)
 (setopt diary-file "~/Documents/diary"
@@ -715,7 +707,10 @@
       (calfw-ical-create-source gcal-secret-address "gcal" "IndianRed")
       (calfw-ical-create-source goodwood "Goodwood" "DarkCyan")
       (calfw-org-create-source nil "org-agenda" "Green"))
-     :view 'two-weeks)))
+     :view 'two-weeks)
+    (let ((buffer "daily.org"))
+      (and (get-buffer buffer)
+	   (kill-buffer buffer)))))
 
 ;; Roman clock
 (require 'roman-clock) ; usr/
@@ -749,12 +744,6 @@
 ;; :load
 ;; :config
 
-(use-package which-key
-  :custom (which-key-idle-delay 0.5)
-  :bind ( ("C-h C-h" . nil))
-  :config (which-key-mode)
-  	  (defalias 'which-key-alias 'which-key-add-key-based-replacements))
-
 ;; Transient keyboard user interfaces
 (use-package casual
   :demand t
@@ -763,20 +752,27 @@
 	 ("M-o" . casual-calendar-tmenu)
 	 :map dired-mode-map
 	 ("M-o" . casual-dired-tmenu)
+	 :map ibuffer-mode-map
+	 ("M-o" . casual-ibuffer-tmenu)
+	 :map isearch-mode-map
+	 ("M-o" . casual-isearch-tmenu)
 	 :map Info-mode-map
-	 ("M-o" . casual-info-tmenu))
+	 ("M-o" . casual-info-tmenu)
+	 :map Man-mode-map
+	 ("M-o" . casual-man-tmenu))
   :config (require 'casual-timezone-utils)
-  	  (setopt casual-timezone-datestamp-format "%a %e %b %Y %R")
-          (advice-add 'casual-timezone-planner
-            :after (lambda (&rest r) (calendar-exit-kill)))
+	  (setopt casual-timezone-datestamp-format "%a %e %b %Y %R")
+	  (advice-add 'casual-timezone-planner :after (lambda (&rest _) (calendar-exit-kill)))
 	  (keymap-set casual-timezone-planner-mode-map "q" 'kill-current-buffer))
 
+;; Fast, friendly searching with ripgrep
 (use-package deadgrep
   :bind (("<f5>" . 'deadgrep)
 	 :map deadgrep-mode-map
 	 ("f" . delete-other-windows))
-  :config (defalias 'find-grep 'deadgrep)
-	  (advice-add 'deadgrep :after (lambda (&rest r) (delete-other-windows))))
+  :config
+  (defalias 'find-grep 'deadgrep)
+  (advice-add 'deadgrep :after #'my/delete-other-windows))
 
 (use-package dictionary
   :ensure nil
@@ -790,12 +786,11 @@
   :custom dun-log-file (concat user-emacs-directory "var/games/dunnet-scores"))
 
 (use-package dwim-shell-command
-  :ensure t
   :bind (([remap shell-command] . dwim-shell-command)
-         :map dired-mode-map
-         ([remap dired-do-async-shell-command] . dwim-shell-command)
-         ([remap dired-do-shell-command] . dwim-shell-command)
-         ([remap dired-smart-shell-command] . dwim-shell-command))
+	 :map dired-mode-map
+	 ([remap dired-do-async-shell-command] . dwim-shell-command)
+	 ([remap dired-do-shell-command] . dwim-shell-command)
+	 ([remap dired-smart-shell-command] . dwim-shell-command))
   :config
   (defun dwim-shell-command-pandoc-org-to-docx ()
     "Convert an org file to docx using a template docx file."
@@ -809,7 +804,7 @@
 (use-package elpher
   :bind   (:map elpher-mode-map
 	  ("[" . elpher-back))
-  :hook	  (elpher-mode . (lambda()
+  :hook	  (elpher-mode . (lambda ()
 	  (setq-local left-margin-width 10)
 	  (set-window-buffer nil (current-buffer))))
   :init	  (easy-menu-add-item global-map '(menu-bar tools)
@@ -820,22 +815,22 @@
   :ensure nil
   :demand t
   :custom (browse-url-browser-function 'eww-browse-url)
-  (eww-auto-rename-buffer t)
-  (eww-bookmarks-directory (concat user-emacs-directory "etc/"))
-  (eww-readable-adds-to-history nil)
-  (eww-url-transformers '(eww-remove-tracking eww-reddit-redirect))
-  (url-privacy-level '(email lastloc))
+          (eww-auto-rename-buffer t)
+	  (eww-bookmarks-directory (concat user-emacs-directory "etc/"))
+	  (eww-readable-adds-to-history nil)
+	  (eww-url-transformers '(eww-remove-tracking eww-reddit-redirect))
+	  (url-privacy-level '(email lastloc))
 
-  ;; look-and-feel
-  (shr-folding-mode t)
-  (shr-inhibit-images t)
-  (shr-use-colors nil)
-  (shr-use-fonts nil)
-  (shr-bullet "• ")
-  (shr-indentation 2)	; Left-side margin
-  (shr-width nil)	; Fold text for comfiness
-  (shr-max-width 94)	; Controls fold-column in web-derived pages (ie. Elfeed)
-  			; Useful especially when you increase text-scale.
+	  ;; look-and-feel
+	  (shr-folding-mode t)
+	  (shr-inhibit-images t)
+	  (shr-use-colors nil)
+	  (shr-use-fonts nil)
+	  (shr-bullet "• ")
+	  (shr-indentation 2)	; Left-side margin
+	  (shr-width nil)	; Fold text for comfiness
+	  (shr-max-width 94)	; Controls fold-column in web-derived pages (ie. Elfeed)
+				; Useful especially when you increase text-scale.
 
   :bind (("C-x g" . browse-url-at-point)
 	:map eww-mode-map
@@ -850,54 +845,50 @@
   (add-hook 'eww-after-render-hook 'eww-readable) ;; default to 'readable-mode'
   (use-package ace-link :config (ace-link-setup-default))) ;; alternative to tabbing
 
-
 (use-package flycheck ; on-the-fly syntax checking
   :unless *w32*
   :custom (flycheck-keymap-prefix "!")
   :hook	  (emacs-lisp-mode . flycheck-mode)
   :init	  (require 'checkdoc)
-  	  (setq
+	  (setq
 		checkdoc-column-zero-backslash-before-paren nil
-	   	checkdoc-force-docstrings-flag nil
+		checkdoc-force-docstrings-flag nil
 		checkdoc--argument-missing-flag nil)
   :config (which-key-alias "C-x !" "flycheck")
-  	  (if (featurep 'ibuf-ext)
+	  (if (featurep 'ibuf-ext)
 	    (add-to-list 'ibuffer-never-show-predicates "^\\*Flycheck error messages\\*"))
 	  (if (featurep 'ido)
 	    (add-to-list 'ido-ignore-buffers "*Flycheck error messages*")))
 
-(use-package free-keys :defer t
-  :config	(add-to-list 'free-keys-modifiers "s" t)
-		(add-to-list 'free-keys-modifiers "A" t))
+(use-package free-keys
+  :defer t
+  :config (add-to-list 'free-keys-modifiers "s" t)
+  	  (add-to-list 'free-keys-modifiers "A" t))
 
-(use-package go-mode :defer t)
-
-(use-package google-this
-  :disabled
-  :init		(which-key-alias "C-c /" "google-this")
-  :config	(google-this-mode))
+(use-package go-mode
+  :defer t)
 
 (use-package google-translate
-  :bind (	("C-c t t" . google-translate-at-point)
-		("C-c t <RET>" . google-translate-smooth-translate))
+  :bind (("C-c t t" . google-translate-at-point)
+	 ("C-c t <RET>" . google-translate-smooth-translate))
   :init	(which-key-alias "C-c t" "google-translate")
-	(setq google-translate-translation-directions-alist '(
-	  ("fr" . "en") ("en" . "fr"))))
+  (setq google-translate-translation-directions-alist
+	'(("fr" . "en") ("en" . "fr"))))
 
 (use-package highlight-defined
   :hook (emacs-lisp-mode-hook . highlight-defined-mode))
 
 (use-package hl-todo
-  :custom	(hl-todo-keyword-faces `(
-		("TODO"       warning bold)
-		("FIXME"      error bold)
-		("HACK"       font-lock-constant-face bold)
-		("REVIEW"     font-lock-keyword-face bold)
-		("NOTE"       success bold)
-		("DEPRECATED" font-lock-doc-face bold)))
-  :hook		(prog-mode . hl-todo-mode)
-		(emacs-lisp-mode . hl-todo-mode)
-		(org-mode . hl-todo-mode))
+  :custom (hl-todo-keyword-faces
+	   `(("TODO"       warning bold)
+	     ("FIXME"      error bold)
+	     ("HACK"       font-lock-constant-face bold)
+	     ("REVIEW"     font-lock-keyword-face bold)
+	     ("NOTE"       success bold)
+	     ("DEPRECATED" font-lock-doc-face bold)))
+  :hook	(prog-mode . hl-todo-mode)
+	(emacs-lisp-mode . hl-todo-mode)
+	(org-mode . hl-todo-mode))
 
 (use-package list-projects)
 
@@ -908,12 +899,12 @@
 
 (use-package mistty
   :bind ( :map mistty-prompt-map
-	("C-p" . mistty-send-key)
-	("C-n" . mistty-send-key)
-	("C-r" . mistty-send-key)
-	("M-p" . nil)
-	("M-n" . nil)
-	("M-r" . nil))
+	  ("C-p" . mistty-send-key)
+	  ("C-n" . mistty-send-key)
+	  ("C-r" . mistty-send-key)
+	  ("M-p" . nil)
+	  ("M-n" . nil)
+	  ("M-r" . nil))
   :hook	(mistty-after-process-end . mistty-kill-buffer)
 	(mistty-mode . goto-address-mode))
 
@@ -936,21 +927,21 @@
 (use-package visible-mark) ; make the mark visible
 
 ;; Text, Prog, and Markdown modes
+(message "→ Configuring modes.")
 (require 'table)
 (setopt	visual-line-fringe-indicators '(nil right-curly-arrow))
 
-(add-hook 'text-mode-hook (lambda()
-	(abbrev-mode)
-	(goto-address-mode)
-	;; (table-recognize)
-	(visual-line-mode)))
+(add-hook 'text-mode-hook
+	  (lambda ()
+	    (abbrev-mode)
+	    (goto-address-mode)
+	    ;; (table-recognize)
+	    (visual-line-mode)))
 
 (add-hook 'fill-nobreak-predicate #'fill-french-nobreak-p)
-;(define-key text-mode-map (kbd "C-M-i") nil)
 
 (use-package visual-fill-column
-  :bind (("<f6>"  . toggle-fill-column-center))
-  ;; :hook	(visual-line-mode . visual-fill-column-mode)
+  :bind (("<f6>" . toggle-fill-column-center))
   :config (advice-add 'text-scale-adjust :after #'visual-fill-column-adjust))
 
 (if EMACS30 (global-visual-wrap-prefix-mode) ; if not, use the package
@@ -964,20 +955,22 @@
   :bind (("M-q" . unfill-toggle)))
 
 ;; prog-mode
-(add-hook 'prog-mode-hook (lambda()
-  (setq show-trailing-whitespace t)  ; needs to be buffer local
-  (abbrev-mode)
-  (when (not (equal major-mode 'lisp-interaction-mode)) ; ie. *scratch*
-    (display-line-numbers-mode))
-  (electric-indent-local-mode)
-  (goto-address-prog-mode)
-  (show-paren-local-mode)
-  (if (featurep 'visual-fill-column) (visual-fill-column-mode -1))))
+(add-hook 'prog-mode-hook
+	  (lambda ()
+	    (setq show-trailing-whitespace t)  ; needs to be buffer local
+	    (abbrev-mode)
+	    (when (not (equal major-mode 'lisp-interaction-mode)) ; ie. *scratch*
+	      (display-line-numbers-mode))
+	    (electric-indent-local-mode)
+	    (goto-address-prog-mode)
+	    (show-paren-local-mode)
+	    (if (featurep 'visual-fill-column) (visual-fill-column-mode -1))))
 
 ;; Emacs lisp
-(add-hook 'emacs-lisp-mode-hook (lambda()
-  (setq	tab-width 8
-	truncate-lines -1)))
+(add-hook 'emacs-lisp-mode-hook
+	  (lambda ()
+	    (setq tab-width 8
+		  truncate-lines -1)))
 
 ;; bash
 (add-to-list 'auto-mode-alist '("\\.bash*" . sh-mode))
@@ -1003,25 +996,26 @@
 
 ;; Markdown
 (use-package markdown-mode
-	:demand	t
-	:custom	(markdown-command "multimarkdown")
-		(markdown-enable-prefix-prompts nil)
-		(markdown-italic-underscore t)
-		(markdown-unordered-list-item-prefix "* ")
-	:bind ( :map markdown-mode-map
-		("M-p" . nil)
-		("C-c p" . markdown-preview-file)
-		("C-x x o" . markdown-convert-buffer-to-org))
-	:mode	(("README\\.md\\'" . gfm-mode)
-		("\\.md\\'" . markdown-mode)
-		("\\.markdown\\'" . markdown-mode)
-		("\\.gmi\\'" . markdown-mode)
-		("\\.ronn\\'" . markdown-mode))
-	:commands (markdown-mode gfm-mode)
-	:init 	(setopt markdown-hide-urls t)
-	:config (add-to-list 'markdown-uri-types "gemini"))
+  :demand t
+  :custom (markdown-command "multimarkdown")
+  (markdown-enable-prefix-prompts nil)
+  (markdown-italic-underscore t)
+  (markdown-unordered-list-item-prefix "* ")
+  :bind ( :map markdown-mode-map
+	  ("M-p" . nil)
+	  ("C-c p" . markdown-preview-file)
+	  ("C-x x o" . markdown-convert-buffer-to-org))
+  :mode	(("README\\.md\\'" . gfm-mode)
+	 ("\\.md\\'" . markdown-mode)
+	 ("\\.markdown\\'" . markdown-mode)
+	 ("\\.gmi\\'" . markdown-mode)
+	 ("\\.ronn\\'" . markdown-mode))
+  :commands (markdown-mode gfm-mode)
+  :init		(setopt markdown-hide-urls t)
+  :config (add-to-list 'markdown-uri-types "gemini"))
 
 (load "text-functions")
+(load "number-lines")
 (require 'replace-garbage-chars)
 
 ;; Org-mode
@@ -1060,7 +1054,7 @@
   (org-cycle-inline-images-display t)
   (org-image-actual-width t); '(300)
 
-  (org-use-speed-commands (lambda() (and (looking-at org-outline-regexp) (looking-back "^\**"))))
+  (org-use-speed-commands (lambda () (and (looking-at org-outline-regexp) (looking-back "^\**"))))
   (org-use-sub-superscripts '{})
 
   (org-auto-align-tags nil)
@@ -1093,7 +1087,7 @@
   (org-export-date-timestamp-format "%Y-%m-%d")
   (org-export-time-stamp-file t)
 
-  (org-ascii-text-width 50)
+  (org-ascii-text-width 72)
   (org-ascii-inner-margin 2)
   (org-ascii-quote-margin 4)
   (org-ascii-headline-spacing '(0 . 1))
@@ -1233,12 +1227,13 @@
   (add-to-list 'org-entities-user '("textnumero" "\\textnumero" nil "&numero;" "No." "No." "№"))
 
   ;; outline mode doesn't auto-interpret org entities, so use it to view org-entities
-  (advice-add 'org-entities-help :after (lambda (&rest r)
-    (outline-mode)
-    (read-only-mode -1)
-    (flush-blank-lines (point-min) (point-max))
-    (outline-cycle-buffer)
-    (view-mode)))
+  (advice-add 'org-entities-help :after
+	      (lambda (&rest r)
+		(outline-mode)
+		(read-only-mode -1)
+		(flush-blank-lines (point-min) (point-max))
+		(outline-cycle-buffer)
+		(view-mode)))
 
   (require 'ox-latex)
   (add-to-list 'org-latex-classes '("letter" "\\documentclass{letter}") t)
@@ -1247,8 +1242,11 @@
 				    ("\\section{%s}" . "\\section*{%s}")
 				    ("\\subsection{%s}" . "\\subsection*{%s}")
 				    ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))
-	t)
-  (advice-add 'org-latex-export-as-latex :after (lambda (&rest r) (delete-other-windows)))
+	       			    t)
+
+  (advice-add 'org-latex-export-as-latex :after
+	      (lambda (&rest r)
+		(delete-other-windows)))
 
   (require 'ox-md)
 
@@ -1266,6 +1264,7 @@
 (use-package org-chef ; manage recipes in org-mode
   :if *natasha*
   :after org
+  :demand t
   :config
   (defvar org-chef-recipe-book "~/Documents/Recipes/cookbook.org" "Default recipe book.")
   (add-to-list 'org-capture-templates '("c" "Cookbook" entry (file org-chef-recipe-book)
@@ -1288,7 +1287,7 @@ title of a page found by the URL into the current buffer."
      (org-cliplink-clipboard-content)     ;take the URL from the CLIPBOARD
      (lambda (url title)
        (let* ((parsed-url (url-generic-parse-url url)) ;parse the url
-              (clean-title (cond
+	      (clean-title (cond
 		;; if the host is github.com, cleanup the title
 		((string= (url-host parsed-url) "github.com")
 		 (replace-regexp-in-string "GitHub - .*: \\(.*\\)" "\\1" title))
@@ -1380,57 +1379,58 @@ title of a page found by the URL into the current buffer."
 
 ;; print
 (load "print-functions")
-(load "print-buffer-or-region.el")
+(load "print-buffer-or-region")
 (define-key global-map [menu-bar file print] nil)
 
 (bind-key "M-p" 'print-buffer-or-region)
 ;(bind-key "M-p e" 'enscript)
-;(bind-key "M-p E" (lambda()(interactive) (enscript '(4)) (kill-buffer))) (which-key-alias "M-p E" "folded")
+;(bind-key "M-p E" (lambda ()(interactive) (enscript '(4)) (kill-buffer))) (which-key-alias "M-p E" "folded")
 ;(bind-key "M-p f" 'fill-to-printer) (which-key-alias "M-p f" "fill buffer")
 ;(bind-key "M-p r" 'print-buffer-or-region)
 
 ;; Configure specific machines
-(message "Configuring specific machines.")
+(message "→ Configuring specific machines.")
 (when *natasha*
-	(setopt	browse-url-secondary-browser-function 'browse-url-generic
-		;browse-url-generic-program "/Applications/Waterfox.app/Contents/MacOS/waterfox"
-		browse-url-generic-program "open"))
+  (setopt browse-url-secondary-browser-function 'browse-url-generic
+	  ;browse-url-generic-program "/Applications/Waterfox.app/Contents/MacOS/waterfox"
+	  browse-url-generic-program "open"))
 
 ;; Mail / News
 (use-package rmail
-	:if	*natasha*
-	:ensure nil
-	:defer	t
-	:custom	(rmail-secondary-file-directory	(concat user-emacs-directory "var/"))
-		(rmail-default-file		(concat rmail-secondary-file-directory "XMAIL"))
-		(rmail-file-name	       	(concat rmail-secondary-file-directory "RMAIL"))
+  :if	*natasha*
+  :ensure nil
+  :defer t
+  :custom (rmail-secondary-file-directory (concat user-emacs-directory "var/"))
+  (rmail-default-file (concat rmail-secondary-file-directory "XMAIL"))
+  (rmail-file-name (concat rmail-secondary-file-directory "RMAIL"))
 
-		(rmail-primary-inbox-list '("imaps://cn914@mail.ncf.ca"))
-		(rmail-remote-password-required t)
-	:hook	(rmail-show-message . goto-address-mode)
-		(rmail-quit . kill-current-buffer)
-	:config	(setq
-		smtpmail-smtp-server "mail.ncf.ca"
-		send-mail-function   'smtpmail-send-it
-		smtpmail-smtp-service 587
+  (rmail-primary-inbox-list '("imaps://cn914@mail.ncf.ca"))
+  (rmail-remote-password-required t)
+  :hook	(rmail-show-message . goto-address-mode)
+  (rmail-quit . kill-current-buffer)
+  :config
+  (setq
+   smtpmail-smtp-server "mail.ncf.ca"
+   send-mail-function   'smtpmail-send-it
+   smtpmail-smtp-service 587
 
-		rmail-mime-prefer-html nil
-		rmail-preserve-inbox nil
-		rmail-delete-after-output t
-		rmail-mail-new-frame t
-		rmail-mime-prefer-html nil
-		rmail-movemail-variant-in-use 'mailutils
+   rmail-mime-prefer-html nil
+   rmail-preserve-inbox nil
+   rmail-delete-after-output t
+   rmail-mail-new-frame t
+   rmail-mime-prefer-html nil
+   rmail-movemail-variant-in-use 'mailutils
 
-		rmail-highlighted-headers "^Subject:"
-		rmail-ignored-headers (concat rmail-ignored-headers
-			"\\|^In-Reply-To:\\|^Content-Type:\\|^DKIM-Filter:")
-		rmail-nonignored-headers nil))
+   rmail-highlighted-headers "^Subject:"
+   rmail-ignored-headers (concat rmail-ignored-headers
+				 "\\|^In-Reply-To:\\|^Content-Type:\\|^DKIM-Filter:")
+   rmail-nonignored-headers nil))
 
 (use-package message
-	:if	*natasha*
-	:ensure nil
-	:custom	(message-kill-buffer-on-exit t)
-	:bind ( :map  message-mode-map ("A-<return>" . message-send-and-exit)))
+  :if *natasha*
+  :ensure nil
+  :custom (message-kill-buffer-on-exit t)
+  :bind ( :map  message-mode-map ("A-<return>" . message-send-and-exit)))
 
 ;; RSS
 (use-package elfeed
@@ -1464,7 +1464,8 @@ title of a page found by the URL into the current buffer."
 	   elfeed-log-level 'error)
 
   (eval-after-load 'elfeed `(make-directory ,(concat user-emacs-directory "var/elfeed/") t))
-  (advice-add 'elfeed-search-fetch :after (lambda (&rest _) (goto-char (point-min))))
+  (advice-add 'elfeed-search-fetch :after
+	      (lambda (&rest _) (goto-char (point-min))))
   ;(add-to-list 'global-jinx-modes 'elfeed-show-mode)
 
   (load "rc/feeds" 'noerror 'nomessage)
@@ -1495,7 +1496,7 @@ title of a page found by the URL into the current buffer."
   :config (setq chatgpt-shell-root-path (concat user-emacs-directory "var/")))
 
 (use-package chess
-  :if 	*natasha*
+  :if	*natasha*
   :defer t
   :custom
   (chess-default-engine 'chess-gnuchess)
@@ -1539,10 +1540,11 @@ title of a page found by the URL into the current buffer."
   (advice-add 'xkcd-get :after #'xkcd-add-alt))
 
 (when *gnu*
-	(setq	browse-url-secondary-browser-function 'browse-url-generic
-		browse-url-generic-program "firefox-esr"))
+	(setq browse-url-secondary-browser-function 'browse-url-generic
+	      browse-url-generic-program "firefox-esr"))
 
 ;; sundry
+(message "→ Configuring sundry.")
 (load "misc-functions")
 (load "help-kf")
 (load "help-cpj")
@@ -1555,16 +1557,16 @@ title of a page found by the URL into the current buffer."
 
 ;; https://jonathanabennett.github.io/blog/2019/05/29/writing-academic-papers-with-org-mode/
 (use-package pdf-tools
-	:if	*mac*
-	:custom	(pdf-annot-activate-created-annotations t)
-		(pdf-view-display-size 'fit-width)
-	:bind (	:map pdf-view-mode-map
-		("C-s" . isearch-forward)
-		("h" . pdf-annot-activate-created-annotations)
-		("t" . pdf-annot-add-text-annotation)
-		("D" . pdf-annot-delete))
-	:magic	("%PDF" . pdf-view-mode)
-	:config	(pdf-tools-install :no-query))
+  :if	*mac*
+  :custom (pdf-annot-activate-created-annotations t)
+  (pdf-view-display-size 'fit-width)
+  :bind ( :map pdf-view-mode-map
+	("C-s" . isearch-forward)
+	("h" . pdf-annot-activate-created-annotations)
+	("t" . pdf-annot-add-text-annotation)
+	("D" . pdf-annot-delete))
+  :magic ("%PDF" . pdf-view-mode)
+  :config (pdf-tools-install :no-query))
 
 (use-package org-pdftools
   :after org pdf-tools
@@ -1583,7 +1585,7 @@ title of a page found by the URL into the current buffer."
 (global-set-key (kbd "C-a") 'back-to-indentation-or-beginning-of-line)
 
 (global-set-key (kbd "C-<home>" ) 'beginning-of-buffer)
-(global-set-key (kbd "C-<end>"  ) (lambda()(interactive)(end-of-buffer)(recenter -1)))
+(global-set-key (kbd "C-<end>"  ) (lambda ()(interactive)(end-of-buffer)(recenter -1)))
 (global-set-key (kbd "C-<prior>") 'scroll-down-line)
 (global-set-key (kbd "C-<next>" ) 'scroll-up-line)
 
@@ -1600,12 +1602,12 @@ title of a page found by the URL into the current buffer."
 (global-set-key [remap forward-paragraph] 'my/forward-paragraph)
 
 ;; scroll settings
-(setq	auto-window-vscroll nil
-	next-screen-context-lines 0
-	scroll-conservatively 10000
-	scroll-margin 0
-	scroll-preserve-screen-position t
-	scroll-step 0)
+(setq auto-window-vscroll nil
+      next-screen-context-lines 0
+      scroll-conservatively 10000
+      scroll-margin 0
+      scroll-preserve-screen-position t
+      scroll-step 0)
 (global-set-key (kbd "C-<") 'scroll-left)
 (global-set-key (kbd "C->") 'scroll-right)
 
@@ -1615,16 +1617,16 @@ title of a page found by the URL into the current buffer."
 (global-set-key (kbd "A-<up>") [prior])
 (global-set-key (kbd "A-<down>") [next])
 (when *mac*
-	(global-set-key (kbd "s-<up>") [prior])
-	(global-set-key (kbd "s-<down>") [next]))
+  (global-set-key (kbd "s-<up>") [prior])
+  (global-set-key (kbd "s-<down>") [next]))
 
 ;; (unless (package-installed-p 'ultra-scroll)
-;; 	(package-vc-install '(ultra-scroll
-;; 		:vc-backend Git
-;; 		:url "https://github.com/jdtsmith/ultra-scroll")))
+;;	(package-vc-install '(ultra-scroll
+;;		:vc-backend Git
+;;		:url "https://github.com/jdtsmith/ultra-scroll")))
 ;; (use-package ultra-scroll
-;; 	:init (setq scroll-conservatively 101) ; important!
-;; 	:config (ultra-scroll-mode 1))
+;;	:init (setq scroll-conservatively 101) ; important!
+;;	:config (ultra-scroll-mode 1))
 
 ;; mouse
 ;; https://github.com/purcell/disable-mouse
@@ -1776,7 +1778,7 @@ title of a page found by the URL into the current buffer."
 (bind-key "C-c x g"	'replace-garbage-chars)
 (bind-key "C-c x l"	'lorem-ipsum-insert-paragraphs)
 (bind-key "C-c x n"	'number-paragraphs)
-(bind-key "C-c x s"	'replace-double-spaces)
+(bind-key "C-c x s"	'collapse-multiple-spaces-in-region)
 (bind-key "C-c x x"	'delete-whitespace-rectangle)
 (bind-key "C-c x y"	'whitespace-cleanup)
 (which-key-alias "C-c x" "text")
@@ -1796,7 +1798,6 @@ title of a page found by the URL into the current buffer."
 (which-key-alias "C-x 8 e" "emojis")
 
 (bind-key "C-x c"	'kill-current-buffer)
-(bind-key "C-x n f"	'narrow-to-focus)
 
 (bind-key "C-x x SPC"	'toggle-cursor-off/on)
 (bind-key "C-x x L"	'buf-to-LF)
@@ -1851,7 +1852,7 @@ title of a page found by the URL into the current buffer."
 
 ;; Work-specific
 (when *w32* (load (expand-file-name ".work" user-emacs-directory) 'noerror))
-(when *mac* (bind-key "C-c Z" (lambda()(interactive) (find-file "/db:/!.org")))
+(when *mac* (bind-key "C-c Z" (lambda () (interactive) (find-file "/db:/!.org")))
       (which-key-alias "C-c Z" "work-agenda"))
 
 (message "→ Initialization file loaded.")
@@ -1870,7 +1871,11 @@ title of a page found by the URL into the current buffer."
 ; LocalWords:  INPROGRESS kfhelp setq xm readabilizing JS dev Lorem
 ; LocalWords:  Gopherspace filesandbuffers ipsum ePub epub xelatex kf
 ; LocalWords:  vcusepackage latexmk synctex bibtex cond xah dirs Ctrl
-; LocalWords:  remotehost flycheck modeline mori featurep cbc smex
+; LocalWords:  remotehost flycheck modeline mori featurep cbc smex vc
 ; LocalWords:  setq's setopt mailutils imagemagick usr dunnet Async
 ; LocalWords:  dir fullscreen dropbox keymap toc buddhist ewth ronn
-; LocalWords:  enscript
+; LocalWords:  enscript noerror formfeed hline erc bbdb newsrc laGhv
+; LocalWords:  pandoc alphapapa unpackaged xml xsl xhtml nxml parens
+; LocalWords:  MidnightBlue src numero documentclass subsubsection
+; LocalWords:  github cliplink Waterfox waterfox nov backend fboundp
+; LocalWords:  windmove goto ripgrep

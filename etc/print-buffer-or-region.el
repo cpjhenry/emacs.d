@@ -76,6 +76,7 @@ Skips the first such header in the buffer."
     :scale "0.85"
     :delta "5mm 5mm"))
 
+(defvar org-ascii-text-width)
 (defun print-buffer-or-region (&optional keep-workdir)
   "Unicode-safe: text -> paps -> gs -> pdfcrop -> save -> open.
 With prefix arg KEEP-WORKDIR (\\[universal-argument]), keep the temporary work directory."
@@ -88,7 +89,7 @@ With prefix arg KEEP-WORKDIR (\\[universal-argument]), keep the temporary work d
           (pdfcrop (executable-find "pdfcrop"))
           (open    (executable-find "open"))
 
-	  (ps-printer-line-length 70))
+	  (ps-printer-line-length org-ascii-text-width))
 
       (unless (and paps gs pdfcrop open)
         (user-error "Missing tool(s): %s"

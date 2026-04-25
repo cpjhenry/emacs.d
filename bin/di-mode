@@ -7,7 +7,12 @@ cond_source $HOME/.bash_routines
 
 [ $(which gcalcli) ] && gcalcli --lineart=ascii --nocolor --calendar=cpjh --calendar=Holidays calw && echo
 
-di
+DI=$(ind -faruiq
+echo
+wwv
+printf "CPJ %s / " $(cpj |commify)
+cpjbio |sed '1s/  /\n/')
+[ "$DI" ] && echo "$DI"
 
 TODAY=$(ssh bullwinkle "/usr/local/bin/icalBuddy -nc -df '%RD' \
 	-ic Birthdays eventsFrom:yesterday to:today+14" 2>/dev/null |
@@ -16,5 +21,5 @@ TODAY=$(ssh bullwinkle "/usr/local/bin/icalBuddy -nc -df '%RD' \
 [ "$TODAY" ] && echo -e "\n$TODAY"
 
 TMW=$(date -d tomorrow +%Y%m%d)
-TMW=$((gcalt -U %$TMW; ind -d+1 -Po; calendar -W0 -t$TMW |cut -f2) |sed 's/^/- /')
+TMW=$((gcalt -U %$TMW; ind -d+ -Po; calendar -W0 -t$TMW |cut -f2) |sed 's/^/- /')
 [ "$TMW" ] && echo -e "\nTomorrow:\n$TMW" || :

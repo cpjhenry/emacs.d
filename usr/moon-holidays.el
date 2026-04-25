@@ -85,8 +85,8 @@ calendar window."
                       (push (list next-date next-name) holidays)))))))))
       holidays)))
 
-(defun holiday-buddhist-holidays ()
-"Return all Buddhist (Theravadin) full-moon holidays for the visible window.
+(defun holiday-buddhist ()
+"Return all Buddhist (Theravadin) full-moon holidays.
 
 This uses `holiday-named-full-moons' for each relevant month and concatenates
 the results."

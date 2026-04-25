@@ -4,6 +4,7 @@
 ;;; code:
 (require 'org)
 
+(defvar org-agenda-file)
 (defun my/agenda ()
   "Load `org-agenda' file."
   (interactive)
@@ -33,6 +34,7 @@
 
 ;; https://orgmode.org/worg/org-hacks.html
 (require 'cl-lib)
+(require 'lunar)
 (with-no-warnings (defvar date))
 (defun org-lunar-phases ()
   "Show lunar phase in Agenda buffer."
@@ -51,8 +53,8 @@
     (goto-char (point-min))
     (let ((case-fold-search t))
       (while (re-search-forward "^[ \t]*#\\+begin_comment\\b" nil t)
-        (goto-char (match-beginning 0))     ; must be on the #+begin line
-        (org-hide-block-toggle t)           ; hide this block
+        (goto-char (match-beginning 0))  ; must be on the #+begin line
+        (org-fold-hide-block-toggle t)   ; hide this block
         (forward-line 1)))))
 
 (require 'org-element)
@@ -104,6 +106,7 @@ If point is not in a heading, count in the whole buffer."
 
 ;; Convert to org-mode from other formats
 ;; https://jao.io/blog/eww-to-org.html
+(require 'eww)
 (defun eww-to-org (&optional dest)
   "Render the current eww buffer using org markup.
 If DEST, a buffer, is provided, insert the markup there."

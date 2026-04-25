@@ -24,7 +24,7 @@
 (defun my/forward-page ()
   "Forward page."
   (interactive)
-  (next-line)
+  (forward-line)
   (forward-page)
   (recenter-top-bottom)
   (beginning-of-line))
@@ -34,26 +34,35 @@
   (interactive)
   (find-file user-init-file))
 
+(require 'outline)
 (defun my/outline-previous-heading ()
+  "Go to previous heading."
   (interactive)
   (outline-previous-heading)
   (recenter-top-bottom))
 
 (defun my/outline-next-heading ()
+  "Go to next heading."
   (interactive)
   (outline-next-heading)
   (recenter-top-bottom))
 
 (defun my/shell ()
+  "Open shell at ~/ always."
   (interactive)
   (let ((default-directory "~"))
     (mistty)))
 
+(require 'view)
 (defun my/View-scroll-line-backward ()
   "Scroll line backward, jump to new top of screen."
   (interactive)
   (View-scroll-line-backward)
   (move-to-window-line-top-bottom))
+
+(defun my/delete-other-windows (&rest _)
+  "Advice wrapper to discard unnecessary arguments to function."
+  (delete-other-windows))
 
 (defun quit-window-kill ()
   "Kill when quitting."
@@ -144,6 +153,7 @@ Useful if your *scratch* is already holding something important."
     (switch-to-buffer-other-frame buf)))
 
 (defun buf-to-LF()
+  "Set UTF coding system for current buffer."
   (interactive)
   (set-buffer-file-coding-system 'utf-8-unix)
   (set-buffer-modified-p nil))
@@ -173,7 +183,7 @@ Useful if your *scratch* is already holding something important."
   (ns-do-applescript "tell application \"Emacs\" to activate"))
 
 (defun ns-raise-emacs-with-frame (frame)
-  "Raise Emacs and select the provided frame."
+  "Raise Emacs and select the provided FRAME."
   (with-selected-frame frame
     (when (display-graphic-p)
       (ns-raise-emacs)
@@ -181,7 +191,7 @@ Useful if your *scratch* is already holding something important."
 
 ;; misc. functions
 (defun set-window-width (n)
-  "Set the selected window's width as 'N'."
+  "Set the selected window's width as `N'."
   (adjust-window-trailing-edge (selected-window) (- n (window-width)) t))
 
 (defun set-80-columns ()
@@ -202,6 +212,7 @@ Useful if your *scratch* is already holding something important."
   (setq fill-column 0)
   (message "Maximum width."))
 
+(require 'visual-fill-column)
 (defun toggle-fill-column-center ()
   "Toggle `visual-fill-column-center-text'.
 
@@ -218,6 +229,7 @@ mode when toggled off."
     (progn (visual-fill-column-mode)
 	   (toggle-fill-column-center))))
 
+(require 'shr)
 (defun preview-html ()
   "Render buffer as HTML."
   (interactive)
@@ -243,19 +255,21 @@ mode when toggled off."
     (setq-local cursor-type t)))
 
 ;; DIRED functions
+(require 'dired)
 (defun dired-home ()
   "Go to first line in Dired buffer."
   (interactive)
-  (beginning-of-buffer)
+  (goto-char (point-min))
   (dired-next-line 1))
 
 (defun dired-end ()
   "Go to last line in Dired buffer."
   (interactive)
-  (end-of-buffer)
+  (goto-char (point-max))
   (dired-previous-line 1))
 
 (defun kill-dired-buffers ()
+  "Kill all Dired buffers."
   (interactive)
   (mapc (lambda (buffer)
 	  (when (eq 'dired-mode (buffer-local-value 'major-mode buffer))
@@ -296,6 +310,7 @@ mode when toggled off."
 
 ;; dired extension "% s"
 ;; https://social.tchncs.de/@stackeffect/113431684014013180
+(require 'dired-aux)
 (defun my-substspaces (str)
   "Replace spaces in filename with underscores."
   (subst-char-in-string ?\s ?_ str))
@@ -315,6 +330,7 @@ mode when toggled off."
 (advice-add 'dired-delete-file :before 'dired-kill-before-delete)
 
 ;; iBuffer functions
+(require 'ibuffer)
 (defun ibuffer-advance-motion (direction)
   (forward-line direction)
   (beginning-of-line)
@@ -326,30 +342,32 @@ mode when toggled off."
   "Move backwards ARG lines, wrapping around the list if necessary."
   (interactive "P")
   (or arg (setq arg 1))
-  (let (err1 err2) (while (> arg 0)
-		     (cl-decf arg)
-		     (setq   err1 (ibuffer-advance-motion -1)
-			     err2 (if (not (get-text-property (point) 'ibuffer-title)) t
-				    (goto-char (point-max))
-				    (beginning-of-line)
-				    (ibuffer-skip-properties '(ibuffer-summary ibuffer-filter-group-name) -1)
-				    nil)))
-       (and err1 err2)))
+  (let (err1 err2)
+    (while (> arg 0)
+      (cl-decf arg)
+      (setq   err1 (ibuffer-advance-motion -1)
+	      err2 (if (not (get-text-property (point) 'ibuffer-title)) t
+		     (goto-char (point-max))
+		     (beginning-of-line)
+		     (ibuffer-skip-properties '(ibuffer-summary ibuffer-filter-group-name) -1)
+		     nil)))
+    (and err1 err2)))
 
 (defun ibuffer-next-line (&optional arg)
   "Move forward ARG lines, wrapping around the list if necessary."
   (interactive "P")
   (or arg (setq arg 1))
-  (let (err1 err2) (while (> arg 0)
-		     (cl-decf arg)
-		     (setq   err1 (ibuffer-advance-motion 1)
-			     err2 (if (not (get-text-property (point) 'ibuffer-summary)) t
-				    (goto-char (point-min))
-				    (beginning-of-line)
-				    (ibuffer-skip-properties '(ibuffer-summary ibuffer-filter-group-name
-									       ibuffer-title) 1)
-				    nil)))
-       (and err1 err2)))
+  (let (err1 err2)
+    (while (> arg 0)
+      (cl-decf arg)
+      (setq   err1 (ibuffer-advance-motion 1)
+	      err2 (if (not (get-text-property (point) 'ibuffer-summary)) t
+		     (goto-char (point-min))
+		     (beginning-of-line)
+		     (ibuffer-skip-properties '(ibuffer-summary ibuffer-filter-group-name
+								ibuffer-title) 1)
+		     nil)))
+    (and err1 err2)))
 
 (defun ibuffer-next-header ()
   (interactive)
@@ -466,14 +484,14 @@ Otherwise, call `backward-kill-word'."
   (kill-ring-save beg end))
 
 (defun open-line-below ()
-  "Starts a new line below the current line."
+  "Start a new line below the current line."
   (interactive)
   (move-end-of-line 1)
   (newline)
   (indent-according-to-mode))
 
 (defun open-line-above ()
-  "Starts a new line above the current line."
+  "Start a new line above the current line."
   (interactive)
   (move-beginning-of-line 1)
   (newline)
@@ -481,7 +499,8 @@ Otherwise, call `backward-kill-word'."
   (indent-according-to-mode))
 
 (defun fast-file-view-mode ()
-  "Make the buffer read-only and disable font-lock and other bells and whistles for faster viewing."
+  "Make the buffer read-only and disable font-lock and other bells and
+whistles for faster viewing."
   (interactive)
   (setq buffer-read-only t)
   (buffer-disable-undo)
@@ -622,4 +641,5 @@ buffer, you can use `C-SPC' to set the mark, then use this
            (list (car long-lines) max-width (cdr long-lines) (- line start-line))))))
 
 ;;; filesandbuffers.el ends here
-; LocalWords:  filesandbuffers bol ARGth
+; LocalWords:  filesandbuffers bol ARGth setq sNew DNew reddit
+; LocalWords:  somevar

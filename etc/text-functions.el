@@ -3,6 +3,7 @@
 
 ;;; code:
 (defun my/fill-paragraph ()
+  "Call `fill-paragraph' region-sensitive."
   (interactive)
   (fill-paragraph nil t))
 
@@ -57,13 +58,6 @@ Returns the number of duplicate blank lines removed."
                  (if (= removed 1) "" "s")))
       removed)))
 
-(defun delete-duplicate-words ()
-  "Delete duplicate words via `query-replace-regexp'."
-  (interactive nil text-mode)
-  (save-excursion
-    (goto-char (point-min))
-    (query-replace-regexp "\\(\\b\\w+\\b\\)\\W+\\1\\b" "\\1")))
-
 ;; https://emacs.stackexchange.com/questions/51629/add-paragraph-numbers
 (defun number-paragraphs (parg &optional takefirst)
   "Numbers resp. renumber paragraphs.
@@ -100,23 +94,6 @@ Prefix removes numbering."
 	(save-excursion
 	(replace-regexp "^[0-9]+\. " "")))
 
-;; https://speechcode.com/blog/narrow-to-focus/
-(defun narrow-to-focus (start end)
-  "If the region is active, narrow to region, marking it for the future.
-If the mark is not active, narrow to the region that was the most recent focus."
-  (interactive "r")
-  (cond ((use-region-p)
-	 (remove-overlays (point-min) (point-max) 'focus t)
-	 (let ((overlay (make-overlay start end)))
-	   (overlay-put overlay 'focus t)
-	   (narrow-to-region start end)))
-	(t (let ((focus
-		  (seq-find (lambda (o) (overlay-get o 'focus))
-			    (overlays-in (point-min) (point-max)))))
-	     (when focus
-	       (narrow-to-region (overlay-start focus)
-				 (overlay-end focus)))))))
-
 (defun collapse-multiple-spaces-in-region (beg end)
   "Collapse runs of 2+ literal spaces to one space in the active region.
 Tabs untouched. Skips Org tables/src/fixed-width blocks.
@@ -134,6 +111,35 @@ Requires Transient Mark Mode with a visibly active region."
                              (org-in-src-block-p)
                              (org-in-fixed-width-region-p))))
           (replace-match " " t t))))))
+
+(defun normalize-text-dwim (beg end)
+  "Normalize text in region, or whole buffer if no region.
+
+Removes leading whitespace, trailing whitespace, and collapses multiple
+blank lines to a single blank line. Internal spacing within lines is left
+alone."
+  (interactive
+   (if (use-region-p)
+       (list (region-beginning) (region-end))
+     (list (point-min) (point-max))))
+  (save-excursion
+    (save-restriction
+      (narrow-to-region beg end)
+
+      ;; Remove leading and trailing whitespace line by line.
+      (goto-char (point-min))
+      (while (not (eobp))
+        (beginning-of-line)
+        (delete-horizontal-space)
+        (end-of-line)
+        (delete-horizontal-space)
+        (forward-line 1))
+
+      ;; Collapse 3+ newlines to 2 newlines.
+      ;; This preserves paragraph breaks, but removes blank-line bloat.
+      (goto-char (point-min))
+      (while (re-search-forward "\n\\{3,\\}" nil t)
+        (replace-match "\n\n")))))
 
 (defun mark-from-beginning-of-buffer ()
   "Mark the region from the beginning of the buffer to point."
@@ -251,7 +257,8 @@ Operate on region if active, otherwise entire buffer."
       (message "Removed %d footnotes." count))
     count))
 
-(defun zero-width-space () "Insert ZERO WIDTH SPACE."
+(defun zero-width-space ()
+  "Insert ZERO WIDTH SPACE."
   (interactive)
   (insert-char (char-from-name "ZERO WIDTH SPACE"))
   (message "ZWS"))

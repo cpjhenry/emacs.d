@@ -1,0 +1,51 @@
+#!/usr/bin/env node
+// @hnw/date-tibetan https://github.com/hnw/date-tibetan
+// A JavaScript library for Tibetan calendar (Phugpa system),
+// Mongolian calendar, and Bhutanese calendar calculations, including
+// conversions to and from the Gregorian calendar and Julian Day.
+
+// The Tibetan system of astronomy and astrology is extremely complex.
+// It takes five years to study and master it at the Astro Division of
+// the Tibetan Medical and Astro Institute in Dharamsala, India.
+// Students learn to calculate everything by hand in the traditional
+// manner, on a wooden board covered with soot upon which one write
+// with a stylus. There is no complete ephemeris compiled in which to
+// look up figures. One of the main aspects of the training is the
+// mathematics involved in all the calculations.
+
+const { CalendarTibetan } = require('@hnw/date-tibetan');
+
+function pad(n) {
+	return String(n).padStart(2, '0');
+}
+
+// --- argument parsing ---
+if (process.argv[2] === '--losar') {
+  const cycle = Number(process.argv[3]);
+  const year  = Number(process.argv[4]);
+
+  if (!cycle || !year) {
+    console.error("usage: tibdate --losar CYCLE YEAR");
+    process.exit(1);
+  }
+
+  const g = new CalendarTibetan(cycle, year, 1, false, 1, false).toGregorian();
+
+  console.log(`${g.year}-${pad(g.month)}-${pad(g.day)}`);
+  process.exit(0);
+}
+
+// --- default mode: Gregorian → Tibetan ---
+const ymd = process.argv[2];
+if (!ymd) {
+  console.error("usage: tibdate YYYY-MM-DD");
+  process.exit(1);
+}
+
+const [y, m, d] = ymd.split('-').map(Number);
+const tib = new CalendarTibetan().fromGregorian(y, m, d);
+const [cycle, year, month, leapMonth, day, leapDay] = tib.get();
+
+console.log([cycle, year, month, leapMonth ? 1 : 0, day, leapDay ? 1 : 0].join('|'));
+
+//  LocalWords:  tibetan hnw losar tibdate usr
