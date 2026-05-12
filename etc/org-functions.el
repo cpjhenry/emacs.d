@@ -4,6 +4,12 @@
 ;;; code:
 (require 'org)
 
+;; make it an interactive command
+(defun my/org-end-of-subtree ()
+  "Move to the end of the current Org subtree."
+  (interactive)
+  (org-end-of-subtree t))
+
 (defvar org-agenda-file)
 (defun my/agenda ()
   "Load `org-agenda' file."
@@ -46,17 +52,8 @@
       (setq ret (concat (lunar-phase-name (nth 2 phase)) " "
                         (substring (nth 1 phase) 0 5))))))
 
+
 ;; Sage/cpj
-(defun org-hide-comment-blocks ()
-  "Hide all #+begin_comment blocks in the current Org buffer."
-  (save-excursion
-    (goto-char (point-min))
-    (let ((case-fold-search t))
-      (while (re-search-forward "^[ \t]*#\\+begin_comment\\b" nil t)
-        (goto-char (match-beginning 0))  ; must be on the #+begin line
-        (org-fold-hide-block-toggle t)   ; hide this block
-        (forward-line 1)))))
-
 (require 'org-element)
 (defun org-count-paragraphs-in-region (beg end)
   "Count Org \='paragraph' elements between BEG and END."
@@ -104,7 +101,8 @@ If point is not in a heading, count in the whole buffer."
           (funcall browse-url-secondary-browser-function url))
       (user-error "No Org link at point"))))
 
-;; Convert to org-mode from other formats
+
+;; Convert to org-mode from other formats
 ;; https://jao.io/blog/eww-to-org.html
 (require 'eww)
 (defun eww-to-org (&optional dest)
@@ -152,7 +150,7 @@ If DEST, a buffer, is provided, insert the markup there."
 
 ;; https://emacs.stackexchange.com/questions/5465/how-to-migrate-markdown-files-to-emacs-org-mode-format
 (defun markdown-convert-buffer-to-org ()
-"Convert the current buffer's content from markdown to orgmode format
+"Convert the current buffer's content from markdown to `org-mode' format
 and save it with the current buffer's file name but with .org
 extension."
 	(interactive)

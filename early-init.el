@@ -39,11 +39,15 @@
 ;; file is loaded. I use straight.el instead of package.el.
 ;(setq package-enable-at-startup nil)
 
-;; Prevent the glimpse of un-styled Emacs by disabling these UI elements early.
-(setq tool-bar-mode nil
-      menu-bar-mode nil)
-(when (fboundp 'set-scroll-bar-mode)
-  (set-scroll-bar-mode nil))
+;; Prevent the glimpse of unstyled Emacs by disabling these UI elements early.
+(when (fboundp 'menu-bar-mode)
+  (menu-bar-mode -1))
+(when (fboundp 'tool-bar-mode)
+  (tool-bar-mode -1))
+(when (fboundp 'scroll-bar-mode)
+  (scroll-bar-mode -1))
+(when (fboundp 'horizontal-scroll-bar-mode)
+  (horizontal-scroll-bar-mode -1))
 
 ;; Resizing the Emacs frame can be a terribly expensive part of changing the
 ;; font. By inhibiting this, we easily halve startup times with fonts that are
@@ -76,4 +80,4 @@
 (provide 'early-init)
 ;;; early-init.el ends here
 
-; LocalWords:  checkdoc flycheck
+; LocalWords:  checkdoc flycheck tmp gc fixnum dir eln

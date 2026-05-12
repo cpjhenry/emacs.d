@@ -2,10 +2,9 @@
 ;;; commentary:
 
 ;;; code:
-(require 'kfhelp "init/kfhelp")
+(require 'kf-library "opt/kf-library")
 
-(defconst my/emacs-help
-"EMACS
+(defconst my/emacs-help "EMACS
 
 <ROPT>-…	   			MacOS alt keys
 C-x 8 …					Emacs alt keys
@@ -78,8 +77,7 @@ Calendar
 C-<spc> ... M-=			number of days between mark and point")
 (kf-gen-displayer my/emacs-help "Display Emacs help." "*Emacs cheat-sheet*")
 
-(defconst vt-escapes
-"vt sequences:
+(defconst vt-escapes "vt sequences:
 
 <esc>[1~    - Home     <esc>[16~   -          <esc>[31~   - F17
 <esc>[2~    - Insert   <esc>[17~   - F6       <esc>[32~   - F18
@@ -99,8 +97,9 @@ C-<spc> ... M-=			number of days between mark and point")
 
 (kf-gen-displayer vt-escapes "vt terminal escape sequences" "*vt sequences*")
 
-(defconst cm-keys
-"C-M-<delete>	backward-kill-sexp
+(defconst cm-keys "C-M keys:
+
+C-M-<delete>	backward-kill-sexp
 C-M-<home>		beginning-of-defun
 C-M-<end>		end-of-defun
 C-M-<up>		backward-up-list
@@ -140,8 +139,7 @@ C-M-S-v			scroll-other-window-down")
 
 (kf-gen-displayer cm-keys "C-M key bindings" "*C-M keys*")
 
-(defconst cpj/Hanke-Henry
-"                                Hanke-Henry Permanent Calendar (HHPC)
+(defconst cpj/Hanke-Henry "                                Hanke-Henry Permanent Calendar (HHPC)
 
     January                         February                        March
     Mo  Tu  We  Th  Fr  Sa  Su      Mo  Tu  We  Th  Fr  Sa  Su      Mo  Tu  We  Th  Fr  Sa  Su
@@ -181,8 +179,7 @@ C-M-S-v			scroll-other-window-down")
 
 (kf-gen-displayer cpj/Hanke-Henry "Display Hanke-Henry Permanent Calendar." "*HHPC*")
 
-(defconst cpj/british-currency
-"BRITISH CURRENCY
+(defconst cpj/british-currency "BRITISH CURRENCY
 
 PRE-DECIMAL £-s-d
 12 pence (d) = 1 shilling (s)
@@ -201,42 +198,39 @@ CANADA (1859)
 NOTES
 
 The abbreviation for the old penny, d, was derived from the Roman
-denarius, and the abbreviation for the shilling, s, from the
-Roman solidus. The shilling was also denoted by the slash symbol,
-also called a solidus for this reason, which was originally an
-adaptation of the long s. The symbol '£', for the pound, is
-derived from the first letter of the Latin word for pound, libra.
+denarius, and the abbreviation for the shilling, s, from the Roman
+solidus. The shilling was also denoted by the slash symbol, also called
+a solidus for this reason, which was originally an adaptation of the
+long s. The symbol '£', for the pound, is derived from the first letter
+of the Latin word for pound, libra.
 
-The sovereign is a British gold coin with a nominal value of one
-pound sterling (£1) and contains 0.2354 troy oz of pure gold.
-Struck since 1817, it was originally a circulating coin that was
-accepted in Britain and elsewhere in the world; it is now
-a bullion coin and is sometimes mounted in jewellery. In
-addition, circulation strikes and proof examples are often
-collected for their numismatic value. In most recent years, it
-has borne the design of Saint George and the Dragon on the
-reverse; the initials (B P) of the designer, Benedetto Pistrucci,
-are visible to the right of the date.
+The sovereign is a British gold coin with a nominal value of one pound
+sterling (£1) and contains 0.2354 troy oz of pure gold. Struck since
+1817, it was originally a circulating coin that was accepted in Britain
+and elsewhere in the world; it is now a bullion coin and is sometimes
+mounted in jewellery. In addition, circulation strikes and proof
+examples are often collected for their numismatic value. In most recent
+years, it has borne the design of Saint George and the Dragon on the
+reverse; the initials (B P) of the designer, Benedetto Pistrucci, are
+visible to the right of the date.
 
-The guinea (/ˈɡɪniː/; commonly abbreviated gn., or gns. in
-plural) was a coin, minted in Great Britain between 1663 and
-1814, that contained approximately one-quarter of an ounce of
-gold. The name came from the Guinea region in West Africa, from
-where much of the gold used to make the coins was sourced. It is
-valued at one pound and one shilling (21 shillings, £1.05 in
-decimal notation).
+The guinea (/ˈɡɪniː/; commonly abbreviated gn., or gns. in plural) was
+a coin, minted in Great Britain between 1663 and 1814, that contained
+approximately one-quarter of an ounce of gold. The name came from the
+Guinea region in West Africa, from where much of the gold used to make
+the coins was sourced. It is valued at one pound and one shilling (21
+shillings, £1.05 in decimal notation).
 
-The silver crown was a denomination of sterling coinage worth 1⁄4
-of one pound, or 5 shillings, or 60 (old) pence.
+The silver crown was a denomination of sterling coinage worth 1⁄4 of one
+pound, or 5 shillings, or 60 (old) pence.
 
-A common slang term for the pound unit is 'quid' (singular and
-plural). The term may have come from Latin quid via the common
-phrase quid pro quo, literally, 'what for what'.")
+A common slang term for the pound unit is 'quid' (singular and plural).
+The term may have come from Latin quid via the common phrase quid pro
+quo, literally, 'what for what'.")
 
 (kf-gen-displayer cpj/british-currency "British and Canadian Currency." "*currency*")
 
-(defconst cpj/measurements
-"UNITS OF MEASURE
+(defconst cpj/measurements "UNITS OF MEASURE
 
 LENGTH												AREA
 12 inches			=	1 foot						144 sq. inches		=	1 square foot
@@ -346,8 +340,7 @@ CANADIAN MEASUREMENTS
 
 (kf-gen-displayer cpj/measurements "Units of measurement." "*measurements*")
 
-(defconst cpj/tencodes
-"TEN-CODES
+(defconst cpj/tencodes "TEN-CODES
 
  1   Receiving poorly                             44   Arriving on scene
  2   Receiving well                               45   Death or Fatality
@@ -386,8 +379,7 @@ CANADIAN MEASUREMENTS
 
 (kf-gen-displayer cpj/tencodes "Ten-codes" "*Ten-codes*")
 
-(defconst cpj/ninetwo
-  "92 CODE
+(defconst cpj/ninetwo "92 CODE
 |------+---------------------------------------+------+-------------------------------------------|
 | Code | Text                                  | Code | Text                                      |
 |------+---------------------------------------+------+-------------------------------------------|

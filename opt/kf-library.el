@@ -1,11 +1,122 @@
-;;; kfhelp.el --- On-demand help panels for obscure topics.
+;;; kf-library.el --- On-demand help panels for obscure topics
 ;;; commentary:
 ;; https://svn.red-bean.com/repos/kfogel/trunk/.emacs
 
+;; And other tools.
+
 ;;; code:
-(defconst kf-ascii
-  "
-       Decimal - Character
+(defun kf-display-something-maybe-big (contents &optional title)
+  "Display string CONTENTS in a buffer named TITLE."
+  (let ((buf (get-buffer-create (or title "*STUFF*")))
+        (win nil)
+        (lines nil))
+    (save-excursion
+      (set-buffer buf)
+      (erase-buffer)
+      (insert contents)
+      (goto-char (point-min))
+      (setq lines (count-lines (point-min) (point-max)))
+    (setq win (display-buffer buf))
+    (when (> lines (window-text-height win))
+      (select-window win))
+	(help-mode) )))
+
+(defmacro kf-gen-displayer (txt-sym fn-doc-str buf-name &optional fn-alias)
+  "Generate an interactive function with the same symbol name as TXT-SYM,
+whose doc string is FN-DOC-STR, and that when invoked displays TXT-SYM
+in a buffer named BUF-NAME using `display-buffer'."
+  (declare (indent 2))
+  `(progn
+     (defun ,txt-sym ()
+       ,fn-doc-str
+       (interactive)
+       (kf-display-something-maybe-big ,txt-sym ,buf-name))
+     (when (or (not (boundp ',fn-alias)) (not (eq nil ,fn-alias)))
+       (defalias ',fn-alias ',txt-sym))))
+
+;;; Insertion helpers for characters not in my usual input methods. ;;;
+(defun kf-checkbox (parg)
+  "Insert a checkbox.
+With one prefix arg, insert a checked checkbox.
+With two prefix args, insert an x'ed checkbox."
+  (interactive "P")
+  (let ((prefix (car parg)))
+    (cond
+     ((not prefix)  (insert ?☐)) ; 9744
+     ((= prefix 4)  (insert ?☑)) ; 9745
+     ((= prefix 16) (insert ?☒)) ; 9746
+     (t (error "What do you want me to put in that checkbox?")))))
+
+(defun kf-arrow (type)
+  "Insert an arrow of TYPE, where type is a single letter:
+    - \"[u]p\"
+    - \"[d]own\"
+    - \"[l]eft\"
+    - \"[r]ight\"
+    - \"[h]orizontal double arrow\"
+    - \"[v]ertical double arrow\""
+  (interactive
+   "cArrow type ([u]p, [d]own, [l]eft, [r]ight, [h]oriz, [v]ert): ")
+  (insert (cdr (assoc type '((?u . ?↑)
+                             (?d . ?↓)
+                             (?l . ?←)
+                             (?r . ?→)
+                             (?h . ?↔)
+                             (?v . ?↕)
+                             )))))
+
+(defun kf-reverse-lines-region (b e)
+  "Reverse the order of lines containing B (inclusive) to E (exclusive)."
+  (interactive "r")
+  ;; There are two ways to do this: the Emacs way, and the easy way.
+  ;; We're going to do it the easy way.
+  (save-excursion
+    (let ((lines ())
+          (b (progn (goto-char b) (beginning-of-line) (point)))
+          (e (progn (goto-char e) (beginning-of-line) (point))))
+      (goto-char b)
+      (while (< (point) e)
+        (setq lines
+              (cons
+               (buffer-substring (point) (progn (forward-line 1) (point)))
+               lines)))
+      (delete-region b e)
+      (mapcar 'insert lines))))
+
+(defun kf-reverse-words (b e)
+  "Reverse the order of words in the region from B to E."
+  (interactive "*r")
+  (apply 'insert
+         (reverse (split-string (delete-and-extract-region b e) "\\b"))))
+
+(defun kf-format-time-string (time-val)
+  "Return a date string formatted from TIME-VAL the way I usually want."
+  (format-time-string "%Y-%m-%d %H:%M:%S %Z" time-val))
+
+(defun kf-insert-date (&optional thorough)
+  "Insert the current date (with day-of-week and time-of-day if THOROUGH).
+If there is only whitespace or nothing between point and the first
+column, then prepend asterisk + space and post-pend colon + space."
+  (interactive "P")
+  (let* ((decorate nil)
+         (span (buffer-substring-no-properties
+                (point) (save-excursion (beginning-of-line) (point)))))
+    (save-match-data
+      (when (string-match "^\\s-*$" span)
+        (setq decorate t)))
+    (insert (format-time-string (format "%s%s%%Y-%%m-%%d%s%s"
+                                        (if decorate "* " "")
+                                        (if thorough "%A, " "")
+                                        (if thorough " (%H:%M:%S)" "")
+                                        (if decorate ": " ""))))
+    (when thorough
+      ;; Position cursor on the start of the time portion, since
+      ;; that's what's most likely to need editing right now.
+      (re-search-backward "([0-9]")
+      (forward-char 1))))
+
+;;; help panels ;;;
+(defconst kf-ascii "       Decimal - Character
 
        |  0 NUL|  1 SOH|  2 STX|  3 ETX|  4 EOT|  5 ENQ|  6 ACK|  7 BEL|
        |  8 BS |  9 HT | 10 NL | 11 VT | 12 NP | 13 CR | 14 SO | 15 SI |
@@ -61,15 +172,14 @@
        |150  h |151  i |152  j |153  k |154  l |155  m |156  n |157  o |
        |160  p |161  q |162  r |163  s |164  t |165  u |166  v |167  w |
        |170  x |171  y |172  z |173  { |174  | |175  } |176  ~ |177 DEL|
-       "
+"
   "The ASCII character tables.")
+
 (kf-gen-displayer kf-ascii
                   "Display the ASCII character table in its own buffer."
                   "*ASCII*")
 
-
-(defconst kf-datetime-formats
-  "See:
+(defconst kf-datetime-formats "  See:
 
   * http://pleac.sourceforge.net/pleac_python/datesandtimes.html
   * http://docs.python.org/library/time.html
@@ -152,13 +262,13 @@
    %%     a '%' character, of course
 "
   "Date and time formats for various programming languages.")
+
 (kf-gen-displayer kf-datetime-formats
                   "Display date/time format codes in their own buffer"
                   "*Date / Time Formats*")
 
-
-(defconst kf-radio-alphabet
-   "                A - Alpha                  N - November
+(defconst kf-radio-alphabet "
+                A - Alpha                  N - November
                 B - Bravo                  O - Oscar
                 C - Charlie                P - Papa
                 D - Delta                  Q - Quebec
@@ -172,13 +282,12 @@
                 L - Lima                   Y - Yankee
                 M - Mike                   Z - Zulu"
    "Wear aviator goggles when confirming airline reservation numbers.")
+
 (kf-gen-displayer kf-radio-alphabet
                   "Display the radio alphabet in its own buffer."
                   "*RADIO ALPHABET*")
 
-
-(defconst kf-stellar-statistics
-  "
+(defconst kf-stellar-statistics "
    The Sun:
         diameter:    1,390,000 km.
         mass:        1.989e30 kg
@@ -228,230 +337,12 @@
    ---------------------------------------------------------------------
 "
   "Stats on the Sun, planets and selected asteroids.")
+
 (kf-gen-displayer kf-stellar-statistics
                   "Display some statistics about the solar system."
                   "*Solar System*")
 
-
-(defconst kf-gnupg-help
-  "In Emacs, use `C-c RET C-e' to encrypt+sign from Message Mode
-(or use `C-c RET C-s' to just sign without encrypting).
-
-To find/fetch a key:
-
-  gpg --keyserver hkps://KEYSERVER --recv-keys 0xAEA84EDCF01AD86C4701C85C63113AE866587D0A
-  gpg --keyserver hkps://KEYSERVER --search-keys some@email.address
-
-Keyservers to try:
-
-  - keyring.debian.org
-  - keyserver.ubuntu.com
-  - keys.gnupg.net
-  - pool.sks-keyservers.net
-  - keys.openpgp.org
-  - pgp.mit.edu
-
-To send a signed key to a person:
-
-  gpg --armor --output OTHERKEY.signed-by.C5ED8345.asc --export OTHERKEY
-
-To send a signed key to a keyserver:
-  gpg --keyserver KEYSERVER --send-key 16A0DE01
-
-To verify a signature in Gnus:
-
-  W s   (`gnus-summary-force-verify-and-decrypt')
-
-To start/stop/restart gpg-agent:
-
-  gpg-connect-agent /bye              # start it, say for SSH to use it
-  gpgconf --kill gpg-agent            # stop it (gpg will J-i-T restart it)
-  gpg-connect-agent reloadagent /bye  # restart it, in theory, but a)
-                                        you don't need to, and b) this
-                                        command didn't have the effect I
-                                        expected the one time I tried it
-
-To see which recipients a file has been encrypted for:
-
-  gpg --batch --list-packets path/to/file.asc
-
-Batch mode:
-
-  gpg --batch --passphrase-file <passfile> --output <outfile> --decrypt <gpgfile>
-
-Dealing with key errors:
-
-  You might get an error like this:
-
-    gpg: 180713EB6C6E4ED775E277D59836566B272CEF7F: skipped: Unusable public key
-    gpg: [stdin]: encryption failed: Unusable public key
-
-  That can happen with an apparently still-current key if the
-  signature component of the key has expired.  Inspect like so:
-
-    $ gpg --verbose --list-keys jrandom
-    gpg: using pgp trust model
-    gpg: Note: signature key 7CF9CA24B08B8032 expired Tue 30 Aug 2022 07:48:48 PM CDT
-    pub   rsa4096/9836566B272CEF7F 2021-08-31 [C]
-          180713EB6C6E4ED775E277D59836566B272CEF7F
-    uid                 [  full  ] J Random <jrandom@example.com>
-    sub   rsa4096/7CF9CA24B08B8032 2021-08-31 [S] [expired: 2022-08-31]
-    sub   rsa4096/3A140330EBEE2ED6 2021-08-31 [E] [expired: 2022-08-31]
-    sub   rsa4096/6616A0179FD153B2 2021-08-31 [A] [expired: 2022-08-31]
-
-  To fix, do this:
-
-    $ gpg --recv-keys 0x9836566B272CEF7F
-
-  You might also get an error like this:
-
-    gpg: 8E8AF6393F237A2E: There is no assurance this key belongs to the named user
-    gpg: [stdin]: encryption failed: Unusable public key
-
-  It's due to GPG trust/signature issues that are so intricate
-  that I won't go into them here because I don't want to use up
-  the remaining blank bits in my .emacs :-(.  The solution I
-  used (in at least one case, anyway) was to add both a trust
-  level and a signature to the relevant subkey (notice how in the
-  error message above, the \"8E8AF6393F237A2E\" matches the subkey
-  shown below, rather than matching the main public key).
-
-  One solution is to do something like this:
-
-    > $ gpg --edit-key 5972830CA206DCBA1EF97758D674C7632F4AC0E7
-    > pub  rsa4096/2674C7632F4AC0E7
-    >      created: 2022-11-21  expires: 2024-11-21  usage: SC
-    >      trust: full          validity: unknown
-    > sub  rsa4096/8E8AF6393F237A2E
-    >      created: 2022-11-21  expires: 2024-11-21  usage: E
-    > [ unknown] (1). J. Random <jrandom@example.com>
-    >
-    > gpg> key 8E8AF6393F237A2E
-    >
-    > [...]
-    >
-    > gpg> trust
-    > Please decide how far you trust this user to correctly verify other users' keys
-    > (by looking at passports, checking fingerprints from different sources, etc.)
-    >
-    >   1 = I don't know or won't say
-    >   2 = I do NOT trust
-    >   3 = I trust marginally
-    >   4 = I trust fully
-    >   5 = I trust ultimately
-    >   m = back to the main menu
-    >
-    > Your decision? 4
-    >
-    > [...]
-    >
-    > gpg> sign
-    > Your current signature on \"J. Random <jrandom@example.com>\"
-    > is a local signature.
-    > Do you want to promote it to a full exportable signature? (y/N) y
-    >
-    > pub  rsa4096/2674C7632F4AC0E7
-    >      created: 2022-11-21  expires: 2024-11-21  usage: SC
-    >      trust: full          validity: full
-    >  Primary key fingerprint: 5972 830C A206 DCBA 1EF9  7758 D674 C763 2F4A C0E7
-    >
-    >      J. Random <jrandom@example.com>
-    >
-    > This key is due to expire on 2024-11-21.
-    > Are you sure that you want to sign this key with your
-    > key \"Karl Fogel <kfogel@example.com>\" (810A75CB5CDE3845)
-    >
-    > Really sign? (y/N) y
-
-  Note that I had first done 'lsign' instead of 'sign', and that
-  worked fine insofar as it solved my problem, but it generated a
-  local (non-exportable) signature.  Since I wanted to send the
-  signed key to others, I did the dance again with 'sign' before
-  exporting.
-
-  See also this thread from Matthias Apitz on gnupg-users@:
-
-  https://lists.gnupg.org/pipermail/gnupg-users/2019-October/thread.html#62955
-
-Various advice from http://ben.reser.org/key-transition.txt.asc:
-
-  The old key was:
-
-  pub   1024D/641E358B 2001-04-12
-        Key fingerprint = 42F5 91FD E577 F545 FB40  8F6B 7241 856B 641E 358B
-
-  And the new key is:
-
-  pub   4096R/16A0DE01 2011-01-28
-        Key fingerprint = 19BB CAEF 7B19 B280 A0E2  175E 62D4 8FAD 16A0 DE01
-
-  To fetch the full key, you can get it with:
-
-    curl http://ben.reser.org/benreser.asc | gpg --import -
-
-  Or, to fetch my new key from a public key server, you can simply do:
-
-    gpg --keyserver hkp://KEYSERVER --recv-key 16A0DE01
-
-  If you already know my old key, you can now verify that the new key is
-  signed by the old one:
-
-    gpg --check-sigs 16A0DE01
-
-  If you don't already know my old key, or you just want to be double
-  extra paranoid, you can check the fingerprint against the one above:
-
-    gpg --fingerprint 16A0DE01
-
-  If you are satisfied that you've got the right key, and the UIDs match
-  what you expect, I'd appreciate it if you would sign my key:
-
-    gpg --sign-key 16A0DE01
-
-  Lastly, if you could upload these signatures, i would appreciate it.
-  You can either send me an e-mail with the new signatures (if you have
-  a functional MTA on your system):
-
-    gpg --armor --export 16A0DE01 | mail -s 'OpenPGP Signatures' ben@reser.org
-
-  Or you can just upload the signatures to a public keyserver directly:
-
-  gpg --keyserver KEYSERVER --send-key 16A0DE01
-")
-(kf-gen-displayer kf-gnupg-help
-                  "You never know when the WWW might be down.  Or Google."
-                  "*Because command-line arcana == more security.  Really*"
-                  kf-gpg-help)
-
-
-(defconst kf-principl-help
-  "
-* Principle
-
-  (n) A doctrine, rule, standard, or law.
-  \"The principle of non-violent resistance.\"
-
-* Principal
-
-  (adj) Main, chief, prevailing.
-  \"Haste is the principal cause of security failures.\"
-
-  (n) Person or organization holding an important position or role.
-  \"The principals met in Slovenia to discuss the matter.\"
-
-  (n) One on whose behalf an agent acts.
-  \"The principal, wishing to remain anonymous, sent her agent.\"
-
-  (n) The base investment or sum of money on which interest is paid.
-  \"In principle, mortgage borrowers pay more in interest than in principal.\"
-  ")
-(kf-gen-displayer kf-principl-help
-                  "Tired of Googling this one all the time."
-                  "*English, the failure-friendly language.*")
-
-
-(defconst kf-git-help
-  "Git trivia that I often need and equally often forget.
+(defconst kf-git-help "Git trivia that I often need and equally often forget.
 
 To stash / unstash:
 
@@ -811,7 +702,7 @@ To cherry-pick commits from one or more divergent repositories:
 
 Check out GitHub pull requests locally (okay, GitHub isn't the same as
 Git, but this handily allows one to interact with GitHub without the
-proprietary Javascript):
+proprietary JavaScript):
 
   Add a second \"fetch\" line to the project's .git/config file:
 
@@ -843,15 +734,226 @@ Useful online references:
   \"On undoing, fixing, or removing commits in git\"
   http://sethrobertson.github.io/GitFixUm/fixup.html
 ")
-(kf-gen-displayer kf-git-help
-                  (concat
-                   "Git is like a BMW: "
-                   "a terrific engine surrounded by a cloud of bad decisions.")
-                  "*Because command-line arcana == productivity.*")
 
-
-(defconst kf-latin-abbreviation-help
-  "         http://en.wikipedia.org/wiki/List_of_Latin_abbreviations
+(kf-gen-displayer kf-git-help
+  "Git is like a BMW: a terrific engine surrounded by a cloud of bad decisions."
+  "*Because command-line arcana == productivity.*")
+
+(defconst kf-gnupg-help "In Emacs, use `C-c RET C-e' to encrypt+sign from Message Mode
+(or use `C-c RET C-s' to just sign without encrypting).
+
+To find/fetch a key:
+
+  gpg --keyserver hkps://KEYSERVER --recv-keys 0xAEA84EDCF01AD86C4701C85C63113AE866587D0A
+  gpg --keyserver hkps://KEYSERVER --search-keys some@email.address
+
+Keyservers to try:
+
+  - keyring.debian.org
+  - keyserver.ubuntu.com
+  - keys.gnupg.net
+  - pool.sks-keyservers.net
+  - keys.openpgp.org
+  - pgp.mit.edu
+
+To send a signed key to a person:
+
+  gpg --armor --output OTHERKEY.signed-by.C5ED8345.asc --export OTHERKEY
+
+To send a signed key to a keyserver:
+  gpg --keyserver KEYSERVER --send-key 16A0DE01
+
+To verify a signature in Gnus:
+
+  W s   (`gnus-summary-force-verify-and-decrypt')
+
+To start/stop/restart gpg-agent:
+
+  gpg-connect-agent /bye              # start it, say for SSH to use it
+  gpgconf --kill gpg-agent            # stop it (gpg will J-i-T restart it)
+  gpg-connect-agent reloadagent /bye  # restart it, in theory, but a)
+                                        you don't need to, and b) this
+                                        command didn't have the effect I
+                                        expected the one time I tried it
+
+To see which recipients a file has been encrypted for:
+
+  gpg --batch --list-packets path/to/file.asc
+
+Batch mode:
+
+  gpg --batch --passphrase-file <passfile> --output <outfile> --decrypt <gpgfile>
+
+Dealing with key errors:
+
+  You might get an error like this:
+
+    gpg: 180713EB6C6E4ED775E277D59836566B272CEF7F: skipped: Unusable public key
+    gpg: [stdin]: encryption failed: Unusable public key
+
+  That can happen with an apparently still-current key if the
+  signature component of the key has expired.  Inspect like so:
+
+    $ gpg --verbose --list-keys jrandom
+    gpg: using pgp trust model
+    gpg: Note: signature key 7CF9CA24B08B8032 expired Tue 30 Aug 2022 07:48:48 PM CDT
+    pub   rsa4096/9836566B272CEF7F 2021-08-31 [C]
+          180713EB6C6E4ED775E277D59836566B272CEF7F
+    uid                 [  full  ] J Random <jrandom@example.com>
+    sub   rsa4096/7CF9CA24B08B8032 2021-08-31 [S] [expired: 2022-08-31]
+    sub   rsa4096/3A140330EBEE2ED6 2021-08-31 [E] [expired: 2022-08-31]
+    sub   rsa4096/6616A0179FD153B2 2021-08-31 [A] [expired: 2022-08-31]
+
+  To fix, do this:
+
+    $ gpg --recv-keys 0x9836566B272CEF7F
+
+  You might also get an error like this:
+
+    gpg: 8E8AF6393F237A2E: There is no assurance this key belongs to the named user
+    gpg: [stdin]: encryption failed: Unusable public key
+
+  It's due to GPG trust/signature issues that are so intricate
+  that I won't go into them here because I don't want to use up
+  the remaining blank bits in my .emacs :-(.  The solution I
+  used (in at least one case, anyway) was to add both a trust
+  level and a signature to the relevant subkey (notice how in the
+  error message above, the \"8E8AF6393F237A2E\" matches the subkey
+  shown below, rather than matching the main public key).
+
+  One solution is to do something like this:
+
+    > $ gpg --edit-key 5972830CA206DCBA1EF97758D674C7632F4AC0E7
+    > pub  rsa4096/2674C7632F4AC0E7
+    >      created: 2022-11-21  expires: 2024-11-21  usage: SC
+    >      trust: full          validity: unknown
+    > sub  rsa4096/8E8AF6393F237A2E
+    >      created: 2022-11-21  expires: 2024-11-21  usage: E
+    > [ unknown] (1). J. Random <jrandom@example.com>
+    >
+    > gpg> key 8E8AF6393F237A2E
+    >
+    > [...]
+    >
+    > gpg> trust
+    > Please decide how far you trust this user to correctly verify other users' keys
+    > (by looking at passports, checking fingerprints from different sources, etc.)
+    >
+    >   1 = I don't know or won't say
+    >   2 = I do NOT trust
+    >   3 = I trust marginally
+    >   4 = I trust fully
+    >   5 = I trust ultimately
+    >   m = back to the main menu
+    >
+    > Your decision? 4
+    >
+    > [...]
+    >
+    > gpg> sign
+    > Your current signature on \"J. Random <jrandom@example.com>\"
+    > is a local signature.
+    > Do you want to promote it to a full exportable signature? (y/N) y
+    >
+    > pub  rsa4096/2674C7632F4AC0E7
+    >      created: 2022-11-21  expires: 2024-11-21  usage: SC
+    >      trust: full          validity: full
+    >  Primary key fingerprint: 5972 830C A206 DCBA 1EF9  7758 D674 C763 2F4A C0E7
+    >
+    >      J. Random <jrandom@example.com>
+    >
+    > This key is due to expire on 2024-11-21.
+    > Are you sure that you want to sign this key with your
+    > key \"Karl Fogel <kfogel@example.com>\" (810A75CB5CDE3845)
+    >
+    > Really sign? (y/N) y
+
+  Note that I had first done 'lsign' instead of 'sign', and that
+  worked fine insofar as it solved my problem, but it generated a
+  local (non-exportable) signature.  Since I wanted to send the
+  signed key to others, I did the dance again with 'sign' before
+  exporting.
+
+  See also this thread from Matthias Apitz on gnupg-users@:
+
+  https://lists.gnupg.org/pipermail/gnupg-users/2019-October/thread.html#62955
+
+Various advice from http://ben.reser.org/key-transition.txt.asc:
+
+  The old key was:
+
+  pub   1024D/641E358B 2001-04-12
+        Key fingerprint = 42F5 91FD E577 F545 FB40  8F6B 7241 856B 641E 358B
+
+  And the new key is:
+
+  pub   4096R/16A0DE01 2011-01-28
+        Key fingerprint = 19BB CAEF 7B19 B280 A0E2  175E 62D4 8FAD 16A0 DE01
+
+  To fetch the full key, you can get it with:
+
+    curl http://ben.reser.org/benreser.asc | gpg --import -
+
+  Or, to fetch my new key from a public key server, you can simply do:
+
+    gpg --keyserver hkp://KEYSERVER --recv-key 16A0DE01
+
+  If you already know my old key, you can now verify that the new key is
+  signed by the old one:
+
+    gpg --check-sigs 16A0DE01
+
+  If you don't already know my old key, or you just want to be double
+  extra paranoid, you can check the fingerprint against the one above:
+
+    gpg --fingerprint 16A0DE01
+
+  If you are satisfied that you've got the right key, and the UIDs match
+  what you expect, I'd appreciate it if you would sign my key:
+
+    gpg --sign-key 16A0DE01
+
+  Lastly, if you could upload these signatures, i would appreciate it.
+  You can either send me an e-mail with the new signatures (if you have
+  a functional MTA on your system):
+
+    gpg --armor --export 16A0DE01 | mail -s 'OpenPGP Signatures' ben@reser.org
+
+  Or you can just upload the signatures to a public keyserver directly:
+
+  gpg --keyserver KEYSERVER --send-key 16A0DE01
+")
+
+(kf-gen-displayer kf-gnupg-help
+                  "You never know when the WWW might be down.  Or Google."
+                  "*Because command-line arcana == more security.  Really*"
+                  kf-gpg-help)
+
+(defconst kf-principl-help "* Principle
+
+  (n) A doctrine, rule, standard, or law.
+  \"The principle of non-violent resistance.\"
+
+* Principal
+
+  (adj) Main, chief, prevailing.
+  \"Haste is the principal cause of security failures.\"
+
+  (n) Person or organization holding an important position or role.
+  \"The principals met in Slovenia to discuss the matter.\"
+
+  (n) One on whose behalf an agent acts.
+  \"The principal, wishing to remain anonymous, sent her agent.\"
+
+  (n) The base investment or sum of money on which interest is paid.
+  \"In principle, mortgage borrowers pay more in interest than in principal.\"
+  ")
+
+(kf-gen-displayer kf-principl-help
+                  "Tired of Googling this one all the time."
+                  "*English, the failure-friendly language.*")
+
+(defconst kf-latin-abbreviation-help "(http://en.wikipedia.org/wiki/List_of_Latin_abbreviations)
 
 * A.D.  |  anno Domini  |  \"in the year of the Lord\"
 
@@ -1093,15 +1195,12 @@ Useful online references:
   Sometimes is not abbreviated.  Example: The next football game will
   be the Knights vs. the Sea Eagles.
 ")
-(kf-gen-displayer kf-latin-abbreviation-help
-                  (concat
-                   "No other language is so rich in expressions "
-                   "for clarifying what has been previously said.")
-                  "*It's what they speak in Latin America.*")
 
-
-(defconst kf-ssh-help
-  "How to change a host key:
+(kf-gen-displayer kf-latin-abbreviation-help
+  "No other language is so rich in expressions for clarifying what has been previously said."
+  "*It's what they speak in Latin America.*")
+
+(defconst kf-ssh-help "How to change a host key:
 
   Remove your old host key:
     $ sudo rm -rf /etc/ssh/ssh_host_*
@@ -1125,14 +1224,12 @@ Useful online references:
   How to get all the SSH fingerprints on a server:
     $ for SSH_KEY_FILE in /etc/ssh/ssh_host_*.pub; do if [ -f ${SSH_KEY_FILE} ]; then ssh-keygen -l -f ${SSH_KEY_FILE}; echo \"\"; fi; done
 ")
+
 (kf-gen-displayer kf-ssh-help
                    "SSH: I'm hunting wabbits."
                   "*Admit it, you've always wanted to say that.*")
 
-
-(defconst kf-gnus-help
-  "
-Incorporate and respool mail from an mbox file:
+(defconst kf-gnus-help "Incorporate and respool mail from an mbox file:
 
   In the Group buffer:
   \"G f\" then enter the box file name.
@@ -1158,7 +1255,7 @@ Missing a group:
   If a group exists on disk but not in the Gnus *Group* buffer,
   then do `S s' and type the name of the group.  Although this
   runs `gnus-group-unsubscribe-group', which might seem
-  counterintuitive, that's actually what you want: it toggles
+  counter-intuitive, that's actually what you want: it toggles
   subscription, and somehow you got unsubscribed from that group.
 
   An alternative method seems to be to do `A A' (to invoke
@@ -1178,7 +1275,7 @@ Missing mails in some groups:
   `nnml-generate-nov-databases' from the top of the mail
   hierarchy; it may take a while, but it'll work.  See
 
-  emacs.stackexchange.com/questions/19358/gnus-doesnt-see-mail-even-though-files-are-there
+  emacs.stack-exchange.com/questions/19358/gnus-doesnt-see-mail-even-though-files-are-there
   www.gnu.org/software/emacs/manual/html_node/gnus/Mail-Spool.html#Mail-Spool
 
   for details.
@@ -1200,13 +1297,12 @@ Marks in the Summary Buffer:
 
   https://www.gnu.org/software/emacs/manual/html_node/gnus/Summary-Buffer-Lines.html
 ")
+
 (kf-gen-displayer kf-gnus-help
                  "Gnus: the mailreader that read your mail for you."
                  "*This feature set is larger than my head.*")
 
-
-(defconst kf-latex-help
-  "(http://faculty.cbu.ca/srodney/CompSymbInd.pdf has more.)
+(defconst kf-latex-help "(http://faculty.cbu.ca/srodney/CompSymbInd.pdf has more.)
 
 Angle brackets: \\textless \\textgreater OR \\textlangle \\textrangle
                 (sharper)                 (shallower)
@@ -1309,7 +1405,7 @@ Tables:
   \\label{tab:blazemeter-tests}
   \\end{table}
 
-  (Also, see https://tex.stackexchange.com/questions/12672/\
+  (Also, see https://tex.stackexchange.com/questions/12672/
   which-tabular-packages-do-which-tasks-and-which-packages-conflict
   for a great overview of all the different table packages.)
 
@@ -1389,13 +1485,12 @@ Pre-defined color names that should be available everywhere:
   - blue
   - black
 ")
+
 (kf-gen-displayer kf-latex-help
                  "If you have 100 years to invest, LaTeX is for you."
                  "*LaTeX: The answer to the NSF funding surplus.*")
 
-
-(defconst kf-debian-help
-  "I will never remember this stuff.
+(defconst kf-debian-help "I will never remember this stuff.
 
 To check what version of a package is installed:
 
@@ -1408,46 +1503,11 @@ To find out what version of Debian I'm running:
   $ cat /etc/os-release
 ")
 
-(defconst kf-postgres-help
-  "It's very important that every database have its own command language.
-
-Basic stuff:
-
-  # su - postgres
-  postgres@localhost$ createdb DBNAME -T template_postgis_20
-  postgres@localhost$ createuser USERNAME
-  postgres@localhost$ psql
-  postgres=# \\password               (set password for \"postgres\" superuser)
-  Enter new password: ************
-  Enter it again: ************
-  postgres=# \\q                      (quit; ctrl-d would work as well)
-  postgres@localhost$ psql DBNAME     (\"use DBNAME\" w/in psql works too)
-  postgres=# drop database DBNAME;
-  postgres=# drop user USERNAME;
-  postgres=# create database DBNAME;  (same as 'createdb' on cmdline)
-  postgres=# create user USERNAME;  (same as 'createuser' on cmdline)
-  postgres=# alter user USERNAME with encrypted password 'plaintext';
-  postgres=# grant all privileges on database DBNAME to USERNAME;
-  postgres=# \\l                      (list all databases; \\list works too)
-  postgres=# \\c DBNAME               (connect to db; \\connect works too)
-  postgres=# \\d                      (show everything)
-  postgres=# \\d  \"TABLENAME\"         (show table schema; quotes are needed)
-  postgres=# \\dt \"TABLENAME\"         (show table metadata)
-  postgres=# \\pset pager off         (could probably set in ~/.psqlrc)
-
-To connect to a remote database:
-
-  $ psql -h <host> -p <port> -u <database>
-  $ psql -h <host> -p <port> -U <username> -W <database>
-    Password: <password>
-")
 (kf-gen-displayer kf-debian-help
                  "Because sysadmin is the new user."
                  "*Debian: An OS for the long term... in every sense.*")
 
-
-(defconst kf-grep-help
-  "To avoid long lines and show just context around match, do this:
+(defconst kf-grep-help "To avoid long lines and show just context around match, do this:
 
   grep -nroP \".{0,20}STRING_TO_MATCH.{0,20}\" FILES_TO_SEARCH_IN
 
@@ -1456,13 +1516,12 @@ Lose the -n if you don't want line numbers.  For an even better solution:
 https://www.topbug.net/blog/2016/08/18/\\
 truncate-long-matching-lines-of-grep-a-solution-that-preserves-color/
 ")
+
 (kf-gen-displayer kf-grep-help
                  "You could figure this out from the man page..."
                  "*If you had a million years.*")
 
-
-(defconst kf-markdown-help
-  "Headers:
+(defconst kf-markdown-help "Headers:
 
   # H1
   ## H2
@@ -1587,9 +1646,7 @@ and see also https://www.markdownguide.org/cheat-sheet/ and
 of course https://daringfireball.net/projects/markdown/syntax.
 ")
 
-
-(defconst kf-mediawiki-help
-  "See
+(defconst kf-mediawiki-help "See:
 
   - https://www.mediawiki.org/wiki/Help:Formatting
   - https://www.mediawiki.org/wiki/Help:Links
@@ -1648,13 +1705,12 @@ Images:
   Some options: \"border\", \"frame\", \"thumb\", \"50px\", etc.
   There can be many options, each separated by pipe.
 ")
+
 (kf-gen-displayer kf-markdown-help
                  "Did the dealer give you good trade-in value for your LaTeX?"
                  "*Markdown: so many different ways to be portable!*")
 
-
-(defconst kf-org-mode-help
-  "Stuff I always have to look up, gathered in one place:
+(defconst kf-org-mode-help "Stuff I always have to look up, gathered in one place:
 
 * Todo states / workflow states
 
@@ -1682,11 +1738,24 @@ Images:
   #+SETUPFILE: ../../blah/blah/blah/foo.org
   #+CATEGORY: SomeNameHere
 ")
+
 (kf-gen-displayer kf-org-mode-help
                  "I know there's a manual, but I've only got this week."
                  "*Org Mode: Like Lisp, but with asterisks not parentheses.*")
 
-(provide 'kfhelp)
+(provide 'kf-library)
 
-;;; kfhelp.el ends here.
-; LocalWords:  kfhelp
+;;; kf-library.el ends here.
+; LocalWords:  kfhelp kf arg args x'ed eft ight orizontal ertical ert
+; LocalWords:  cArrow oriz strptime gmtime strftime NextStep Galle cd
+; LocalWords:  mybranch xml oldname newname rebase squashable fixup
+; LocalWords:  rebased remotename branchname oneline committerdate mv
+; LocalWords:  pickaxe repos bool repo xargs wmctrl geekless dancor
+; LocalWords:  github PR's Zulip Quuuux arcana gpg keyserver recv sks
+; LocalWords:  Keyservers keyring debian ubuntu gnupg keyservers pgp
+; LocalWords:  openpgp mit edu armor asc gpgconf reloadagent passfile
+; LocalWords:  outfile decrypt gpgfile stdin jrandom uid subkey Fogel
+; LocalWords:  Apitz sigs UIDs OpenPGP Domini Meridiem cca capitulus
+; LocalWords:  conferre cp Ansmann centum Deo ead eadem Pelon cetera
+; LocalWords:  ibídem Juris rf keygen dpkg openssh ProxyJump scp dir
+; LocalWords:  ProxyCopy respool tmp

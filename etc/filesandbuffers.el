@@ -69,37 +69,14 @@
   (interactive)
   (quit-window t))
 
-;; buffers
+
+;; buffers
 (defun scratch ()
   "Make a new temporary scratch file.
 
 Useful if your *scratch* is already holding something important."
   (interactive)
   (switch-to-buffer (make-temp-name "*scratch*-")))
-
-(defun new-empty-buffer ()
-  "Create new empty buffer."
-  (interactive)
-  (let ((buf (generate-new-buffer "untitled")))
-    (switch-to-buffer buf)
-    (funcall (and default-major-mode))
-    (setq buffer-offer-save t) ))
-
-(defun new-markdown-buffer ()
-"Create new empty `markdown-mode' buffer."
-(interactive)
-(let ((buf (generate-new-buffer "untitled\.md")))
-  (switch-to-buffer buf)
-  (markdown-mode)
-  (setq buffer-offer-save t) ))
-
-(defun new-org-buffer ()
-"Create new empty `org-mode' buffer."
-(interactive)
-(let ((buf (generate-new-buffer "untitled\.org")))
-  (switch-to-buffer buf)
-  (org-mode)
-  (setq buffer-offer-save t) ))
 
 (defun copy-current-to-temp-buffer ()
   "Copy the current buffer or region, create temp buffer, paste it there."
@@ -164,7 +141,8 @@ Useful if your *scratch* is already holding something important."
   (switch-to-buffer (-find (-compose (-partial #'string-match-p regular-expression) #'buffer-name)
 			   (buffer-list))))
 
-;; modeline functions
+
+;; modeline functions
 ;; https://jiewawa.me/2024/10/useful-emacs-commands-for-reading/
 (defun kill-modeline ()
   (setq-local mode-line-format nil))
@@ -177,7 +155,8 @@ Useful if your *scratch* is already holding something important."
        (if (null mode-line-format) (restore-modeline)
 	 (kill-modeline)))
 
-;; macOS frame functions
+
+;; macOS frame functions
 (defun ns-raise-emacs ()
   "Raise Emacs."
   (ns-do-applescript "tell application \"Emacs\" to activate"))
@@ -189,7 +168,8 @@ Useful if your *scratch* is already holding something important."
       (ns-raise-emacs)
       (toggle-frame-maximized))))
 
-;; misc. functions
+
+;; misc. functions
 (defun set-window-width (n)
   "Set the selected window's width as `N'."
   (adjust-window-trailing-edge (selected-window) (- n (window-width)) t))
@@ -254,7 +234,8 @@ mode when toggled off."
       (setq-local cursor-type nil)
     (setq-local cursor-type t)))
 
-;; DIRED functions
+
+;; DIRED functions
 (require 'dired)
 (defun dired-home ()
   "Go to first line in Dired buffer."
@@ -329,8 +310,17 @@ mode when toggled off."
       (kill-buffer dired-buf))))
 (advice-add 'dired-delete-file :before 'dired-kill-before-delete)
 
-;; iBuffer functions
+
+;; iBuffer functions
 (require 'ibuffer)
+(defun my/ibuffer-visit-buffer ()
+  "Visit the buffer on this line."
+  (interactive)
+  (ibuffer-visit-buffer)
+  (let ((buffer "*Ibuffer*"))
+    (and (get-buffer buffer)
+         (kill-buffer buffer))))
+
 (defun ibuffer-advance-motion (direction)
   (forward-line direction)
   (beginning-of-line)
@@ -370,10 +360,12 @@ mode when toggled off."
     (and err1 err2)))
 
 (defun ibuffer-next-header ()
+  "Go to next header."
   (interactive)
   (while (ibuffer-next-line)))
 
 (defun ibuffer-previous-header ()
+  "Go to previous header."
   (interactive)
   (while (ibuffer-previous-line)))
 
@@ -388,12 +380,14 @@ mode when toggled off."
      (list (ido-read-file-name "Find file: " default-directory) t)))
   (find-file file wildcards))
 
-;; scrolling
+
+;; scrolling
 (defun window-half-height ()	(max 1 (/ (1- (window-height (selected-window))) 2)))
 (defun scroll-up-half ()	(interactive) (scroll-up (window-half-height)))
 (defun scroll-down-half ()	(interactive) (scroll-down (window-half-height)))
 
-;; web browsing
+
+;; web browsing
 (defun elpher:eww-browse-url (original url &optional new-window)
   "Handle gemini links."
   (cond ((string-match-p "\\`\\(gemini\\|gopher\\)://" url) (elpher-go url))
@@ -403,7 +397,8 @@ mode when toggled off."
   "Redirect reddit.com to old.reddit.com automatically."
   (replace-regexp-in-string "https://www.reddit.com" "https://old.reddit.com" url))
 
-;; Lookup words in browser
+
+;; Lookup words in browser
 ;; cpj / Sage
 (defvar search-engine-query-url "https://duckduckgo.com/?q="
   "Base query URL for browser searches.")
@@ -512,19 +507,6 @@ whistles for faster viewing."
   "If a file is over a given size, make the buffer read only."
   (when (> (buffer-size) (* 1024 1024))
     (fast-file-view-mode)))
-
-;; https://www.emacswiki.org/emacs/DeletingWhitespace
-(defun whack-whitespace (arg)
-  "Delete all white space from point to the next word.
-
-With prefix ARG delete across newlines as well. The only danger in this
-is that you don't have to actually be at the end of a word to make it
-work. It skips over to the next whitespace and then whacks it all to the
-next word."
-  (interactive "P")
-  (let ((regexp (if arg "[ \t\n]+" "[ \t]+")))
-    (re-search-forward regexp nil t)
-    (replace-match "" nil nil)))
 
 ;; https://emacs.stackexchange.com/questions/3022/reset-custom-variable-to-default-value-programmatically
 ;; usage: (custom/reset-var 'somevar)
@@ -640,6 +622,38 @@ buffer, you can use `C-SPC' to set the mark, then use this
                         (- line start-line))))
            (list (car long-lines) max-width (cdr long-lines) (- line start-line))))))
 
+;; https://www.emacswiki.org/emacs/RandomizeWords
+(defun randomize-region (beg end)
+  "Randomize the order of words in region."
+  (interactive "*r")
+  (let ((all (mapcar
+              (lambda (w) (if (string-match "\\w" w)
+                              ;; Randomize words,
+                              (cons (random) w)
+                            ;; keep everything else in order.
+                            (cons -1 w)))
+              (split-string
+               (delete-and-extract-region beg end) "\\b")))
+        words sorted)
+    (mapc (lambda (x)
+            ;; Words are numbers >= 0.
+            (unless (> 0 (car x))
+              (setq words (cons x words))))
+          all)
+    ;; Random sort!
+    (setq sorted (sort words
+                       (lambda (a b) (< (car a) (car b)))))
+    (mapc
+     'insert
+     ;; Insert using original list, `all',
+     ;; but pull *words* from randomly-sorted list, `sorted'.
+     (mapcar (lambda (x)
+               (if (> 0 (car x))
+                   (cdr x)
+                 (prog1 (cdar sorted)
+                   (setq sorted (cdr sorted)))))
+             all))))
+
 ;;; filesandbuffers.el ends here
 ; LocalWords:  filesandbuffers bol ARGth setq sNew DNew reddit
-; LocalWords:  somevar
+; LocalWords:  somevar Ibuffer

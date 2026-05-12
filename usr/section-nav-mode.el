@@ -13,6 +13,12 @@
 ;; A "section" is the text between two delimiters, or between
 ;; `point-min' / `point-max' and the nearest delimiter.
 
+;;; Recommended keybindings, if you prefer to bind them globally instead:
+;;
+;; (define-key global-map (kbd "M-s ]") #'section-nav-next-section)
+;; (define-key global-map (kbd "M-s [") #'section-nav-previous-section)
+;; (define-key global-map (kbd "M-s n") #'section-nav-narrow-to-current-section)
+
 ;;; Code:
 
 (defgroup section-nav nil
@@ -106,11 +112,4 @@ to the group separator character (^])."
     map))
 
 (provide 'section-nav-mode)
-
-;;; Recommended keybindings, if you prefer to bind them globally instead:
-;;
-;; (define-key global-map (kbd "M-s ]") #'section-nav-next-section)
-;; (define-key global-map (kbd "M-s [") #'section-nav-previous-section)
-;; (define-key global-map (kbd "M-s n") #'section-nav-narrow-to-current-section)
-
 ;;; section-nav-mode.el ends here

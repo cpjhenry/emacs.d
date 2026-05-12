@@ -7,6 +7,7 @@
 ;;; code:
 (require 'calendar)
 (require 'holidays)
+(require 'cal-china)
 (require 'cal-hebrew)
 (require 'lunar)
 (require 'solar)
@@ -26,36 +27,100 @@
         (list (list 3 day y)
               (format "Bahá’í New Year (Naw-Rúz) %d" (- y (1- 1844)))))))))
 
-(with-eval-after-load 'cal-hebrew
-  (defun holiday-hebrew-rosh-hashanah (&optional all)
+(defun holiday-hebrew-rosh-hashanah (&optional all)
   "List of dates related to Rosh Hashana, as visible in calendar window.
 Shows only the major holidays, unless `calendar-hebrew-all-holidays-flag'
 or ALL is non-nil."
-    (when (memq displayed-month '(8 9 10 11))
-      (let ((abs-r-h (calendar-hebrew-to-absolute
-                      (list 7 1 (+ displayed-year 3761)))))
-        (holiday-filter-visible-calendar
-         (append
-          (list
-           (list (calendar-gregorian-from-absolute abs-r-h)
-                 (format "Rosh Hashana %d" (+ 3761 displayed-year)))
-           (list (calendar-gregorian-from-absolute (+ abs-r-h 9))
-                 "Yom Kippur")
-           (list (calendar-gregorian-from-absolute (+ abs-r-h 14))
-                 "Sukkot")))))))
+  (when (memq displayed-month '(8 9 10 11))
+    (let ((abs-r-h (calendar-hebrew-to-absolute
+                    (list 7 1 (+ displayed-year 3761)))))
+      (holiday-filter-visible-calendar
+       (append
+        (list
+         (list (calendar-gregorian-from-absolute abs-r-h)
+               (format "Rosh Hashana %d" (+ 3761 displayed-year)))
+         (list (calendar-gregorian-from-absolute (+ abs-r-h 9))
+               "Yom Kippur")
+         (list (calendar-gregorian-from-absolute (+ abs-r-h 14))
+               "Sukkot")))))))
 
-  (defun holiday-hebrew-tisha-b-av ()
-    "Return only Tisha B'Av, observed on 10 Av if 9 Av falls on Shabbat."
-    (let ((h (holiday-hebrew 5 9 "Tisha B'Av")))
-      (when h
-        (let ((date (caar h)))
-          (if (= (calendar-day-of-week date) 6)
-              (list
-               (list
-                (calendar-gregorian-from-absolute
-                 (1+ (calendar-absolute-from-gregorian date)))
-                "Tisha B'Av (observed)"))
-            h))))))
+(defun holiday-hebrew-tisha-b-av ()
+  "Return only Tisha B'Av, observed on 10 Av if 9 Av falls on Shabbat."
+  (let ((h (holiday-hebrew 5 9 "Tisha B'Av")))
+    (when h
+      (let ((date (caar h)))
+        (if (= (calendar-day-of-week date) 6)
+            (list
+             (list
+              (calendar-gregorian-from-absolute
+               (1+ (calendar-absolute-from-gregorian date)))
+              "Tisha B'Av (observed)"))
+          h)))))
+
+(defun holiday-hebrew-fast-of-esther ()
+  "Return Fast of Esther, moved earlier if it would fall on Shabbat."
+  (let ((h (holiday-hebrew 12 13 "Fast of Esther")))
+    (when h
+      (let ((date (caar h)))
+        (if (= (calendar-day-of-week date) 6) ; Saturday
+            (list
+             (list
+              (calendar-gregorian-from-absolute
+               (- (calendar-absolute-from-gregorian date) 2))
+              "Fast of Esther (observed)"))
+          h)))))
+
+(defconst chinese-zodiac-elements
+["Wood" "Wood" "Fire" "Fire" "Earth" "Earth"
+ "Metal" "Metal" "Water" "Water"])
+
+(defconst chinese-zodiac-animals
+["Rat" "Ox" "Tiger" "Rabbit" "Dragon" "Snake"
+ "Horse" "Goat" "Monkey" "Rooster" "Dog" "Pig"])
+
+(defun chinese-zodiac-for-year (year)
+"Return Chinese zodiac element and animal for Chinese year beginning in YEAR."
+(let* ((n (+ year 57))
+       (stem-index (% (1- n) 10))
+       (branch-index (% (1- n) 12)))
+  (format "%s %s"
+          (aref chinese-zodiac-elements stem-index)
+          (aref chinese-zodiac-animals branch-index))))
+
+(defun holiday-chinese-new-years-eve ()
+"Return Chinese New Year's Eve, the day before Chinese New Year."
+(let ((h (holiday-chinese-new-year)))
+  (when h
+    (mapcar
+     (lambda (entry)
+       (let* ((date (car entry))
+              (abs (calendar-absolute-from-gregorian date))
+              (eve (calendar-gregorian-from-absolute (1- abs))))
+         (list eve "Chinese New Year's Eve 除夕")))
+     h))))
+
+(defun holiday-chinese-new-year-with-zodiac ()
+"Return Chinese New Year with element and animal."
+(let ((h (holiday-chinese-new-year)))
+  (when h
+    (mapcar
+     (lambda (entry)
+       (let* ((date (car entry))
+              (year (nth 2 date)))
+         (list date
+               (format "Chinese New Year (%s) 春節"
+                       (chinese-zodiac-for-year year)))))
+     h))))
+
+(defun holiday-chinese-qingming-with-native-name ()
+"Return Qingming with English and Chinese names."
+(let ((h (holiday-chinese-qingming)))
+  (when h
+    (mapcar
+     (lambda (entry)
+       (list (car entry)
+             "Qingming Festival 清明"))
+     h))))
 
 (defun scottish-quarter-days ()
   "Return Scottish Quarter Days."
@@ -166,7 +231,8 @@ or ALL is non-nil."
           (holiday-advent 0 "Advent"))))
 
    holiday-hebrew-holidays
-   '((holiday-hebrew-passover)
+   '((holiday-hebrew-fast-of-esther)
+     (holiday-hebrew-passover)
      (holiday-hebrew-tisha-b-av)
      (holiday-hebrew-rosh-hashanah)
      (holiday-hebrew 9 25 "Chanukah"))
@@ -177,16 +243,17 @@ or ALL is non-nil."
      (holiday-islamic 10 1 "Id-al-Fitr"))
 
    holiday-oriental-holidays
-   '((holiday-chinese-new-year)
+   '((holiday-chinese-new-years-eve)
+     (holiday-chinese-new-year-with-zodiac)
      (if calendar-chinese-all-holidays-flag
          (append
-          (holiday-chinese 1 15 "Lantern Festival")
-          (holiday-chinese-qingming)
-          (holiday-chinese 5 5 "Dragon Boat Festival")
-          (holiday-chinese 7 7 "Double Seventh Festival")
-          (holiday-chinese 7 15 "Ghost Festival")
-          (holiday-chinese 8 15 "Mid-Autumn Festival")
-          (holiday-chinese 9 9 "Double Ninth Festival"))))
+          (holiday-chinese 1 15 "Lantern Festival 元宵")
+          (holiday-chinese-qingming-with-native-name)
+          (holiday-chinese 5 5 "Dragon Boat Festival 端午")
+          (holiday-chinese 7 7 "Double Seventh Festival 七夕")
+          (holiday-chinese 7 15 "Ghost Festival 中元")
+          (holiday-chinese 8 15 "Mid-Autumn Festival 中秋")
+          (holiday-chinese 9 9 "Double Ninth Festival 重阳"))))
 
    lunar-phase-names
    '("New Moon" "First Qtr" "Full Moon" "Last Qtr")
