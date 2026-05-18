@@ -1,40 +1,63 @@
-;;; kf-library.el --- On-demand help panels for obscure topics
-;;; commentary:
+;;; kf-library.el --- On-demand help panels for obscure topics and other tools
+
+;; Summary: Some decades' worth of Emacs customizations.
+;;
+;; Copyright (C) 1992-2025 Karl Fogel <kfogel@red-bean.com>
+;;
+;; This software is released under the GNU General Public License as
+;; published by the Free Software Foundation, either version 3 of the
+;; License, or (at your option) any later version.
+;;
+;; This software is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+;; GNU General Public License for more details.
+
+;;; Commentary:
 ;; https://svn.red-bean.com/repos/kfogel/trunk/.emacs
+;; as tweaked by cpj/Sage.
 
-;; And other tools.
-
-;;; code:
-(defun kf-display-something-maybe-big (contents &optional title)
-  "Display string CONTENTS in a buffer named TITLE."
-  (let ((buf (get-buffer-create (or title "*STUFF*")))
-        (win nil)
-        (lines nil))
-    (save-excursion
-      (set-buffer buf)
-      (erase-buffer)
-      (insert contents)
-      (goto-char (point-min))
-      (setq lines (count-lines (point-min) (point-max)))
+;;; Code:
+(defun kf-display-something-maybe-big (contents &optional buffer-name)
+  "Display CONTENTS in a help-style buffer BUFFER-NAME."
+  (let* ((buf (get-buffer-create
+               (or buffer-name "*STUFF*")))
+         win)
+    (with-current-buffer buf
+      (let ((inhibit-read-only t))
+        (erase-buffer)
+        (help-mode)
+        (insert contents)
+        (goto-char (point-min))))
     (setq win (display-buffer buf))
-    (when (> lines (window-text-height win))
+    (when (> (with-current-buffer buf
+               (count-screen-lines (point-min) (point-max)))
+             (window-text-height win))
       (select-window win))
-	(help-mode) )))
+    buf))
 
 (defmacro kf-gen-displayer (txt-sym fn-doc-str buf-name &optional fn-alias)
-  "Generate an interactive function with the same symbol name as TXT-SYM,
-whose doc string is FN-DOC-STR, and that when invoked displays TXT-SYM
-in a buffer named BUF-NAME using `display-buffer'."
-  (declare (indent 2))
+  "Generate an interactive display command for TXT-SYM.
+
+The generated function has the same symbol name as TXT-SYM.
+Its doc string is FN-DOC-STR.  When invoked, it displays the value
+of TXT-SYM in a buffer named BUF-NAME using
+`kf-display-something-maybe-big'.
+
+If FN-ALIAS is non-nil, also define it as an alias for the
+generated command."
+  (declare (indent 2)
+           (doc-string 2))
   `(progn
      (defun ,txt-sym ()
        ,fn-doc-str
        (interactive)
        (kf-display-something-maybe-big ,txt-sym ,buf-name))
-     (when (or (not (boundp ',fn-alias)) (not (eq nil ,fn-alias)))
-       (defalias ',fn-alias ',txt-sym))))
+     ,@(when fn-alias
+         `((defalias ',fn-alias #',txt-sym)))))
 
-;;; Insertion helpers for characters not in my usual input methods. ;;;
+
+;;; Insertion helpers for characters not in my usual input methods. ;;;
 (defun kf-checkbox (parg)
   "Insert a checkbox.
 With one prefix arg, insert a checked checkbox.
@@ -115,7 +138,8 @@ column, then prepend asterisk + space and post-pend colon + space."
       (re-search-backward "([0-9]")
       (forward-char 1))))
 
-;;; help panels ;;;
+
+;;; help panels ;;;
 (defconst kf-ascii "       Decimal - Character
 
        |  0 NUL|  1 SOH|  2 STX|  3 ETX|  4 EOT|  5 ENQ|  6 ACK|  7 BEL|

@@ -397,7 +397,8 @@
 ;; end of the page. It's still used (albeit not that frequently) in
 ;; code to divide a file into logical "pages".
 (use-package form-feed-st
-  :config (global-form-feed-st-mode))
+  :config (global-form-feed-st-mode)
+  	  (add-to-list 'form-feed-st-include-modes 'help-mode t))
 
 ;; backups / auto-save
 (setopt	auto-save-default nil
@@ -550,15 +551,16 @@
       ("Markdown" (or (name . "\\.md")
                       (name . "\\.ronn")))
       ("Org"  (name . "\\.org"))
-      ("TeX"  (name . "\\.tex"))
-      ("ePub" (mode . nov-mode))
       ("Planner" (or (mode . calendar-mode)
                      (mode . diary-mode)
                      (mode . diary-fancy-display-mode)
+		     (mode . calfw-calendar-mode)
                      (name . "^\\*daily-info\\*")
                      (name . "^\\*Org Agenda\\*")
                      (name . "^\\*Virgo\\*")
                      (name . "^calendar@*")))
+      ("TeX"  (name . "\\.tex"))
+      ("ePub" (mode . nov-mode))
       ;("erc" (mode . erc-mode))
       ("Eww"  (mode . eww-mode))
       ("gnus" (or (mode . message-mode)
@@ -738,40 +740,40 @@
 (add-hook 'diary-list-entries-hook 'diary-sort-entries t)
 (add-hook 'diary-fancy-display-mode-hook 'alt-clean-equal-signs)
 
-;;; calfw
+;; calfw
 (use-package calfw
   :if *natasha*
   :after calendar
   :demand t
   :init (setq calfw-render-line-breaker 'calfw-render-line-breaker-none) ; wordwrap
   :custom (calfw-display-calendar-holidays nil)
-  :bind (:map calfw-calendar-mode-map
-	      ("q" . quit-window-kill))
+  :bind (("C-c C" . calfw)
+	 :map calfw-calendar-mode-map
+	 ("q" . quit-window-kill))
   :config
   (use-package calfw-cal)
   (use-package calfw-ical)
   (use-package calfw-org)
   (use-package maccalfw)
 
-(defun calfw ()
-  "Display a two-week calfw calendar and clean up temporary Org agenda buffers on exit."
-  (interactive)
-  (let ((cfw-buf
-         (calfw-open-calendar-buffer
-          :contents-sources
-          (list
-           (calfw-cal-create-source "diary" "orange")
-           (calfw-ical-create-source gcal-secret-address "gcal" "IndianRed")
-           (calfw-org-create-source nil "org-agenda" "Green"))
-          :view 'two-weeks)))
-    (with-current-buffer cfw-buf
-      (setq-local kill-buffer-hook nil)
-      (add-hook 'kill-buffer-hook
-                (lambda ()
-                  (when-let ((buf (get-file-buffer org-agenda-file)))
-                    (unless (buffer-modified-p buf)
-                      (kill-buffer buf))))
-                nil t)))))
+  (defun calfw ()
+    "Display a two-week calfw calendar and clean up temporary Org agenda buffers on exit."
+    (interactive)
+    (let ((cfw-buf
+           (calfw-open-calendar-buffer
+            :contents-sources
+            (list
+             (calfw-cal-create-source "diary" "orange")
+             (calfw-ical-create-source gcal-secret-address "gcal" "IndianRed")
+             (calfw-org-create-source nil "org-agenda" "Green"))
+            :view 'two-weeks)))
+      (with-current-buffer cfw-buf
+	(add-hook 'kill-buffer-hook
+                  (lambda ()
+                    (when-let ((buf (get-file-buffer org-agenda-file)))
+                      (unless (buffer-modified-p buf)
+			(kill-buffer buf))))
+                  nil t)))))
 
 ;; Roman clock
 (require 'roman-clock) ; usr/
@@ -1209,8 +1211,11 @@
   (which-key-alias "C-c o" "org")
 
   ;; Replace `org-return' with a DWIM variant for list handling.
-  (require 'org-return)
-  (define-key org-mode-map [remap org-return] #'org-return-dwim)
+  (use-package org-return
+    :ensure nil
+    :after org
+    :bind (:map org-mode-map
+		([remap org-return] . org-return-dwim)))
 
   ;; fix 'org-edit-special'
   (defun cpj/org-edit-special-disable-visual-fill-column (&rest _)
@@ -1267,27 +1272,41 @@
       (add-hook 'org-mode-hook 'visual-fill-column-mode--disable))
 
   ;; Automatically hide Org comment blocks.
-  (require 'org-comment-placeholder); usr/
-  (add-hook 'org-mode-hook #'org-comment-placeholder-mode)
+  (use-package org-comment-placeholder ; usr/
+    :ensure nil
+    :hook (org-mode . org-comment-placeholder-mode))
 
   ;; Hide inline Org footnotes.
-  (require 'org-hide-inline-footnotes) ; usr/
-  (add-hook 'org-mode-hook #'org-hide-inline-footnotes-mode)
+  (use-package org-hide-inline-footnotes ; usr/
+    :ensure nil
+    :hook (org-mode . org-hide-inline-footnotes-mode))
 
   ;; Visually indent Org quote/verse blocks and prettify delimiters.
-  (require 'org-quote-indent) ; usr/
-  (add-hook 'org-mode-hook #'org-quote-indent-mode)
+  (use-package org-quote-indent ; usr/
+    :ensure nil
+    :hook (org-mode . org-quote-indent-mode))
 
   ;; Display certain LaTeX-style macros as nicer strings.
-  (require 'org-macro-display) ; usr/
-  (add-hook 'org-mode-hook #'org-macro-display-mode)
+  (use-package org-macro-display ; usr/
+    :ensure nil
+    :hook (org-mode . org-macro-display-mode))
 
   ;; Replace org-table characters with box-drawing Unicode glyphs.
-  (require 'org-pretty-table) ; opt/
-  (add-hook 'org-mode-hook #'org-pretty-table-mode)
+  (use-package org-pretty-table ; opt/
+    :ensure nil
+    :hook   (org-mode . org-pretty-table-mode)
+    :config (ignore))
 
   ;; Report paragraph count and memorization days.
-  (require 'org-monologue-memo) ; usr/
+  ;; Prefer `org-monologue-memo-report' to `org-monologue-memo-mode'.
+  (use-package org-monologue-memo ; usr/
+    :ensure nil)
+
+  ;; Create an Org export buffer with paragraphs shortened to LIMIT characters.
+  (use-package org-paragraph-preview ; usr/
+    :ensure nil
+    :custom (org-paragraph-preview-latex-header "~/Documents/org/latexhdr.org")
+    	    (org-paragraph-preview-latex-directive "\\ritual"))
 
   ;; Ispell should not check code blocks in org mode
   (add-to-list 'ispell-skip-region-alist '(":\\(PROPERTIES\\|LOGBOOK\\):" . ":END:"))
@@ -1330,6 +1349,13 @@
               #'cpj/org-latex-export-as-latex-cleanup-windows)
 
   (require 'ox-md)
+
+  ;; fix org-table-convert-region menu entry
+  (define-key org-tbl-menu [Convert\ Region]
+	      '(menu-item "Convert Region" org-table-convert-region
+                :enable
+                (or (org-region-active-p)
+                    (not (org-at-table-p 'any)))))
 
   ;; fix table.el error
   ;; https://github.com/doomemacs/doomemacs/issues/6980
@@ -1466,6 +1492,7 @@ title of a page found by the URL into the current buffer."
 ;; print
 (load "print-functions" nil 'nomessage)
 (load "print-buffer-or-region" nil 'nomessage)
+(setopt print-buffer-or-region-save-output nil)
 (define-key global-map [menu-bar file print] nil)
 
 (bind-key "M-p" 'print-buffer-or-region)
@@ -1886,6 +1913,7 @@ title of a page found by the URL into the current buffer."
 (bind-key "C-x x SPC"	'toggle-cursor-off/on)
 (bind-key "C-x x L"	'buf-to-LF)
 (bind-key "C-x x V"	'view-text-file-as-info-manual)
+(bind-key "C-x x a"	'align-regexp)
 (bind-key "C-x x c"	'toggle-fill-column)
 (bind-key "C-x x k"	'kill-other-buffers)
 (bind-key "C-x x l"	'add-file-local-variable)

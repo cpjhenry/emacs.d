@@ -2,7 +2,7 @@
 ;;; commentary:
 
 ;;; code:
-(require 'kf-library "opt/kf-library")
+(require 'kf-library "~/.emacs.d/opt/kf-library")
 
 (defconst my/emacs-help "EMACS
 
@@ -413,8 +413,27 @@ using a numerical code system for frequently used phrases.")
 
 (kf-gen-displayer cpj/ninetwo "92 Code" "*92 CODE*")
 
-;;; cpjhelp.el ends here.
+(defconst cpj/qdays "Quarter / Cross-Quarter / Scottish Quarter Days
+
+ 2 Feb  Candlemas	(+1/4 Sc.1/4)
+25 Mar  Lady Day	(1/4)
+ 1 May  May Day		(+1/4)
+15 May  Whitsun		(Sc.1/4)
+24 Jun  Quarter Day (1/4)
+ 1 Aug  Lammas		(+1/4 Sc.1/4)
+29 Sep  Michaelmas	(1/4)
+ 1 Nov  All Saints' (+1/4)
+11 Nov  Martinmas	(Sc.1/4)
+25 Dec  Quarter Day (1/4)"
+  "The Quarter, Cross-Quarter, and Scottish Quarter Days.")
+
+(kf-gen-displayer cpj/qdays "Quarter Days" "*Quarter Days*")
+
+;;; cpjhelp.el ends here
 
 ;; Local Variables:
 ;; tab-width: 4
 ;; End:
+
+; LocalWords:  kf un sexp esc PgUp PgDn isearch dabbrev eval Su Xtra
+; LocalWords:  denarius Benedetto ˈɡɪni gn gns drachm drachms nau Req

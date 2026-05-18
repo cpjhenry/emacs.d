@@ -233,7 +233,7 @@ and hide the #+end_comment line (including its newline)."
         (org-comment-placeholder--make bol eol content-beg content-end)))))
 
 (defun org-comment-placeholder-tab ()
-  "If on a #+begin_comment line, toggle placeholder; otherwise run `org-cycle`."
+  "If on a \"#+begin_comment line\", toggle the placeholder, otherwise call `org-cycle'."
   (interactive)
   (if (org-comment-placeholder--on-begin-line-p)
       (org-comment-placeholder-toggle)

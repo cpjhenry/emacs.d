@@ -4,6 +4,7 @@
 ;;; Code:
 (require 'calendar)
 (require 'holidays)
+(require 'cal-julian)
 
 (defun calendar-exit-kill ()
   "Kill Calendar when exiting."
@@ -91,18 +92,36 @@
 		(add-text-properties (match-beginning 0) (match-end 0) '(invisible t)))
 		(when state (setq buffer-read-only t))))
 
-;; Biorhythms
-;; https://rosettacode.org/wiki/Biorhythms
+(defvar user-birthdate)
 (defun biorhythm ()
   "Show today's biorhythm. Set variable `birthdate' in format MDY."
   (interactive)
-  (let* ((diff (abs (- (string-to-number (calendar-astro-date-string birthdate))
-		       (string-to-number (calendar-astro-date-string)))))
-         (rhyt '(23 28 33))
-         (perc (mapcar (lambda (x) (round (* 100 (sin
-               (* 2 pi diff (/ 1.0 x)))))) rhyt)))
-    (message "age: %i  physical: %i%%  emotional: %i%%  intellectual: %i%%"
-             diff (car perc) (cadr perc) (caddr perc))))
+  (let* ((diff (abs (- (string-to-number
+                        (calendar-astro-date-string user-birthdate))
+                       (string-to-number
+                        (calendar-astro-date-string)))))
+         (rhythms '((Phy . 23)
+                    (Emo . 28)
+                    (Int . 33)))
+         (vals
+          (mapcar
+           (lambda (r)
+             (let* ((name (car r))
+                    (period (cdr r))
+                    (angle (* 2 pi diff (/ 1.0 period)))
+                    (next-angle (* 2 pi (1+ diff) (/ 1.0 period)))
+                    (today (sin angle))
+                    (tomorrow (sin next-angle))
+                    (pct (round (* 100 today)))
+                    (crossing-p (not (eq (>= today 0)
+                                         (>= tomorrow 0))))
+                    (dir (cond
+                          (crossing-p "!")
+                          ((>= (cos angle) 0) "+")
+                          (t "-"))))
+               (format "%s=%+04d%%%s" name pct dir)))
+           rhythms)))
+    (message "%s" (mapconcat #'identity vals " "))))
 
 (provide 'calendar-routines)
 ;;; calendar-functions.el ends here.

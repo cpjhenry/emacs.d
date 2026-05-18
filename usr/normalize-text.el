@@ -38,6 +38,14 @@
 
 ;;; Code:
 
+(require 'org)
+(require 'org-element)
+
+(defun normalize-text--org-fixed-width-p ()
+  "Return non-nil when point is in an Org fixed-width element."
+  (and (derived-mode-p 'org-mode)
+       (eq (org-element-type (org-element-at-point)) 'fixed-width)))
+
 (defun normalize-text-dwim (beg end)
   "Normalize text in region, or whole buffer if no region.
 
@@ -71,7 +79,7 @@ is skipped in tables, src blocks, and fixed-width regions."
         (unless (and (derived-mode-p 'org-mode)
                      (or (org-at-table-p)
                          (org-in-src-block-p)
-                         (org-in-fixed-width-region-p)))
+                         (normalize-text--org-fixed-width-p)))
           (replace-match " " t t)))
 
       ;; Collapse 3+ newlines to 2 newlines.
