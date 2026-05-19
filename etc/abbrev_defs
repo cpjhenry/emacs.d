@@ -38,11 +38,12 @@
     ("a5vc" "# Set for A5 paper. You can still print this to booklet format." nil :count 0)
     ("ccc" "#+AUTHOR:/Capital City Council \\textnumero154/" nil :count 0)
     ("hdr" "#+LATEX_HEADER:" nil :count 141)
-    ("lat" "#+LATEX:" nil :count 50)
+    ("lat" "#+LATEX:" nil :count 56)
     ("lsvc" "# This is the letter-size version.
 #+LATEX_CLASS_OPTIONS: [letterpaper]
 #+LATEX_HEADER: \\lettersize" nil :count 2)
     ("mapleleaf" "\\twemoji{maple leaf}" nil :count 0)
+    ("mp" "#+LATEX: \\begin{minipage}{\\linewidth}" nil :count 1)
     ("myabstract" "#+LATEX: \\begin{abstract}
 #+LATEX: \\noindent\\parindent=0pt\\parskip=.5\\baselineskip plus 2pt
 

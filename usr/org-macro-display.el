@@ -35,7 +35,9 @@
     ("#+LATEX: \\newpage" . "=====")
     ("#+LATEX: \\asterism" . "* * *")
     ("#+LATEX: \\begin{samepage}" . "⟦keep together⟧")
-    ("#+LATEX: \\end{samepage}" . "·"))
+    ("#+LATEX: \\end{samepage}" . "·")
+    ("#+LATEX: \\begin{minipage}{\\linewidth}" . "⟦keep item together⟧")
+    ("#+LATEX: \\end{minipage}" . "·"))
   "Alist of exact Org/LaTeX macro strings and their display replacements.
 Keys are matched literally (exact string match) and may include braces."
   :type '(alist :key-type string :value-type string)

@@ -36,8 +36,12 @@
 ;; overlays, visual wrapping, and folding systems.
 ;;
 ;; This version walks table lines directly instead of depending on
-;; regexp match state, and also extends selected Org-style table
-;; navigation behaviour to table.el-style grid tables.
+;; regexp match state.
+;;
+;; The mode also extends selected Org-style navigation behaviour to
+;; table.el-style grid tables.  TAB and S-TAB move between cells,
+;; while sentence motion commands operate on the current cell rather
+;; than treating wrapped table contents as ordinary prose.
 
 ;;; Code:
 (require 'org)
