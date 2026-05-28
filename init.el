@@ -41,6 +41,14 @@
   (message "→ Running 'Emacs Plus %s'." ns-emacs-plus-version))
 (load "rc/me" 'noerror 'nomessage)
 
+;; OAuth/GPG compatibility for org-gcal/oauth2-auto.
+(setenv "GPG_AGENT_INFO" nil)
+(setq epg-pinentry-mode 'loopback
+      plstore-encrypt-to nil)
+(defvar oauth2-auto-plstore)
+(setq oauth2-auto-plstore (expand-file-name "oauth2-auto.plist"
+			  (expand-file-name "var/" user-emacs-directory)))
+
 
 ;; Customize
 (when *mac*
@@ -153,6 +161,7 @@
 
 	ad-redefinition-action 'accept
 	async-shell-command-buffer 'new-buffer
+	auth-sources '("~/.authinfo")
 	case-fold-search t
 	confirm-kill-processes nil ; quit Emacs directly even if there are running processes
 	cursor-in-non-selected-windows nil
@@ -223,8 +232,13 @@
 	transient-levels-file		(concat user-emacs-directory "var/transient/levels.el")
 	transient-values-file		(concat user-emacs-directory "var/transient/values.el")
 	url-configuration-directory	(concat user-emacs-directory "var/url/configuration/"))
-(setq	multisession-directory		(concat user-emacs-directory "var/multisession")
-	request-storage-directory	(concat user-emacs-directory "var/request/storage/"))
+(setq	persist--directory-location	(concat user-emacs-directory "var/persist"))
+
+(require 'multisession)
+(setopt multisession-directory (concat user-emacs-directory "var/multisession/"))
+
+(require 'request)
+(setopt request-storage-directory (concat user-emacs-directory "var/request/"))
 
 ;; path
 (use-package exec-path-from-shell
@@ -757,23 +771,23 @@
   (use-package maccalfw)
 
   (defun calfw ()
-    "Display a two-week calfw calendar and clean up temporary Org agenda buffers on exit."
+    "Display a two-week calfw calendar and clean up temporary Org buffers on exit."
     (interactive)
     (let ((cfw-buf
            (calfw-open-calendar-buffer
             :contents-sources
             (list
              (calfw-cal-create-source "diary" "orange")
-             (calfw-ical-create-source gcal-secret-address "gcal" "IndianRed")
              (calfw-org-create-source nil "org-agenda" "Green"))
             :view 'two-weeks)))
       (with-current-buffer cfw-buf
-	(add-hook 'kill-buffer-hook
-                  (lambda ()
-                    (when-let ((buf (get-file-buffer org-agenda-file)))
-                      (unless (buffer-modified-p buf)
-			(kill-buffer buf))))
-                  nil t)))))
+	(add-hook
+	 'kill-buffer-hook
+	 (lambda ()
+           (kill-unmodified-file-buffer org-agenda-file)
+           (kill-unmodified-file-buffer org-gcal-file)
+	   (delete-empty-file-buffer (concat org-gcal-file "_archive")))
+	 nil t)))))
 
 ;; Roman clock
 (require 'roman-clock) ; usr/
@@ -1089,10 +1103,14 @@
 
 
 ;; Org-mode
-(setopt org-directory "~/Documents/org/")
+(unless (boundp 'org-directory) (setopt org-directory "~/Documents/org/"))
 (defvar org-agenda-file (concat org-directory "daily.org") "Default agenda file.")
 (setopt	org-default-notes-file (concat org-directory "notes.org")
 	org-id-locations-file (concat user-emacs-directory "var/org-id-locations"))
+(defvar org-generic-id-locations-file)
+(setq org-generic-id-locations-file (expand-file-name "org-generic-id-locations"
+				    (expand-file-name "var/" user-emacs-directory)))
+
 (use-package org
   :ensure nil
   :demand t
@@ -1197,7 +1215,6 @@
 	  ("M-]"        . org-forward-heading-same-level)
 	  ("C-M-["      . outline-up-heading)
 	  ("C-M-]"      . my/org-end-of-subtree)
-	  ("C-c o m"    . org-monologue-memo-report)
 	  ("C-c o r"    . org-mode-restart)
 	  ("C-c o t"    . org-toggle-link-display))
 
@@ -1300,13 +1317,23 @@
   ;; Report paragraph count and memorization days.
   ;; Prefer `org-monologue-memo-report' to `org-monologue-memo-mode'.
   (use-package org-monologue-memo ; usr/
-    :ensure nil)
+    :ensure nil
+    :bind ( :map org-mode-map
+	    ("C-c o m"    . org-monologue-memo-report)))
 
   ;; Create an Org export buffer with paragraphs shortened to LIMIT characters.
   (use-package org-paragraph-preview ; usr/
     :ensure nil
     :custom (org-paragraph-preview-latex-header "~/Documents/org/latexhdr.org")
-    	    (org-paragraph-preview-latex-directive "\\ritual"))
+            (org-paragraph-preview-latex-directives
+	     '("\\ritual"
+               "\\nopgnos"))
+    :bind ( :map org-mode-map
+	    ("C-c o p" . org-paragraph-preview)))
+
+  ;; Preview Org LaTeX documents using plain-text exporter.
+  (use-package org-plain-latex-preview ; usr/
+    :ensure nil)
 
   ;; Ispell should not check code blocks in org mode
   (add-to-list 'ispell-skip-region-alist '(":\\(PROPERTIES\\|LOGBOOK\\):" . ":END:"))
@@ -1421,6 +1448,28 @@ title of a page found by the URL into the current buffer."
   :if *natasha*
   :disabled
   :after org)
+
+(use-package org-gcal
+  :after org
+  :ensure t
+  :custom
+  (org-gcal-fetch-file-alist `((,user-gmail . ,org-gcal-file)))
+  (org-gcal-notify-p nil)
+  (org-gcal-recurring-events-mode 'top-level)
+  (plstore-cache-passphrase-for-symmetric-encryption t)
+  ;(org-gcal-remove-api-cancelled-events nil)
+  ;(org-gcal-update-cancelled-events-with-todo nil)
+  :config
+  (add-to-list 'org-agenda-files org-gcal-file t)
+
+  (defun calfw-gcal ()
+  "Fetch Google Calendar events, then display calfw."
+  (interactive)
+  (deferred:$
+    (org-gcal-fetch)
+    (deferred:nextc it
+      (lambda (_)
+        (calfw))))))
 
 (use-package org-ref ; setup bibliography, cite, ref, and label org-mode links
   :if *natasha*
@@ -1992,4 +2041,5 @@ title of a page found by the URL into the current buffer."
 ; LocalWords:  pandoc alphapapa unpackaged xml xsl xhtml nxml parens
 ; LocalWords:  MidnightBlue src numero documentclass subsubsection
 ; LocalWords:  github cliplink Waterfox waterfox nov backend fboundp
-; LocalWords:  windmove goto ripgrep nomessage lorem
+; LocalWords:  windmove goto ripgrep nomessage lorem OAuth authinfo
+; LocalWords:  plist nopgnos

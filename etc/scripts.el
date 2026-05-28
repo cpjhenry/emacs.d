@@ -11,14 +11,15 @@
   (shell-command "di-mode&" (current-buffer))
   (view-mode)
 
-  (alert)
+  (wx-alert)
 
   (diary-list-entries (calendar-current-date) diary-number-of-entries)
   (kill-buffer "diary")
 
   (message "'cbc' / 'xkcd' / 'elfeed'"))
 
-(defun alert () "Weather forecast from Environment Canada."
+(defun wx-alert (&rest _ignore)
+  "Weather forecast from Environment Canada."
   (interactive)
   (switch-to-buffer "*WX*")
   (shell-command "alert -sfm" (current-buffer))

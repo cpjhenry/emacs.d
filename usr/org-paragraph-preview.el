@@ -31,17 +31,47 @@
   :type '(choice (const :tag "None" nil) file)
   :group 'org-paragraph-preview)
 
-(defcustom org-paragraph-preview-latex-directive nil
-  "LaTeX directive inserted into preview export buffers."
-  :type '(choice (const :tag "None" nil) string)
+(defcustom org-paragraph-preview-latex-directives nil
+  "List of LaTeX directives inserted into preview export buffers."
+  :type '(repeat string)
   :group 'org-paragraph-preview)
+
+(defcustom org-paragraph-preview-limit 40
+  "Default maximum paragraph preview length."
+  :type 'integer
+  :group 'org-paragraph-preview)
+
+(defun org-paragraph-preview--shorten (text limit)
+  "Shorten TEXT to LIMIT characters, preserving the final word.
+When TEXT is longer than LIMIT, keep the beginning of TEXT, insert
+an ellipsis, and preserve the final word including punctuation."
+  (if (<= (length text) limit)
+      text
+    (let* ((ellipsis " … ")
+           (last-word
+            (if (string-match "\\([^[:space:]]+\\)[[:space:]]*$" text)
+                (match-string 1 text)
+              ""))
+           (available (- limit
+                         (length ellipsis)
+                         (length last-word)))
+           (prefix
+            (if (> available 0)
+                (substring text 0 (min available (length text)))
+              "")))
+      (concat
+       (string-trim-right prefix)
+       ellipsis
+       last-word))))
 
 (defun org-paragraph-preview (&optional limit)
   "Create an Org export buffer with paragraphs shortened to LIMIT characters.
 Headings are preserved.  Paragraphs are each reduced to one line ending
 with an ellipsis when truncated."
   (interactive "P")
-  (let* ((limit (or (and limit (prefix-numeric-value limit)) 39))
+  (let* ((limit (or (and limit
+			 (prefix-numeric-value limit))
+                    org-paragraph-preview-limit))
          (text (if (use-region-p)
                    (buffer-substring-no-properties (region-beginning) (region-end))
                  (save-restriction
@@ -61,12 +91,12 @@ with an ellipsis when truncated."
 	(insert (format "#+INCLUDE: %S\n"
 			org-paragraph-preview-latex-header)))
 
-      (when org-paragraph-preview-latex-directive
-	(insert (format "#+LATEX: %s\n"
-			org-paragraph-preview-latex-directive)))
+      (when org-paragraph-preview-latex-directives
+	(dolist (directive org-paragraph-preview-latex-directives)
+	  (insert (format "#+LATEX: %s\n" directive))))
 
       (when (or org-paragraph-preview-latex-header
-		org-paragraph-preview-latex-directive)
+		org-paragraph-preview-latex-directives)
 	(insert "\n"))
 
       ;; Now treat it as Org.
@@ -79,15 +109,19 @@ with an ellipsis when truncated."
                       (buffer-substring-no-properties beg end))))
           (delete-region beg end)
           (goto-char beg)
-          (insert
-           (if (> (length para) limit)
-               (concat (substring para 0 limit) "...")
-             para))))
+          ;; (insert
+           ;; (if (> (length para) limit)
+           ;;     (concat (substring para 0 limit) "...")
+           ;;   para))
+	  (insert
+	   (org-paragraph-preview--shorten para limit))))
 
       (let ((workbuf (current-buffer))
 	    (file (make-temp-file "org-paragraph-preview-" nil ".org")))
 	(write-region (point-min) (point-max) file nil 'silent)
 	(find-file file)
+	(when (bound-and-true-p jinx-mode)
+	  (jinx-mode -1))
 	(kill-buffer workbuf)))))
 
 (provide 'org-paragraph-preview)

@@ -103,6 +103,22 @@ Useful if your *scratch* is already holding something important."
   (mapc 'kill-buffer (delq (current-buffer) (buffer-list)))
   (kill-dired-buffers))
 
+(defun kill-unmodified-file-buffer (file)
+  "Kill FILE's buffer if it exists and is unmodified."
+  (when-let ((buf (get-file-buffer file)))
+    (unless (buffer-modified-p buf)
+      (kill-buffer buf))))
+
+(defun delete-empty-file-buffer (file)
+  "Kill FILE's buffer and delete FILE if it is empty and unmodified."
+  (when-let ((buf (get-file-buffer file)))
+    (with-current-buffer buf
+      (when (and (not (buffer-modified-p))
+                 (zerop (buffer-size)))
+        (kill-buffer buf)
+        (when (file-exists-p file)
+          (delete-file file))))))
+
 (defun shell-command-on-buffer ()
   "Asks for a command and execute it in inferior shell with current buffer as input."
   (interactive)
@@ -396,6 +412,17 @@ mode when toggled off."
 (defun eww-reddit-redirect (url)
   "Redirect reddit.com to old.reddit.com automatically."
   (replace-regexp-in-string "https://www.reddit.com" "https://old.reddit.com" url))
+
+(defun cpj/use-system-browser ()
+  "Use the macOS default browser for URL handling."
+  (interactive)
+  (setopt browse-url-browser-function
+          #'browse-url-default-macosx-browser))
+
+(defun cpj/use-eww-browser ()
+  "Use EWW for URL handling."
+  (interactive)
+  (setopt browse-url-browser-function #'eww-browse-url))
 
 
 ;; Lookup words in browser

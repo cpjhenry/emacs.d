@@ -496,39 +496,43 @@ owned by `org-pretty-table-mode' from the affected table."
 ;; Extend Org TAB navigation to table.el-style grid tables by
 ;; making `org-cycle' move between cells instead of folding.
 
-(defun org-pretty-table--grid-row-p (&optional position)
-  "Return non-nil when POSITION, or point, is on a table.el grid row."
+(defun org-pretty-table--table-el-p ()
+  "Return non-nil when point is in a table.el table."
+  (and (fboundp 'org-at-table.el-p)
+       (org-at-table.el-p)))
+
+(defun org-pretty-table--table-el-row-p (&optional position)
+  "Return non-nil when POSITION, or point, is on a table.el row."
   (save-excursion
     (when position
       (goto-char position))
-    (goto-char (line-beginning-position))
-    (skip-chars-forward " \t" (line-end-position))
-    (memq (char-after)
-          (list org-pretty-table--pipe org-pretty-table--plus))))
+    (and (org-pretty-table--table-el-p)
+         (save-excursion
+           (goto-char (line-beginning-position))
+           (skip-chars-forward " \t" (line-end-position))
+           (memq (char-after)
+                 (list org-pretty-table--pipe
+                       org-pretty-table--plus))))))
 
-(defun org-pretty-table-next-cell ()
-  "Move point to the next cell in a table.el-style grid table."
-  (interactive)
-  (unless (org-pretty-table--grid-row-p)
-    (user-error "Not on a table.el grid row"))
-  (let ((line-end (line-end-position)))
-    (if (search-forward "|" line-end t)
-        (skip-chars-forward " \t" line-end)
-      (forward-line 1)
-      (while (and (not (eobp))
-                  (org-pretty-table--grid-row-p)
-                  (save-excursion
-                    (goto-char (line-beginning-position))
-                    (skip-chars-forward " \t" (line-end-position))
-                    (eq (char-after) org-pretty-table--plus)))
-        (forward-line 1))
-      (if (and (not (eobp))
-               (org-pretty-table--grid-row-p))
-          (progn
-            (goto-char (line-beginning-position))
-            (search-forward "|" (line-end-position) t)
-            (skip-chars-forward " \t" (line-end-position)))
-        (user-error "No next table cell")))))
+(defun org-pretty-table--table-el-hline-p (&optional position)
+  "Return non-nil when POSITION, or point, is on a table.el hline."
+  (save-excursion
+    (when position
+      (goto-char position))
+    (and (org-pretty-table--table-el-row-p)
+         (save-excursion
+           (goto-char (line-beginning-position))
+           (skip-chars-forward " \t" (line-end-position))
+           (eq (char-after) org-pretty-table--plus)))))
+
+(defun org-pretty-table--first-cell-on-line ()
+  "Return the first content-start position on the current line, or nil."
+  (save-excursion
+    (goto-char (line-beginning-position))
+    (when (search-forward "|" (line-end-position) t)
+      (skip-chars-forward " \t" (line-end-position))
+      (when (< (point) (line-end-position))
+        (point)))))
 
 (defun org-pretty-table--cell-starts-on-line ()
   "Return a list of content-start positions for cells on the current line."
@@ -542,11 +546,31 @@ owned by `org-pretty-table-mode' from the affected table."
           (push (point) starts))))
     (nreverse starts)))
 
-(defun org-pretty-table-previous-cell ()
-  "Move point to the previous cell in a table.el-style grid table."
+(defun org-pretty-table-next-cell ()
+  "Move point to the next cell in a table.el table."
   (interactive)
-  (unless (org-pretty-table--grid-row-p)
-    (user-error "Not on a table.el grid row"))
+  (unless (org-pretty-table--table-el-row-p)
+    (user-error "Not on a table.el row"))
+  (let ((line-end (line-end-position)))
+    (if (search-forward "|" line-end t)
+        (skip-chars-forward " \t" line-end)
+      (let ((target
+             (save-excursion
+               (forward-line 1)
+               (while (and (not (eobp))
+                           (org-pretty-table--table-el-hline-p))
+                 (forward-line 1))
+               (when (org-pretty-table--table-el-row-p)
+                 (org-pretty-table--first-cell-on-line)))))
+        (if target
+            (goto-char target)
+          (user-error "No next table cell"))))))
+
+(defun org-pretty-table-previous-cell ()
+  "Move point to the previous cell in a table.el table."
+  (interactive)
+  (unless (org-pretty-table--table-el-row-p)
+    (user-error "Not on a table.el row"))
   (let* ((pos (point))
          (starts (org-pretty-table--cell-starts-on-line))
          (prev (car (last (seq-filter (lambda (p) (< p pos)) starts)))))
@@ -558,17 +582,9 @@ owned by `org-pretty-table-mode' from the affected table."
              (save-excursion
                (forward-line -1)
                (while (and (not (bobp))
-                           (org-pretty-table--grid-row-p)
-                           (save-excursion
-                             (goto-char (line-beginning-position))
-                             (skip-chars-forward " \t" (line-end-position))
-                             (eq (char-after) org-pretty-table--plus)))
+                           (org-pretty-table--table-el-hline-p))
                  (forward-line -1))
-               (when (and (org-pretty-table--grid-row-p)
-                          (not (save-excursion
-                                 (goto-char (line-beginning-position))
-                                 (skip-chars-forward " \t" (line-end-position))
-                                 (eq (char-after) org-pretty-table--plus))))
+               (when (org-pretty-table--table-el-row-p)
                  (let ((prev-row-starts
                         (org-pretty-table--cell-starts-on-line)))
                    (car (last prev-row-starts)))))))
@@ -577,8 +593,8 @@ owned by `org-pretty-table-mode' from the affected table."
           (user-error "No previous table cell")))))))
 
 (defun org-pretty-table-cycle-dwim (oldfun &rest args)
-  "Make `org-cycle' move by cell inside table.el grid tables."
-  (if (org-pretty-table--grid-row-p)
+  "Make `org-cycle' move by cell inside table.el tables."
+  (if (org-pretty-table--table-el-p)
       (org-pretty-table-next-cell)
     (apply oldfun args)))
 
@@ -586,8 +602,8 @@ owned by `org-pretty-table-mode' from the affected table."
   (advice-add 'org-cycle :around #'org-pretty-table-cycle-dwim))
 
 (defun org-pretty-table-shifttab-dwim (oldfun &rest args)
-  "Make `org-shifttab' move backward by cell inside table.el grid tables."
-  (if (org-pretty-table--grid-row-p)
+  "Make `org-shifttab' move backward by cell inside table.el tables."
+  (if (org-pretty-table--table-el-p)
       (org-pretty-table-previous-cell)
     (apply oldfun args)))
 
