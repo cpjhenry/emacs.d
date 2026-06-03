@@ -1,73 +1,73 @@
-;;; filesandbuffers.el --- FILE/BUFFER functions
+;;; filesandbuffers.el --- FILE/BUFFER functions -*- lexical-binding: t; -*-
 ;;; Commentary:
 
 ;;; Code:
 (defun my/backward-paragraph ()
   "Backward paragraph."
-  (interactive)
+  (interactive "^")
   (backward-paragraph)
-  (recenter-top-bottom))
+  (recenter-top-bottom 0))
 
 (defun my/forward-paragraph ()
   "Forward paragraph."
-  (interactive)
+  (interactive "^")
   (forward-paragraph)
-  (recenter-top-bottom))
+  (recenter-top-bottom 0))
 
 (defun my/backward-page ()
   "Backward page."
-  (interactive)
+  (interactive "^")
   (backward-page)
-  (recenter-top-bottom)
+  (recenter-top-bottom 0)
   (beginning-of-line))
 
 (defun my/forward-page ()
   "Forward page."
-  (interactive)
+  (interactive "^")
   (forward-line)
   (forward-page)
-  (recenter-top-bottom)
+  (recenter-top-bottom 0)
   (beginning-of-line))
 
-(defun my/init ()
-  "Load init-file."
-  (interactive)
-  (find-file user-init-file))
-
-(require 'outline)
+(declare-function outline-previous-heading "outline")
 (defun my/outline-previous-heading ()
   "Go to previous heading."
-  (interactive)
+  (interactive "^")
   (outline-previous-heading)
-  (recenter-top-bottom))
+  (recenter-top-bottom 0))
 
+(declare-function outline-next-heading "outline")
 (defun my/outline-next-heading ()
   "Go to next heading."
-  (interactive)
+  (interactive "^")
   (outline-next-heading)
-  (recenter-top-bottom))
+  (recenter-top-bottom 0))
 
-(defun my/shell ()
-  "Open shell at ~/ always."
-  (interactive)
-  (let ((default-directory "~"))
-    (mistty)))
+(defun my/end-of-buffer ()
+  "End of buffer."
+  (interactive "^")
+  (goto-char (point-max))
+  (recenter -1))
 
-(require 'view)
+
+(declare-function View-scroll-line-backward "view")
 (defun my/View-scroll-line-backward ()
   "Scroll line backward, jump to new top of screen."
   (interactive)
   (View-scroll-line-backward)
   (move-to-window-line-top-bottom))
 
-(defun my/delete-other-windows (&rest _)
-  "Advice wrapper to discard unnecessary arguments to function."
-  (delete-other-windows))
-
-(defun quit-window-kill ()
-  "Kill when quitting."
+(defun my/init ()
+  "Load init-file."
   (interactive)
-  (quit-window t))
+  (find-file user-init-file))
+
+(declare-function mistty "mistty")
+(defun my/shell ()
+  "Open shell at ~/ always."
+  (interactive)
+  (let ((default-directory "~"))
+    (mistty)))
 
 
 ;; buffers
@@ -97,6 +97,15 @@ Useful if your *scratch* is already holding something important."
       (while (search-forward "" nil t) ; group separator
 	(replace-match "")))))
 
+(defun my/delete-other-windows (&rest _)
+  "Advice wrapper to discard unnecessary arguments to function."
+  (delete-other-windows))
+
+(defun quit-window-kill ()
+  "Kill when quitting."
+  (interactive)
+  (quit-window t))
+
 (defun kill-other-buffers ()
   "Kill all other buffers."
   (interactive)
@@ -120,7 +129,7 @@ Useful if your *scratch* is already holding something important."
           (delete-file file))))))
 
 (defun shell-command-on-buffer ()
-  "Asks for a command and execute it in inferior shell with current buffer as input."
+  "Asks for a command and execute it with current buffer as input."
   (interactive)
   (shell-command-on-region (point-min) (point-max)
 			   (read-shell-command "Shell command on buffer: ")))
@@ -130,13 +139,6 @@ Useful if your *scratch* is already holding something important."
   "Save all unsaved files. No ask."
   (interactive)
   (save-some-buffers t))
-
-;; https://emacs.stackexchange.com/questions/3116/how-to-display-a-message-in-echo-area-only
-(defun echo-and-ignore-message-buffer (message)
-  (let ((prev-msg-log-max message-log-max))
-    (unwind-protect (progn (setq message-log-max nil)
-			   (message message))
-      (setq message-log-max prev-msg-log-max))))
 
 (defun shell-other-frame ()
   "Open a `shell' in a new frame."
@@ -152,6 +154,10 @@ Useful if your *scratch* is already holding something important."
   (set-buffer-modified-p nil))
 
 ;; See: https://emacs.stackexchange.com/questions/81361/how-to-switch-to-a-buffer-from-terminal-with-a-unique-partial-name
+(declare-function -find "-find")
+(declare-function -compose "-compose")
+(declare-function -partial "-partial")
+
 (defun switch-to-buffer-matching (regular-expression)
   "Switch to the first buffer that matches REGULAR-EXPRESSION."
   (switch-to-buffer (-find (-compose (-partial #'string-match-p regular-expression) #'buffer-name)
@@ -208,7 +214,10 @@ Useful if your *scratch* is already holding something important."
   (setq fill-column 0)
   (message "Maximum width."))
 
-(require 'visual-fill-column)
+(defvar visual-fill-column-mode)
+(defvar visual-fill-column-center-text)
+(declare-function visual-fill-column-mode "visual-fill-column")
+(declare-function visual-fill-column-adjust "visual-fill-column")
 (defun toggle-fill-column-center ()
   "Toggle `visual-fill-column-center-text'.
 
@@ -249,6 +258,12 @@ mode when toggled off."
   (if (bound-and-true-p cursor-type)
       (setq-local cursor-type nil)
     (setq-local cursor-type t)))
+
+;; https://emacs.stackexchange.com/questions/3022/reset-custom-variable-to-default-value-programmatically
+;; usage: (custom/reset-var 'somevar)
+(defun custom/reset-var (symbl)
+  "Reset SYMBL to its standard value."
+  (set symbl (eval (car (get symbl 'standard-value)))))
 
 
 ;; DIRED functions
@@ -313,12 +328,12 @@ mode when toggled off."
   (subst-char-in-string ?\s ?_ str))
 
 (defun my-dired-substspaces (&optional arg)
-  "Rename all marked (or next ARG) files so that spaces are replaced with underscores."
+  "Rename all marked (or next ARG) files replacing spaces with underscores."
   (interactive "P")
   (dired-rename-non-directory #'my-substspaces "Rename by substituting spaces" arg))
 
 ;; https://old.reddit.com/r/emacs/comments/91xnv9/noob_delete_buffer_automatically_after_removing/
-(defun dired-kill-before-delete (file &rest rest)
+(defun dired-kill-before-delete (file &rest _)
   "Automatically delete the buffer of the FILE that's being deleted."
   (if-let ((buf (get-file-buffer file)))
       (kill-buffer buf)
@@ -404,6 +419,7 @@ mode when toggled off."
 
 
 ;; web browsing
+(declare-function elpher-go "")
 (defun elpher:eww-browse-url (original url &optional new-window)
   "Handle gemini links."
   (cond ((string-match-p "\\`\\(gemini\\|gopher\\)://" url) (elpher-go url))
@@ -460,227 +476,4 @@ falling back to `browse-url-browser-function'."
          (concat search-engine-query-url
                  (url-hexify-string term)))))))
 
-
-;; https://vishesh.github.io/emacs/editors/2023/01/25/lean-emacs-config.html
-;; (see bindings for: "C-a" "C-w" "M-w" "M-j")
-;; cpj -> "^" in interactive modifier allows `shift-select' to work properly.
-
-(defun back-to-indentation-or-beginning-of-line (&optional arg)
-  "Move point to indentation, or to bol if already at indentation.
-
-With prefix ARG, operate on the ARGth line forward (like
-`move-beginning-of-line')."
-
-  (interactive "^p")
-  (setq arg (or arg 1))
-  (when (/= arg 1)
-    (forward-line (1- arg)))
-  (let ((indent-pos (save-excursion (back-to-indentation) (point))))
-    (if (= (point) indent-pos)
-        (beginning-of-line)
-      (goto-char indent-pos))))
-
-(defun match-paren (&optional arg)
-  "Go to the matching parenthesis character if one is adjacent to point."
-  (interactive "^p")
-  (cond ((looking-at "\\s(") (forward-sexp arg))
-        ((looking-back "\\s)" 1) (backward-sexp arg))
-        ;; Now, try to succeed from inside of a bracket
-        ((looking-at "\\s)") (forward-char) (backward-sexp arg))
-        ((looking-back "\\s(" 1) (backward-char) (forward-sexp arg))))
-
-(defun kill-region-or-backward-word ()
-  "If the region is active and non-empty, call `kill-region'.
-Otherwise, call `backward-kill-word'."
-  (interactive)
-  (call-interactively
-   (if (use-region-p) 'kill-region 'backward-kill-word)))
-
-(defun kill-region-or-thing-at-point (beg end)
-  "If a region is active kill it, or kill the thing (word/symbol) at point."
-  (interactive "r")
-  (unless (region-active-p)
-    (save-excursion
-      (setq beg (re-search-backward "\\_<" nil t))
-      (setq end (re-search-forward "\\_>" nil t))))
-  (kill-ring-save beg end))
-
-(defun open-line-below ()
-  "Start a new line below the current line."
-  (interactive)
-  (move-end-of-line 1)
-  (newline)
-  (indent-according-to-mode))
-
-(defun open-line-above ()
-  "Start a new line above the current line."
-  (interactive)
-  (move-beginning-of-line 1)
-  (newline)
-  (forward-line -1)
-  (indent-according-to-mode))
-
-(defun fast-file-view-mode ()
-  "Make the buffer read-only and disable font-lock and other bells and
-whistles for faster viewing."
-  (interactive)
-  (setq buffer-read-only t)
-  (buffer-disable-undo)
-  (fundamental-mode)
-  (font-lock-mode -1)
-  (when (boundp 'anzu-mode) (anzu-mode -1)))
-
-(defun large-find-file-hook ()
-  "If a file is over a given size, make the buffer read only."
-  (when (> (buffer-size) (* 1024 1024))
-    (fast-file-view-mode)))
-
-;; https://emacs.stackexchange.com/questions/3022/reset-custom-variable-to-default-value-programmatically
-;; usage: (custom/reset-var 'somevar)
-(defun custom/reset-var (symbl)
-  "Reset SYMBL to its standard value."
-  (set symbl (eval (car (get symbl 'standard-value)))))
-
-;; https://old.reddit.com/r/emacs/comments/1im8etu/set_fill_column_to_longest_line_in_buffer/
-(defun longest-line-in-buffer ()
-  (save-excursion
-    (goto-char (point-min))
-    (let ((max-len 0)
-          (curr-len 0))
-      (cl-loop when (eobp)
-	         return (max curr-len max-len)
-               if (= (char-after) ?\n)
-                 do (setq max-len (max curr-len max-len))
-                   and do (setq curr-len 0)
-               else
-                 do (cl-incf curr-len)
-               do (forward-char 1))
-                 )))
-
-;; https://www.emacswiki.org/emacs/download/misc-cmds.el
-(defun goto-longest-line (beg end &optional msgp)
-  "Go to the first of the longest lines in the region or buffer.
-If the region is active, it is checked.
-If not, the buffer (or its restriction) is checked.
-
-Returns a list of three elements:
-
- (LINE LINE-LENGTH OTHER-LINES LINES-CHECKED)
-
-LINE is the first of the longest lines measured.
-LINE-LENGTH is the length of LINE.
-OTHER-LINES is a list of other lines checked that are as long as LINE.
-LINES-CHECKED is the number of lines measured.
-
-Interactively, a message displays this information.
-
-If there is only one line in the active region, then the region is
-deactivated after this command, and the message mentions only LINE and
-LINE-LENGTH.
-
-If this command is repeated, it checks for the longest line after the
-cursor.  That is *not* necessarily the longest line other than the
-current line.  That longest line could be before or after the current
-line.
-
-To search only from the current line forward, not throughout the
-buffer, you can use `C-SPC' to set the mark, then use this
-\(repeatedly)."
-
-  (interactive
-   (if (or (not mark-active)  (not (< (region-beginning) (region-end))))
-       (list (point-min) (point-max))
-     (if (< (point) (mark))
-         (list (point) (mark) 'MSGP)
-       (list (mark) (point) 'MSGP))))
-  (when (and (not mark-active)  (= beg end)) (error "The buffer is empty"))
-  (when (and mark-active  (> (point) (mark))) (exchange-point-and-mark))
-  (when (< end beg) (setq end  (prog1 beg (setq beg  end))))
-  (when (eq 'goto-longest-line last-command)
-    (forward-line 1) (setq beg  (point)))
-  (goto-char beg)
-  (when (eobp) (error "End of buffer"))
-  (cond ((<= end (save-excursion (goto-char beg) (forward-line 1) (point)))
-         (let ((inhibit-field-text-motion  t))  (beginning-of-line))
-         (when (and (> emacs-major-version 21)  (require 'hl-line nil t))
-           (let ((hl-line-mode  t))  (hl-line-highlight))
-           (add-hook 'pre-command-hook #'hl-line-unhighlight nil t))
-         (let ((lineno  (line-number-at-pos))
-               (chars   (let ((inhibit-field-text-motion  t))
-                          (save-excursion (end-of-line) (current-column)))))
-           (message "Only line %d: %d chars" lineno chars)
-           (let ((visible-bell  t))  (ding))
-           (setq mark-active  nil)
-           (list lineno chars nil 1)))
-        (t
-         (let* ((start-line                 (line-number-at-pos))
-                (max-width                  0)
-                (line                       start-line)
-                (inhibit-field-text-motion  t)
-                long-lines col)
-           (when (eobp) (error "End of buffer"))
-           (while (and (not (eobp))  (< (point) end))
-             (end-of-line)
-             (setq col  (current-column))
-             (when (>= col max-width)
-               (setq long-lines  (if (= col max-width)
-                                     (cons line long-lines)
-                                   (list line))
-                     max-width   col))
-             (forward-line 1)
-             (setq line  (1+ line)))
-           (setq long-lines  (nreverse long-lines))
-           (let ((lines  long-lines))
-             (while (and lines  (> start-line (car lines))) (pop lines))
-             (goto-char (point-min))
-             (when (car lines) (forward-line (1- (car lines)))))
-           (when (and (> emacs-major-version 21)  (require 'hl-line nil t))
-             (let ((hl-line-mode  t))  (hl-line-highlight))
-             (add-hook 'pre-command-hook #'hl-line-unhighlight nil t))
-           (when msgp
-             (let ((others  (cdr long-lines)))
-               (message "Line %d: %d chars%s (%d lines measured)"
-                        (car long-lines) max-width
-                        (concat
-                         (and others
-                              (format ", Others: {%s}" (mapconcat
-                                                        (lambda (line) (format "%d" line))
-                                                        (cdr long-lines) ", "))))
-                        (- line start-line))))
-           (list (car long-lines) max-width (cdr long-lines) (- line start-line))))))
-
-;; https://www.emacswiki.org/emacs/RandomizeWords
-(defun randomize-region (beg end)
-  "Randomize the order of words in region."
-  (interactive "*r")
-  (let ((all (mapcar
-              (lambda (w) (if (string-match "\\w" w)
-                              ;; Randomize words,
-                              (cons (random) w)
-                            ;; keep everything else in order.
-                            (cons -1 w)))
-              (split-string
-               (delete-and-extract-region beg end) "\\b")))
-        words sorted)
-    (mapc (lambda (x)
-            ;; Words are numbers >= 0.
-            (unless (> 0 (car x))
-              (setq words (cons x words))))
-          all)
-    ;; Random sort!
-    (setq sorted (sort words
-                       (lambda (a b) (< (car a) (car b)))))
-    (mapc
-     'insert
-     ;; Insert using original list, `all',
-     ;; but pull *words* from randomly-sorted list, `sorted'.
-     (mapcar (lambda (x)
-               (if (> 0 (car x))
-                   (cdr x)
-                 (prog1 (cdar sorted)
-                   (setq sorted (cdr sorted)))))
-             all))))
-
 ;;; filesandbuffers.el ends here
-; LocalWords:  filesandbuffers bol ARGth setq sNew DNew reddit
-; LocalWords:  somevar Ibuffer

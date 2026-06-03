@@ -40,6 +40,8 @@
 (when (bound-and-true-p ns-emacs-plus-version)
   (message "→ Running 'Emacs Plus %s'." ns-emacs-plus-version))
 (load "rc/me" 'noerror 'nomessage)
+(eval-after-load "startup"
+  '(fset 'display-startup-echo-area-message (lambda ())))
 
 ;; OAuth/GPG compatibility for org-gcal/oauth2-auto.
 (setenv "GPG_AGENT_INFO" nil)
@@ -196,7 +198,6 @@
 	page-delimiter "^[#; ]*"
 	pop-up-windows nil
 	pop-up-frames nil
-	recenter-positions '(top) ; top middle bottom
 	require-final-newline nil
 	resize-mini-windows t
 	revert-buffer-quick-short-answers t
@@ -284,7 +285,6 @@
   :disabled
   :if *natasha*
   :ensure nil
-  :load-path "opt/"
   :defer 2
   :config
   (setq ewth-url "http://wttr.in/Ottawa?format=2&d&T")
@@ -313,6 +313,20 @@
 (load "filesandbuffers" nil 'nomessage)
 (load "render-buffers" nil 'nomessage)
 (load "skeletons" nil 'nomessage)
+
+(use-package lean-emacs
+  :ensure nil
+  :demand t
+  :bind ( ("M-j"	. join-line)			 ; default-indent-new-line (see 'C-M-j')
+	  ("C-w"	. kill-region-or-backward-word)	 ; kill-region
+	  ("M-w"	. kill-region-or-thing-at-point) ; kill-ring-save
+	  ("C-M-]"	. match-paren)
+	  ("C-x x s"	. save-all-unsaved))
+  :hook   (find-file . large-find-file-hook)		 ; Emacs suffers when you open large files
+  :config
+  (dolist (key '("<home>" "s-<left>" "C-a"))
+    (when (key-binding (kbd key))
+      (global-set-key (kbd key) #'back-to-indentation-or-beginning-of-line))))
 
 (require 'abbrev)
 (setopt	abbrev-file-name (concat user-emacs-directory "etc/abbrev_defs")
@@ -351,9 +365,6 @@
 
 ;; remove trailing whitespace on-save
 ;(add-hook 'write-file-hooks 'delete-trailing-whitespace)
-
-;; Emacs really suffers when you open large files.
-(add-hook 'find-file-hook 'large-find-file-hook)
 
 ;; Mode hooks
 (add-hook 'doc-view-mode-hook 'auto-revert-mode)
@@ -532,6 +543,7 @@
 	(add-to-list 'ido-ignore-buffers "^*Async-native-compile-log*")
 	(add-to-list 'ido-ignore-buffers "^*Backtrace*")
 	(add-to-list 'ido-ignore-buffers "^*Warnings*")
+	(add-to-list 'ido-ignore-buffers "*Flymake log*")
 	(add-to-list 'ido-ignore-files ".DS_Store")
 	(add-to-list 'ido-ignore-files "ido.last")
 	(add-to-list 'completion-ignored-extensions ".synctex.gz")
@@ -572,7 +584,8 @@
                      (name . "^\\*daily-info\\*")
                      (name . "^\\*Org Agenda\\*")
                      (name . "^\\*Virgo\\*")
-                     (name . "^calendar@*")))
+                     (name . "^calendar@*")
+		     (name . "^\\*Holidays\\*")))
       ("TeX"  (name . "\\.tex"))
       ("ePub" (mode . nov-mode))
       ;("erc" (mode . erc-mode))
@@ -923,20 +936,6 @@
   (add-hook 'eww-after-render-hook 'eww-readable) ;; default to 'readable-mode'
   (use-package ace-link :config (ace-link-setup-default))) ;; alternative to tabbing
 
-(use-package flycheck ; on-the-fly syntax checking
-  :unless *w32*
-  :custom (flycheck-keymap-prefix "!")
-  :hook	  (emacs-lisp-mode . flycheck-mode)
-  :init	  (require 'checkdoc)
-	  (setq checkdoc-column-zero-backslash-before-paren nil
-		checkdoc-force-docstrings-flag nil
-		checkdoc--argument-missing-flag nil)
-  :config (which-key-alias "C-x !" "flycheck")
-	  (if (featurep 'ibuf-ext)
-	    (add-to-list 'ibuffer-never-show-predicates "^\\*Flycheck error messages\\*"))
-	  (if (featurep 'ido)
-	    (add-to-list 'ido-ignore-buffers "*Flycheck error messages*")))
-
 (use-package free-keys
   :defer t
   :config (add-to-list 'free-keys-modifiers "s" t)
@@ -951,6 +950,10 @@
   :init	(which-key-alias "C-c t" "google-translate")
   (setq google-translate-translation-directions-alist
 	'(("fr" . "en") ("en" . "fr"))))
+
+(use-package goto-longest-line ; opt/
+  :ensure nil
+  :commands (goto-longest-line))
 
 (use-package highlight-defined
   :hook (emacs-lisp-mode-hook . highlight-defined-mode))
@@ -1054,6 +1057,47 @@
 	    (setq tab-width 8
 		  truncate-lines -1)))
 
+(use-package flymake
+  :ensure nil
+  :bind
+  (:map flymake-mode-map
+        ("C-x ! n" . flymake-goto-next-error)
+        ("C-x ! p" . flymake-goto-prev-error)
+        ("C-x ! l" . flymake-show-buffer-diagnostics))
+  :hook
+  (emacs-lisp-mode . flymake-mode)
+  :config
+  (which-key-alias "C-x !" "flymake")
+
+  (defun my/elisp-flymake-quiet ()
+    "Use Flymake for byte-compiler diagnostics, not Checkdoc nagging."
+    (remove-hook 'flymake-diagnostic-functions
+                 #'elisp-flymake-checkdoc t))
+
+  (add-hook 'emacs-lisp-mode-hook #'my/elisp-flymake-quiet))
+
+(use-package files
+  :ensure nil
+  :custom
+  (trusted-content
+   (list user-emacs-directory
+         (expand-file-name "etc/" user-emacs-directory)
+         (expand-file-name "usr/" user-emacs-directory)
+         (expand-file-name "opt/" user-emacs-directory))))
+
+(use-package checkdoc
+  :ensure nil
+  :config
+  (setq checkdoc-column-zero-backslash-before-paren nil
+	checkdoc-force-docstrings-flag nil
+	checkdoc--argument-missing-flag nil)
+  (add-to-list
+   'display-buffer-alist
+   '("\\*Checkdoc Status\\*"
+     (display-buffer-reuse-window display-buffer-at-bottom)
+     (window-height . 0.25)
+     (dedicated . t))))
+
 ;; bash
 (add-to-list 'auto-mode-alist '("\\.bash*" . sh-mode))
 (define-key shell-mode-map (kbd "M-r") nil)
@@ -1075,6 +1119,13 @@
 ;; do not mark long lines in whitespace-mode
 (require 'whitespace)
 (delete 'lines whitespace-style)
+
+;; custom transforms
+(use-package first-letter-only
+  :ensure nil
+  :bind ("C-c x f" . first-letter-only)
+  :custom
+  (first-letter-only-buffer-name "*FLO*"))
 
 ;; Markdown
 (use-package markdown-mode
@@ -1209,6 +1260,8 @@
 	  ("C-c k"  . org-capture)
 	  ("C-c l"  . org-store-link)
 	  :map org-mode-map
+	  ([remap backward-paragraph] . my/org-backward-paragraph)
+	  ([remap forward-paragraph] . my/org-forward-paragraph)
 	  ("S-<return>" . org-open-link-at-point-external)
 	  ("M-<f4>"     . org-speed-command-help)
 	  ("M-["        . org-backward-heading-same-level)
@@ -1257,7 +1310,7 @@
     (unless (region-active-p) (mark-whole-word))
     (org-emphasize ?/))
 
-  ;; alternative mapping for 'org-support-shift-select'
+  ;; alternative implementation of 'org-support-shift-select'
   (keymap-set org-mode-map "S-<left>" nil)    ; clear needed keys
   (keymap-set org-mode-map "S-<right>" nil)
   (keymap-set org-mode-map "S-<up>" nil)
@@ -1266,17 +1319,17 @@
   (keymap-set org-mode-map "C-S-<left>" nil)  ; do the same for left-word
   (keymap-set org-mode-map "C-S-<right>" nil) ; and right-word
   (keymap-set org-mode-map "C-S-<up>" nil)    ; and for good measure...
-  (keymap-set org-mode-map "C-S-<down>" nil)
+  (keymap-set org-mode-map "C-S-<down>" nil)  ; likewise
 
-  (keymap-set org-mode-map "S-<home>" 'org-shiftleft)
-  (keymap-set org-mode-map "S-<end>" 'org-shiftright)
+  (keymap-set org-mode-map "S-<home>" 'org-shiftleft) ; re-assign shifts
+  (keymap-set org-mode-map "S-<end>" 'org-shiftright) ; to more logical keys
   (keymap-set org-mode-map "S-<prior>" 'org-shiftup)
   (keymap-set org-mode-map "S-<next>" 'org-shiftdown)
 
   ;; fix 'Ctrl-a' binding in org-mode
-  (if (fboundp 'back-to-indentation-or-beginning-of-line)
-      (org-remap org-mode-map
-		 'back-to-indentation-or-beginning-of-line 'org-beginning-of-line))
+  (org-remap org-mode-map
+             #'back-to-indentation-or-beginning-of-line
+             #'org-beginning-of-line)
 
   ;; primarily for cbc-mode, but also useful for other org files in view-mode
   (with-eval-after-load 'view
@@ -1284,6 +1337,7 @@
     (define-key view-mode-map (kbd "]") 'org-next-link)
     (define-key view-mode-map (kbd "RET") 'goto-address-at-point))
 
+  ;; tweak behaviour
   (add-hook 'org-agenda-finalize-hook 'delete-other-windows)
   (if (featurep 'visual-fill-column)
       (add-hook 'org-mode-hook 'visual-fill-column-mode--disable))
@@ -1315,15 +1369,19 @@
     :config (ignore))
 
   ;; Report paragraph count and memorization days.
-  ;; Prefer `org-monologue-memo-report' to `org-monologue-memo-mode'.
-  (use-package org-monologue-memo ; usr/
+  (use-package org-rehearsal ; usr/
     :ensure nil
+    :demand t
+    :custom (org-rehearsal-auto-enable-directories
+	     (delq nil (list ritual-directory)))
     :bind ( :map org-mode-map
-	    ("C-c o m"    . org-monologue-memo-report)))
+	    ("C-c o m" . org-rehearsal-report))
+    :hook (org-mode . org-rehearsal-enable-maybe))
 
   ;; Create an Org export buffer with paragraphs shortened to LIMIT characters.
   (use-package org-paragraph-preview ; usr/
     :ensure nil
+    :demand t
     :custom (org-paragraph-preview-latex-header "~/Documents/org/latexhdr.org")
             (org-paragraph-preview-latex-directives
 	     '("\\ritual"
@@ -1371,7 +1429,6 @@
     "Clean up window layout after `org-latex-export-as-latex'."
     (when (called-interactively-p 'any)
       (delete-other-windows)))
-
   (advice-add 'org-latex-export-as-latex :after
               #'cpj/org-latex-export-as-latex-cleanup-windows)
 
@@ -1469,7 +1526,7 @@ title of a page found by the URL into the current buffer."
     (org-gcal-fetch)
     (deferred:nextc it
       (lambda (_)
-        (calfw))))))
+        (calfw))))) )
 
 (use-package org-ref ; setup bibliography, cite, ref, and label org-mode links
   :if *natasha*
@@ -1539,16 +1596,20 @@ title of a page found by the URL into the current buffer."
 
 
 ;; print
-(load "print-functions" nil 'nomessage)
-(load "print-buffer-or-region" nil 'nomessage)
-(setopt print-buffer-or-region-save-output nil)
 (define-key global-map [menu-bar file print] nil)
 
-(bind-key "M-p" 'print-buffer-or-region)
-;(bind-key "M-p e" 'enscript)
-;(bind-key "M-p E" (lambda ()(interactive) (enscript '(4)) (kill-buffer))) (which-key-alias "M-p E" "folded")
-;(bind-key "M-p f" 'fill-to-printer) (which-key-alias "M-p f" "fill buffer")
-;(bind-key "M-p r" 'print-buffer-or-region)
+(use-package print-text-latex
+  :ensure nil
+  :custom
+  (print-text-latex-save-output nil)
+  :bind (("M-p SPC" . print-text-a5)
+         ("M-p c"   . print-text-card-3x5)))
+
+(use-package print-text-card
+  :ensure nil
+  :custom
+  (print-text-latex-save-output nil)
+  :bind (("M-p 3" . print-text-card)))
 
 
 ;; Configure specific machines
@@ -1715,9 +1776,12 @@ title of a page found by the URL into the current buffer."
 (load "scripts" 'noerror 'nomessage)
 
 (load "pdfexport" nil 'nomessage)
-(eval-after-load 'latex-mode '(define-key latex-mode-map (kbd "C-c r") 'latex-compile-and-update-other-buffer))
-(eval-after-load 'markdown-mode '(define-key markdown-mode-map (kbd "C-c r") 'md-compile-and-update-other-buffer))
-(eval-after-load 'org-mode '(define-key org-mode-map (kbd "C-c o r") 'org-compile-latex-and-update-other-buffer))
+(eval-after-load
+    'latex-mode '(define-key latex-mode-map (kbd "C-c r") 'latex-compile-and-update-other-buffer))
+(eval-after-load
+    'markdown-mode '(define-key markdown-mode-map (kbd "C-c r") 'md-compile-and-update-other-buffer))
+(eval-after-load
+    'org-mode '(define-key org-mode-map (kbd "C-c o r") 'org-compile-latex-and-update-other-buffer))
 
 ;; https://jonathanabennett.github.io/blog/2019/05/29/writing-academic-papers-with-org-mode/
 (use-package pdf-tools
@@ -1742,15 +1806,8 @@ title of a page found by the URL into the current buffer."
 ;; <home>  is fn-left	<end>  is fn-right
 ;; <prior> is fn-up	<next> is fn-down
 
-;; <home> key / Ctrl-a
-(if (key-binding (kbd "<home>"))
-  (global-set-key (kbd "<home>") 'back-to-indentation-or-beginning-of-line))
-(if (key-binding (kbd "s-<left>"))
-  (global-set-key (kbd "s-<left>") 'back-to-indentation-or-beginning-of-line))
-(global-set-key (kbd "C-a") 'back-to-indentation-or-beginning-of-line)
-
 (global-set-key (kbd "C-<home>" ) 'beginning-of-buffer)
-(global-set-key (kbd "C-<end>"  ) (lambda ()(interactive)(end-of-buffer)(recenter -1)))
+(global-set-key (kbd "C-<end>"  ) 'my/end-of-buffer)
 (global-set-key (kbd "C-<prior>") 'scroll-down-line)
 (global-set-key (kbd "C-<next>" ) 'scroll-up-line)
 
@@ -1833,14 +1890,11 @@ title of a page found by the URL into the current buffer."
 
 
 ;; alternate keys
-(bind-key "M-j" 'join-line) ; default-indent-new-line (see 'C-M-j')
-(bind-key "C-w" 'kill-region-or-backward-word) ; kill-region
-(bind-key "M-w" 'kill-region-or-thing-at-point) ; kill-ring-save
-
 (global-set-key (kbd "C-s")	'isearch-forward-regexp)
 (global-set-key (kbd "C-r")	'isearch-backward-regexp)
 (global-set-key (kbd "M-s s")	'isearch-forward)
 (global-set-key (kbd "M-s r")	'isearch-backward)
+(global-set-key (kbd "M-z")	'zap-up-to-char)
 
 (global-set-key (kbd "<f12>")	'list-buffers)
 (global-set-key (kbd "M-<f11>")	'toggle-modeline)
@@ -1849,9 +1903,9 @@ title of a page found by the URL into the current buffer."
 (global-set-key (kbd "A-S-<return>") (kbd "M-S-<return>"))
 
 ;; https://www.matem.unam.mx/~omar/apropos-emacs.html#writing-experience
-(bind-key "C-d" 'delete-forward-char) ; better replacement for delete-char
-(bind-key "M-c" 'capitalize-dwim) ; capitalize-word
-(bind-key "M-K" 'kill-paragraph) ; M-k capitalizes sentence
+(bind-key "C-d" 'delete-forward-char)      ; better replacement for delete-char
+(bind-key "M-c" 'capitalize-dwim)          ; capitalize-word
+(bind-key "M-K" 'kill-paragraph)           ; M-k capitalizes sentence
 (bind-key "C-x M-t" 'transpose-paragraphs) ; C-x C-t transpose-lines
 (global-set-key [remap mark-word] 'mark-whole-word)
 (global-set-key [remap forward-word] 'forward-to-word) ; leaves point in better spot
@@ -2042,4 +2096,5 @@ title of a page found by the URL into the current buffer."
 ; LocalWords:  MidnightBlue src numero documentclass subsubsection
 ; LocalWords:  github cliplink Waterfox waterfox nov backend fboundp
 ; LocalWords:  windmove goto ripgrep nomessage lorem OAuth authinfo
-; LocalWords:  plist nopgnos
+; LocalWords:  plist nopgnos flymake api todo paren docstrings ibuf
+; LocalWords:  ibuffer

@@ -1,5 +1,4 @@
-;;; calendar-functions.el --- settings / functions
-;;; Commentary:
+;;; calendar-functions.el --- my functions -*- lexical-binding: t; -*-
 
 ;;; Code:
 (require 'calendar)
@@ -14,6 +13,13 @@
     (and (get-buffer buffer)
 	 (kill-buffer buffer))))
 
+(defun calendar-world-clock ()
+  "Display a world clock buffer with times in various time zones."
+  (interactive)
+  (world-clock)
+  (next-window-any-frame)
+  (fit-window-to-buffer))
+
 (defun display-current-date-and-time ()
   "Display current date and time."
   (interactive)
@@ -25,13 +31,6 @@
   (list-holidays
    (or (and (boundp 'displayed-year) displayed-year)
        (nth 2 (calendar-current-date)))))
-
-(defun calendar-world-clock ()
-  "Display a world clock buffer with times in various time zones."
-  (interactive)
-  (world-clock)
-  (next-window-any-frame)
-  (fit-window-to-buffer))
 
 ;; Harvest solar events via `solar-equinoxes-solstices' (DST-correct),
 ;; then filter/de-duplicate for full-year display.
@@ -94,7 +93,7 @@
 
 (defvar user-birthdate)
 (defun biorhythm ()
-  "Show today's biorhythm. Set variable `birthdate' in format MDY."
+  "Show today's biorhythm. Set variable `user-birthdate' in format `M D Y'."
   (interactive)
   (let* ((diff (abs (- (string-to-number
                         (calendar-astro-date-string user-birthdate))

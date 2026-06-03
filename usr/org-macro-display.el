@@ -5,7 +5,7 @@
 ;; Package-Requires: ((emacs "26.1"))
 ;; Keywords: org, convenience
 
-;;; commentary:
+;;; Commentary:
 ;; Displays certain literal macro strings (e.g. "\fd{}") as nicer text (e.g. ".....")
 ;; in Org buffers, without changing the underlying buffer contents.
 
@@ -20,7 +20,7 @@
 ;; Or all open org buffers:
 ;;	C-u M-x org-macro-display-refresh
 
-;;; code:
+;;; Code:
 (defgroup org-macro-display nil
   "Display selected LaTeX-style macros in Org buffers."
   :group 'org)
@@ -43,6 +43,11 @@ Keys are matched literally (exact string match) and may include braces."
   :type '(alist :key-type string :value-type string)
   :group 'org-macro-display)
 
+(defcustom org-macro-display-horizontal-rule t
+  "When non-nil, display lines of four or more dashes as horizontal rules."
+  :type 'boolean
+  :group 'org-macro-display)
+
 (defun org-macro-display--keywords ()
   "Return font-lock keywords built from `org-macro-displays`."
   (mapcar
@@ -61,6 +66,25 @@ Keys are matched literally (exact string match) and may include braces."
 (defvar-local org-macro-display--saved-keywords nil
   "Buffer-local copy of the keywords installed by `org-macro-display-mode`.")
 
+(defcustom org-macro-display-horizontal-rule-width 52
+  "Width of displayed horizontal rules."
+  :type 'integer
+  :group 'org-macro-display)
+
+(defun org-macro-display--horizontal-rule ()
+  "Return a horizontal rule matching the current window width."
+  (make-string (max 4 (- (window-width) 2)) ?―))
+
+(defun org-macro-display--horizontal-rule-keywords ()
+  "Return font-lock keyword for displaying dash lines as horizontal rules."
+  (when org-macro-display-horizontal-rule
+    `(("^-\\{4,\\}$"
+       (0 (prog1 nil
+            (put-text-property (match-beginning 0) (match-end 0)
+                               'org-macro-display "horizontal rule")
+            (put-text-property (match-beginning 0) (match-end 0)
+			       'display (org-macro-display--horizontal-rule))))))))
+
 (defun org-macro-display--clear ()
   "Remove only display properties added by `org-macro-display-mode`."
   (let ((pos (point-min)))
@@ -78,8 +102,9 @@ Keys are matched literally (exact string match) and may include braces."
   :lighter " MacDisp"
   (if org-macro-display-mode
       (progn
-        (setq org-macro-display--saved-keywords
-              (org-macro-display--keywords))
+	(setq org-macro-display--saved-keywords
+	      (append (org-macro-display--keywords)
+		      (org-macro-display--horizontal-rule-keywords)))
         (font-lock-add-keywords nil org-macro-display--saved-keywords 'append)
         (font-lock-flush))
     (when org-macro-display--saved-keywords

@@ -12,10 +12,10 @@
  (handler . Info-bookmark-jump))
 ("org-capture-last-stored"
  (filename . "~/Documents/org/notes.org")
- (front-context-string . "** Troster says ")
- (rear-context-string . "rap Case File]]\n")
- (position . 4163)
- (last-modified 27149 46897 613255 0))
+ (front-context-string . "** [[https://con")
+ (rear-context-string . "ing signature]]\n")
+ (position . 4494)
+ (last-modified 27163 44080 735476 0))
 ("2023-05-10 - Six years of gopher"
  (position . 684)
  (location . "gemini://zaibatsu.circumlunar.space/users/solderpunk/gemlog/six-years-of-gopher.gmi")

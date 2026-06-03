@@ -1,8 +1,20 @@
-;;; org-functions.el --- Org functions
-;;; commentary:
+;;; org-functions.el --- Org functions -*- lexical-binding: t; -*-
+;;; Commentary:
 
-;;; code:
+;;; Code:
 (require 'org)
+
+(defun my/org-backward-paragraph ()
+  "Move backward by Org paragraph and recenter at the top."
+  (interactive "^")
+  (org-backward-paragraph)
+  (recenter-top-bottom 0))
+
+(defun my/org-forward-paragraph ()
+"Move forward by Org paragraph and recenter at the top."
+  (interactive "^")
+  (org-forward-paragraph)
+  (recenter-top-bottom 0))
 
 ;; make it an interactive command
 (defun my/org-end-of-subtree ()
@@ -18,8 +30,6 @@
 
 ;; org check-boxes
 ;; see https://orgmode.org/list/87r5718ytv.fsf@sputnik.localhost
-(eval-after-load 'org-list
-  '(add-hook 'org-checkbox-statistics-hook (function ndk/checkbox-list-complete)))
 (defun ndk/checkbox-list-complete ()
   (save-excursion
     (org-back-to-heading t)
@@ -37,6 +47,8 @@
 		     (equal (match-string 2) (match-string 3)))
 		(org-todo 'done)
 	      (org-todo 'todo)))))))
+(eval-after-load 'org-list
+  '(add-hook 'org-checkbox-statistics-hook (function ndk/checkbox-list-complete)))
 
 ;; https://orgmode.org/worg/org-hacks.html
 (require 'cl-lib)

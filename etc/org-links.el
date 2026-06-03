@@ -1,7 +1,7 @@
-;;; org-links.el --- Teach org-mode to follow new protocols
-;;; commentary:
+;;; org-links.el --- Teach org-mode to follow new protocols -*- lexical-binding: t; -*-
+;;; Commentary:
 
-;;; code:
+;;; Code:
 (require 'ol)
 (org-link-set-parameters "gemini" ; gemini://host/index.gmi
 	:follow (lambda (path) (elpher-go (concat "gemini:" path)))

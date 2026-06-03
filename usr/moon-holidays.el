@@ -96,5 +96,9 @@ the results."
    (holiday-named-full-moons '(10 "Pavarana"))
    (holiday-named-full-moons '(2  "Magha (Sangha Day)"))))
 
+(defvar holiday-buddhist-holidays
+  '((holiday-buddhist))
+  "Buddhist holidays and observances.")
+
 (provide 'moon-holidays)
 ;;; moon-holidays.el ends here

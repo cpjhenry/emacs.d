@@ -1,5 +1,13 @@
 ;;; print-functions.el --- PRINT functions
 ;;; commentary:
+;; Archived after migration from ps-print/paps/pdfjam printing to
+;; LaTeX-native text rendering via print-text-latex.el.
+
+;(bind-key "M-p SPC" 'print-buffer-or-region)
+;(bind-key "M-p e" 'enscript)
+;(bind-key "M-p E" (lambda ()(interactive) (enscript '(4)) (kill-buffer))) (which-key-alias "M-p E" "folded")
+;(bind-key "M-p f" 'fill-to-printer) (which-key-alias "M-p f" "fill buffer")
+;(bind-key "M-p r" 'print-buffer-or-region)
 
 ;;; code:
 (setq ps-page-dimensions-database '(
