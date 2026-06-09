@@ -91,37 +91,6 @@
 		(add-text-properties (match-beginning 0) (match-end 0) '(invisible t)))
 		(when state (setq buffer-read-only t))))
 
-(defvar user-birthdate)
-(defun biorhythm ()
-  "Show today's biorhythm. Set variable `user-birthdate' in format `M D Y'."
-  (interactive)
-  (let* ((diff (abs (- (string-to-number
-                        (calendar-astro-date-string user-birthdate))
-                       (string-to-number
-                        (calendar-astro-date-string)))))
-         (rhythms '((Phy . 23)
-                    (Emo . 28)
-                    (Int . 33)))
-         (vals
-          (mapcar
-           (lambda (r)
-             (let* ((name (car r))
-                    (period (cdr r))
-                    (angle (* 2 pi diff (/ 1.0 period)))
-                    (next-angle (* 2 pi (1+ diff) (/ 1.0 period)))
-                    (today (sin angle))
-                    (tomorrow (sin next-angle))
-                    (pct (round (* 100 today)))
-                    (crossing-p (not (eq (>= today 0)
-                                         (>= tomorrow 0))))
-                    (dir (cond
-                          (crossing-p "!")
-                          ((>= (cos angle) 0) "+")
-                          (t "-"))))
-               (format "%s=%+04d%%%s" name pct dir)))
-           rhythms)))
-    (message "%s" (mapconcat #'identity vals " "))))
-
 (provide 'calendar-routines)
 ;;; calendar-functions.el ends here.
 

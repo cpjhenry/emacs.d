@@ -767,7 +767,6 @@
 (add-hook 'diary-list-entries-hook 'diary-sort-entries t)
 (add-hook 'diary-fancy-display-mode-hook 'alt-clean-equal-signs)
 
-;; calfw
 (use-package calfw
   :if *natasha*
   :after calendar
@@ -782,6 +781,18 @@
   (use-package calfw-ical)
   (use-package calfw-org)
   (use-package maccalfw)
+
+  (defun delete-gcal-archive-files ()
+    "Kill and delete known org-gcal archive files."
+    (dolist (file (list
+                   (concat org-gcal-file "_archive")
+                   (expand-file-name "gcal.org_archive"
+                                     (expand-file-name "var/" user-emacs-directory))))
+      (when-let ((buf (get-file-buffer file)))
+	(set-buffer-modified-p nil)
+	(kill-buffer buf))
+      (when (file-exists-p file)
+	(delete-file file))))
 
   (defun calfw ()
     "Display a two-week calfw calendar and clean up temporary Org buffers on exit."
@@ -799,7 +810,7 @@
 	 (lambda ()
            (kill-unmodified-file-buffer org-agenda-file)
            (kill-unmodified-file-buffer org-gcal-file)
-	   (delete-empty-file-buffer (concat org-gcal-file "_archive")))
+	   (delete-gcal-archive-files))
 	 nil t)))))
 
 ;; Roman clock
@@ -1450,6 +1461,7 @@
 
 ;; org-mode packages
 (use-package org-autoexport ; #+auto_export:
+  :disabled
   :after org
   :hook (org-mode . org-autoexport-mode))
 
@@ -1514,8 +1526,8 @@ title of a page found by the URL into the current buffer."
   (org-gcal-notify-p nil)
   (org-gcal-recurring-events-mode 'top-level)
   (plstore-cache-passphrase-for-symmetric-encryption t)
-  ;(org-gcal-remove-api-cancelled-events nil)
-  ;(org-gcal-update-cancelled-events-with-todo nil)
+  (org-gcal-remove-api-cancelled-events nil)
+  (org-gcal-update-cancelled-events-with-todo nil)
   :config
   (add-to-list 'org-agenda-files org-gcal-file t)
 
@@ -1774,6 +1786,17 @@ title of a page found by the URL into the current buffer."
 (require 'kf-library)
 (load "help-cpj" nil 'nomessage)
 (load "scripts" 'noerror 'nomessage)
+(load "daily-info" nil 'nomessage)
+
+(use-package biorhythm ; usr/
+  :ensure nil
+  :commands (biorhythm
+             biorhythm-string
+             days-on-earth))
+
+(use-package wwv ; usr/
+  :ensure nil
+  :commands (wwv-summary))
 
 (load "pdfexport" nil 'nomessage)
 (eval-after-load

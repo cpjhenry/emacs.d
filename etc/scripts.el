@@ -1,22 +1,10 @@
 ;;; scripts.el --- execute bash scripts -*- lexical-binding: t -*-
-;;; commentary:
+;;; Commentary:
 
-;;; code:
+;;; Code:
 (require 'diary-lib)
-(require 'markdown-mode)
-
-(defun di () "Daily information."
-  (interactive)
-  (switch-to-buffer "*daily-info*")
-  (shell-command "di-mode&" (current-buffer))
-  (view-mode)
-
-  (wx-alert)
-
-  (diary-list-entries (calendar-current-date) diary-number-of-entries)
-  (kill-buffer "diary")
-
-  (message "'cbc' / 'xkcd' / 'elfeed'"))
+(declare-function turn-off-cursor "filesandbuffers")
+(declare-function markdown-preview "markdown-mode")
 
 (defun wx-alert (&rest _ignore)
   "Weather forecast from Environment Canada."
@@ -110,3 +98,4 @@
 ;;; scripts.el ends here
 
 ; LocalWords:  cbc sfm slashdot fw uf wttr aries perl eof az
+; LocalWords:  filesandbuffers

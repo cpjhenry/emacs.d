@@ -156,6 +156,46 @@ nominal date in the Hebrew calendar."
    (holiday-fixed 8  1  "Lammas")
    (holiday-fixed 11 11 "Martinmas")))
 
+(defconst mercury-retrograde-periods
+  '((2025 ((3 14) (4 7))
+          ((7 18) (8 10))
+          ((11 9) (11 29)))
+    (2026 ((2 25) (3 20))
+	  ((6 29) (7 23))
+	  ((10 24)(11 13)))
+    (2027 ((2 9)  (3 3))
+	  ((6 10) (7 4))
+	  ((10 7) (10 28))))
+  "Published Mercury retrograde periods.
+
+Each period is of the form:
+
+  ((START-MONTH START-DAY)
+   (END-MONTH   END-DAY))
+
+where the first date is the station retrograde and the second date
+is the station direct.")
+
+(defun holiday-mercury-retrograde ()
+  "Return Mercury retrograde station dates for the displayed year."
+  (let ((periods (cdr (assoc displayed-year
+                             mercury-retrograde-periods)))
+        holidays)
+    (dolist (period periods)
+      (let ((start (car period))
+            (end   (cadr period)))
+        (push (list (list (nth 0 start)
+                          (nth 1 start)
+                          displayed-year)
+                    "Mercury Retrograde Begins")
+              holidays)
+        (push (list (list (nth 0 end)
+                          (nth 1 end)
+                          displayed-year)
+                    "Mercury Retrograde Ends")
+              holidays)))
+    (holiday-filter-visible-calendar (nreverse holidays))))
+
 (defun solar-equinoxes-only ()
   "Return only equinox entries from `solar-equinoxes-solstices'."
   ;; Keep equinoxes, drop solstices (preserve upstream time formatting)
@@ -237,6 +277,54 @@ Tuesday instead."
      (list
       (list start "Archives Awareness Week begins")))))
 
+(defconst holiday-diwali-dates
+  '((2022 . (10 24 2022))
+    (2023 . (11 12 2023))
+    (2024 . (11 1 2024))
+    (2025 . (10 21 2025))
+    (2026 . (11 8 2026))
+    (2027 . (10 29 2027))
+    (2028 . (10 17 2028))
+    (2029 . (11 5 2029))
+    (2030 . (10 26 2030))
+    (2031 . (11 14 2031))
+    (2032 . (11 2 2032))
+    (2033 . (10 22 2033))
+    (2034 . (11 10 2034))
+    (2035 . (10 30 2035))
+    (2036 . (10 18 2036))
+    (2037 . (11 6 2037))
+    (2038 . (10 27 2038))
+    (2039 . (10 17 2039))
+    (2040 . (11 4 2040)))
+  "Published civil dates for Diwali.
+
+Diwali (Deepavali) is a Hindu festival determined by the lunisolar
+calendar and the timing of Kartik Amavasya.  Because the observed
+civil date may vary by tradition, location, and the timing of lunar
+events, this table records published observance dates rather than
+attempting a full panchang calculation.")
+
+(defun holiday-diwali ()
+  "Return Diwali for the displayed year.
+
+Dates are taken from `holiday-diwali-dates'."
+  (let ((date (cdr (assoc displayed-year holiday-diwali-dates))))
+    (when date
+      (holiday-filter-visible-calendar
+       (list (list date "Diwali")))))) ;  दीपावली
+
+(defun holiday-st-tibs-day ()
+  "Return St. Tib's Day on leap years.
+
+St. Tib's Day is a Discordian holiday observed on 29 February,
+which is considered outside the normal Discordian calendar."
+  (when (calendar-leap-year-p displayed-year)
+    (holiday-filter-visible-calendar
+     (list
+      (list (list 2 29 displayed-year)
+            "St. Tib's Day")))))
+
 
 ;; -- Set holiday variables --
 ;; Static holiday lists vs computed holiday generators (solar, Bahá’í, etc.)
@@ -266,6 +354,7 @@ Tuesday instead."
      (holiday-float 2 1 3  "Family Day")
      (holiday-fixed 2 15   "National Flag Day")
      (holiday-float 3 1 2  "Commonwealth Day")
+     (holiday-fixed 3 18   "Sheelagh's Day")
      (holiday-fixed 4 6    "Tartan Day")
      (holiday-fixed 4 9    "Vimy Ridge Day")
      (holiday-float 5 0 1  "Bereaved Mother's Day")
@@ -318,6 +407,7 @@ Tuesday instead."
      (holiday-fixed 12 25 "Christmas")
      (if calendar-christian-all-holidays-flag
          (append
+	  (holiday-fixed 1 5 "Twelfth Night")
           (holiday-fixed 1 6 "Epiphany")
           (holiday-greek-orthodox-easter)
 	  (holiday-fixed 11 1 "All Saints' Day")
@@ -382,11 +472,9 @@ Tuesday instead."
 (defvar holiday-seasonal-observances
    '((solar-equinoxes-only)
      ;; first Saturday of June following the Summer Solstice
-     (holiday-float 6 6 1 "Midsummer"
-                    (floor (nth 1 (solar-equinoxes/solstices 1 displayed-year))))
-     ;; Winter Solstice
-     (holiday-fixed 12 (floor (nth 1 (solar-equinoxes/solstices 3 displayed-year)))
-		    "Midwinter")
+     (holiday-float 6 6 1 "Midsummer" (floor (nth 1 (solar-equinoxes/solstices 1 displayed-year))))
+     (holiday-fixed 7 2   "Mid-Year's Day")
+     (holiday-fixed 12 (floor (nth 1 (solar-equinoxes/solstices 3 displayed-year))) "Midwinter")
      (holiday-sexp calendar-daylight-savings-starts
                    (format "Daylight Saving Time Begins %s"
                            (solar-time-string
@@ -396,8 +484,13 @@ Tuesday instead."
                    (format "Daylight Saving Time Ends %s"
                            (solar-time-string
                             (/ calendar-daylight-savings-ends-time (float 60))
-                            calendar-daylight-time-zone-name))))
+                            calendar-daylight-time-zone-name)))
+     (holiday-mercury-retrograde))
    "Seasonal and astronomical observances.")
+
+(defvar holiday-hindu-holidays
+  '((holiday-diwali))
+  "Hindu holidays and observances.")
 
 (defvar holiday-scottish-observances
   '((holiday-fixed 1 25  "Robert Burns Day")
@@ -433,30 +526,83 @@ Tuesday instead."
 ;;     births, deaths, milestones, curiosities.
 
 (defvar holiday-observances
-  '((holiday-float 1 4 4  "NASA Day of Remembrance")
-    (holiday-archives-awareness-week)
-    (holiday-float 6 5 1  "National Doughnut Day")
-    (holiday-archives-week)
-    (holiday-fixed 6 9	  "International Archives Day")
-    (holiday-float 9 6 3  "Batman Day")
-    (holiday-float 10 3 3 "Global Ethics Day")
-    (holiday-float 11 5 1 "Fountain Pen Day")
-    (holiday-fixed 11 8 "Four Crowned Martyrs")
-    (holiday-galactic-tick-day)
+  '((holiday-fixed 1 10   "Peculiar People Day")
+    (holiday-fixed 1 19   "Dead of Winter")
+    (holiday-fixed 1 23   "National Handwriting Day")
+    (holiday-fixed 1 27   "Holocaust Remembrance Day")
+    (holiday-fixed 1 28   "Data Privacy Day")
+    (holiday-float 1 4 4  "NASA Day of Remembrance")
+    (holiday-fixed 1 31   "Hell is Freezing Over Day")
 
-    ;; Last Wednesday in February
+    (holiday-fixed 2 12   "Darwin Day")
     (holiday-float 2 3 -1 "Anti-Bullying Day")
+    (holiday-fixed 2 20   "Clean Out Your Bookcase Day")
+    (holiday-fixed 2 22   "Be Humble Day")
+    (holiday-fixed 2 26   "For Pete's Sake Day")
 
-    ;; Second Wednesday in April
-    (holiday-float 4 3 2 "Pink Day")
+    (holiday-fixed 3 3    "Talk in Third Person Day")
+    (holiday-fixed 3 8    "International Women's Day")
+    (holiday-fixed 3 11   "Pandemic Observance Day")
+    (holiday-fixed 3 14   "Pi Day")
+    (holiday-fixed 3 26   "Purple Day")
 
-    ;; First Friday in May
-    (holiday-float 5 5 1 "No Pants Day")
+    (holiday-archives-awareness-week)
+    (holiday-fixed 4 7    "International Beaver Day")
+    (holiday-float 4 3 2  "Pink Day")
+    (holiday-fixed 4 18   "World Amateur Radio Day")
+    (holiday-fixed 4 22   "Earth Day")
+    (holiday-fixed 4 28   "Workers' Memorial Day")
 
-    ;; Last Sunday in May
+    (holiday-float 5 0 1  "Emergency Preparedness Week Begins")
+    (holiday-fixed 5 4    "May the Fourth Be With You")
+    (holiday-fixed 5 5    "Dutch National Heritage Day")
+    (holiday-fixed 5 8    "Victory in Europe Day")
+    (holiday-fixed 5 22   "Harvey Milk Day")
     (holiday-float 5 0 -1 "National Accessibility Week Begins")
-    (holiday-float 5 0 1 "Emergency Preparedness Week Begins"))
-  "Professional, commemorative, cultural, and historical observances.")
+
+    (holiday-float 6 5 1  "National Doughnut Day")
+    (holiday-fixed 6 8    "Name Your Poison Day")
+    (holiday-archives-week)
+    (holiday-fixed 6 9    "International Archives Day")
+    (holiday-fixed 6 20   "World Refugee Day")
+    (holiday-fixed 6 27   "Canadian Multiculturalism Day")
+    (holiday-fixed 6 28   "Tau Day")
+
+    (holiday-fixed 7 14   "Bastille Day")
+
+    (holiday-fixed 8 9    "National Peacekeepers' Day")
+    (holiday-fixed 8 15   "Victory over Japan Day")
+    (holiday-fixed 8 19   "World Photography Day")
+    (holiday-fixed 8 23   "Black Ribbon Day")
+
+    (holiday-float 9 6 3  "Batman Day")
+    (holiday-fixed 9 19   "Talk Like a Pirate Day")
+    (holiday-fixed 9 25   "One-Hit Wonder Day")
+    (holiday-fixed 9 25   "Franco-Ontarian Day")
+
+    (holiday-fixed 10 2   "Gandhi Jayanti")
+    (holiday-fixed 10 3   "German Reunification Day")
+    (holiday-fixed 10 6   "Mad Hatter Day")
+    (holiday-fixed 10 14  "World Standards Day")
+    (holiday-fixed 10 18  "Persons' Day")
+    (holiday-float 10 3 3 "Global Ethics Day")
+
+    (holiday-float 11 5 1 "Fountain Pen Day")
+    (holiday-fixed 11 8   "Indigenous Veterans Day")
+    (holiday-fixed 11 10  "Lost Mariners Remembrance")
+
+    (holiday-fixed 12 5   "Day of the Ninja")
+
+    (holiday-fixed 12 17  "Saturnalia")
+    (holiday-fixed 12 23  "Festivus")
+    (holiday-fixed 12 26  "Kwanzaa")
+
+    (holiday-julian 1 1   "Old New Year")
+    (holiday-julian 2 14  "Old St. Valentine's Day")
+
+    (holiday-galactic-tick-day))
+  "Observances.
+(International, cultural, commemorative, professional, and special-interest)")
 
 (defvar holiday-saints-days
   '((holiday-fixed 1 28  "St. Thomas Aquinas (Academics)")
@@ -484,14 +630,38 @@ Tuesday instead."
     (holiday-fixed 10 16 "St. Marguerite d'Youville (Poverty)")
     (holiday-fixed 10 22 "St. John Paul II (Pope)")
     (holiday-fixed 10 25 "St. Minias (Martyr)")
-    (holiday-fixed 11 30 "St. Andrew (Scotland)"))
+    (holiday-fixed 11 30 "St. Andrew (Scotland)")
+    (holiday-fixed 12 6  "St. Nicholas (Children)")
+    (holiday-fixed 12 13 "St. Lucy (Festival of Light)")
+    (holiday-fixed 12 26 "St. Stephen (Proto-martyr)")
+    (holiday-fixed 12 31 "St. Sylvester (Pope)"))
   "Saints' days and patronal commemorations.")
+
+(defvar holiday-discordian-observances
+  '((holiday-fixed 1 5  "Mungday")
+    (holiday-fixed 2 19 "Chaoflux")
+    (holiday-fixed 3 19 "Mojoday")
+    (holiday-fixed 5 3  "Discoflux")
+    (holiday-fixed 5 31 "Syaday")
+    (holiday-fixed 7 15 "Confuflux")
+    (holiday-fixed 8 12 "Zaraday")
+    (holiday-fixed 9 26 "Bureflux")
+    (holiday-fixed 10 24 "Maladay")
+    (holiday-fixed 12 8 "Afflux")
+
+    (holiday-st-tibs-day)
+
+    (holiday-fixed 5 23 "Eris Day")
+    (holiday-fixed 5 25 "Towel Day")
+    (holiday-fixed 7 5  "X-Day"))
+  "Discordian holy days and related observances.")
 
 (setopt calendar-holidays
         (append holiday-general-holidays
                 holiday-local-holidays
 		holiday-scottish-observances
 		holiday-roman-observances
+		holiday-discordian-observances
                 holiday-other-holidays
                 holiday-christian-holidays
                 holiday-hebrew-holidays
@@ -499,10 +669,12 @@ Tuesday instead."
                 holiday-bahai-holidays
 		holiday-buddhist-holidays
                 holiday-oriental-holidays
+		holiday-hindu-holidays
                 holiday-seasonal-observances
 		holiday-observances))
 
 (provide 'local-holidays)
 ;;; local-holidays.el ends here
 
-; LocalWords:  bahai
+; LocalWords:  bahai Deepavali Kartik Amavasya panchang दीपावली
+; LocalWords:  Jayanti

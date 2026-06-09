@@ -265,6 +265,13 @@ mode when toggled off."
   "Reset SYMBL to its standard value."
   (set symbl (eval (car (get symbl 'standard-value)))))
 
+(defun commify-number (n)
+  "Return N with thousands separators."
+  (let ((s (number-to-string n)))
+    (while (string-match "\\([0-9]+\\)\\([0-9][0-9][0-9]\\)" s)
+      (setq s (replace-match "\\1,\\2" nil nil s)))
+    s))
+
 
 ;; DIRED functions
 (require 'dired)
