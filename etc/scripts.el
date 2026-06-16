@@ -5,6 +5,7 @@
 (require 'diary-lib)
 (declare-function turn-off-cursor "filesandbuffers")
 (declare-function markdown-preview "markdown-mode")
+(declare-function toggle-fill-column-center "filesandbuffers")
 
 (defun wx-alert (&rest _ignore)
   "Weather forecast from Environment Canada."
@@ -25,18 +26,11 @@
   (view-mode)
   (turn-off-cursor))
 
-(defun maritime () "Maritime alerts from Environment Canada."
-  (interactive)
-  (switch-to-buffer "*maritime alerts*")
-  (shell-command "alert -m |sed '1s/$/\\n/'" (current-buffer))
-  (view-mode))
-
 (defun cbc () "Today's headlines from CBC Ottawa."
   (interactive)
   (switch-to-buffer "*CBC*")
   (shell-command "cbc-mode" (current-buffer))
   (org-mode)
-  (toggle-truncate-lines)
   (view-mode)
   (goto-char (point-min)))
 
@@ -48,12 +42,6 @@
   (view-mode)
   (if (featurep 'jinx) (jinx-mode -1))
   (goto-char (point-min)))
-
-(defun cm () "Print version of monthly calendar."
-  (interactive)
-  (switch-to-buffer "*Monthly Calendar*")
-  (shell-command ". $HOME/.bash_routines; calm $(date +'%m %Y')" (current-buffer))
-  (view-mode))
 
 (defun fw () "Weekly Forecast."
   (interactive)
@@ -90,10 +78,6 @@
 
     ;; leaves view-mode 'on' (keys work), but otherwise modifiable by spell-checker
     (setq-local inhibit-read-only t)))
-
-(defun wwv () "Geophysical alerts and space weather."
-  (interactive)
-  (eww "https://services.swpc.noaa.gov/text/"))
 
 ;;; scripts.el ends here
 

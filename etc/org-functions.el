@@ -4,6 +4,12 @@
 ;;; Code:
 (require 'org)
 
+(defvar cpj/org-agenda-file)
+(defun my/agenda ()
+  "Load `org-agenda' file."
+  (interactive)
+  (find-file cpj/org-agenda-file))
+
 (defun my/org-backward-paragraph ()
   "Move backward by Org paragraph and recenter at the top."
   (interactive "^")
@@ -22,11 +28,19 @@
   (interactive)
   (org-end-of-subtree t))
 
-(defvar org-agenda-file)
-(defun my/agenda ()
-  "Load `org-agenda' file."
+(defun cpj/org-emphasize-bold ()
+  "Bold current word or active region."
   (interactive)
-  (find-file org-agenda-file))
+  (unless (region-active-p)
+    (mark-whole-word))
+  (org-emphasize ?*))
+
+(defun cpj/org-emphasize-italic ()
+  "Italicize current word or active region."
+  (interactive)
+  (unless (region-active-p)
+    (mark-whole-word))
+  (org-emphasize ?/))
 
 ;; org check-boxes
 ;; see https://orgmode.org/list/87r5718ytv.fsf@sputnik.localhost
@@ -50,7 +64,16 @@
 (eval-after-load 'org-list
   '(add-hook 'org-checkbox-statistics-hook (function ndk/checkbox-list-complete)))
 
+
+;; Org ad hoc code, quick hacks and workarounds
 ;; https://orgmode.org/worg/org-hacks.html
+
+(defun org-back-to-top-level-heading ()
+  "Go back to the current top level heading."
+  (interactive)
+  (or (re-search-backward "^\* " nil t)
+      (goto-char (point-min))))
+
 (require 'cl-lib)
 (require 'lunar)
 (with-no-warnings (defvar date))
@@ -61,8 +84,56 @@
          (phase (cl-find-if (lambda (phase) (equal (car phase) date))
                             phase-list)))
     (when phase
-      (setq ret (concat (lunar-phase-name (nth 2 phase)) " "
-                        (substring (nth 1 phase) 0 5))))))
+      (concat (lunar-phase-name (nth 2 phase)) " "
+              (substring (nth 1 phase) 0 5)))))
+
+(defun org-check-misformatted-subtree ()
+  "Check misformatted entries in the current buffer."
+  (interactive)
+  (outline-show-all)
+  (org-map-entries
+   (lambda ()
+     (when (and (move-beginning-of-line 2)
+                (not (looking-at org-heading-regexp)))
+       (if (or (and (org-get-scheduled-time (point))
+                    (not (looking-at (concat "^.*" org-scheduled-regexp))))
+               (and (org-get-deadline-time (point))
+                    (not (looking-at (concat "^.*" org-deadline-regexp)))))
+           (when (y-or-n-p "Fix this subtree? ")
+             (message "Call the function again when you're done fixing this subtree.")
+             (recursive-edit))
+         (message "All subtrees checked."))))))
+
+(defun org-align-all-tables ()
+  "Align all tables in a buffer."
+  (interactive)
+  (org-table-map-tables 'org-table-align 'quietly))
+
+(defun org-transpose-paragraphs (arg)
+  "Transpose the Org paragraph at point by ARG paragraphs.
+
+This is intended for use from `org-metaup-hook' and `org-metadown-hook',
+so that M-up and M-down move ordinary Org paragraphs instead of
+transposing lines. After transposition, leave point at the first
+non-whitespace character of the moved paragraph.
+
+Do nothing in tables, headings, or list items, leaving Org's usual
+behaviour unchanged.
+
+Example:
+
+  (add-to-list \\='org-metaup-hook
+               (lambda () (interactive) (org-transpose-paragraphs -1)))
+  (add-to-list \\='org-metadown-hook
+               (lambda () (interactive) (org-transpose-paragraphs 1)))"
+  (interactive "p")
+  (when (and (not (or (org-at-table-p) (org-at-heading-p) (org-at-item-p)))
+             (thing-at-point 'sentence))
+    (transpose-paragraphs arg)
+    (backward-paragraph)
+    (re-search-forward "[[:graph:]]")
+    (goto-char (match-beginning 0))
+    t))
 
 
 ;; Sage/cpj
@@ -101,17 +172,19 @@ If point is not in a heading, count in the whole buffer."
         (let ((n (org-count-paragraphs-in-region beg end)))
           (message "%s has %d paragraph%s" scope-label n (if (= n 1) "" "s")))))))
 
+(require 'browse-url)
 (defun org-open-link-at-point-external ()
   "Open the Org link at point in the secondary browser."
   (interactive)
   (let* ((context (org-element-context))
          (url (and (eq (org-element-type context) 'link)
                    (org-element-property :raw-link context))))
-    (if url
-        (progn
-          (message "Opening externally: %s" url)
-          (funcall browse-url-secondary-browser-function url))
-      (user-error "No Org link at point"))))
+    (unless url
+      (user-error "No Org link at point"))
+    (unless (functionp browse-url-secondary-browser-function)
+      (user-error "`browse-url-secondary-browser-function' is not set"))
+    (message "Opening externally: %s" url)
+    (funcall browse-url-secondary-browser-function url)))
 
 
 ;; Convert to org-mode from other formats
@@ -173,3 +246,5 @@ extension."
 
 (provide 'org-functions)
 ;;; org-functions.el ends here
+
+; LocalWords:  http pandoc mmd metadown metaup Org's

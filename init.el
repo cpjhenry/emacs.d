@@ -1,11 +1,20 @@
 ;;; init.el --- Emacs configuration -*- no-byte-compile: t; lexical-binding: t; -*-
 
-;;; commentary:
+;;; Commentary:
 ;; brew install emacs-plus
 
 ;; - `auto-insert' inserts code templates, including GPL notice.
 
-;;; code:
+;; Naming convention:
+;;
+;; - `cpj/' functions are my own utilities, helpers, commands, and
+;;   glue. They are not pretending to be part of another package.
+;;
+;; - `my/' functions are local replacements or wrappers around
+;;   existing package functions, usually preserving the original
+;;   intent while changing behaviour, interactivity, or presentation.
+
+;;; Code:
 ;; Initialize terminal
 (blink-cursor-mode -1)
 (delete-selection-mode t)
@@ -52,7 +61,7 @@
 			  (expand-file-name "var/" user-emacs-directory)))
 
 
-;; Customize
+;;; Customize
 (when *mac*
   (setopt mac-function-modifier nil
 	  mac-control-modifier 'control	; Control
@@ -128,7 +137,7 @@
   (message "→ Running on Windows."))
 
 
-;; Initialize package manager
+;;; Initialize package manager
 (require 'package)
 (setopt package-archive-column-width 1
 	package-user-dir (expand-file-name "var/elpa/" user-emacs-directory)
@@ -152,7 +161,7 @@
   :after quelpa)
 
 
-;; settings
+;;; settings
 (set-language-environment 'utf-8)
 
 (setopt	standard-indent 4
@@ -253,7 +262,7 @@
 (use-package gcmh :config (gcmh-mode 1))
 
 
-;; modeline
+;;; modeline
 (message "→ Configuring modeline.")
 (require 'battery)
 
@@ -306,7 +315,7 @@
 (add-hook 'emacs-startup-hook #'efs/display-startup-time)
 
 
-;; buffers
+;;; buffers
 (message "→ Configuring buffers.")
 (use-package s)
 (use-package dash) ; for `-find', `-compose' and `-partial'
@@ -381,6 +390,9 @@
 
 ;; eval-after-loads are run once, before mode hooks
 ;; mode-hooks execute once for every buffer in which the mode is enabled
+
+(with-eval-after-load 'calc
+  (define-key calc-mode-map (kbd "q") 'kill-current-buffer))
 
 (with-eval-after-load 'emacs-news-mode
   (define-key emacs-news-view-mode-map (kbd "[") 'my/outline-previous-heading)
@@ -523,7 +535,7 @@
 ;(advice-add 'whois :after (keymap-local-set "q" 'kill-current-buffer))
 
 
-;; IDO
+;;; IDO
 ;; https://www.emacswiki.org/emacs/InteractivelyDoThings
 ;; HACK · replace with `fido-mode' (cf. http://xahlee.info/emacs/emacs/emacs_fido_mode.html)
 (use-package ido
@@ -557,7 +569,7 @@
   :config (smex-initialize))
 
 
-;; Ibuffer
+;;; Ibuffer
 ;; https://www.emacswiki.org/emacs/IbufferMode
 (use-package ibuffer
   :ensure nil
@@ -617,7 +629,7 @@
   (add-to-list 'ibuffer-never-show-predicates "^\\*Latex Preview Pane Welcome\\*"))
 
 
-;; Dired
+;;; Dired
 (use-package dired
   :ensure nil
   :demand t)
@@ -683,7 +695,7 @@
     ["Reveal in Finder" reveal-in-osx-finder :help "Reveal the file in the OS X Finder"]))
 
 
-;; Tramp
+;;; Tramp
 (require 'tramp)
 (setopt	tramp-default-method "ssh"
 	tramp-syntax 'simplified ; C-x C-f /remotehost:filename
@@ -710,7 +722,7 @@
 (setopt dropbox-config-file (concat user-emacs-directory ".dropbox"))
 
 
-;; frames
+;;; frames
 (setopt	frame-inhibit-implied-resize t
 	frame-resize-pixelwise t)
 
@@ -731,7 +743,7 @@
   (if (boundp 'server-process) (message "→ Server running.")))
 
 
-;; calendar
+;;; calendar
 (message "→ Configuring calendar.")
 (load "calendar-functions" nil 'nomessage)
 (require 'moon-holidays) ; usr/
@@ -740,24 +752,23 @@
 
 (calendar-set-date-style 'iso)
 (setopt calendar-mark-holidays-flag t
+	calendar-mark-diary-entries-flag t
 	calendar-month-header '(propertize
 	  (format "%s %d" (calendar-month-name month) year)
-	  'font-lock-face 'calendar-month-header))
+	  'font-lock-face 'calendar-month-header)
+	cal-tex-holidays t
+	cal-tex-diary t)
 
-(keymap-set calendar-mode-map "m" nil)
 (keymap-set calendar-mode-map "q" 'calendar-exit-kill)
 (keymap-set calendar-mode-map "w" 'calendar-world-clock)
 (keymap-set calendar-mode-map "y" 'list-holidays-this-year)
 
-(easy-menu-remove-item calendar-mode-map '(menu-bar diary) "Mark All")
 (easy-menu-add-item calendar-mode-map '(menu-bar goto)
   ["World clock" calendar-world-clock] "Beginning of Week")
 (easy-menu-add-item calendar-mode-map '(menu-bar holidays)
   ["Yearly Holidays" list-holidays-this-year])
 
 (advice-add 'calendar-exit :before #'save-diary-before-calendar-exit)
-(advice-add 'calendar-goto-info-node :after
-	    (lambda (&rest r) (calendar-exit-kill) (delete-other-windows)))
 
 (require 'diary-lib)
 (setopt diary-file "~/Documents/diary"
@@ -808,19 +819,37 @@
 	(add-hook
 	 'kill-buffer-hook
 	 (lambda ()
-           (kill-unmodified-file-buffer org-agenda-file)
+           (kill-unmodified-file-buffer cpj/org-agenda-file)
            (kill-unmodified-file-buffer org-gcal-file)
 	   (delete-gcal-archive-files))
 	 nil t)))))
 
-;; Roman clock
-(require 'roman-clock) ; usr/
-(keymap-global-set "C-c d r" #'roman-clock)
-(keymap-global-set "C-c d R" #'roman-clock-)
+(message "→ Configuring timekeeping.")
 
-;; Notify on clock period change
-;; (require 'roman-clock-period-notify-mode) ; usr/
-;; (if (featurep 'roman-clock-period-notify-mode) (roman-clock-period-notify-mode))
+(use-package roman-clock ; usr/
+  :ensure nil
+  :bind (("C-c d r" . roman-clock)
+         ("C-c d R" . roman-clock-)))
+
+(use-package roman-clock-period-notify-mode ; usr/
+  :disabled
+  :ensure nil
+  :if (display-graphic-p)
+  :config
+  (roman-clock-period-notify-mode 1))
+
+(use-package biorhythm ; usr/
+  :ensure nil
+  :commands (biorhythm
+             biorhythm-string
+             days-on-earth))
+
+(use-package wwv ; usr/
+  :ensure nil
+  :commands (wwv
+	     wwv-summary))
+
+(load "daily-info" nil 'nomessage) ; etc/
 
 (use-package sparkweather
   :after calendar
@@ -829,7 +858,7 @@
 	 ("q" . quit-window-kill)))
 
 
-;; Initialize packages
+;;; Initialize packages
 (message "→ Initializing packages.")
 
 ;; use-package directives in this order:
@@ -976,7 +1005,8 @@
 	     ("HACK"       font-lock-constant-face bold)
 	     ("REVIEW"     font-lock-keyword-face bold)
 	     ("NOTE"       success bold)
-	     ("DEPRECATED" font-lock-doc-face bold)))
+	     ("NB"         success bold)
+	     ("DEPRECATED" shadow bold)))
   :hook	(prog-mode . hl-todo-mode)
 	(emacs-lisp-mode . hl-todo-mode)
 	(org-mode . hl-todo-mode))
@@ -1018,7 +1048,7 @@
 (use-package visible-mark) ; make the mark visible
 
 
-;; Text, Prog, and Markdown modes
+;;; Text, Prog, and Markdown modes
 (message "→ Configuring modes.")
 (require 'table)
 (when (< emacs-major-version 28)
@@ -1068,6 +1098,13 @@
 	    (setq tab-width 8
 		  truncate-lines -1)))
 
+(with-eval-after-load 'elisp-mode
+  (keymap-set emacs-lisp-mode-map "C-c C-p" #'cpj/eval-page)
+
+  ;; Free these from `emacs-lisp-mode-map'.
+  (keymap-unset emacs-lisp-mode-map "C-c C-f" t)
+  (keymap-unset emacs-lisp-mode-map "C-c C-b" t))
+
 (use-package flymake
   :ensure nil
   :bind
@@ -1108,6 +1145,20 @@
      (display-buffer-reuse-window display-buffer-at-bottom)
      (window-height . 0.25)
      (dedicated . t))))
+
+;; *scratch* & flymake/checkdoc management
+(defun my/scratch-buffer-p ()
+  "Return non-nil if current buffer is scratch-like."
+  (string-match-p "\\*.*scratch" (buffer-name)))
+
+(defun my/disable-flymake-in-scratch-buffers ()
+  "Disable Flymake in scratch-like buffers."
+  (when (and (my/scratch-buffer-p)
+             (bound-and-true-p flymake-mode))
+    (flymake-mode -1)))
+
+(add-hook 'after-change-major-mode-hook
+          #'my/disable-flymake-in-scratch-buffers)
 
 ;; bash
 (add-to-list 'auto-mode-alist '("\\.bash*" . sh-mode))
@@ -1164,25 +1215,66 @@
 (require 'replace-garbage-chars)
 
 
-;; Org-mode
-(unless (boundp 'org-directory) (setopt org-directory "~/Documents/org/"))
-(defvar org-agenda-file (concat org-directory "daily.org") "Default agenda file.")
-(setopt	org-default-notes-file (concat org-directory "notes.org")
-	org-id-locations-file (concat user-emacs-directory "var/org-id-locations"))
-(defvar org-generic-id-locations-file)
-(setq org-generic-id-locations-file (expand-file-name "org-generic-id-locations"
-				    (expand-file-name "var/" user-emacs-directory)))
+;;; Org-mode
+
+(defvar org-directory
+  (expand-file-name "~/Documents/org/")
+  "Default Org directory.")
+
+(defvar cpj/org-agenda-file
+  (expand-file-name "daily.org" org-directory)
+  "Default Org agenda file.")
+
+(defvar org-generic-id-locations-file
+  (expand-file-name "var/org-generic-id-locations" user-emacs-directory)
+  "Location of Org Generic ID locations file.")
+
+(defun cpj/org-edit-special-disable-visual-fill-column (&rest _)
+  "Disable `visual-fill-column-mode' in Org special edit buffers."
+  (when (bound-and-true-p visual-fill-column-mode)
+    (visual-fill-column-mode -1)))
+
+(defun cpj/org-entities-help-outline-cleanup (&rest _)
+  "Make `org-entities-help' easier to browse with Outline folding."
+  (let ((inhibit-read-only t))
+    (flush-blank-lines (point-min) (point-max)))
+  (outline-mode)
+  (setq-local truncate-lines t)
+  (outline-cycle-buffer)
+  (view-mode 1))
+
+(defun cpj/org-agenda-register-diary-buffer ()
+  "Register diary buffer for cleanup when Org Agenda exits."
+  (when-let ((buf (get-buffer "diary")))
+    (add-to-list 'org-agenda-new-buffers buf)))
+
+(defun cpj/org-latex-export-as-latex-cleanup-windows (&rest _)
+  "Clean up window layout after `org-latex-export-as-latex'."
+  (when (called-interactively-p 'any)
+    (delete-other-windows)))
+
+(defun cpj/org-at-table-p-any-advice (oldfun &rest _args)
+  "Call OLDFUN as though `org-at-table-p' had been given ANY."
+  (funcall oldfun t))
+
+(setopt org-agenda-files (list cpj/org-agenda-file)
+        org-default-notes-file (expand-file-name "notes.org" org-directory)
+        org-id-locations-file
+        (expand-file-name "var/org-id-locations" user-emacs-directory))
 
 (use-package org
   :ensure nil
   :demand t
+
   :custom
+  ;; Editing and display.
   (org-ctrl-k-protect-subtree t)
+  (org-element-use-cache nil)
   (org-ellipsis "·")
   (org-fold-catch-invisible-edits 'smart)
   (org-footnote-auto-adjust t)
   (org-footnote-define-inline t)
-  (org-hidden-keywords nil) ;'(title subtitle author date)
+  (org-hidden-keywords nil)
   (org-hide-emphasis-markers t)
   (org-highlight-latex-and-related '(native entities))
   (org-list-allow-alphabetical t)
@@ -1196,34 +1288,54 @@
   (org-src-fontify-natively t)
   (org-src-tab-acts-natively t)
   (org-special-ctrl-a/e t)
-  (org-startup-folded 'content) ; fold children content all
+  (org-startup-folded 'content)
   (org-startup-indented nil)
   (org-startup-shrink-all-tables t)
 
+  ;; Images.
   (org-startup-with-inline-images t)
   (org-cycle-inline-images-display t)
-  (org-image-actual-width t); '(300)
+  (org-image-actual-width t)
 
-  (org-use-speed-commands (lambda () (and (looking-at org-outline-regexp) (looking-back "^\**"))))
+  ;; Speed commands and markup.
+  (org-use-speed-commands
+   (lambda ()
+     (and (looking-at org-outline-regexp)
+          (looking-back "^\\**" (line-beginning-position)))))
   (org-use-sub-superscripts '{})
 
+  ;; Tags.
   (org-auto-align-tags nil)
   (org-tags-column 0)
+  (org-tags-exclude-from-inheritance '("PROJECT"))
 
-  (org-agenda-files (list org-agenda-file))
-  (org-agenda-include-diary nil)
+  ;; Agenda.
+  (org-agenda-include-diary t)
   (org-agenda-skip-deadline-if-done t)
   (org-agenda-skip-scheduled-if-done t)
   (org-agenda-start-on-weekday nil)
   (org-agenda-text-search-extra-files '(agenda-archives))
   (org-agenda-todo-ignore-deadlines t)
   (org-agenda-todo-ignore-scheduled t)
-  (org-agenda-custom-commands
-   '(("P" "Project List" ((tags "PROJECT")))
-     ("O" "Office" ((agenda)(tags-todo "OFFICE")))
-     ("W" "Weekly Plan" ((agenda)(todo "TODO")(tags "PROJECT")))
-     ("H" "Home NA Lists" ((agenda)(tags-todo "HOME")(tags-todo "COMPUTER")))))
+  (org-agenda-use-time-grid nil)
+  (org-agenda-window-setup 'only-window)
 
+  (org-agenda-custom-commands
+   '(("P" "Project List"
+      ((tags "PROJECT")))
+     ("O" "Office"
+      ((agenda)
+       (tags-todo "OFFICE")))
+     ("W" "Weekly Plan"
+      ((agenda)
+       (todo "TODO")
+       (tags "PROJECT")))
+     ("H" "Home NA Lists"
+      ((agenda)
+       (tags-todo "HOME")
+       (tags-todo "COMPUTER")))))
+
+  ;; Export.
   (org-export-with-author t)
   (org-export-with-broken-links t)
   (org-export-with-date t)
@@ -1233,24 +1345,31 @@
   (org-export-with-tables t)
   (org-export-with-toc nil)
   (org-export-with-timestamps t)
-
   (org-export-date-timestamp-format "%Y-%m-%d")
   (org-export-time-stamp-file t)
 
+  ;; ASCII export.
   (org-ascii-text-width 72)
   (org-ascii-inner-margin 2)
   (org-ascii-quote-margin 4)
   (org-ascii-headline-spacing '(0 . 1))
 
+  ;; LaTeX export.
   (org-latex-compiler "xelatex")
-  (org-latex-pdf-process (list
-    (concat "latexmk -" org-latex-compiler " -recorder -synctex=1 -bibtex-cond %b")))
+  (org-latex-pdf-process
+   (list (concat "latexmk -"
+                 org-latex-compiler
+                 " -recorder -synctex=1 -bibtex-cond %b")))
 
+  ;; Markdown export.
   (org-md-headline-style 'atx)
 
-  (org-tags-exclude-from-inheritance '("PROJECT"))
+  ;; TODOs.
   (org-todo-keywords '((sequence "TODO" "DONE")))
-  (org-todo-keyword-faces '(("INPROGRESS" . (:foreground "blue" :weight bold))))
+  (org-todo-keyword-faces
+   '(("INPROGRESS" . (:foreground "blue" :weight bold))))
+
+  ;; Emphasis.
   (org-emphasis-alist
    '(("*" bold)
      ("**" bold)
@@ -1260,266 +1379,284 @@
      ("~" (:background "deep sky blue" :foreground "MidnightBlue"))
      ("+" (:strike-through t))))
 
+  ;; Capture.
   (org-capture-templates
-   '( ;; https://github.com/sprig/org-capture-extension
-     ("p" "Protocol" entry (file+headline org-default-notes-file "Inbox")
+   '(("p" "Protocol" entry
+      (file+headline org-default-notes-file "Inbox")
       "* %?[[%:link][%(transform-square-brackets-to-round-ones \"%:description\")]]\n%i\n")
-     ("L" "Protocol Link" entry (file+headline org-default-notes-file "Inbox")
+     ("L" "Protocol Link" entry
+      (file+headline org-default-notes-file "Inbox")
       "* %?[[%:link][%(transform-square-brackets-to-round-ones \"%:description\")]]\n")))
 
-  :bind ( ("C-c a"  . org-agenda)
-	  ("C-c k"  . org-capture)
-	  ("C-c l"  . org-store-link)
-	  :map org-mode-map
-	  ([remap backward-paragraph] . my/org-backward-paragraph)
-	  ([remap forward-paragraph] . my/org-forward-paragraph)
-	  ("S-<return>" . org-open-link-at-point-external)
-	  ("M-<f4>"     . org-speed-command-help)
-	  ("M-["        . org-backward-heading-same-level)
-	  ("M-]"        . org-forward-heading-same-level)
-	  ("C-M-["      . outline-up-heading)
-	  ("C-M-]"      . my/org-end-of-subtree)
-	  ("C-c o r"    . org-mode-restart)
-	  ("C-c o t"    . org-toggle-link-display))
+  :bind
+  (("C-c a" . org-agenda-list)
+   ("C-c k" . org-capture)
+   ("C-c l" . org-store-link)
+
+   :map org-mode-map
+   ([remap backward-paragraph] . my/org-backward-paragraph)
+   ([remap forward-paragraph]  . my/org-forward-paragraph)
+   ("S-<return>" . org-open-link-at-point-external)
+   ("M-<f4>"     . org-speed-command-help)
+   ("M-["        . org-backward-heading-same-level)
+   ("M-]"        . org-forward-heading-same-level)
+   ("C-M-["      . org-back-to-top-level-heading)
+   ("C-M-]"      . my/org-end-of-subtree)
+   ("C-c o c"    . org-check-misformatted-subtree)
+   ("C-c o r"    . org-mode-restart)
+   ("C-c o t"    . org-toggle-link-display)
+   ("A-b"        . cpj/org-emphasize-bold)
+   ("A-i"        . cpj/org-emphasize-italic)
+
+   :map org-agenda-mode-map
+   ("q" . org-agenda-exit))
 
   :config
-  (require 'org-tempo) ; C-c C-,
-  (require 'org-protocol) ; org-capture
+  (require 'org-tempo)
+  (require 'org-protocol)
+  (require 'ox-latex)
+  (require 'ox-md)
+
   (load "org-functions" nil 'nomessage)
   (load "org-links" nil 'nomessage)
 
   (set-face-underline 'org-ellipsis nil)
+
   (which-key-alias "C-c o" "org")
+  (which-key-alias "C-c o c" "misformatted subtree")
 
-  ;; Replace `org-return' with a DWIM variant for list handling.
-  (use-package org-return
-    :ensure nil
-    :after org
-    :bind (:map org-mode-map
-		([remap org-return] . org-return-dwim)))
+  ;; Org special-edit buffers inherit visual-fill-column from the parent
+  ;; buffer, which makes source/example editing awkward. Disable it after
+  ;; `org-edit-special' creates the edit buffer.
+  (advice-remove 'org-edit-special
+		 #'cpj/org-edit-special-disable-visual-fill-column)
+  (advice-add 'org-edit-special
+              :after #'cpj/org-edit-special-disable-visual-fill-column)
 
-  ;; fix 'org-edit-special'
-  (defun cpj/org-edit-special-disable-visual-fill-column (&rest _)
-    "Disable `visual-fill-column-mode' in Org special edit buffers."
-    (when (bound-and-true-p visual-fill-column-mode)
-      (visual-fill-column-mode -1)))
-  (advice-add 'org-edit-special :after
-              #'cpj/org-edit-special-disable-visual-fill-column)
+  ;; Alternative implementation of `org-support-shift-select'.
+  (dolist (key '("S-<left>" "S-<right>" "S-<up>" "S-<down>"
+                 "C-S-<left>" "C-S-<right>" "C-S-<up>" "C-S-<down>"))
+    (keymap-set org-mode-map key nil))
 
-  ;; org-emphasis
-  (keymap-set org-mode-map "A-b" 'org-emphasize-bold)
-  (defun org-emphasize-bold ()
-    "Bold current word."
-    (interactive)
-    (unless (region-active-p) (mark-whole-word))
-    (org-emphasize ?*))
+  (keymap-set org-mode-map "S-<home>"  #'org-shiftleft)
+  (keymap-set org-mode-map "S-<end>"   #'org-shiftright)
+  (keymap-set org-mode-map "S-<prior>" #'org-shiftup)
+  (keymap-set org-mode-map "S-<next>"  #'org-shiftdown)
 
-  (keymap-set org-mode-map "A-i" 'org-emphasize-italic)
-  (defun org-emphasize-italic ()
-    "Italicize current word."
-    (interactive)
-    (unless (region-active-p) (mark-whole-word))
-    (org-emphasize ?/))
-
-  ;; alternative implementation of 'org-support-shift-select'
-  (keymap-set org-mode-map "S-<left>" nil)    ; clear needed keys
-  (keymap-set org-mode-map "S-<right>" nil)
-  (keymap-set org-mode-map "S-<up>" nil)
-  (keymap-set org-mode-map "S-<down>" nil)
-
-  (keymap-set org-mode-map "C-S-<left>" nil)  ; do the same for left-word
-  (keymap-set org-mode-map "C-S-<right>" nil) ; and right-word
-  (keymap-set org-mode-map "C-S-<up>" nil)    ; and for good measure...
-  (keymap-set org-mode-map "C-S-<down>" nil)  ; likewise
-
-  (keymap-set org-mode-map "S-<home>" 'org-shiftleft) ; re-assign shifts
-  (keymap-set org-mode-map "S-<end>" 'org-shiftright) ; to more logical keys
-  (keymap-set org-mode-map "S-<prior>" 'org-shiftup)
-  (keymap-set org-mode-map "S-<next>" 'org-shiftdown)
-
-  ;; fix 'Ctrl-a' binding in org-mode
+  ;; Fix `C-a' binding in Org mode.
   (org-remap org-mode-map
              #'back-to-indentation-or-beginning-of-line
              #'org-beginning-of-line)
 
-  ;; primarily for cbc-mode, but also useful for other org files in view-mode
+  ;; Tweak behaviour of M-up and M-down.
+  (add-to-list 'org-metaup-hook
+               (lambda () (interactive)
+                 (org-transpose-paragraphs -1)))
+  (add-to-list 'org-metadown-hook
+               (lambda () (interactive)
+                 (org-transpose-paragraphs 1)))
+
+  ;; View mode helpers, useful for Org-ish read-only buffers.
   (with-eval-after-load 'view
-    (define-key view-mode-map (kbd "[") 'org-previous-link)
-    (define-key view-mode-map (kbd "]") 'org-next-link)
-    (define-key view-mode-map (kbd "RET") 'goto-address-at-point))
+    (keymap-set view-mode-map "["   #'org-previous-link)
+    (keymap-set view-mode-map "]"   #'org-next-link)
+    (keymap-set view-mode-map "RET" #'goto-address-at-point))
 
-  ;; tweak behaviour
-  (add-hook 'org-agenda-finalize-hook 'delete-other-windows)
-  (if (featurep 'visual-fill-column)
-      (add-hook 'org-mode-hook 'visual-fill-column-mode--disable))
+  ;; Ispell should not check Org drawers or code/example blocks.
+  (dolist (region '((":\\(PROPERTIES\\|LOGBOOK\\):" . ":END:")
+                    ("#\\+BEGIN_SRC" . "#\\+END_SRC")
+                    ("#\\+begin_src" . "#\\+end_src")
+                    ("^#\\+begin_example " . "#\\+end_example$")
+                    ("^#\\+BEGIN_EXAMPLE " . "#\\+END_EXAMPLE$")))
+    (add-to-list 'ispell-skip-region-alist region))
 
-  ;; Automatically hide Org comment blocks.
-  (use-package org-comment-placeholder ; usr/
-    :ensure nil
-    :hook (org-mode . org-comment-placeholder-mode))
+  ;; Custom entities.
+  (add-to-list 'org-entities-user
+               '("textnumero" "\\textnumero" nil "&numero;" "No." "No." "№"))
 
-  ;; Hide inline Org footnotes.
-  (use-package org-hide-inline-footnotes ; usr/
-    :ensure nil
-    :hook (org-mode . org-hide-inline-footnotes-mode))
+  ;; Better `org-entities-help'.
+  (advice-remove 'org-entities-help
+		 #'cpj/org-entities-help-outline-cleanup)
+  (advice-add 'org-entities-help
+              :after #'cpj/org-entities-help-outline-cleanup)
 
-  ;; Visually indent Org quote/verse blocks and prettify delimiters.
-  (use-package org-quote-indent ; usr/
-    :ensure nil
-    :hook (org-mode . org-quote-indent-mode))
+  ;; Clean up temporary diary buffer after Agenda exits.
+  (add-hook 'org-agenda-finalize-hook
+            #'cpj/org-agenda-register-diary-buffer)
 
-  ;; Display certain LaTeX-style macros as nicer strings.
-  (use-package org-macro-display ; usr/
-    :ensure nil
-    :hook (org-mode . org-macro-display-mode))
+  ;; LaTeX classes.
+  (add-to-list 'org-latex-classes
+               '("letter" "\\documentclass{letter}")
+               t)
 
-  ;; Replace org-table characters with box-drawing Unicode glyphs.
-  (use-package org-pretty-table ; opt/
-    :ensure nil
-    :hook   (org-mode . org-pretty-table-mode)
-    :config (ignore))
+  (add-to-list 'org-latex-classes
+               '("memoir" "\\documentclass{memoir}"
+                 ("\\chapter{%s}" . "\\chapter*{%s}")
+                 ("\\section{%s}" . "\\section*{%s}")
+                 ("\\subsection{%s}" . "\\subsection*{%s}")
+                 ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))
+               t)
 
-  ;; Report paragraph count and memorization days.
-  (use-package org-rehearsal ; usr/
-    :ensure nil
-    :demand t
-    :custom (org-rehearsal-auto-enable-directories
-	     (delq nil (list ritual-directory)))
-    :bind ( :map org-mode-map
-	    ("C-c o m" . org-rehearsal-report))
-    :hook (org-mode . org-rehearsal-enable-maybe))
+  (advice-remove 'org-latex-export-as-latex
+		 #'cpj/org-latex-export-as-latex-cleanup-windows)
+  (advice-add 'org-latex-export-as-latex
+              :after #'cpj/org-latex-export-as-latex-cleanup-windows)
 
-  ;; Create an Org export buffer with paragraphs shortened to LIMIT characters.
-  (use-package org-paragraph-preview ; usr/
-    :ensure nil
-    :demand t
-    :custom (org-paragraph-preview-latex-header "~/Documents/org/latexhdr.org")
-            (org-paragraph-preview-latex-directives
-	     '("\\ritual"
-               "\\nopgnos"))
-    :bind ( :map org-mode-map
-	    ("C-c o p" . org-paragraph-preview)))
-
-  ;; Preview Org LaTeX documents using plain-text exporter.
-  (use-package org-plain-latex-preview ; usr/
-    :ensure nil)
-
-  ;; Ispell should not check code blocks in org mode
-  (add-to-list 'ispell-skip-region-alist '(":\\(PROPERTIES\\|LOGBOOK\\):" . ":END:"))
-  (add-to-list 'ispell-skip-region-alist '("#\\+BEGIN_SRC" . "#\\+END_SRC"))
-  (add-to-list 'ispell-skip-region-alist '("#\\+begin_src" . "#\\+end_src"))
-  (add-to-list 'ispell-skip-region-alist '("^#\\+begin_example " . "#\\+end_example$"))
-  (add-to-list 'ispell-skip-region-alist '("^#\\+BEGIN_EXAMPLE " . "#\\+END_EXAMPLE$"))
-
-  ;; custom entities
-  (add-to-list 'org-entities-user '("textnumero" "\\textnumero" nil "&numero;" "No." "No." "№"))
-
-  ;; Use Outline mode for `org-entities-help' so Org entities are shown
-  ;; literally rather than interpreted, while still allowing heading folding.
-  (defun cpj/org-entities-help-outline-cleanup (&rest _)
-    "Make `org-entities-help' easier to browse with Outline folding."
-    (let ((inhibit-read-only t))
-      (flush-blank-lines (point-min) (point-max)))
-    (outline-mode)
-    (setq-local truncate-lines t)
-    (outline-cycle-buffer)
-    (view-mode 1))
-  (advice-add 'org-entities-help :after
-              #'cpj/org-entities-help-outline-cleanup)
-
-  (require 'ox-latex)
-  (add-to-list 'org-latex-classes '("letter" "\\documentclass{letter}") t)
-  (add-to-list 'org-latex-classes '("memoir" "\\documentclass{memoir}"
-				    ("\\chapter{%s}" . "\\chapter*{%s}")
-				    ("\\section{%s}" . "\\section*{%s}")
-				    ("\\subsection{%s}" . "\\subsection*{%s}")
-				    ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))
-	       			    t)
-
-  (defun cpj/org-latex-export-as-latex-cleanup-windows (&rest _)
-    "Clean up window layout after `org-latex-export-as-latex'."
-    (when (called-interactively-p 'any)
-      (delete-other-windows)))
-  (advice-add 'org-latex-export-as-latex :after
-              #'cpj/org-latex-export-as-latex-cleanup-windows)
-
-  (require 'ox-md)
-
-  ;; fix org-table-convert-region menu entry
+  ;; Fix `org-table-convert-region' menu entry.
   (define-key org-tbl-menu [Convert\ Region]
-	      '(menu-item "Convert Region" org-table-convert-region
+              '(menu-item "Convert Region" org-table-convert-region
                 :enable
                 (or (org-region-active-p)
                     (not (org-at-table-p 'any)))))
 
-  ;; fix table.el error
+  ;; Fix table.el error.
   ;; https://github.com/doomemacs/doomemacs/issues/6980
-  (defun myfunc/check_table_p (oldfunc) (funcall oldfunc t))
-  (advice-add 'org-at-table-p :around 'myfunc/check_table_p) )
+  ;; Treat table.el tables as tables when Org asks `org-at-table-p'.
+  ;; This works around failures in table.el / Org integration, notably
+  ;; commands that call `org-at-table-p' without passing ANY.
+  ;;
+  ;; Remove first so form-feed/page evaluation does not stack duplicate advice.
+  (advice-remove 'org-at-table-p
+		 #'cpj/org-at-table-p-any-advice)
+  (advice-add 'org-at-table-p
+              :around #'cpj/org-at-table-p-any-advice))
 
-;; END OF ORG-MODE CONFIGURATION
+;;; Org-mode adjunct packages
 
-;; org-mode packages
-(use-package org-autoexport ; #+auto_export:
-  :disabled
+(use-package org-return
+  :ensure nil
   :after org
-  :hook (org-mode . org-autoexport-mode))
+  :bind (:map org-mode-map
+              ([remap org-return] . org-return-dwim)))
 
-(use-package org-chef ; manage recipes in org-mode
-  :if *natasha*
+(use-package org-comment-placeholder
+  :ensure nil
   :after org
+  :hook (org-mode . org-comment-placeholder-mode))
+
+(use-package org-hide-inline-footnotes
+  :ensure nil
+  :after org
+  :hook (org-mode . org-hide-inline-footnotes-mode))
+
+(use-package org-quote-indent
+  :ensure nil
+  :after org
+  :hook (org-mode . org-quote-indent-mode))
+
+(use-package org-macro-display
+  :ensure nil
+  :after org
+  :hook (org-mode . org-macro-display-mode))
+
+(use-package org-pretty-table
+  :ensure nil
+  :after org
+  :hook (org-mode . org-pretty-table-mode))
+
+(use-package org-rehearsal
+  :ensure nil
   :demand t
-  :config
-  (defvar org-chef-recipe-book "~/Documents/Recipes/cookbook.org" "Default recipe book.")
-  (add-to-list 'org-capture-templates '("c" "Cookbook" entry (file org-chef-recipe-book)
-					"%(org-chef-get-recipe-from-url)" :empty-lines 0) t)
-  ;; HACK · Adjust spacing in `org-chef-recipe-to-org-element' after upgrading ('pre-' to 'post-').
-  (add-to-list 'org-capture-templates '("m" "Manual Cookbook" entry (file org-chef-recipe-book)
-					"* %^{Recipe title: }
-:PROPERTIES:\n:provenance:\n:source-url:\n:servings:\n:prep-time:\n:cook-time:\n:ready-in:\n:END:
-** Ingredients%?\n\n** Directions\n\n** Notes\n") t))
-
-(use-package org-cliplink ; insert org-mode links from the clipboard
   :after org
-  :bind ( :map org-mode-map
-	  ("C-c o k" . my/org-cliplink))
+  :custom
+  (org-rehearsal-auto-enable-directories
+   (delq nil (list ritual-directory)))
+  :bind (:map org-mode-map
+              ("C-c o m" . org-rehearsal-report))
+  :hook (org-mode . org-rehearsal-enable-maybe))
+
+(use-package org-paragraph-preview
+  :ensure nil
+  :demand t
+  :after org
+  :custom
+  (org-paragraph-preview-latex-header
+   (expand-file-name "latexhdr.org" org-directory))
+  (org-paragraph-preview-latex-directives
+   '("\\ritual"
+     "\\nopgnos"))
+  :bind (:map org-mode-map
+              ("C-c o p" . org-paragraph-preview)))
+
+(use-package org-plain-latex-preview
+  :ensure nil
+  :after org)
+
+;;; Optional Org packages
+
+(use-package org-chef
+  :if *natasha*
+  :demand t
+  :after org
   :config
-  (defun my/org-cliplink ()
-    "Takes a URL from the clipboard and inserts an org-mode link with the
-title of a page found by the URL into the current buffer."
+  (defvar org-chef-recipe-book
+    "~/Documents/Recipes/cookbook.org"
+    "Default recipe book.")
+
+  (add-to-list
+   'org-capture-templates
+   '("c" "Cookbook" entry
+     (file org-chef-recipe-book)
+     "%(org-chef-get-recipe-from-url)"
+     :empty-lines 0)
+   t)
+  ;; HACK · After upgrading org-chef, adjust spacing in
+  ;; `org-chef-recipe-to-org-element' from `pre-' to `post-'.
+
+  (add-to-list
+   'org-capture-templates
+   '("m" "Manual Cookbook" entry
+     (file org-chef-recipe-book)
+     "* %^{Recipe title: }
+:PROPERTIES:
+:provenance:
+:source-url:
+:servings:
+:prep-time:
+:cook-time:
+:ready-in:
+:END:
+** Ingredients%?
+
+** Directions
+
+** Notes
+")
+   t))
+
+(use-package org-cliplink
+  :after org
+  :bind (:map org-mode-map
+              ("C-c o k" . cpj/org-cliplink))
+  :config
+  (defun cpj/org-cliplink ()
+    "Insert an Org link from the clipboard, using the page title."
     (interactive)
     (org-cliplink-insert-transformed-title
-     (org-cliplink-clipboard-content)     ;take the URL from the CLIPBOARD
+     (org-cliplink-clipboard-content)
      (lambda (url title)
-       (let* ((parsed-url (url-generic-parse-url url)) ;parse the url
-	      (clean-title (cond
-		;; if the host is github.com, cleanup the title
-		((string= (url-host parsed-url) "github.com")
-		 (replace-regexp-in-string "GitHub - .*: \\(.*\\)" "\\1" title))
-		;; otherwise keep the original title
-		(t title))))
-	 ;; forward the title to the default org-cliplink transformer
-	 (org-cliplink-org-mode-link-transformer url clean-title))))))
+       (let* ((parsed-url (url-generic-parse-url url))
+              (clean-title
+               (if (string= (url-host parsed-url) "github.com")
+                   (replace-regexp-in-string
+                    "GitHub - .*: \$begin:math:text$\.\*\\$end:math:text$" "\\1" title)
+                 title)))
+         (org-cliplink-org-mode-link-transformer url clean-title))))))
 
-(use-package org-contrib ; use ':ignore:' tag to exclude heading (but not content) from export
+(use-package org-contrib
   :after org
   :config
   (require 'ox-extra)
   (ox-extras-activate '(ignore-headlines)))
 
-(use-package org-download ; org-download-yank
+(use-package org-download
   :if *natasha*
   :after org
-  :custom (org-download-heading-lvl nil)
-	  (org-download-image-org-width 925))
-
-(use-package org-drill ; aka 'flashcard' mode
-  :if *natasha*
-  :disabled
-  :after org)
+  :custom
+  (org-download-heading-lvl nil)
+  (org-download-image-org-width 925))
 
 (use-package org-gcal
-  :after org
   :ensure t
   :custom
   (org-gcal-fetch-file-alist `((,user-gmail . ,org-gcal-file)))
@@ -1532,28 +1669,32 @@ title of a page found by the URL into the current buffer."
   (add-to-list 'org-agenda-files org-gcal-file t)
 
   (defun calfw-gcal ()
-  "Fetch Google Calendar events, then display calfw."
-  (interactive)
-  (deferred:$
-    (org-gcal-fetch)
-    (deferred:nextc it
-      (lambda (_)
-        (calfw))))) )
+    "Fetch Google Calendar events, then display calfw."
+    (interactive)
+    (deferred:$
+      (org-gcal-fetch)
+      (deferred:nextc it
+        (lambda (_)
+          (calfw))))))
 
-(use-package org-ref ; setup bibliography, cite, ref, and label org-mode links
+(use-package org-ref
   :if *natasha*
   :disabled
   :after org
   :init
-  (define-key org-mode-map (kbd "C-=") 'org-ref-insert-link-menu))
+  (define-key org-mode-map (kbd "C-=") #'org-ref-insert-link-menu))
 
-(use-package ox-epub)
-(use-package ox-gemini)
+(use-package ox-epub
+  :after org)
+
+(use-package ox-gemini
+  :after org)
+
+;;; End Org-mode configuration
 
 
-;; TeX
+;;; TeX
 (use-package tex
-  ;:disabled
   :unless *w32*
   :ensure auctex
   ;:defer t
@@ -1576,13 +1717,8 @@ title of a page found by the URL into the current buffer."
   (preview-protect-point t))
 
 
-;; spell checking
+;;; spell checking
 (bind-key "<f7>" 'my/ispell-buffer)
-(defun my/ispell-buffer ()
-  (interactive)
-  (with-silent-modifications
-    (let ((inhibit-read-only t))
-      (ispell-buffer))))
 
 (use-package jinx
   :demand t
@@ -1607,7 +1743,7 @@ title of a page found by the URL into the current buffer."
 	(jinx-correct-all)))))
 
 
-;; print
+;;; print
 (define-key global-map [menu-bar file print] nil)
 
 (use-package print-text-latex
@@ -1624,7 +1760,7 @@ title of a page found by the URL into the current buffer."
   :bind (("M-p 3" . print-text-card)))
 
 
-;; Configure specific machines
+;;; Configure specific machines
 (message "→ Configuring specific machines.")
 (when *natasha*
   (setopt browse-url-secondary-browser-function 'browse-url-generic
@@ -1780,23 +1916,13 @@ title of a page found by the URL into the current buffer."
 	      browse-url-generic-program "firefox-esr"))
 
 
-;; sundry
+;;; sundry
 (message "→ Configuring sundry.")
 (load "misc-functions" nil 'nomessage)
+(load "scripts" 'noerror 'nomessage)
+
 (require 'kf-library)
 (load "help-cpj" nil 'nomessage)
-(load "scripts" 'noerror 'nomessage)
-(load "daily-info" nil 'nomessage)
-
-(use-package biorhythm ; usr/
-  :ensure nil
-  :commands (biorhythm
-             biorhythm-string
-             days-on-earth))
-
-(use-package wwv ; usr/
-  :ensure nil
-  :commands (wwv-summary))
 
 (load "pdfexport" nil 'nomessage)
 (eval-after-load
@@ -1824,7 +1950,7 @@ title of a page found by the URL into the current buffer."
   :hook (org-mode . org-pdftools-setup-link))
 
 
-;; arrow keys (Darwin)
+;;; arrow keys (Darwin)
 (message "→ Configuring UX.")
 ;; <home>  is fn-left	<end>  is fn-right
 ;; <prior> is fn-up	<next> is fn-down
@@ -1847,7 +1973,7 @@ title of a page found by the URL into the current buffer."
 (global-set-key [remap forward-paragraph] 'my/forward-paragraph)
 
 
-;; scroll settings
+;;; scroll settings
 (setq auto-window-vscroll nil
       next-screen-context-lines 0
       scroll-conservatively 10000
@@ -1875,7 +2001,7 @@ title of a page found by the URL into the current buffer."
 ;;	:config (ultra-scroll-mode 1))
 
 
-;; mouse
+;;; mouse
 ;; https://github.com/purcell/disable-mouse
 (setopt	mouse-yank-at-point t
 	mouse-wheel-progressive-speed nil
@@ -1892,7 +2018,7 @@ title of a page found by the URL into the current buffer."
   (global-set-key (kbd "<C-wheel-down>") 'ignore))
 
 
-;; window navigation
+;;; window navigation
 (use-package windmove
   :ensure nil
   :bind
@@ -1912,7 +2038,7 @@ title of a page found by the URL into the current buffer."
 ;(winner-mode t)
 
 
-;; alternate keys
+;;; alternate keys
 (global-set-key (kbd "C-s")	'isearch-forward-regexp)
 (global-set-key (kbd "C-r")	'isearch-backward-regexp)
 (global-set-key (kbd "M-s s")	'isearch-forward)
@@ -1963,7 +2089,7 @@ title of a page found by the URL into the current buffer."
 (keymap-global-unset "C-x u")
 
 
-;; Disabled functions
+;;; Disabled functions
 ;(setq disabled-command-function 'enable-me)
 
 (put 'dired-find-alternate-file 'disabled nil)
@@ -1980,7 +2106,7 @@ title of a page found by the URL into the current buffer."
 (add-to-list 'safe-local-variable-values '(truncate-lines . -1))
 
 
-;; Shortcuts
+;;; Shortcuts
 (bind-key "<f8>"	'list-bookmarks)
 
 (bind-key "C-`"		'scratch-buffer)
@@ -1994,7 +2120,7 @@ title of a page found by the URL into the current buffer."
 (bind-key "C-M-y"	'undo-yank)
 
 
-;; Ctrl-c (personal keybindings)
+;;; Ctrl-c (personal keybindings)
 (bind-key "C-c b"	'eww-list-bookmarks) ; WWW
 (which-key-alias "C-c b" "eww-bookmarks")
 
@@ -2026,7 +2152,7 @@ title of a page found by the URL into the current buffer."
 (which-key-alias "C-c 8" "keys")
 
 
-;; Ctrl-x (buffer functions)
+;;; Ctrl-x (buffer functions)
 (bind-key "C-x 8 0" (kbd "​")) ; zero-width-space
 (bind-key "C-x 8 <left>" (kbd "←"))
 (bind-key "C-x 8 <right>" (kbd "→"))
@@ -2059,7 +2185,7 @@ title of a page found by the URL into the current buffer."
 (which-key-alias "C-x w" "windows")
 
 
-;; Aliases
+;;; Aliases
 (defalias 'doe 'toggle-debug-on-error)
 (defalias 'cr 'customize-rogue)
 (defalias 'la 'list-abbrevs)
@@ -2120,4 +2246,4 @@ title of a page found by the URL into the current buffer."
 ; LocalWords:  github cliplink Waterfox waterfox nov backend fboundp
 ; LocalWords:  windmove goto ripgrep nomessage lorem OAuth authinfo
 ; LocalWords:  plist nopgnos flymake api todo paren docstrings ibuf
-; LocalWords:  ibuffer
+; LocalWords:  ibuffer ish

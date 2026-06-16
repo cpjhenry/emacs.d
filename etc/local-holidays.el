@@ -10,6 +10,7 @@
 (require 'holidays)
 (require 'cal-china)
 (require 'cal-hebrew)
+(require 'cal-tex)
 (require 'lunar)
 (require 'solar)
 (require 'time)
@@ -157,7 +158,36 @@ nominal date in the Hebrew calendar."
    (holiday-fixed 11 11 "Martinmas")))
 
 (defconst mercury-retrograde-periods
-  '((2025 ((3 14) (4 7))
+  '((2016 ((1 5)  (1 25))
+          ((4 28) (5 22))
+          ((8 30) (9 22))
+          ((12 19) (1 8)))
+    (2017 ((4 9)  (5 3))
+          ((8 12) (9 5))
+          ((12 3) (12 22)))
+    (2018 ((3 22) (4 15))
+          ((7 26) (8 18))
+          ((11 16) (12 6)))
+    (2019 ((3 5)  (3 28))
+          ((7 7)  (7 31))
+          ((10 31) (11 20)))
+    (2020 ((2 16) (3 9))
+          ((6 17) (7 12))
+          ((10 13) (11 3)))
+    (2021 ((1 30) (2 20))
+          ((5 29) (6 22))
+          ((9 27) (10 18)))
+    (2022 ((1 14) (2 3))
+          ((5 10) (6 3))
+          ((9 9)  (10 2))
+          ((12 29) (1 18)))
+    (2023 ((4 21) (5 14))
+          ((8 23) (9 15))
+          ((12 13) (1 1)))
+    (2024 ((4 1)  (4 25))
+          ((8 4)  (8 28))
+          ((11 25) (12 15)))
+    (2025 ((3 14) (4 7))
           ((7 18) (8 10))
           ((11 9) (11 29)))
     (2026 ((2 25) (3 20))
@@ -165,7 +195,17 @@ nominal date in the Hebrew calendar."
 	  ((10 24)(11 13)))
     (2027 ((2 9)  (3 3))
 	  ((6 10) (7 4))
-	  ((10 7) (10 28))))
+	  ((10 7) (10 28)))
+    (2028 ((1 24) (2 14))
+	  ((5 21) (6 13))
+	  ((9 19) (10 11)))
+    (2029 ((1 7)  (1 27))
+	  ((5 1)  (5 25))
+	  ((9 2)  (9 24))
+	  ((12 21) (1 10)))
+    (2030 ((4 12) (5 6))
+	  ((8 15) (9 8))
+	  ((12 5) (12 25))))
   "Published Mercury retrograde periods.
 
 Each period is of the form:
@@ -178,23 +218,22 @@ is the station direct.")
 
 (defun holiday-mercury-retrograde ()
   "Return Mercury retrograde station dates for the displayed year."
-  (let ((periods (cdr (assoc displayed-year
-                             mercury-retrograde-periods)))
-        holidays)
-    (dolist (period periods)
-      (let ((start (car period))
-            (end   (cadr period)))
-        (push (list (list (nth 0 start)
-                          (nth 1 start)
-                          displayed-year)
-                    "Mercury Retrograde Begins")
-              holidays)
-        (push (list (list (nth 0 end)
-                          (nth 1 end)
-                          displayed-year)
-                    "Mercury Retrograde Ends")
-              holidays)))
-    (holiday-filter-visible-calendar (nreverse holidays))))
+  (let (holidays)
+    (dolist (year (list (1- displayed-year) displayed-year))
+      (dolist (period (cdr (assoc year mercury-retrograde-periods)))
+        (pcase-let ((`((,sm ,sd) (,em ,ed)) period))
+          (let ((end-year (if (< em sm) (1+ year) year)))
+            (when (= year displayed-year)
+              (push (list (list sm sd year)
+                          "Mercury Retrograde")
+                    holidays))
+            (when (= end-year displayed-year)
+              (push (list (list em ed end-year)
+                          "Mercury Retrograde Ends")
+                    holidays))))))
+
+    (holiday-filter-visible-calendar
+     (nreverse holidays))))
 
 (defun solar-equinoxes-only ()
   "Return only equinox entries from `solar-equinoxes-solstices'."
@@ -214,10 +253,10 @@ orbit around the Milky Way.  This implementation follows the modern
 published civil-date sequence, anchored on Galactic Tick Day 237
 (21 March 2020), and projects backward and forward at 634-day intervals.
 
-Published explanations describe the interval theoretically, but civil
-dates may reflect rounding conventions, event times near midnight,
-time-zone conversions, leap-year effects, or the general tendency of
-the International Date Line to make astronomers grumble."
+Published explanations describe the interval in theoretical terms, but
+civil dates may reflect rounding conventions, event times near midnight,
+time-zone conversions, leap-year effects, or the general tendency of the
+International Date Line to leave astronomers slightly unhinged."
   (let* ((interval 634)
          (anchor-tick 237)
          (anchor-abs (calendar-absolute-from-gregorian '(3 21 2020)))
@@ -359,6 +398,7 @@ which is considered outside the normal Discordian calendar."
      (holiday-fixed 4 9    "Vimy Ridge Day")
      (holiday-float 5 0 1  "Bereaved Mother's Day")
      (holiday-fixed 6 21   "Indigenous Peoples Day")
+     (holiday-fixed 6 24   "Saint-Jean-Baptiste")
      (holiday-float 7 0 -1 "Reek Sunday")
      (holiday-fixed 9 30   "Truth and Reconciliation")
      (holiday-float 11 0 2 "Remembrance Sunday")
@@ -441,7 +481,7 @@ which is considered outside the normal Discordian calendar."
           (holiday-chinese 9 9 "Double Ninth Festival")))) ; 重阳
 
    lunar-phase-names
-   '("New Moon" "First Qtr" "Full Moon" "Last Qtr")
+   '("New Moon" "First Quarter" "Full Moon" "Last Quarter")
 
    holiday-solar-holidays nil
 
@@ -513,9 +553,6 @@ which is considered outside the normal Discordian calendar."
     (holiday-fixed 11 13 "Ides of November")
     (holiday-fixed 12 13 "Ides of December"))
   "Roman calendrical observances.")
-
-; TODO: Does the Masonic world actively observe the date, or is it
-; merely historically significant? Split between holidays and diary.
 
 ;; calendar-holidays: What should be observed?
 ;;     Observances, commemorations, feast days,
@@ -614,10 +651,9 @@ which is considered outside the normal Discordian calendar."
     (holiday-fixed 4 17  "St. Kateri Tekakwitha (Indigenous Peoples)")
     (holiday-fixed 4 23  "St. George (Soldiers)")
     (holiday-fixed 5 4   "St. Florian (Firefighters)")
-    (holiday-fixed 5 26  "St. Augustine of Canterbury (Apostle to the English)")
     (holiday-fixed 5 30  "St. Joan of Arc (Martyr)")
     (holiday-fixed 6 13  "St. Anthony (Lost Souls & Items)")
-    ;; (holiday-fixed 6 24 "St. John the Baptist")
+    ;; (holiday-fixed 6 24 "St. John the Baptist") ; see Saint-Jean-Baptiste
     (holiday-fixed 6 29  "St. Peter (Apostle)")
     (holiday-fixed 7 11  "St. Benedict (Monasticism)")
     (holiday-fixed 7 17  "St. Nicholas Passion-Bearer (Martyr)")
@@ -672,6 +708,61 @@ which is considered outside the normal Discordian calendar."
 		holiday-hindu-holidays
                 holiday-seasonal-observances
 		holiday-observances))
+
+(defun cpj/holiday-available-holiday-lists (holiday-lists)
+  "Add custom holiday categories to HOLIDAY-LISTS."
+  (append
+   holiday-lists
+   (delq nil
+         (list
+	  (and holiday-scottish-observances
+	       (cons "Scottish" holiday-scottish-observances))
+
+	  (and holiday-roman-observances
+	       (cons "Roman" holiday-roman-observances))
+
+	  (and holiday-discordian-observances
+	       (cons "Discordian" holiday-discordian-observances))
+
+	  (and holiday-buddhist-holidays
+	       (cons "Buddhist" holiday-buddhist-holidays))
+
+	  (and holiday-hindu-holidays
+	       (cons "Hindu" holiday-hindu-holidays))
+
+	  (and holiday-seasonal-observances
+	       (cons "Seasonal" holiday-seasonal-observances))
+
+	  (and holiday-observances
+	       (cons "Observances" holiday-observances))
+
+	  (and holiday-saints-days
+	       (cons "Saints" holiday-saints-days))
+	  ))))
+
+(remove-function
+ (symbol-function 'holiday-available-holiday-lists)
+ #'cpj/holiday-available-holiday-lists)
+
+(add-function :filter-return
+              (symbol-function 'holiday-available-holiday-lists)
+              #'cpj/holiday-available-holiday-lists)
+
+(defun list-holiday-category (holidays &optional name)
+  "Display HOLIDAYS for the current or displayed year."
+  (interactive)
+  (let ((year (or (and (boundp 'displayed-year) displayed-year)
+                  (nth 2 (calendar-current-date)))))
+    (list-holidays year nil holidays)))
+
+(defun list-saints-days-this-year ()
+  "Display saints' days for the current or displayed year."
+  (interactive)
+  (list-holiday-category holiday-saints-days))
+
+(defun list-discordian-this-year ()
+  (interactive)
+  (list-holiday-category holiday-discordian-observances))
 
 (provide 'local-holidays)
 ;;; local-holidays.el ends here

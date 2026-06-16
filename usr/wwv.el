@@ -70,6 +70,10 @@
   (interactive)
   (message "%s" (wwv-summary)))
 
+(defun wwv-alerts () "Geophysical alerts and space weather."
+  (interactive)
+  (eww "https://services.swpc.noaa.gov/text/"))
+
 (provide 'wwv)
 
 ;;; wwv.el ends here

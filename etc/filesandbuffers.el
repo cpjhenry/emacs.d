@@ -1,4 +1,4 @@
-;;; filesandbuffers.el --- FILE/BUFFER functions -*- lexical-binding: t; -*-
+;;; filesandbuffers.el --- General editing, buffer, and utility helpers -*- lexical-binding: t; -*-
 ;;; Commentary:
 
 ;;; Code:
@@ -68,6 +68,12 @@
   (interactive)
   (let ((default-directory "~"))
     (mistty)))
+
+(defun my/ispell-buffer ()
+  (interactive)
+  (with-silent-modifications
+    (let ((inhibit-read-only t))
+      (ispell-buffer))))
 
 
 ;; buffers
@@ -247,6 +253,20 @@ mode when toggled off."
   (deactivate-mark)
   (message "Region evaluated."))
 
+(defun cpj/eval-page ()
+  "Evaluate the current page, bounded by form-feed characters."
+  (interactive)
+  (save-excursion
+    (save-restriction
+      (narrow-to-page)
+      (eval-region (point-min) (point-max))
+      (message "Evaluated page: %s"
+               (save-excursion
+                 (goto-char (point-min))
+                 (if (re-search-forward "^;;;+ +\\(.+\\)" nil t)
+                     (match-string 1)
+                   "unnamed"))))))
+
 (defun turn-off-cursor ()
   "Hides cursor locally."
   (interactive)
@@ -260,17 +280,35 @@ mode when toggled off."
     (setq-local cursor-type t)))
 
 ;; https://emacs.stackexchange.com/questions/3022/reset-custom-variable-to-default-value-programmatically
-;; usage: (custom/reset-var 'somevar)
-(defun custom/reset-var (symbl)
+;; usage: (reset-variable 'somevar)
+(defun reset-variable (symbl)
   "Reset SYMBL to its standard value."
   (set symbl (eval (car (get symbl 'standard-value)))))
 
+
+;; Formatting helpers
 (defun commify-number (n)
   "Return N with thousands separators."
   (let ((s (number-to-string n)))
     (while (string-match "\\([0-9]+\\)\\([0-9][0-9][0-9]\\)" s)
       (setq s (replace-match "\\1,\\2" nil nil s)))
     s))
+
+(defun ordinal-number (n)
+  "Return N as an ordinal string with a raised suffix."
+  (let* ((n100 (% n 100))
+         (suffix
+          (cond
+           ((member n100 '(11 12 13)) "th")
+           ((= (% n 10) 1) "st")
+           ((= (% n 10) 2) "nd")
+           ((= (% n 10) 3) "rd")
+           (t "th"))))
+    (concat
+     (commify-number n)
+     (propertize suffix
+                 'display '(raise 0.3)
+                 'face '(:height 0.8)))))
 
 
 ;; DIRED functions
@@ -484,3 +522,6 @@ falling back to `browse-url-browser-function'."
                  (url-hexify-string term)))))))
 
 ;;; filesandbuffers.el ends here
+
+; LocalWords:  sNew DNew Ibuffer reddit filesandbuffers
+; LocalWords:  mistty FILE's somevar

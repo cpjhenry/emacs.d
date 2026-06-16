@@ -50,6 +50,8 @@
 ;; its behaviour with a context-aware variant for list editing.
 
 ;;; Code:
+(require 'org)
+
 (defgroup org-return nil
   "DWIM RET behaviour for Org lists and check-boxes."
   :group 'org)
@@ -104,9 +106,15 @@ When nil, RET always creates a new item below the current one."
      (t nil))))
 
 (defun org-return-dwim ()
-  "Smart RET behaviour for Org lists and check-boxes."
+  "Smart RET behaviour for Org links, lists, and check-boxes."
   (interactive)
   (cond
+   ;; Follow links with RET, then focus the target buffer.
+   ((and org-return-follows-link
+         (eq 'link (org-element-type (org-element-context))))
+    (org-return)
+    (delete-other-windows))
+
    ;; At beginning of a list item, insert a blank line before it.
    ((and (bolp)
          (org-list-prefix-at-point))
@@ -124,20 +132,17 @@ When nil, RET always creates a new item below the current one."
     (let ((prefix (plist-get (org-list-prefix-at-point)
                              :prefix)))
       (cond
-       ;; End of item: continue list.
        ((eolp)
         (newline)
         (insert prefix))
 
-       ;; Middle of item: split item.
        (org-return-split-items
-	(delete-horizontal-space t)
-	(newline)
-	(insert prefix)
-	(when (looking-at-p "[[:space:]]")
-	  (delete-char 1)))
+        (delete-horizontal-space t)
+        (newline)
+        (insert prefix)
+        (when (looking-at-p "[[:space:]]")
+          (delete-char 1)))
 
-       ;; Legacy behaviour: continue list from end.
        (t
         (end-of-line)
         (newline)

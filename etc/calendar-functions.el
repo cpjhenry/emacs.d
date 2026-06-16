@@ -3,15 +3,13 @@
 ;;; Code:
 (require 'calendar)
 (require 'holidays)
+(require 'lunar)
 (require 'cal-julian)
 
-(defun calendar-exit-kill ()
-  "Kill Calendar when exiting."
-  (interactive)
-  (calendar-exit 'kill)
-  (let ((buffer "*wclock*"))
-    (and (get-buffer buffer)
-	 (kill-buffer buffer))))
+(require 'cl-lib)
+(require 'diary-lib)
+(defvar displayed-year)
+(defvar displayed-month)
 
 (defun calendar-world-clock ()
   "Display a world clock buffer with times in various time zones."
@@ -32,12 +30,42 @@
    (or (and (boundp 'displayed-year) displayed-year)
        (nth 2 (calendar-current-date)))))
 
+(defun list-holidays-and-diary-this-month ()
+  "Display holidays and diary entries for the current or displayed month."
+  (interactive)
+  (let* ((month (or (and (boundp 'displayed-month) displayed-month)
+                    (nth 0 (calendar-current-date))))
+         (year  (or (and (boundp 'displayed-year) displayed-year)
+                    (nth 2 (calendar-current-date))))
+         (last-day (calendar-last-day-of-month month year))
+         (buf (get-buffer-create "*Month Almanac*")))
+    (with-current-buffer buf
+      (let ((inhibit-read-only t))
+        (erase-buffer)
+        (insert (format "%s %d\n\n"
+                        (calendar-month-name month) year))
+
+        (dotimes (i last-day)
+          (let* ((day (1+ i))
+                 (date (list month day year))
+                 (holidays (calendar-check-holidays date))
+                 (diary-entries-list nil)
+                 (diary-display-function #'ignore))
+            (diary-list-entries date 1)
+            (let ((entries (append holidays
+                                   (mapcar #'cadr diary-entries-list))))
+              (when entries
+                (insert (format "%02d  %s\n" day (car entries)))
+                (dolist (entry (cdr entries))
+                  (insert (format "    %s\n" entry)))
+                (insert "\n")))))
+
+        (view-mode)))
+    (switch-to-buffer buf)
+    (goto-char (point-min))))
+
 ;; Harvest solar events via `solar-equinoxes-solstices' (DST-correct),
 ;; then filter/de-duplicate for full-year display.
-(require 'cl-lib)
-(defvar displayed-year)
-(defvar displayed-month)
-
 (defun list-solar-events-this-year ()
   "Display equinoxes and solstices for the displayed or current year."
   (interactive)
@@ -75,6 +103,18 @@
         (view-mode 1)))
     (pop-to-buffer buf)))
 
+
+;; cleanup routines
+
+(defun calendar-exit-kill ()
+  "Kill Calendar when exiting."
+  (interactive)
+  (calendar-exit 'kill)
+  (delete-other-windows)
+  (let ((buffer "*wclock*"))
+    (and (get-buffer buffer)
+	 (kill-buffer buffer))))
+
 ;; https://emacs.stackexchange.com/questions/63533/exit-emacs-calendar-without-having-to-save-the-diary-file
 (defun save-diary-before-calendar-exit (_)
   (let ((diary-buffer (get-file-buffer diary-file)))
@@ -90,6 +130,34 @@
 		(while (not (eobp)) (search-forward-regexp "^=+$" nil 'move)
 		(add-text-properties (match-beginning 0) (match-end 0) '(invisible t)))
 		(when state (setq buffer-read-only t))))
+
+;; Replace the built-in `calendar-goto-info-node'.
+;;
+;; The stock version enlarges the Info window but leaves other windows
+;; visible. We instead save the current window configuration, display
+;; the Calendar/Diary manual full-frame, and restore the original
+;; Calendar layout when quitting Info.
+
+(defvar cpj/calendar--saved-window-configuration nil)
+
+(defun calendar-goto-info-node ()
+  "Go to the Info node for the calendar."
+  (interactive)
+  (let ((calendar-buffer (current-buffer)))
+    (setq cpj/calendar--saved-window-configuration
+          (current-window-configuration))
+    (info "(emacs)Calendar/Diary")
+    (delete-other-windows)
+    (local-set-key
+     (kbd "q")
+     (lambda ()
+       (interactive)
+       (quit-window)
+       (when (window-configuration-p cpj/calendar--saved-window-configuration)
+         (set-window-configuration cpj/calendar--saved-window-configuration))
+       (when (buffer-live-p calendar-buffer)
+         (switch-to-buffer calendar-buffer)
+         (calendar-redraw))))))
 
 (provide 'calendar-routines)
 ;;; calendar-functions.el ends here.

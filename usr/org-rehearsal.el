@@ -169,7 +169,7 @@ This function is suitable for use in hooks such as
 
 (defun org-rehearsal-enable-maybe ()
   "Enable `org-rehearsal-mode' for configured directories."
-  (when-let ((file (buffer-file-name)))
+  (when-let* ((file (buffer-file-name)))
     (when (seq-some
            (lambda (dir)
              (org-rehearsal--file-in-directory-p file dir))

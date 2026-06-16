@@ -23,6 +23,7 @@
 ;; counts.
 
 ;;; Code:
+(require 'calendar)
 (defvar user-birthdate)
 
 (defun days-since-birthdate (&optional date)

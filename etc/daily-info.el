@@ -17,6 +17,7 @@
 (declare-function days-on-earth "biorhythm")
 (declare-function wx-alert "scripts")
 (declare-function commify-number "filesandbuffers")
+(declare-function ordinal-number "filesandbuffers")
 (declare-function turn-off-cursor "filesandbuffers")
 
 (defvar diary-number-of-entries)
@@ -63,8 +64,8 @@
           (append
            (list
             (wwv-summary)
-            (format "Day %s on Earth"
-                    (commify-number (days-on-earth)))
+            (format "My %s day on Planet Earth."
+                    (ordinal-number (days-on-earth)))
             (biorhythm-string))
            holidays
            diary-entries))))
@@ -82,6 +83,7 @@
   (interactive)
   ;; Load buffers in reverse reading order, so that *daily-info* is
   ;; the final selected buffer.
+  (org-agenda nil "a")
   (wx-alert)
 
   (let ((items (daily-info--items)))
