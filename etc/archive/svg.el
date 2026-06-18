@@ -63,7 +63,7 @@ Based on https://html.spec.whatwg.org/multipage/parsing.html#parsing-main-infore
 (defun shr-correct-dom-case (dom)
   "Correct the case for SVG segments."
   (dolist (attr (dom-attributes dom))
-    (when-let ((rep (assoc-default (car attr) shr-correct-attribute-case)))
+    (when-let* ((rep (assoc-default (car attr) shr-correct-attribute-case)))
       (setcar attr rep)))
   (dolist (child (dom-children dom))
     (shr-correct-dom-case child))

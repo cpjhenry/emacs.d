@@ -1,3 +1,9 @@
+;;; jinx-functions.el --- Jinx Tweaks -*- lexical-binding: t; -*-
+
+;;; Commentary:
+
+;;; Code:
+
 ;; https://github.com/minad/jinx/wiki
 (defun my/jinx-ispell-localwords ()
 "Return a string of Ispell's local words. Those are the words

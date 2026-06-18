@@ -24,7 +24,17 @@
 
 ;;; Code:
 (require 'calendar)
-(defvar user-birthdate)
+(defcustom user-birthdate nil
+  "User's birth date.
+
+The value is stored as a Gregorian date list in the form (MONTH DAY YEAR),
+as used internally by Emacs calendar functions.  Interactive date entry
+may respect `calendar-date-style', but the stored value uses Emacs'
+calendar date representation."
+  :type '(choice
+          (const :tag "Unset" nil)
+          (sexp :tag "Gregorian date"))
+  :group 'calendar)
 
 (defun days-since-birthdate (&optional date)
   "Return elapsed days since `user-birthdate'."
@@ -67,6 +77,11 @@ Set variable `user-birthdate' in format `(MONTH DAY YEAR)'."
 
 (defun biorhythm (&optional insert)
   "Show today's biorhythm.
+
+Uses `user-birthdate' as the birth date.  `user-birthdate' should be
+a Gregorian date list in the form (MONTH DAY YEAR), as used internally
+by Emacs calendar functions.  Display follows the user's calendar
+settings where possible.
 
 With prefix argument INSERT, insert the result at point instead of
 displaying it in the echo area."

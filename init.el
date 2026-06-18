@@ -21,7 +21,6 @@
 (electric-indent-mode -1)
 (show-paren-mode -1)
 (tooltip-mode -1)
-(toggle-frame-maximized)
 
 ;; Add directories to load-path
 (dolist (dir '("etc" "opt" "usr" "var"))
@@ -39,9 +38,10 @@
 (defconst *bullwinkle* (string-equal system-short-name "bullwinkle"))
 (defconst *natasha* (string-equal system-short-name "natasha"))
 
-(defconst EMACS29 (>= emacs-major-version 29) "Running Emacs 29 or greater.")
-(defconst EMACS30 (>= emacs-major-version 30) "Running Emacs 30 or greater.")
-(defconst EMACS31 (>= emacs-major-version 31) "Running Emacs 31 or greater.")
+(defconst my/emacs-29-p (>= emacs-major-version 29) "Non-nil when running Emacs 29 or newer.")
+(defconst my/emacs-30-p (>= emacs-major-version 30) "Non-nil when running Emacs 30 or newer.")
+(defconst my/emacs-31-p (>= emacs-major-version 31) "Non-nil when running Emacs 31 or newer.")
+(defconst my/emacs-32-p (>= emacs-major-version 32) "Non-nil when running Emacs 32 or newer.")
 
 (defvar cpj/init-loading-incomplete t
   "Non-nil while init.el is still loading.")
@@ -184,7 +184,6 @@
 	fill-nobreak-predicate '(fill-single-word-nobreak-p fill-single-char-nobreak-p fill-french-nobreak-p)
 	find-file-visit-truename t
 	goto-address-mail-face 'default
-	grep-use-headings t
 	help-clean-buttons t
 	help-enable-variable-value-editing t
 	help-window-select t
@@ -235,6 +234,14 @@
 	read-buffer-completion-ignore-case t
 	read-file-name-completion-ignore-case t)
 
+(if my/emacs-31-p
+    (setopt quit-window-kill-buffer t)
+  (defun my/quit-window ()
+    "Quit the current window, killing its buffer."
+    (interactive)
+    (quit-window t))
+  (define-key key-translation-map [remap quit-window] #'my/quit-window))
+
 ;; files
 (setopt	custom-file			(concat user-emacs-directory "custom.el")
 	nsm-settings-file		(concat user-emacs-directory "var/network-security.data")
@@ -281,7 +288,7 @@
 	mode-line-compact nil
 	mode-line-position (list mode-line-percent-position " " "(%l,%C)")
 	mode-line-right-align-edge 'right-fringe)
-(if EMACS30 (setopt project-mode-line t))
+(if my/emacs-30-p (setopt project-mode-line t))
 
 (column-number-mode)
 ;; (display-battery-mode)
@@ -317,8 +324,12 @@
 
 ;;; buffers
 (message "→ Configuring buffers.")
+
+;;;; Libraries
+
 (use-package s)
 (use-package dash) ; for `-find', `-compose' and `-partial'
+
 (load "filesandbuffers" nil 'nomessage)
 (load "render-buffers" nil 'nomessage)
 (load "skeletons" nil 'nomessage)
@@ -326,213 +337,270 @@
 (use-package lean-emacs
   :ensure nil
   :demand t
-  :bind ( ("M-j"	. join-line)			 ; default-indent-new-line (see 'C-M-j')
-	  ("C-w"	. kill-region-or-backward-word)	 ; kill-region
-	  ("M-w"	. kill-region-or-thing-at-point) ; kill-ring-save
-	  ("C-M-]"	. match-paren)
-	  ("C-x x s"	. save-all-unsaved))
-  :hook   (find-file . large-find-file-hook)		 ; Emacs suffers when you open large files
+  :bind (("M-j"     . join-line) ; default-indent-new-line, see C-M-j
+         ("C-w"     . kill-region-or-backward-word)
+         ("M-w"     . kill-region-or-thing-at-point)
+         ("C-M-]"   . match-paren)
+         ("C-x x s" . save-all-unsaved))
+  :hook (find-file . large-find-file-hook)
   :config
+  ;; Emacs suffers when you open large files.
   (dolist (key '("<home>" "s-<left>" "C-a"))
     (when (key-binding (kbd key))
-      (global-set-key (kbd key) #'back-to-indentation-or-beginning-of-line))))
+      (global-set-key (kbd key)
+                      #'back-to-indentation-or-beginning-of-line))))
 
-(require 'abbrev)
-(setopt	abbrev-file-name (concat user-emacs-directory "etc/abbrev_defs")
-	abbrev-suggest t
-	save-abbrevs 'silently)
+;;;; Built-in packages
 
-(require 'bookmark)
-(setopt	bookmark-save-flag 1
-	bookmark-set-fringe-mark nil
-	bookmark-sort-flag nil
-	bookmark-default-file (concat user-emacs-directory "etc/bookmarks"))
+(use-package abbrev
+  :ensure nil
+  :custom
+  (abbrev-file-name (expand-file-name "etc/abbrev_defs" user-emacs-directory))
+  (abbrev-suggest t)
+  (save-abbrevs 'silently))
 
-(require 'em-alias)
-(require 'esh-mode)
-(setopt	eshell-aliases-file (concat user-emacs-directory "etc/eshell/aliases")
-	eshell-directory-name (concat user-emacs-directory "var/eshell/"))
+(use-package bookmark
+  :ensure nil
+  :custom
+  (bookmark-save-flag 1)
+  (bookmark-set-fringe-mark nil)
+  (bookmark-sort-flag nil)
+  (bookmark-default-file (expand-file-name "etc/bookmarks" user-emacs-directory)))
 
-;;; FIXME - collides with `org-ellipsis'
-;; (require 'formfeed-hline)
-;; (if (featurep 'formfeed-hline) (formfeed-hline-mode))
+(use-package esh-mode
+  :ensure nil
+  :requires em-alias
+  :custom
+  (eshell-aliases-file
+   (expand-file-name "etc/eshell/aliases" user-emacs-directory))
+  (eshell-directory-name
+   (expand-file-name "var/eshell/" user-emacs-directory)))
 
-(require 'man)
-(setopt	Man-notify-method 'pushy)
+(use-package grep
+  :ensure nil
+  :custom
+  (grep-use-headings t))
 
-(require 'prog-mode)
-(global-prettify-symbols-mode)
-(setopt	prettify-symbols-unprettify-at-point 'right-edge)
+(use-package man
+  :ensure nil
+  :custom
+  (Man-notify-method 'pushy))
 
-(require 'net-utils)
-(setopt whois-server-name "whois.ca.fury.ca")
+(use-package prog-mode
+  :ensure nil
+  :config
+  (global-prettify-symbols-mode)
+  :custom
+  (prettify-symbols-unprettify-at-point 'right-edge))
 
-(add-hook 'before-save-hook 'time-stamp)
+(use-package net-utils
+  :ensure nil
+  :custom
+  (whois-server-name "whois.ca.fury.ca"))
 
-;; files are given +x permissions when they're saved, if they contain a valid shebang
-(add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
+(use-package info
+  :ensure nil
+  :demand t
+  :bind (:map Info-mode-map
+              ("q" . kill-current-buffer)
+              ("[" . Info-history-back)
+              ("]" . Info-history-forward)
+              ("{" . Info-backward-node)
+              ("}" . Info-forward-node)))
 
-;; remove trailing whitespace on-save
-;(add-hook 'write-file-hooks 'delete-trailing-whitespace)
+(use-package calc
+  :ensure nil
+  :bind (:map calc-mode-map
+              ("q" . kill-current-buffer)))
 
-;; Mode hooks
-(add-hook 'doc-view-mode-hook 'auto-revert-mode)
-(add-hook 'help-mode-hook
-	  (lambda () (setq-local font-lock-keywords-only t)
-	    (goto-address-mode)))
-(add-hook 'pdf-view-mode-hook 'auto-revert-mode)
-(remove-hook 'file-name-at-point-functions 'ffap-guess-file-name-at-point)
+(use-package help-mode
+  :ensure nil
+  :hook
+  (help-mode . cpj/help-mode-setup)
+  :bind (:map help-mode-map
+              ("["     . help-go-back)
+              ("]"     . help-go-forward)
+              ("M-RET" . goto-address-at-point))
+  :config
+  (defun cpj/help-mode-setup ()
+    "Configure Help buffers."
+    (setq-local font-lock-keywords-only t)
+    (goto-address-mode 1)))
 
-;; Modes derived from special-mode will pick-up this directive
-;; HACK keymap-set
-(define-key special-mode-map (kbd "q") 'kill-current-buffer)
-(define-key messages-buffer-mode-map (kbd "q")	'bury-buffer) ; 'messages-buffer-mode
+(use-package emacs-news-mode
+  :ensure nil
+  :bind (:map emacs-news-view-mode-map
+              ("[" . my/outline-previous-heading)
+              ("]" . my/outline-next-heading)
+              ("{" . outline-backward-same-level)
+              ("}" . outline-forward-same-level)))
 
-;; eval-after-loads are run once, before mode hooks
-;; mode-hooks execute once for every buffer in which the mode is enabled
+(use-package view
+  :ensure nil
+  :bind (:map view-mode-map
+              ("j" . View-scroll-line-forward)
+              ("k" . my/View-scroll-line-backward)
+              ("q" . View-kill-and-leave)))
 
-(with-eval-after-load 'calc
-  (define-key calc-mode-map (kbd "q") 'kill-current-buffer))
+;;;; Files and saving
 
-(with-eval-after-load 'emacs-news-mode
-  (define-key emacs-news-view-mode-map (kbd "[") 'my/outline-previous-heading)
-  (define-key emacs-news-view-mode-map (kbd "]") 'my/outline-next-heading)
-  (define-key emacs-news-view-mode-map (kbd "{") 'outline-backward-same-level)
-  (define-key emacs-news-view-mode-map (kbd "}") 'outline-forward-same-level))
+(setopt auto-save-default nil
+        auto-save-list-file-prefix
+        (expand-file-name "var/auto-save/" user-emacs-directory)
+        auto-save-no-message nil
+        auto-save-visited-interval 60
+        create-lockfiles nil
 
-(with-eval-after-load 'help-mode
-  (define-key help-mode-map (kbd "[")	'help-go-back)
-  (define-key help-mode-map (kbd "]")	'help-go-forward)
-  (define-key help-mode-map (kbd "M-RET") 'goto-address-at-point))
+        backup-by-copying t
+        delete-old-versions t
+        backup-directory-alist '(("." . ".~"))
 
-(with-eval-after-load 'info
-  (define-key Info-mode-map (kbd "q")	'kill-current-buffer)
-  (define-key Info-mode-map (kbd "[" )	'Info-history-back)
-  (define-key Info-mode-map (kbd "]")	'Info-history-forward)
-  (define-key Info-mode-map (kbd "{")	'Info-backward-node)
-  (define-key Info-mode-map (kbd "}")	'Info-forward-node))
+        make-backup-files t
+        vc-make-backup-files nil ; don't make backups in git-controlled dirs
+        version-control nil)
 
-(with-eval-after-load 'view
-  (define-key view-mode-map (kbd "j")	'View-scroll-line-forward)
-  (define-key view-mode-map (kbd "k")	'my/View-scroll-line-backward)
-  (define-key view-mode-map (kbd "q")	'View-kill-and-leave))
+(add-hook 'before-save-hook #'time-stamp)
 
-;; removes *Completions* buffer when done
-(add-hook 'minibuffer-exit-hook
-	  (lambda ()
-	    (let ((buffer "*Completions*"))
-	      (and (get-buffer buffer) (kill-buffer buffer)))))
+;; Give files +x permissions when saved if they contain a valid shebang.
+(add-hook 'after-save-hook
+          #'executable-make-buffer-file-executable-if-script-p)
 
-;; opening multiple files
-(add-hook 'window-setup-hook 'delete-other-windows) ; Show only one active window
+;; Remove trailing whitespace on save.
+;; (add-hook 'before-save-hook #'delete-trailing-whitespace)
 
-;; *scratch*
+;; Diffs on save
+(add-to-list
+ 'save-some-buffers-action-alist
+ (list "d"
+       (lambda (buffer)
+         (diff-buffer-with-file
+          (buffer-file-name buffer)))
+       "show diff between the buffer and its file"))
+
+;;;; Auto-save when changing buffers/windows
+
+;; Save all unsaved files when changing focus
+(setq after-focus-change-function #'save-all-unsaved)
+
+(defun cpj/save-current-file-buffer (&rest _)
+  "Save the current buffer when it is visiting a file."
+  (when buffer-file-name
+    (save-buffer)))
+
+(advice-add 'switch-to-buffer  :before #'cpj/save-current-file-buffer)
+(advice-add 'other-window      :before #'cpj/save-current-file-buffer)
+(advice-add 'windmove-left     :before #'cpj/save-current-file-buffer)
+(advice-add 'windmove-right    :before #'cpj/save-current-file-buffer)
+(advice-add 'windmove-up       :before #'cpj/save-current-file-buffer)
+(advice-add 'windmove-down     :before #'cpj/save-current-file-buffer)
+
+;;;; Mode hooks
+
+(add-hook 'doc-view-mode-hook #'auto-revert-mode)
+(add-hook 'pdf-view-mode-hook #'auto-revert-mode)
+
+(remove-hook 'file-name-at-point-functions
+             #'ffap-guess-file-name-at-point)
+
+;;;; Special buffers
+
+;; Modes derived from `special-mode' pick this up.
+(keymap-set special-mode-map "q" #'kill-current-buffer)
+(keymap-set messages-buffer-mode-map "q" #'bury-buffer)
+
+(add-to-list
+ 'display-buffer-alist
+ '("\\`\\*\$begin:math:text$Warnings\\\\\|Compile\-Log\\$end:math:text$\\*\\'"
+   (display-buffer-no-window)
+   (allow-no-window . t)))
+
+;; Remove *Completions* buffer when minibuffer exits.
+(defun cpj/kill-completions-buffer ()
+  "Kill the *Completions* buffer, if present."
+  (when-let* ((buffer (get-buffer "*Completions*")))
+    (kill-buffer buffer)))
+
+(add-hook 'minibuffer-exit-hook #'cpj/kill-completions-buffer)
+
+;; Opening multiple files.
+(add-hook 'window-setup-hook #'delete-other-windows)
+
+;;;; Scratch buffer
+
 (use-package autoscratch
-  :custom (initial-major-mode 'autoscratch-mode))
+  :custom
+  (initial-major-mode 'autoscratch-mode))
 
-;; The form-feed ASCII character (0x0C or 12) was used to signal the
-;; end of the page. It's still used (albeit not that frequently) in
-;; code to divide a file into logical "pages".
+;;;; Form feed
+
+;; The form-feed ASCII character, 0x0C, historically marked the end of a page.
+;; It is still useful in code for dividing a file into logical pages.
 (use-package form-feed-st
-  :config (global-form-feed-st-mode)
-  	  (add-to-list 'form-feed-st-include-modes 'help-mode t))
+  :config
+  (global-form-feed-st-mode)
+  (add-to-list 'form-feed-st-include-modes 'help-mode t))
 
-;; backups / auto-save
-(setopt	auto-save-default nil
-	auto-save-list-file-prefix (concat user-emacs-directory "var/auto-save/")
-	auto-save-no-message nil
-	auto-save-visited-interval 60
-	create-lockfiles nil
+;;;; Editing conveniences
 
-	backup-by-copying t
-	delete-old-versions t
-	backup-directory-alist '(("." . ".~"))
+;; Comment continuation.
+(keymap-set emacs-lisp-mode-map "S-<return>" #'default-indent-new-line)
 
-	make-backup-files t
-	vc-make-backup-files nil ; don't make back-ups in git-controlled dirs
-	version-control nil)
-
-;; copies every file you save in Emacs to a backup directory tree
-;; (require 'backup-each-save)
-;; (add-hook 'after-save-hook 'backup-each-save)
-
-;; http://xahlee.info/emacs/emacs/emacs_auto_save.html
-;; (when (>= emacs-major-version 26)
-;;	;; real auto save
-;;	(auto-save-visited-mode t))
-
-(if (version< emacs-version "27.1")
-    (add-hook 'focus-out-hook 'save-all-unsaved)
-  (setq after-focus-change-function 'save-all-unsaved))
-;; to undo this, run: (setq after-focus-change-function 'ignore)
-
-;; https://protesilaos.com/codelog/2024-12-11-emacs-diff-save-some-buffers/
-(add-to-list 'save-some-buffers-action-alist
-	     (list "d"
-		   (lambda (buffer)
-		     (diff-buffer-with-file
-		      (buffer-file-name buffer)))
-		   "show diff between the buffer and its file"))
-
-;; automatically save buffers associated with files on buffer or window switch
-(defadvice switch-to-buffer (before save-buffer-now activate)
-  (when buffer-file-name (save-buffer)))
-(defadvice other-window (before other-window-now activate)
-  (when buffer-file-name (save-buffer)))
-(defadvice windmove-left (before other-window-now activate)
-  (when buffer-file-name (save-buffer)))
-(defadvice windmove-right (before other-window-now activate)
-  (when buffer-file-name (save-buffer)))
-(defadvice windmove-up (before other-window-now activate)
-  (when buffer-file-name (save-buffer)))
-(defadvice windmove-down (before other-window-now activate)
-  (when buffer-file-name (save-buffer)))
-
-;; don't immediately display these buffers
-(add-to-list 'display-buffer-alist
-	     '("\\`\\*\\(Warnings\\|Compile-Log\\)\\*\\'"
-	       (display-buffer-no-window)
-	       (allow-no-window . t)))
-
-;; comment continuation
-(keymap-set emacs-lisp-mode-map "S-<return>" 'default-indent-new-line)
-
-;; comment out malfunctioning code, or well, comment
+;; Comment out malfunctioning code, or, well, comment.
 (defmacro comment (&rest _body)
-  "Ignore BODY, just like `ignore', but this is a macro."
-  '())
+  "Ignore BODY, just like `ignore', but as a macro."
+  nil)
 
-;; display available keybindings in popup
+;;;; Which-key
+
 (use-package which-key
-  :custom (which-key-idle-delay 0.5)
+  :custom
+  (which-key-idle-delay 0.5)
   :bind (("C-h C-h" . nil))
-  :config (which-key-mode)
-  (defalias 'which-key-alias 'which-key-add-key-based-replacements)
+  :config
+  (which-key-mode)
+
+  (defalias 'which-key-alias
+    #'which-key-add-key-based-replacements)
 
   (defun cpj/which-key-abort-quietly (&optional _)
     "Abort which-key without signalling `keyboard-quit'."
     (interactive)
     (let ((which-key-inhibit t))
       (when (fboundp 'which-key--hide-popup-ignore-command)
-	(which-key--hide-popup-ignore-command))
+        (which-key--hide-popup-ignore-command))
       (message nil)))
 
-  (which-key-define-key-recursively global-map
-   (kbd "C-g") #'cpj/which-key-abort-quietly)
+  (which-key-define-key-recursively
+   global-map
+   (kbd "C-g")
+   #'cpj/which-key-abort-quietly)
 
   (push '((nil . "\\`cpj/which-key-abort-quietly\\'") . t)
-   which-key-replacement-alist))
+        which-key-replacement-alist))
 
-;; search TERM in a web browser
+;;;; Search and narrowing
+
+;; Search TERM in a web browser.
 (keymap-set search-map "b" #'browser-search)
 
-;; intelligent narrowing
-(require 'narrow-dwim)
-(keymap-set global-map "C-c n" #'narrow-dwim)
+(use-package narrow-dwim
+  :ensure nil
+  :bind (("C-c n" . narrow-dwim)))
+
+;;;; Deferred / disabled
+
+;; Copies every file you save in Emacs to a backup directory tree.
+;; (use-package backup-each-save
+;;   :ensure nil
+;;   :hook (after-save . backup-each-save))
+
+;; Real auto-save.
+;; (when (>= emacs-major-version 26)
+;;   (auto-save-visited-mode 1))
 
 ;; whois
-;; HACK · when executing command, resultant buffer needs local-key set.
-;(advice-add 'whois :after (keymap-local-set "q" 'kill-current-buffer))
+;; HACK: when executing command, resultant buffer needs local key set.
+;; (advice-add 'whois :after ...)
 
 
 ;;; IDO
@@ -723,24 +791,97 @@
 
 
 ;;; frames
-(setopt	frame-inhibit-implied-resize t
-	frame-resize-pixelwise t)
+(message "→ Establishing frame logic.")
 
-;; https://korewanetadesu.com/emacs-on-os-x.html
-(when (featurep 'ns) (add-hook 'after-make-frame-functions 'ns-raise-emacs-with-frame))
+(when *mac*
 
-(when *mac* ;; start Emacs server
-  (use-package mac-pseudo-daemon :config (mac-pseudo-daemon-mode)
-    (global-set-key (kbd "C-x C-c") 'kill-daemon-save-buffers-kill-terminal)
+  ;; start Emacs server
 
-    (defun kill-daemon-save-buffers-kill-terminal ()
-      "Kill daemon (if running), then trigger normal exit."
-      (interactive)
-      (if (boundp 'mac-pseudo-daemon-mode) (mac-pseudo-daemon-mode -1))
-      (save-buffers-kill-terminal)))
+  (defun cpj/kill-daemon-save-buffers-kill-terminal ()
+    "Disable `mac-pseudo-daemon-mode', then save buffers and exit Emacs."
+    (interactive)
+    (when (bound-and-true-p mac-pseudo-daemon-mode)
+      (mac-pseudo-daemon-mode -1))
+    (save-buffers-kill-terminal))
 
-  (if (not (boundp 'server-process)) (server-start))
-  (if (boundp 'server-process) (message "→ Server running.")))
+  (use-package mac-pseudo-daemon
+    :bind ( ("C-x C-c" . cpj/kill-daemon-save-buffers-kill-terminal))
+    :config (mac-pseudo-daemon-mode 1))
+
+  (require 'server)
+  (unless (server-running-p) (server-start))
+  (when (server-running-p) (message "→ Server running."))
+
+  ;; Fix weird frame-size issue on Mac, when calling from emacsclient.
+
+  ;; `Finder/Open' With uses Emacs Client.app. To keep files opening in the
+  ;; existing Emacs frame, edit Emacs Client.app's `main.scpt' and remove
+  ;; the `-c' argument from its `emacsclient' invocation.
+  ;;
+  ;; This must be redone after installing a new version of Emacs Client.app.
+  ;; If Finder-opened files start creating weird new frames again, this is
+  ;; the thing you forgot.
+  ;;
+  ;; With `-c' removed, no client-frame geometry repair should be needed.
+
+  (defconst cpj/frame-workarea-height-fudge 4
+    "Pixels to subtract from workarea height when resizing macOS frames.")
+
+  ;; Finder/Emacs Client.app frames can report `fullscreen' as
+  ;; `maximized' without being visually maximized. Resizing to the
+  ;; full monitor workarea almost works, but on macOS the bottom of
+  ;; the frame can clip the minibuffer. Subtracting a few pixels gives
+  ;; the NS frame enough room to display it properly.
+
+  (defun cpj/maximize-frame-by-geometry (&optional frame)
+    "Resize FRAME to fill its monitor workarea."
+    (let* ((frame (or frame (selected-frame)))
+           (workarea (alist-get 'workarea
+				(frame-monitor-attributes frame))))
+      (when (and (frame-live-p frame)
+		 (display-graphic-p frame)
+		 workarea)
+	(let ((left   (nth 0 workarea))
+              (top    (nth 1 workarea))
+              (width  (nth 2 workarea))
+              (height (- (nth 3 workarea)
+			 cpj/frame-workarea-height-fudge)))
+          (modify-frame-parameters frame '((fullscreen . nil)))
+          (set-frame-position frame left top)
+          (set-frame-size frame width height t)))))
+
+  ;; Uncomment hook ↓ ↓ ↓ when creating new frames.
+  ;; Or call `cpj/maximize-frame-by-geometry' manually.
+
+  ;; (add-hook 'server-visit-hook
+  ;;           #'cpj/maximize-frame-by-geometry)
+
+  ;; fix frame not-selected issue when closing secondary frame
+
+  (defun cpj/activate-emacs ()
+    "Activate the Emacs application on macOS."
+    (when (fboundp 'ns-do-applescript)
+      (ns-do-applescript "tell application \"Emacs\" to activate")))
+
+  (defun cpj/refocus-selected-frame ()
+    "Focus the currently selected frame."
+    (when (display-graphic-p)
+      (cpj/activate-emacs)
+      (raise-frame (selected-frame))
+      (select-frame-set-input-focus (selected-frame))))
+
+  (defun cpj/refocus-selected-frame-after-delete (&rest _)
+    "Return focus to Emacs after deleting a frame."
+    (run-at-time 0 nil #'cpj/refocus-selected-frame))
+
+  (advice-add 'delete-frame
+              :after #'cpj/refocus-selected-frame-after-delete))
+
+(use-package mac-notch-tab-bar
+  :ensure nil
+  :when *mac*
+  :config
+  (mac-notch-tab-bar-mode 1))
 
 
 ;;; calendar
@@ -778,52 +919,6 @@
 (add-hook 'diary-list-entries-hook 'diary-sort-entries t)
 (add-hook 'diary-fancy-display-mode-hook 'alt-clean-equal-signs)
 
-(use-package calfw
-  :if *natasha*
-  :after calendar
-  :demand t
-  :init (setq calfw-render-line-breaker 'calfw-render-line-breaker-none) ; wordwrap
-  :custom (calfw-display-calendar-holidays nil)
-  :bind (("C-c C" . calfw)
-	 :map calfw-calendar-mode-map
-	 ("q" . quit-window-kill))
-  :config
-  (use-package calfw-cal)
-  (use-package calfw-ical)
-  (use-package calfw-org)
-  (use-package maccalfw)
-
-  (defun delete-gcal-archive-files ()
-    "Kill and delete known org-gcal archive files."
-    (dolist (file (list
-                   (concat org-gcal-file "_archive")
-                   (expand-file-name "gcal.org_archive"
-                                     (expand-file-name "var/" user-emacs-directory))))
-      (when-let ((buf (get-file-buffer file)))
-	(set-buffer-modified-p nil)
-	(kill-buffer buf))
-      (when (file-exists-p file)
-	(delete-file file))))
-
-  (defun calfw ()
-    "Display a two-week calfw calendar and clean up temporary Org buffers on exit."
-    (interactive)
-    (let ((cfw-buf
-           (calfw-open-calendar-buffer
-            :contents-sources
-            (list
-             (calfw-cal-create-source "diary" "orange")
-             (calfw-org-create-source nil "org-agenda" "Green"))
-            :view 'two-weeks)))
-      (with-current-buffer cfw-buf
-	(add-hook
-	 'kill-buffer-hook
-	 (lambda ()
-           (kill-unmodified-file-buffer cpj/org-agenda-file)
-           (kill-unmodified-file-buffer org-gcal-file)
-	   (delete-gcal-archive-files))
-	 nil t)))))
-
 (message "→ Configuring timekeeping.")
 
 (use-package roman-clock ; usr/
@@ -840,6 +935,7 @@
 
 (use-package biorhythm ; usr/
   :ensure nil
+  :demand t
   :commands (biorhythm
              biorhythm-string
              days-on-earth))
@@ -855,7 +951,7 @@
   :after calendar
   :custom (sparkweather-add-footer nil)
   :bind (:map sparkweather-mode-map
-	 ("q" . quit-window-kill)))
+	 ("q" . quit-window)))
 
 
 ;;; Initialize packages
@@ -903,7 +999,8 @@
 	 ("f" . delete-other-windows))
   :config
   (defalias 'find-grep 'deadgrep)
-  (advice-add 'deadgrep :after #'my/delete-other-windows))
+  (advice-add 'deadgrep :after #'my/delete-other-windows)
+  (add-hook 'deadgrep-mode-hook #'flymake-mode-off))
 
 (use-package dictionary
   :ensure nil
@@ -1068,9 +1165,13 @@
 
 (use-package visual-fill-column
   :bind (("<f6>" . toggle-fill-column-center))
-  :config (advice-add 'text-scale-adjust :after #'visual-fill-column-adjust))
+  :config
+  (advice-add 'text-scale-adjust :after
+              (lambda (&rest _)
+                (when (bound-and-true-p visual-fill-column-mode)
+                  (visual-fill-column-adjust)))))
 
-(if EMACS30 (global-visual-wrap-prefix-mode) ; if not at least Emacs 30, use the package
+(if my/emacs-30-p (global-visual-wrap-prefix-mode)
   (use-package adaptive-wrap :hook (visual-line-mode . adaptive-wrap-prefix-mode)))
 
 (use-package hl-sentence) ; highlight current sentence
@@ -1085,60 +1186,79 @@
 	  (lambda ()
 	    (setq show-trailing-whitespace t)  ; needs to be buffer local
 	    (abbrev-mode)
-	    (when (not (equal major-mode 'lisp-interaction-mode)) ; ie. *scratch*
+	    (unless (eq major-mode 'lisp-interaction-mode) ; ie. *scratch*
 	      (display-line-numbers-mode))
 	    (electric-indent-local-mode)
 	    (goto-address-prog-mode)
 	    (show-paren-local-mode)
-	    (if (featurep 'visual-fill-column) (visual-fill-column-mode -1))))
+	    (when (featurep 'visual-fill-column)
+	      (visual-fill-column-mode -1))))
 
 ;; Emacs lisp
 (add-hook 'emacs-lisp-mode-hook
 	  (lambda ()
 	    (setq tab-width 8
-		  truncate-lines -1)))
+		  truncate-lines t)))
 
 (with-eval-after-load 'elisp-mode
-  (keymap-set emacs-lisp-mode-map "C-c C-p" #'cpj/eval-page)
+  (keymap-set emacs-lisp-mode-map "C-c C-e" #'cpj/elisp-eval-region-page-or-buffer)
 
-  ;; Free these from `emacs-lisp-mode-map'.
   (keymap-unset emacs-lisp-mode-map "C-c C-f" t)
   (keymap-unset emacs-lisp-mode-map "C-c C-b" t))
 
 (use-package flymake
   :ensure nil
+  :preface
+  (defun cpj/elisp-flymake-quiet ()
+    "Use Flymake for byte-compiler diagnostics, not Checkdoc nagging."
+    (remove-hook 'flymake-diagnostic-functions
+                 #'elisp-flymake-checkdoc t))
+
+  :hook
+  (emacs-lisp-mode . cpj/elisp-flymake-quiet)
+  (emacs-lisp-mode . flymake-mode)
+
   :bind
   (:map flymake-mode-map
         ("C-x ! n" . flymake-goto-next-error)
         ("C-x ! p" . flymake-goto-prev-error)
         ("C-x ! l" . flymake-show-buffer-diagnostics))
-  :hook
-  (emacs-lisp-mode . flymake-mode)
+
   :config
-  (which-key-alias "C-x !" "flymake")
+  (which-key-alias "C-x !" "flymake"))
 
-  (defun my/elisp-flymake-quiet ()
-    "Use Flymake for byte-compiler diagnostics, not Checkdoc nagging."
-    (remove-hook 'flymake-diagnostic-functions
-                 #'elisp-flymake-checkdoc t))
+(defun cpj/scratch-buffer-p ()
+  "Return non-nil if current buffer is scratch-like."
+  (string-match-p "\\`\\*.*scratch.*\\*\\'" (buffer-name)))
 
-  (add-hook 'emacs-lisp-mode-hook #'my/elisp-flymake-quiet))
+(defun cpj/disable-flymake-in-scratch-buffers ()
+  "Disable Flymake in scratch-like buffers."
+  (when (and (cpj/scratch-buffer-p)
+             (bound-and-true-p flymake-mode))
+    (flymake-mode -1)))
 
+(add-hook 'after-change-major-mode-hook
+          #'cpj/disable-flymake-in-scratch-buffers)
+
+;; Emacs' new trusted content model is ridiculous.
+;; Let's turn it off for all previously trusted sources
+;; (Emacs itself, Elpa, etc.)
 (use-package files
   :ensure nil
   :custom
   (trusted-content
-   (list user-emacs-directory
-         (expand-file-name "etc/" user-emacs-directory)
-         (expand-file-name "usr/" user-emacs-directory)
-         (expand-file-name "opt/" user-emacs-directory))))
+   (cons (expand-file-name user-emacs-directory)
+         load-path)))
 
+;; Keep Checkdoc available for manual use, but do not let it drive
+;; Flymake diagnostics.  The byte-compiler catches things I care about
+;; while editing; Checkdoc is too chatty for continuous feedback.
 (use-package checkdoc
   :ensure nil
   :config
   (setq checkdoc-column-zero-backslash-before-paren nil
-	checkdoc-force-docstrings-flag nil
-	checkdoc--argument-missing-flag nil)
+        checkdoc-force-docstrings-flag nil
+        checkdoc--argument-missing-flag nil)
   (add-to-list
    'display-buffer-alist
    '("\\*Checkdoc Status\\*"
@@ -1146,25 +1266,13 @@
      (window-height . 0.25)
      (dedicated . t))))
 
-;; *scratch* & flymake/checkdoc management
-(defun my/scratch-buffer-p ()
-  "Return non-nil if current buffer is scratch-like."
-  (string-match-p "\\*.*scratch" (buffer-name)))
-
-(defun my/disable-flymake-in-scratch-buffers ()
-  "Disable Flymake in scratch-like buffers."
-  (when (and (my/scratch-buffer-p)
-             (bound-and-true-p flymake-mode))
-    (flymake-mode -1)))
-
-(add-hook 'after-change-major-mode-hook
-          #'my/disable-flymake-in-scratch-buffers)
-
 ;; bash
 (add-to-list 'auto-mode-alist '("\\.bash*" . sh-mode))
-(define-key shell-mode-map (kbd "M-r") nil)
-(define-key shell-mode-map (kbd "M-p") nil)
-(add-hook 'shell-mode-hook 'goto-address-mode)
+(with-eval-after-load 'shell
+  (keymap-unset shell-mode-map "M-r" t)
+  (keymap-unset shell-mode-map "M-p" t))
+
+(add-hook 'shell-mode-hook #'goto-address-mode)
 
 ;; html
 (add-to-list 'auto-mode-alist '("\\.html$" . html-mode))
@@ -1175,7 +1283,6 @@
 (add-to-list 'auto-mode-alist '("\\.xhtml$" . nxml-mode))
 (add-to-list 'auto-mode-alist '("\\.page$" . nxml-mode))
 
-(autoload 'xml-mode "nxml" "XML editing mode" t)
 ;; (add-hook 'nxml-mode-hook 'show-parens-local-mode)
 
 ;; do not mark long lines in whitespace-mode
@@ -1191,7 +1298,6 @@
 
 ;; Markdown
 (use-package markdown-mode
-  :demand t
   :custom (markdown-command "multimarkdown")
   (markdown-enable-prefix-prompts nil)
   (markdown-italic-underscore t)
@@ -1209,6 +1315,7 @@
   :init		(setopt markdown-hide-urls t)
   :config (add-to-list 'markdown-uri-types "gemini"))
 
+;; Text utilities
 (load "text-functions" nil 'nomessage)
 (require 'number-lines)
 (require 'normalize-text)
@@ -1220,10 +1327,6 @@
 (defvar org-directory
   (expand-file-name "~/Documents/org/")
   "Default Org directory.")
-
-(defvar cpj/org-agenda-file
-  (expand-file-name "daily.org" org-directory)
-  "Default Org agenda file.")
 
 (defvar org-generic-id-locations-file
   (expand-file-name "var/org-generic-id-locations" user-emacs-directory)
@@ -1243,11 +1346,6 @@
   (outline-cycle-buffer)
   (view-mode 1))
 
-(defun cpj/org-agenda-register-diary-buffer ()
-  "Register diary buffer for cleanup when Org Agenda exits."
-  (when-let ((buf (get-buffer "diary")))
-    (add-to-list 'org-agenda-new-buffers buf)))
-
 (defun cpj/org-latex-export-as-latex-cleanup-windows (&rest _)
   "Clean up window layout after `org-latex-export-as-latex'."
   (when (called-interactively-p 'any)
@@ -1257,10 +1355,8 @@
   "Call OLDFUN as though `org-at-table-p' had been given ANY."
   (funcall oldfun t))
 
-(setopt org-agenda-files (list cpj/org-agenda-file)
-        org-default-notes-file (expand-file-name "notes.org" org-directory)
-        org-id-locations-file
-        (expand-file-name "var/org-id-locations" user-emacs-directory))
+(setopt org-default-notes-file (expand-file-name "notes.org" org-directory)
+        org-id-locations-file  (expand-file-name "var/org-id-locations" user-emacs-directory))
 
 (use-package org
   :ensure nil
@@ -1308,32 +1404,6 @@
   (org-auto-align-tags nil)
   (org-tags-column 0)
   (org-tags-exclude-from-inheritance '("PROJECT"))
-
-  ;; Agenda.
-  (org-agenda-include-diary t)
-  (org-agenda-skip-deadline-if-done t)
-  (org-agenda-skip-scheduled-if-done t)
-  (org-agenda-start-on-weekday nil)
-  (org-agenda-text-search-extra-files '(agenda-archives))
-  (org-agenda-todo-ignore-deadlines t)
-  (org-agenda-todo-ignore-scheduled t)
-  (org-agenda-use-time-grid nil)
-  (org-agenda-window-setup 'only-window)
-
-  (org-agenda-custom-commands
-   '(("P" "Project List"
-      ((tags "PROJECT")))
-     ("O" "Office"
-      ((agenda)
-       (tags-todo "OFFICE")))
-     ("W" "Weekly Plan"
-      ((agenda)
-       (todo "TODO")
-       (tags "PROJECT")))
-     ("H" "Home NA Lists"
-      ((agenda)
-       (tags-todo "HOME")
-       (tags-todo "COMPUTER")))))
 
   ;; Export.
   (org-export-with-author t)
@@ -1389,9 +1459,8 @@
       "* %?[[%:link][%(transform-square-brackets-to-round-ones \"%:description\")]]\n")))
 
   :bind
-  (("C-c a" . org-agenda-list)
-   ("C-c k" . org-capture)
-   ("C-c l" . org-store-link)
+  ( ("C-c k" . org-capture)
+    ("C-c l" . org-store-link)
 
    :map org-mode-map
    ([remap backward-paragraph] . my/org-backward-paragraph)
@@ -1406,10 +1475,7 @@
    ("C-c o r"    . org-mode-restart)
    ("C-c o t"    . org-toggle-link-display)
    ("A-b"        . cpj/org-emphasize-bold)
-   ("A-i"        . cpj/org-emphasize-italic)
-
-   :map org-agenda-mode-map
-   ("q" . org-agenda-exit))
+   ("A-i"        . cpj/org-emphasize-italic))
 
   :config
   (require 'org-tempo)
@@ -1479,10 +1545,6 @@
 		 #'cpj/org-entities-help-outline-cleanup)
   (advice-add 'org-entities-help
               :after #'cpj/org-entities-help-outline-cleanup)
-
-  ;; Clean up temporary diary buffer after Agenda exits.
-  (add-hook 'org-agenda-finalize-hook
-            #'cpj/org-agenda-register-diary-buffer)
 
   ;; LaTeX classes.
   (add-to-list 'org-latex-classes
@@ -1584,30 +1646,27 @@
 
 ;;; Optional Org packages
 
+;; HACK · After upgrading org-chef, adjust spacing in
+;; `org-chef-recipe-to-org-element' from `pre-' to `post-'.
 (use-package org-chef
   :if *natasha*
   :demand t
-  :after org
+  :after (org org-capture)
   :config
-  (defvar org-chef-recipe-book
-    "~/Documents/Recipes/cookbook.org"
+  (defvar org-chef-recipe-book "~/Documents/Recipes/cookbook.org"
     "Default recipe book.")
 
-  (add-to-list
-   'org-capture-templates
-   '("c" "Cookbook" entry
-     (file org-chef-recipe-book)
-     "%(org-chef-get-recipe-from-url)"
-     :empty-lines 0)
-   t)
-  ;; HACK · After upgrading org-chef, adjust spacing in
-  ;; `org-chef-recipe-to-org-element' from `pre-' to `post-'.
+  (add-to-list 'org-capture-templates
+	       '("c" "Cookbook" entry
+		 (file org-chef-recipe-book)
+		 "%(org-chef-get-recipe-from-url)"
+		 :empty-lines 0)
+	       t)
 
-  (add-to-list
-   'org-capture-templates
-   '("m" "Manual Cookbook" entry
-     (file org-chef-recipe-book)
-     "* %^{Recipe title: }
+  (add-to-list 'org-capture-templates
+	       '("m" "Manual Cookbook" entry
+		 (file org-chef-recipe-book)
+		 "* %^{Recipe title: }
 :PROPERTIES:
 :provenance:
 :source-url:
@@ -1622,7 +1681,7 @@
 
 ** Notes
 ")
-   t))
+	       t))
 
 (use-package org-cliplink
   :after org
@@ -1643,41 +1702,20 @@
                  title)))
          (org-cliplink-org-mode-link-transformer url clean-title))))))
 
-(use-package org-contrib
+(use-package org-contrib ; use ':ignore:' tag to exclude heading (but not content) from export
   :after org
   :config
   (require 'ox-extra)
   (ox-extras-activate '(ignore-headlines)))
 
-(use-package org-download
+(use-package org-download ; `org-download-yank'
   :if *natasha*
   :after org
   :custom
   (org-download-heading-lvl nil)
   (org-download-image-org-width 925))
 
-(use-package org-gcal
-  :ensure t
-  :custom
-  (org-gcal-fetch-file-alist `((,user-gmail . ,org-gcal-file)))
-  (org-gcal-notify-p nil)
-  (org-gcal-recurring-events-mode 'top-level)
-  (plstore-cache-passphrase-for-symmetric-encryption t)
-  (org-gcal-remove-api-cancelled-events nil)
-  (org-gcal-update-cancelled-events-with-todo nil)
-  :config
-  (add-to-list 'org-agenda-files org-gcal-file t)
-
-  (defun calfw-gcal ()
-    "Fetch Google Calendar events, then display calfw."
-    (interactive)
-    (deferred:$
-      (org-gcal-fetch)
-      (deferred:nextc it
-        (lambda (_)
-          (calfw))))))
-
-(use-package org-ref
+(use-package org-ref ; setup bibliography, cite, ref, and label org-mode links
   :if *natasha*
   :disabled
   :after org
@@ -1691,6 +1729,146 @@
   :after org)
 
 ;;; End Org-mode configuration
+
+
+;;; calfw
+;; Visual calendar dashboard. This section wires together calfw,
+;; diary, Org agenda sources, and `org-gcal'. Google Calendar events
+;; are synced into an Org file, then displayed through both
+;; `org-agenda' and calfw.
+
+(defvar cpj/org-agenda-file
+  (expand-file-name "daily.org" org-directory)
+  "Default Org agenda file.")
+
+;; Keep this outside `use-package' because other packages, such as
+;; `org-gcal', add generated files to `org-agenda-files' later.
+(setopt org-agenda-files (list cpj/org-agenda-file))
+
+(use-package org-agenda
+  :ensure nil
+  :after  org
+  :bind ( ("C-c a" . org-agenda-list)
+	 :map org-agenda-mode-map
+	 ("q"      . org-agenda-exit))
+  :hook (org-agenda-finalize . cpj/org-agenda-register-diary-buffer)
+
+  :custom
+  (org-agenda-include-diary t)
+  (org-agenda-skip-deadline-if-done t)
+  (org-agenda-skip-scheduled-if-done t)
+  (org-agenda-start-on-weekday 1)
+  (org-agenda-text-search-extra-files '(agenda-archives))
+  (org-agenda-todo-ignore-deadlines t)
+  (org-agenda-todo-ignore-scheduled t)
+  (org-agenda-use-time-grid nil)
+  (org-agenda-window-setup 'only-window)
+
+  (org-agenda-custom-commands
+   '(("P" "Project List"
+      ((tags "PROJECT")))
+     ("O" "Office"
+      ((agenda)
+       (tags-todo "OFFICE")))
+     ("W" "Weekly Plan"
+      ((agenda)
+       (todo "TODO")
+       (tags "PROJECT")))
+     ("H" "Home NA Lists"
+      ((agenda)
+       (tags-todo "HOME")
+       (tags-todo "COMPUTER")))))
+
+  :config
+  (defun cpj/org-agenda-register-diary-buffer ()
+    "Register diary buffer for cleanup when Org Agenda exits."
+    (when-let* ((buf (get-buffer "diary")))
+      (add-to-list 'org-agenda-new-buffers buf))))
+
+(use-package maccalfw
+  :ensure nil
+  :after calfw
+  :commands (maccalfw-open
+             maccalfw-get-calendars
+             maccalfw-get-calendars-by-name))
+
+(use-package calfw
+  :bind (("C-c C" . cpj/calfw))
+  :config
+  (defun cpj/maccalfw-create-sources (&optional calendar-names)
+    "Return calfw sources for macOS Calendar.
+
+If CALENDAR-NAMES is non-nil, include only Apple calendars whose
+names appear in that list.  If `maccalfw' cannot load or macOS
+Calendar access fails, return nil rather than breaking `cpj/calfw'."
+    (when (require 'maccalfw nil t)
+      (condition-case err
+          (progn
+            (maccalfw--load-module)
+            (let ((calendars (if calendar-names
+                                 (maccalfw-get-calendars-by-name calendar-names)
+                               (maccalfw-get-calendars))))
+              (mapcar
+               (lambda (cal)
+                 (maccalfw--create-source
+                  (plist-get cal :title)
+                  (plist-get cal :id)
+                  (plist-get cal :color)))
+               calendars)))
+        (error
+         (message "maccalfw unavailable: %s" (error-message-string err))
+         nil))))
+
+  (defun cpj/calfw ()
+    "Display a two-week calfw calendar and clean up temporary Org buffers on exit."
+    (interactive)
+    (let ((cfw-buf
+           (calfw-open-calendar-buffer
+            :contents-sources
+            (append
+             (list
+              (calfw-cal-create-source "diary" "orange")
+              (calfw-org-create-source nil "org-agenda" "Green"))
+             (cpj/maccalfw-create-sources '("Birthdays")))
+            :view 'two-weeks)))
+      (with-current-buffer cfw-buf
+        (add-hook
+         'kill-buffer-hook
+         (lambda ()
+           (kill-unmodified-file-buffer cpj/org-agenda-file)
+           (kill-unmodified-file-buffer org-gcal-file)
+           (cpj/delete-gcal-archive-file))
+         nil t)))))
+
+(use-package org-gcal
+  :after org
+  :custom
+  (org-gcal-fetch-file-alist `((,user-gmail . ,org-gcal-file)))
+  (org-gcal-notify-p nil)
+  (org-gcal-recurring-events-mode 'top-level)
+  (plstore-cache-passphrase-for-symmetric-encryption t)
+  (org-gcal-remove-api-cancelled-events nil)
+  (org-gcal-update-cancelled-events-with-todo nil)
+  :config
+  (add-to-list 'org-agenda-files org-gcal-file t)
+
+  (defun cpj/org-gcal-sync-buffer-around (oldfun &rest args)
+    "Run `org-gcal-sync-buffer' from `org-gcal-file' to shush warnings."
+    (let ((buf (find-file-noselect org-gcal-file)))
+      (with-current-buffer buf
+	(unless (derived-mode-p 'org-mode)
+          (org-mode))
+	(apply oldfun args))))
+
+  (advice-add 'org-gcal-sync-buffer
+              :around #'cpj/org-gcal-sync-buffer-around)
+
+  (defun cpj/calfw-gcal ()
+    "Fetch Google Calendar events, then display calfw."
+    (interactive)
+    (with-current-buffer (find-file-noselect org-gcal-file)
+      (ignore (org-gcal-fetch)))
+    (cpj/calfw)))
 
 
 ;;; TeX
@@ -2051,6 +2229,12 @@
 (global-set-key (kbd "A-<return>") (kbd "M-<return>"))
 (global-set-key (kbd "A-S-<return>") (kbd "M-S-<return>"))
 
+(defun my/recenter-top-bottom ()
+  "Scroll the window so that current line is at the top."
+  (interactive)
+  (recenter-top-bottom 0))
+(keymap-global-set "C-l" 'my/recenter-top-bottom)
+
 ;; https://www.matem.unam.mx/~omar/apropos-emacs.html#writing-experience
 (bind-key "C-d" 'delete-forward-char)      ; better replacement for delete-char
 (bind-key "M-c" 'capitalize-dwim)          ; capitalize-word
@@ -2105,6 +2289,10 @@
 (add-to-list 'safe-local-variable-values '(org-log-done))
 (add-to-list 'safe-local-variable-values '(truncate-lines . -1))
 
+;; and...
+
+(add-to-list 'safe-local-eval-forms '(flymake-mode -1))
+
 
 ;;; Shortcuts
 (bind-key "<f8>"	'list-bookmarks)
@@ -2116,7 +2304,7 @@
 (bind-key "M-<f2>"	'describe-personal-keybindings)
 (bind-key "M-<f3>"	'shortdoc)
 
-(bind-key "C-M-;"	'eval-r)
+(bind-key "C-M-;"	'my/eval-region)
 (bind-key "C-M-y"	'undo-yank)
 
 
@@ -2237,7 +2425,7 @@
 ; LocalWords:  INPROGRESS kfhelp setq xm readabilizing JS dev Lorem
 ; LocalWords:  Gopherspace filesandbuffers ipsum ePub epub xelatex kf
 ; LocalWords:  vcusepackage latexmk synctex bibtex cond xah dirs Ctrl
-; LocalWords:  remotehost flycheck modeline mori featurep cbc smex vc
+; LocalWords:  remotehost modeline mori featurep cbc smex vc ns
 ; LocalWords:  setq's setopt mailutils imagemagick usr dunnet Async
 ; LocalWords:  dir fullscreen dropbox keymap toc buddhist ewth ronn
 ; LocalWords:  enscript noerror formfeed hline erc bbdb newsrc laGhv
@@ -2246,4 +2434,4 @@
 ; LocalWords:  github cliplink Waterfox waterfox nov backend fboundp
 ; LocalWords:  windmove goto ripgrep nomessage lorem OAuth authinfo
 ; LocalWords:  plist nopgnos flymake api todo paren docstrings ibuf
-; LocalWords:  ibuffer ish
+; LocalWords:  ibuffer ish minibuffer emacsclient Uncomment maccalfw

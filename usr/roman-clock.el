@@ -1,4 +1,4 @@
-;;; roman-clock.el --- Roman Six Hour Clock with Ante Diem
+;;; roman-clock.el --- Roman Six Hour Clock with Ante Diem  -*- lexical-binding: t; -*-
 ;;; Based on initial code by Sage, m/2025-12-07/cpj
 
 ;;; commentary:

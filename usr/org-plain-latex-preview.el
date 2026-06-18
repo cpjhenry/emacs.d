@@ -148,7 +148,7 @@ intended print pipeline."
                     (run-at-time
                      0 nil
                      (lambda (buf)
-                       (when-let ((win (get-buffer-window buf)))
+                       (when-let* ((win (get-buffer-window buf)))
                          (select-window win)
                          (delete-other-windows)))
                      (current-buffer)))))))

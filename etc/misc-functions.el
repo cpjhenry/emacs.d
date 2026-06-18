@@ -1,4 +1,4 @@
-;;; misc.el --- Miscellaneous functions
+;;; misc.el --- Miscellaneous functions  -*- lexical-binding: t; -*-
 ;;; commentary:
 ;; My miscellaneous routines moved to: cpjhelp.el.
 

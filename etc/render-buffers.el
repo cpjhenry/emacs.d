@@ -1,4 +1,4 @@
-;;; render-buffers.el --- convert current buffer to alternate format
+;;; render-buffers.el --- convert current buffer to alternate format  -*- lexical-binding: t; -*-
 ;;; commentary:
 
 ;;; code:

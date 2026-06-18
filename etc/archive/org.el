@@ -280,7 +280,7 @@
   ;; removed when the Agenda exits.
   (defun cpj/org-agenda-register-diary-buffer ()
     "Register diary buffer for cleanup when Org Agenda exits."
-    (when-let ((buf (get-buffer "diary")))
+    (when-let* ((buf (get-buffer "diary")))
       (add-to-list 'org-agenda-new-buffers buf)))
   (add-hook 'org-agenda-finalize-hook
             #'cpj/org-agenda-register-diary-buffer)

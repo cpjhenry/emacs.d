@@ -159,6 +159,32 @@
          (switch-to-buffer calendar-buffer)
          (calendar-redraw))))))
 
+
+;;; Diary
+
+(defconst cpj/diary-weekdays
+  '((sunday    . 0)
+    (monday    . 1)
+    (tuesday   . 2)
+    (wednesday . 3)
+    (thursday  . 4)
+    (friday    . 5)
+    (saturday  . 6))
+  "Weekday symbols used by `cpj/diary-weekday'.")
+
+(defun cpj/diary-weekday (&rest weekdays)
+  "Return non-nil if diary DATE falls on one of WEEKDAYS.
+
+Each weekday is a symbol such as `monday', `tuesday', or `saturday'."
+  (let ((today (calendar-day-of-week date)))
+    (seq-some
+     (lambda (weekday)
+       (let ((day-number (alist-get weekday cpj/diary-weekdays)))
+         (unless day-number
+           (error "Unknown weekday: %S" weekday))
+         (= today day-number)))
+     weekdays)))
+
 (provide 'calendar-routines)
 ;;; calendar-functions.el ends here.
 

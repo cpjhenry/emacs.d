@@ -1,43 +1,34 @@
-;;; early-init.el --- cpj -*- flycheck-disabled-checkers: (emacs-lisp emacs-lisp-checkdoc); -*-
-;;; commentary:
+;;; early-init.el --- Early startup configuration  -*- lexical-binding: t; -*-
 
-;;; code:
+;;; Commentary:
+
+;; This file runs before init.el.  Keep it small and limited to settings that
+;; need to take effect before package loading, frame creation, or expensive
+;; startup work.
+
+;; Do not disable `site-start.el' under emacs-plus. emacs-plus uses it
+;; to initialize build-specific variables such as
+;; `ns-emacs-plus-version'.
+
+;;; Code:
+(require 'subr-x)
+(require 'warnings)
+
+(defvar native-comp-speed)
+(defvar native-comp-async-report-warnings-errors)
+(defvar native-comp-async-query-on-exit)
+(defvar native-comp-deferred-compilation-deny-list)
+(defvar comp-deferred-compilation-deny-list)
+
+(declare-function startup-redirect-eln-cache "startup" (cache-directory))
+
+;;;; Frame appearance
+
+;; Use an undecorated maximized frame from the beginning.
 (add-to-list 'default-frame-alist '(undecorated . t))
 
-;; Don't show Emacs frame until initialized
-;(add-to-list 'initial-frame-alist '(visibility . nil))
-;(add-hook 'after-init-hook (lambda () (make-frame-visible)))
-
-;; https://github.com/jimeh/.emacs.d/blob/master/early-init.el
-;; Native-Comp
-(setq native-comp-speed 2
-      native-comp-async-report-warnings-errors nil
-      native-comp-async-query-on-exit t)
-
-;; Prevent native-compiling .dir-locals.el files.
-(let ((deny-list '("\\(?:[/\\\\]\\.dir-locals\\.el$\\)")))
-  (if (boundp 'native-comp-deferred-compilation-deny-list)
-      (setq native-comp-deferred-compilation-deny-list deny-list)
-    (setq comp-deferred-compilation-deny-list deny-list)))
-
-(when (or (boundp 'comp-eln-load-path) (boundp 'native-comp-eln-load-path))
-  (let ((eln-cache-dir (expand-file-name "cache/eln-cache/"
-                                         user-emacs-directory))
-        (find-exec (executable-find "find")))
-
-    (if (boundp 'native-comp-eln-load-path)
-        (setcar native-comp-eln-load-path eln-cache-dir)
-      (setcar comp-eln-load-path eln-cache-dir))
-    ;; Quitting emacs while native compilation in progress can leave zero byte
-    ;; sized *.eln files behind. Hence delete such files during startup.
-    (when find-exec
-      (call-process find-exec nil nil nil eln-cache-dir
-        "-name" "*.eln" "-size" "0" "-delete" "-or"
-        "-name" "*.eln.tmp" "-size" "0" "-delete"))))
-
-;; Disable Emacs 27's automatic package.el initialization before the init.el
-;; file is loaded. I use straight.el instead of package.el.
-;(setq package-enable-at-startup nil)
+(when (eq system-type 'darwin)
+  (add-to-list 'default-frame-alist '(fullscreen . maximized)))
 
 ;; Prevent the glimpse of unstyled Emacs by disabling these UI elements early.
 (when (fboundp 'menu-bar-mode)
@@ -50,34 +41,63 @@
   (horizontal-scroll-bar-mode -1))
 
 ;; Resizing the Emacs frame can be a terribly expensive part of changing the
-;; font. By inhibiting this, we easily halve startup times with fonts that are
-;; larger than the system default.
+;; font.  Inhibiting implied resize can noticeably reduce startup time.
 (setq frame-inhibit-implied-resize t)
 
-;; font compacting
+;; Avoid expensive font-cache compaction during startup.
 (setq inhibit-compacting-font-caches t)
 
-;; caching nonsense
-(startup-redirect-eln-cache (concat user-emacs-directory "var/cache"))
+;;;; Native compilation
 
-;; suppress lexical cookie
-(setq warning-suppress-log-types '((missing-lexbind-cookie))
-      warning-suppress-types '((missing-lexbind-cookie)))
+(setq native-comp-speed 2
+      native-comp-async-report-warnings-errors nil
+      native-comp-async-query-on-exit t)
 
-;; Defer garbage collection further back in the startup process
-;(setq gc-cons-threshold most-positive-fixnum)
+;; Prevent native-compiling .dir-locals.el files.
+(let ((deny-list '("\\(?:[/\\\\]\\.dir-locals\\.el$\\)")))
+  (if (boundp 'native-comp-deferred-compilation-deny-list)
+      (setq native-comp-deferred-compilation-deny-list deny-list)
+    (setq comp-deferred-compilation-deny-list deny-list)))
 
-;; in early-init.el
-;; https://old.reddit.com/r/emacs/comments/1jtja9s/emacs_startup_time_doesnt_matter/
-(defun restore-gc-cons-threshold ()
+;; Keep native compilation output under ~/.emacs.d/var/.
+(defconst cpj/eln-cache-directory
+  (expand-file-name "var/cache/eln-cache/" user-emacs-directory)
+  "Directory for native compilation cache files.")
+
+(when (fboundp 'startup-redirect-eln-cache)
+  (startup-redirect-eln-cache cpj/eln-cache-directory))
+
+;; Quitting Emacs while native compilation is in progress can leave zero-byte
+;; *.eln or *.eln.tmp files behind.  Delete those during startup.
+(when-let* ((find-exec (executable-find "find")))
+  (when (file-directory-p cpj/eln-cache-directory)
+    (call-process find-exec nil nil nil cpj/eln-cache-directory
+                  "\\("
+                  "-name" "*.eln"
+                  "-o"
+                  "-name" "*.eln.tmp"
+                  "\\)"
+                  "-size" "0"
+                  "-delete")))
+
+;;;; Warnings
+
+;; Suppress warnings from older files without a lexical-binding cookie.
+(add-to-list 'warning-suppress-log-types '(files missing-lexbind-cookie))
+(add-to-list 'warning-suppress-types '(files missing-lexbind-cookie))
+
+;;;; Garbage collection
+
+(defun cpj/restore-gc-cons-threshold ()
+  "Restore garbage collection thresholds after startup."
   (setq gc-cons-threshold (* 16 1024 1024)
-    gc-cons-percentage 0.1))
+        gc-cons-percentage 0.1))
 
+;; Defer garbage collection during startup, then restore a reasonable threshold.
 (setq gc-cons-threshold most-positive-fixnum
       gc-cons-percentage 0.6)
-(add-hook 'emacs-startup-hook #'restore-gc-cons-threshold 105)
 
-(provide 'early-init)
+(add-hook 'emacs-startup-hook #'cpj/restore-gc-cons-threshold 105)
+
 ;;; early-init.el ends here
-
-; LocalWords:  checkdoc flycheck tmp gc fixnum dir eln
+; LocalWords:  dir eln tmp

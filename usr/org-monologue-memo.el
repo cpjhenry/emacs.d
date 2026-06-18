@@ -139,7 +139,7 @@ For example:
 
 (defun org-monologue-memo-enable-maybe ()
   "Enable `org-monologue-memo-mode' for configured directories."
-  (when-let ((file (buffer-file-name)))
+  (when-let* ((file (buffer-file-name)))
     (when (seq-some
            (lambda (dir)
              (org-monologue-memo--file-in-directory-p file dir))

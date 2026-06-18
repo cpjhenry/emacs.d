@@ -107,11 +107,6 @@ Useful if your *scratch* is already holding something important."
   "Advice wrapper to discard unnecessary arguments to function."
   (delete-other-windows))
 
-(defun quit-window-kill ()
-  "Kill when quitting."
-  (interactive)
-  (quit-window t))
-
 (defun kill-other-buffers ()
   "Kill all other buffers."
   (interactive)
@@ -120,13 +115,13 @@ Useful if your *scratch* is already holding something important."
 
 (defun kill-unmodified-file-buffer (file)
   "Kill FILE's buffer if it exists and is unmodified."
-  (when-let ((buf (get-file-buffer file)))
+  (when-let* ((buf (get-file-buffer file)))
     (unless (buffer-modified-p buf)
       (kill-buffer buf))))
 
 (defun delete-empty-file-buffer (file)
   "Kill FILE's buffer and delete FILE if it is empty and unmodified."
-  (when-let ((buf (get-file-buffer file)))
+  (when-let* ((buf (get-file-buffer file)))
     (with-current-buffer buf
       (when (and (not (buffer-modified-p))
                  (zerop (buffer-size)))
@@ -184,19 +179,6 @@ Useful if your *scratch* is already holding something important."
 	 (kill-modeline)))
 
 
-;; macOS frame functions
-(defun ns-raise-emacs ()
-  "Raise Emacs."
-  (ns-do-applescript "tell application \"Emacs\" to activate"))
-
-(defun ns-raise-emacs-with-frame (frame)
-  "Raise Emacs and select the provided FRAME."
-  (with-selected-frame frame
-    (when (display-graphic-p)
-      (ns-raise-emacs)
-      (toggle-frame-maximized))))
-
-
 ;; misc. functions
 (defun set-window-width (n)
   "Set the selected window's width as `N'."
@@ -246,27 +228,57 @@ mode when toggled off."
   (interactive)
   (shr-render-buffer (current-buffer)))
 
-(defun eval-r (b e)
-  "Evaluate region."
+(defun my/eval-region (b e)
+  "Execute the region as Lisp code. Deactivate mark when done."
   (interactive "r")
   (eval-region b e)
   (deactivate-mark)
   (message "Region evaluated."))
 
-(defun cpj/eval-page ()
-  "Evaluate the current page, bounded by form-feed characters."
+
+;;; Elisp eval-page
+
+;;; HACK · Consider moving page-aware Elisp evaluation to usr/ as
+;;; a minor mode.
+
+(defun cpj/elisp-buffer-has-pages-p ()
+  "Return non-nil if the current buffer contains form-feed page breaks."
+  (save-excursion
+    (save-restriction
+      (widen)
+      (goto-char (point-min))
+      (search-forward "\f" nil t))))
+
+(defun cpj/elisp-eval-page ()
+  "Evaluate the current Elisp page, bounded by form-feed characters."
   (interactive)
   (save-excursion
     (save-restriction
       (narrow-to-page)
-      (eval-region (point-min) (point-max))
-      (message "Evaluated page: %s"
-               (save-excursion
-                 (goto-char (point-min))
-                 (if (re-search-forward "^;;;+ +\\(.+\\)" nil t)
-                     (match-string 1)
-                   "unnamed"))))))
+      (let ((beg (point-min))
+            (end (point-max))
+            (page-name
+             (save-excursion
+               (goto-char (point-min))
+               (if (re-search-forward "^;;;+ +\\(.+\\)" nil t)
+                   (match-string 1)
+                 "unnamed"))))
+        (eval-region beg end)
+        (message "Evaluated page: %s" page-name)))))
 
+(defun cpj/elisp-eval-region-page-or-buffer ()
+  "Evaluate active region, current page, or whole Elisp buffer.
+
+If the region is active, call `elisp-eval-region-or-buffer'.
+Otherwise, if the buffer contains form-feed page breaks, evaluate
+the current page.  Otherwise, call `elisp-eval-region-or-buffer'."
+  (interactive)
+  (if (and (not (use-region-p))
+           (cpj/elisp-buffer-has-pages-p))
+      (cpj/elisp-eval-page)
+    (call-interactively #'elisp-eval-region-or-buffer)))
+
+
 (defun turn-off-cursor ()
   "Hides cursor locally."
   (interactive)
@@ -380,7 +392,7 @@ mode when toggled off."
 ;; https://old.reddit.com/r/emacs/comments/91xnv9/noob_delete_buffer_automatically_after_removing/
 (defun dired-kill-before-delete (file &rest _)
   "Automatically delete the buffer of the FILE that's being deleted."
-  (if-let ((buf (get-file-buffer file)))
+  (if-let* ((buf (get-file-buffer file)))
       (kill-buffer buf)
     (dolist (dired-buf (dired-buffers-for-dir file))
       (kill-buffer dired-buf))))
@@ -523,5 +535,5 @@ falling back to `browse-url-browser-function'."
 
 ;;; filesandbuffers.el ends here
 
-; LocalWords:  sNew DNew Ibuffer reddit filesandbuffers
+; LocalWords:  sNew DNew Ibuffer reddit filesandbuffers usr
 ; LocalWords:  mistty FILE's somevar

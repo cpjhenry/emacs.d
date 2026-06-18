@@ -685,7 +685,7 @@ language."
 (defun mac-select-convert-to-pasteboard-filenames (selection type value)
   (setq value (or (and (stringp value) (get-text-property 0 'FILE_NAME value))
                   value))
-  (if-let ((filename (cdr (xselect-convert-to-filename selection type value))))
+  (if-let* ((filename (cdr (xselect-convert-to-filename selection type value))))
       (let* ((coding (or file-name-coding-system
                          default-file-name-coding-system))
              (filenames (vconcat (mapcar
@@ -2612,7 +2612,7 @@ tapped window."
 (defun mac-simulate-pinch-event (event)
   "Convert EVENT to a pinch event and unread it."
   (interactive "e")
-  (when-let ((phase (plist-get (nth 3 event) :phase)))
+  (when-let* ((phase (plist-get (nth 3 event) :phase)))
     (let ((magnification (plist-get (nth 3 event) :magnification))
           (modifiers (event-modifiers event))
           (type-strings '("pinch"))

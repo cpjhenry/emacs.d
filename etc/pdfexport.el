@@ -1,4 +1,4 @@
-;;; pdfexport.el --- Convenience functions when working with PDF exports
+;;; pdfexport.el --- Convenience functions when working with PDF exports  -*- lexical-binding: t; -*-
 ;;; commentary:
 
 ;;; code:

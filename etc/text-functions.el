@@ -1,4 +1,4 @@
-;;; text-functions.el --- text functions
+;;; text-functions.el --- text functions  -*- lexical-binding: t; -*-
 ;;; commentary:
 
 ;;; code:

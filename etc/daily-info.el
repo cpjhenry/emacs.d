@@ -92,13 +92,13 @@
     (let ((inhibit-read-only t))
       (erase-buffer)
 
-      (when-let ((ind (daily-info--ind-summary)))
+      (when-let* ((ind (daily-info--ind-summary)))
 	(insert (string-trim-right ind))
 	(insert "\n"))
 
       (daily-info--insert-items items)
 
-      (when-let ((birthdays (daily-info--birthday-summary)))
+      (when-let* ((birthdays (daily-info--birthday-summary)))
 	(insert "\n")
 	(insert (string-trim-right birthdays))
 	(insert "\n"))

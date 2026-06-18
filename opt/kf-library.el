@@ -1,4 +1,4 @@
-;;; kf-library.el --- On-demand help panels for obscure topics and other tools
+;;; kf-library.el --- On-demand help panels for obscure topics and other tools  -*- lexical-binding: t; -*-
 
 ;; Summary: Some decades' worth of Emacs customizations.
 ;;

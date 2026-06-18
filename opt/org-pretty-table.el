@@ -458,7 +458,7 @@ owned by `org-pretty-table-mode' from the affected table."
 
 (defun table-el-cell-content-bounds ()
   "Return trimmed bounds of current table.el cell as (BEG . END), or nil."
-  (when-let ((bounds (table-el-cell-bounds)))
+  (when-let* ((bounds (table-el-cell-bounds)))
     (let ((beg (car bounds))
           (end (cdr bounds)))
       (save-excursion
@@ -472,13 +472,13 @@ owned by `org-pretty-table-mode' from the affected table."
 
 (defun org-backward-sentence-table-el-dwim (oldfun &optional arg)
   "Move to beginning of table.el cell, otherwise call OLDFUN."
-  (if-let ((bounds (table-el-cell-content-bounds)))
+  (if-let* ((bounds (table-el-cell-content-bounds)))
       (goto-char (car bounds))
     (funcall oldfun arg)))
 
 (defun org-forward-sentence-table-el-dwim (oldfun &optional arg)
   "Move to end of table.el cell, otherwise call OLDFUN."
-  (if-let ((bounds (table-el-cell-content-bounds)))
+  (if-let* ((bounds (table-el-cell-content-bounds)))
       (goto-char (cdr bounds))
     (funcall oldfun arg)))
 

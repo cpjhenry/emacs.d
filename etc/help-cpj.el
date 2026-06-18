@@ -1,4 +1,4 @@
-;;; cpjhelp.el --- Custom help screens
+;;; cpjhelp.el --- Custom help screens  -*- lexical-binding: t; -*-
 ;;; commentary:
 
 ;;; code:
@@ -132,7 +132,7 @@ C-M-%			query-replace-regexp
 C-M-,			xref-go-forward
 C-M-.			xref-find-apropos
 C-M-/			dabbrev-completion
-C-M-;			eval-r
+C-M-;			eval-region
 
 C-M-S-l			recenter-other-window
 C-M-S-v			scroll-other-window-down")
