@@ -32,6 +32,7 @@
     ("\\first{}" . "(1st)")
     ("\\second{}" . "(2nd)")
     ("\\third{}" . "(3rd)")
+    ("#+LATEX: \\clearpage" . "=====")
     ("#+LATEX: \\newpage" . "=====")
     ("#+LATEX: \\asterism" . "* * *")
     ("#+LATEX: \\begin{samepage}" . "⟦keep together⟧")

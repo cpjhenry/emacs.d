@@ -482,10 +482,6 @@ the current page.  Otherwise, call `elisp-eval-region-or-buffer'."
   (cond ((string-match-p "\\`\\(gemini\\|gopher\\)://" url) (elpher-go url))
 	(t (funcall original url new-window))))
 
-(defun eww-reddit-redirect (url)
-  "Redirect reddit.com to old.reddit.com automatically."
-  (replace-regexp-in-string "https://www.reddit.com" "https://old.reddit.com" url))
-
 (defun cpj/use-system-browser ()
   "Use the macOS default browser for URL handling."
   (interactive)

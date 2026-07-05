@@ -42,6 +42,17 @@
     (mark-whole-word))
   (org-emphasize ?/))
 
+(defun my/org-sort ()
+  "Sort all top-level Org entries alphabetically."
+  (interactive)
+  (unless (bound-and-true-p org-capture-mode)
+    (save-mark-and-excursion
+      (save-restriction
+        (widen)
+        (goto-char (point-min))
+        (push-mark (point-max) nil t)
+        (org-sort-entries nil ?a)))))
+
 ;; org check-boxes
 ;; see https://orgmode.org/list/87r5718ytv.fsf@sputnik.localhost
 (defun ndk/checkbox-list-complete ()
@@ -138,6 +149,7 @@ Example:
 
 ;; Sage/cpj
 (require 'org-element)
+
 (defun org-count-paragraphs-in-region (beg end)
   "Count Org \='paragraph' elements between BEG and END."
   (save-excursion
@@ -185,6 +197,22 @@ If point is not in a heading, count in the whole buffer."
       (user-error "`browse-url-secondary-browser-function' is not set"))
     (message "Opening externally: %s" url)
     (funcall browse-url-secondary-browser-function url)))
+
+(defun cpj/org-count-books-in-year ()
+  "Report the number of books under the enclosing year heading."
+  (interactive)
+  (save-excursion
+    (org-back-to-heading t)
+    (while (> (org-current-level) 1)
+      (org-up-heading-safe))
+    (let ((book-level (1+ (org-current-level)))
+          (count 0))
+      (org-map-entries
+       (lambda ()
+         (when (= (org-current-level) book-level)
+           (cl-incf count)))
+       nil 'tree)
+      (message "%d books" count))))
 
 
 ;; Convert to org-mode from other formats

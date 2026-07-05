@@ -1,12 +1,12 @@
 ;;; roman-clock.el --- Roman Six Hour Clock with Ante Diem  -*- lexical-binding: t; -*-
-;;; Based on initial code by Sage, m/2025-12-07/cpj
+;;; 2025-12-07/cpj
 
-;;; commentary:
+;;; Commentary:
 
 ;;; Roman 6-Hour Clock — Local Time, Day Begins at 18:00
 ;;; Example: "Sat 7 Dec • ante diem VIII Idus Decembres • Tertia • 3:51"
 
-;;; code:
+;;; Code:
 
 (require 'time-date)
 (require 'calendar)

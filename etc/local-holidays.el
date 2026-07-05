@@ -46,6 +46,16 @@ the resulting day in March."
               (format "Bahá’í New Year (Naw-Rúz) %d"
                       (- y (1- 1844)))))))))
 
+;; Prefer Hebcal-style English transliterations for Hebrew month names.
+(with-eval-after-load 'cal-hebrew
+  (setq calendar-hebrew-month-name-array-common-year
+        ["Nisan" "Iyyar" "Sivan" "Tamuz" "Av" "Elul"
+         "Tishrei" "Cheshvan" "Kislev" "Tevet" "Sh'vat" "Adar"]
+        calendar-hebrew-month-name-array-leap-year
+        ["Nisan" "Iyyar" "Sivan" "Tamuz" "Av" "Elul"
+         "Tishrei" "Cheshvan" "Kislev" "Tevet" "Sh'vat"
+         "Adar I" "Adar II"]))
+
 (defun holiday-hebrew-rosh-hashanah (&optional _all)
   "Return major autumn observances for the displayed year.
 
@@ -513,7 +523,6 @@ which is considered outside the normal Discordian calendar."
    '((solar-equinoxes-only)
      ;; first Saturday of June following the Summer Solstice
      (holiday-float 6 6 1 "Midsummer" (floor (nth 1 (solar-equinoxes/solstices 1 displayed-year))))
-     (holiday-fixed 7 2   "Mid-Year's Day")
      (holiday-fixed 12 (floor (nth 1 (solar-equinoxes/solstices 3 displayed-year))) "Midwinter")
      (holiday-sexp calendar-daylight-savings-starts
                    (format "Daylight Saving Time Begins %s"
@@ -689,6 +698,7 @@ which is considered outside the normal Discordian calendar."
 
     (holiday-fixed 5 23 "Eris Day")
     (holiday-fixed 5 25 "Towel Day")
+    (holiday-fixed 7 2  "Mid-Year's Day")
     (holiday-fixed 7 5  "X-Day"))
   "Discordian holy days and related observances.")
 
@@ -767,5 +777,5 @@ which is considered outside the normal Discordian calendar."
 (provide 'local-holidays)
 ;;; local-holidays.el ends here
 
-; LocalWords:  bahai Deepavali Kartik Amavasya panchang दीपावली
-; LocalWords:  Jayanti
+; LocalWords:  bahai Deepavali Kartik Amavasya panchang दीपावली Iyyar
+; LocalWords:  Jayanti Tamuz Tishrei Cheshvan Sh'vat

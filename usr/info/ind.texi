@@ -1,0 +1,578 @@
+\input texinfo
+@setfilename ind.info
+@settitle ind Manual
+@documentencoding UTF-8
+@documentlanguage en
+
+@copying
+Copyright @copyright{} 2026 Paul Henry.
+
+Permission is granted to copy, distribute, and modify this manual under
+the terms chosen for the @code{ind} package.
+@end copying
+
+@dircategory Emacs
+@direntry
+* ind: (ind).                   Display a multi-calendar summary.
+@end direntry
+
+@titlepage
+@title ind
+@subtitle A multi-calendar summary for Emacs
+@author Paul Henry
+@page
+@vskip 0pt plus 1filll
+@insertcopying
+@end titlepage
+
+@contents
+
+@ifnottex
+@node Top
+@top ind
+
+@command{ind} displays the current date in a variety of civil,
+historical, religious, astronomical, regnal, and idiosyncratic systems.
+
+This manual explains the principal calendars, cycles, observances, and
+continuous day counts represented in the display.  For the command
+itself, type @kbd{M-x ind}.
+@end ifnottex
+
+@menu
+* Introduction::
+* Using ind::
+* Dating Systems::
+* Computistical Values::
+* Continuous Day Counts::
+* Traditional Observances::
+* Alternative Calendars::
+* Sources and Further Reading::
+* Concept Index::
+@end menu
+
+
+@node Introduction
+@chapter Introduction
+
+@command{ind} is an Emacs Lisp successor to the Bash script of the same
+name.  It presents a compact summary of the current date using numerous
+systems of year numbering, calendrical computation, traditional
+observance, and chronological reckoning.
+
+The display may include the Byzantine year and indiction, Roman AUC,
+the Masoretic year, Japanese imperial dating, traditional Asian
+calendars, computistical values, astronomical day counts, Buddhist
+observances, quarter days, and several alternative calendars.
+
+The command is intended as a daily calendrical reference rather than as
+a general-purpose date-conversion library.
+
+
+@node Using ind
+@chapter Using ind
+
+Invoke the display with:
+
+@example
+M-x ind
+@end example
+
+The principal command has the following purpose:
+
+@quotation
+Display a multi-calendar summary for today.
+
+Show civil, historical, religious, astronomical, regnal, and
+idiosyncratic representations of the current date.
+@end quotation
+
+The individual values are described in the following chapters.
+
+
+@node Dating Systems
+@chapter Dating Systems
+
+@menu
+* Hebrew Calendar::
+* Roman AUC::
+* Byzantine Calendar::
+* Indictions::
+* Julian Period::
+* Japanese Imperial Dating::
+* Chinese Calendar::
+* Tibetan Calendar::
+* Buddhist Era::
+* Masoretic Dating::
+@end menu
+
+
+@node Hebrew Calendar
+@section Hebrew Calendar
+
+The Hebrew or Jewish calendar is a lunisolar calendar used principally
+for Jewish religious observance and, together with the Gregorian
+calendar, for civil purposes in Israel.
+
+Twelve lunar months are approximately eleven days shorter than a solar
+year.  The Hebrew calendar therefore employs a 19-year Metonic cycle,
+inserting an additional month in seven years of each cycle to keep the
+months aligned with the seasons.
+
+Hebrew years are numbered according to an @dfn{Anno Mundi}, or
+``year of the world,'' era.  The conventional epoch falls in 3761 BCE
+when expressed in the proleptic Julian calendar.  Because Hebrew days
+begin at sunset and because several epoch conventions appear in
+secondary literature, apparently differing civil dates may refer to
+the same traditional epoch.
+
+@node Roman AUC
+@section Roman AUC
+
+@dfn{Ab urbe condita}, commonly abbreviated AUC, means ``from the
+founding of the City.''  The City is Rome, whose traditional foundation
+is assigned to 753 BCE in the chronology associated with Varro.
+
+AUC numbering is convenient for modern chronological comparison, but
+it was not the ordinary Roman method of naming years.  Romans commonly
+identified a year by the names of its consuls.  Regnal years and other
+official eras were also used in particular periods and jurisdictions.
+
+@node Byzantine Calendar
+@section Byzantine Calendar
+
+The Byzantine calendar is also called the Creation Era of
+Constantinople, the Byzantine Era, or the Byzantine @i{Anno Mundi}.  It
+was used by the Byzantine Empire and by parts of the Eastern Orthodox
+world.
+
+The system is based on the Julian calendar, but numbers its years from
+a calculated creation of the world.  Its year begins on September 1.
+Year 1 extended from September 1, 5509 BCE, through August 31,
+5508 BCE.
+
+Consequently, the Byzantine year corresponding to a Gregorian date
+depends not only on the civil year but also on whether the date falls
+before or after September 1.
+
+@node Indictions
+@section Indictions
+
+An @dfn{indiction} is a year within a recurring 15-year cycle used in
+late Roman and medieval administration and document dating.
+
+Each year of the cycle is numbered from 1 through 15.  Since the cycles
+themselves were not normally numbered, an indiction number alone does
+not uniquely identify a historical year.
+
+Different historical conventions began the indiction year on different
+dates.  A calendrical program should therefore state or consistently
+apply the convention it uses.
+
+@node Julian Period
+@section Julian Period
+
+The @dfn{Julian Period} is a chronological cycle of 7,980 years devised
+by Joseph Justus Scaliger.  It combines three traditional cycles:
+
+@itemize @bullet
+@item
+the 15-year indiction cycle;
+@item
+the 28-year solar cycle; and
+@item
+the 19-year lunar or Metonic cycle.
+@end itemize
+
+The first year of the present Julian Period is 4713 BCE in conventional
+historical notation, corresponding to astronomical year @minus{}4712.
+The next Julian Period begins in 3268 CE.
+
+The Julian Period should not be confused with the Julian calendar or
+with the Julian Date continuous day count.
+
+@node Japanese Imperial Dating
+@section Japanese Imperial Dating
+
+Japanese dates may be expressed by imperial era name and regnal year.
+Each era begins with the accession or formal inauguration of a new
+emperor, and the first partial calendar year is numbered year 1.
+
+A distinct nationalist year count, sometimes called the imperial year
+or @i{koki}, numbers years from the legendary foundation of Japan by
+Emperor Jimmu in 660 BCE.  It is historically and conceptually
+different from ordinary era-name dating.
+
+@node Chinese Calendar
+@section Chinese Calendar
+
+The traditional Chinese calendar is lunisolar.  Its months are related
+to lunar phases, while intercalary months keep the calendar aligned
+with the solar year and seasonal cycle.
+
+Although the Gregorian calendar is used for ordinary civil dating,
+the traditional calendar continues to govern festivals such as Chinese
+New Year and the Lantern Festival.  Traditional year designations may
+also combine a heavenly stem and earthly branch in a repeating
+60-year cycle.
+
+@node Tibetan Calendar
+@section Tibetan Calendar
+
+The Tibetan calendar is lunisolar and normally contains twelve lunar
+months.  An intercalary month is inserted when required to keep the
+calendar aligned with the solar year.
+
+The Phukpa tradition is the principal calendrical system used in much
+of Tibetan culture.  Tibetan New Year, or @dfn{Losar}, ordinarily falls
+in February or March of the Gregorian calendar, though its date need
+not coincide with Chinese New Year.
+
+@node Buddhist Era
+@section Buddhist Era
+
+The term @dfn{Buddhist calendar} refers to a family of related
+lunisolar and solar calendars used in mainland Southeast Asia and Sri
+Lanka for religious, traditional, or civil purposes.
+
+The Buddhist Era is also a system of year numbering.  Its offset from
+the Common Era differs according to regional convention and whether a
+date falls before or after the traditional new year.  A displayed
+Buddhist year should therefore be understood in the context of the
+specific convention used by the program.
+
+@node Masoretic Dating
+@section Masoretic Dating
+
+In @command{ind}, @dfn{Masoretic dating} denotes a simple ceremonial
+or commemorative year count obtained by adding 4000 to the Gregorian
+year.  It resembles an @i{Anno Mundi} system but should not be confused
+with the calculated year of the Hebrew calendar.
+
+The name and offset are used here as a feature of the program's
+traditional output, not as a claim that this is a standard civil
+calendar.
+
+
+@node Computistical Values
+@chapter Computistical Values
+
+@dfn{Computus} is the body of calendrical calculation traditionally
+used to determine the date of Easter and related ecclesiastical dates.
+
+@menu
+* Metonic Cycle and Golden Number::
+* Epact::
+* Dominical Letters::
+* Ides::
+@end menu
+
+
+@node Metonic Cycle and Golden Number
+@section Metonic Cycle and Golden Number
+
+The Metonic cycle is a period of 19 solar years after which the phases
+of the Moon recur on approximately the same dates of the solar year.
+
+The @dfn{golden number} assigns each year a number from 1 through 19,
+indicating its place in the Metonic cycle.  Golden numbers were used in
+medieval computus and in perpetual and Runic calendars.
+
+@node Epact
+@section Epact
+
+The @dfn{epact} expresses the age of the ecclesiastical Moon at the
+beginning of the solar year, or equivalently the accumulated difference
+between solar and lunar reckoning under a particular computistical
+system.
+
+Because twelve lunar months are roughly eleven days shorter than the
+solar year, the epact normally advances by eleven from one year to the
+next, subject to the corrections of the calendar in use.
+
+@node Dominical Letters
+@section Dominical Letters
+
+A @dfn{dominical letter}, or Sunday letter, is one of the letters A
+through G assigned to a year for finding Sundays in a fixed-date
+calendar.
+
+A common year has one dominical letter.  A leap year has two because
+the insertion of February 29 changes the correspondence between
+calendar dates and weekdays after February.
+
+@node Ides
+@section Ides
+
+The @dfn{Ides} was one of the named reference days of the Roman month.
+It fell on the fifteenth day of March, May, July, and October, and on
+the thirteenth day of the other months.
+
+Roman dates were ordinarily expressed by counting inclusively backward
+from the Kalends, Nones, or Ides rather than by numbering every day
+consecutively from the start of the month.
+
+
+@node Continuous Day Counts
+@chapter Continuous Day Counts
+
+Continuous day counts identify dates or instants by numbering
+successive days without dividing them into calendar years and months.
+
+@menu
+* Julian Date::
+* Modified Julian Date::
+* Truncated Julian Date::
+* Rata Die::
+@end menu
+
+
+@node Julian Date
+@section Julian Date
+
+The @dfn{Julian Date}, or JD, is a continuous count of days and
+fractions of a day from noon on January 1, 4713 BCE in the proleptic
+Julian calendar.
+
+Because Julian Dates identify instants rather than merely civil dates,
+precise work should also state the time scale being used.
+
+@node Modified Julian Date
+@section Modified Julian Date
+
+The @dfn{Modified Julian Date}, or MJD, is defined by:
+
+@example
+MJD = JD - 2400000.5
+@end example
+
+Its epoch is midnight at the beginning of November 17, 1858.  The
+half-day subtraction moves the boundary from astronomical noon to civil
+midnight, while the larger subtraction shortens the displayed number.
+
+@node Truncated Julian Date
+@section Truncated Julian Date
+
+The name @dfn{Truncated Julian Date}, or TJD, has been used for more
+than one shortened Julian-date convention.
+
+The convention historically used by @command{ind} is associated with
+NASA's PB-5 spacecraft time code and counts days from MJD 44000,
+corresponding to May 24, 1968.  The original field allowed a four-digit
+day count in a 14-bit representation; the later PB-5J form enlarged the
+field to 16 bits.
+
+Because other technical sources use ``truncated Julian date'' for
+different subtractions, the epoch or formula should always accompany
+the abbreviation TJD.
+
+@node Rata Die
+@section Rata Die
+
+@dfn{Rata Die}, abbreviated RD, is a continuous count of calendar days
+used in calendrical calculation.  Day 1 is January 1, 1 CE in the
+proleptic Gregorian calendar.
+
+The expression is Latin for ``fixed day'' or ``reckoned day.''  Some
+implementations extend the integer day count with a fractional part for
+time of day.
+
+
+@node Traditional Observances
+@chapter Traditional Observances
+
+@menu
+* Quarter and Cross-quarter Days::
+* Scottish Term and Quarter Days::
+* Uposatha::
+@end menu
+
+
+@node Quarter and Cross-quarter Days
+@section Quarter and Cross-quarter Days
+
+In British and Irish tradition, quarter days were customary dates for
+the beginning of school terms, the hiring of servants, and the payment
+of rents and other debts.
+
+The English quarter days are:
+
+@table @asis
+@item Lady Day
+March 25, the Feast of the Annunciation.
+@item Midsummer Day
+June 24, the Nativity of Saint John the Baptist.
+@item Michaelmas
+September 29, the Feast of Saint Michael and All Angels.
+@item Christmas
+December 25.
+@end table
+
+The traditional cross-quarter days fall approximately midway between
+the quarter days:
+
+@table @asis
+@item Candlemas
+February 2.
+@item May Day
+May 1.
+@item Lammas
+August 1.
+@item All Hallows
+November 1.
+@end table
+
+The names and legal significance of these days vary among regions and
+historical periods.
+
+@node Scottish Term and Quarter Days
+@section Scottish Term and Quarter Days
+
+The old Scottish term and quarter days are traditionally given as:
+
+@table @asis
+@item Candlemas
+February 2.
+@item Whitsun
+May 15.
+@item Lammas
+August 1.
+@item Martinmas
+November 11.
+@end table
+
+Candlemas is associated with the Presentation of Christ and the
+Blessing of Candles.  Whitsun derives from Pentecost, though the legal
+Scottish date became fixed rather than movable.  Lammas takes its name
+from ``loaf mass'' and was associated with the first fruits of harvest.
+Martinmas is the feast of Saint Martin of Tours.
+
+The Term and Quarter Days (Scotland) Act 1990 defines the modern
+Scottish quarter days as February 28, May 28, August 28, and
+November 28.  May 28 and November 28 are the modern term days.
+
+@node Uposatha
+@section Uposatha
+
+@dfn{Uposatha} is a recurring Buddhist day of observance.  Monastics
+and lay followers may intensify meditation, study, generosity, and
+observance of the precepts.
+
+The frequency and precise calculation of Uposatha vary among Buddhist
+traditions.  In Theravada communities it is commonly associated with
+the new moon, full moon, and intervening quarter phases.
+
+Four especially prominent full-moon observances are:
+
+@table @asis
+@item Magha Puja
+A commemoration of the early Sangha, ordinarily observed in February
+or March.
+@item Vesak
+A principal commemoration of the Buddha, ordinarily observed in May.
+@item Asalha Puja
+A commemoration of the first sermon, ordinarily observed in July.
+@item Pavarana
+The observance marking the close of the rains retreat, ordinarily in
+October.
+@end table
+
+
+@node Alternative Calendars
+@chapter Alternative Calendars
+
+@menu
+* Hanke-Henry Permanent Calendar::
+* Discordian Calendar::
+@end menu
+
+
+@node Hanke-Henry Permanent Calendar
+@section Hanke-Henry Permanent Calendar
+
+The Hanke-Henry Permanent Calendar is a proposed leap-week calendar.
+A common year contains 364 days, exactly 52 weeks.  An additional week
+is inserted at intervals to keep the calendar aligned with the solar
+year.
+
+Because every ordinary year has the same number of complete weeks,
+calendar dates fall on the same weekday from year to year.  The broader
+proposal has also been associated with replacing civil time zones with
+Coordinated Universal Time.
+
+@node Discordian Calendar
+@section Discordian Calendar
+
+The Discordian or Erisian calendar is an alternative calendar described
+in the @cite{Principia Discordia}.  Its year begins on January 1 of the
+Gregorian calendar and contains five seasons of 73 days:
+
+@itemize @bullet
+@item
+Chaos;
+@item
+Discord;
+@item
+Confusion;
+@item
+Bureaucracy; and
+@item
+The Aftermath.
+@end itemize
+
+Discordian years are labelled YOLD, ``Year of Our Lady of Discord.''
+The customary conversion adds 1166 to the Gregorian year.
+
+The Discordian clock is a related alternative division of the day
+derived from the Erisian Klock specification.
+
+
+@node Sources and Further Reading
+@chapter Sources and Further Reading
+
+The explanatory notes in the original @command{ind} man page were
+assembled chiefly from general reference material.  This manual revises
+that prose and distinguishes technical definitions from historical
+summary.
+
+Useful starting points include:
+
+@itemize @bullet
+@item
+United States Naval Observatory, @cite{Introduction to Calendars},
+@uref{https://aa.usno.navy.mil/faq/calendars}.
+@item
+United States Naval Observatory, @cite{Julian Date Converter},
+@uref{https://aa.usno.navy.mil/data/JulianDate}.
+@item
+United States Naval Observatory, @cite{Astronomical Applications
+Glossary}, especially the entries for Julian Date and Modified Julian
+Date, @uref{https://aa.usno.navy.mil/faq/asa_glossary}.
+@item
+United States Naval Observatory, @cite{The Jewish Calendar},
+@uref{https://aa.usno.navy.mil/faq/jewish}.
+@item
+A. R. Chi, @cite{A Grouped Binary Time Code for Telemetry and Space
+Application}, NASA, 1979.
+@item
+@cite{Term and Quarter Days (Scotland) Act 1990}, 1990 c. 22.
+@item
+Edward M. Reingold and Nachum Dershowitz, @cite{Calendrical
+Calculations}.
+@end itemize
+
+Wikipedia remains useful for orientation and for locating further
+sources, but it should not be treated as the sole authority for a
+technical or historical definition.
+
+@node Concept Index
+@unnumbered Concept Index
+
+@printindex cp
+
+@bye
+
+@c Local Variables:
+@c compile-command: "makeinfo --no-split -o ind.info ind.texi"
+@c TeX-master: t
+@c End:

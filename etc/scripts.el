@@ -64,19 +64,19 @@
   (view-mode)
   (setq-local inhibit-read-only t))
 
-(defun az () "Monthly Forecast."
+(defun az ()
+  "Monthly Forecast from Astrology Zone."
   (interactive)
-  (let ((output "Monthly Forecast"))
-    (switch-to-buffer (make-temp-name ""))
-    (shell-command "az -u" (current-buffer))
-    (markdown-preview output)
-    (kill-buffer (current-buffer))
+  (let ((output "*Monthly-Forecast*"))
+    (switch-to-buffer output)
+    (shell-command "az -u" output)
+
+    (markdown-preview)
     (kill-buffer output)
+    (kill-buffer "*markdown-output*")
 
     (switch-to-buffer-matching output)
     (text-scale-increase 1)
-
-    ;; leaves view-mode 'on' (keys work), but otherwise modifiable by spell-checker
     (setq-local inhibit-read-only t)))
 
 ;;; scripts.el ends here

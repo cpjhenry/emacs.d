@@ -4,6 +4,7 @@
 (require 'calendar)
 (require 'holidays)
 (require 'lunar)
+(require 'parse-time)
 (require 'cal-julian)
 
 (require 'cl-lib)
@@ -162,16 +163,6 @@
 
 ;;; Diary
 
-(defconst cpj/diary-weekdays
-  '((sunday    . 0)
-    (monday    . 1)
-    (tuesday   . 2)
-    (wednesday . 3)
-    (thursday  . 4)
-    (friday    . 5)
-    (saturday  . 6))
-  "Weekday symbols used by `cpj/diary-weekday'.")
-
 (defun cpj/diary-weekday (&rest weekdays)
   "Return non-nil if diary DATE falls on one of WEEKDAYS.
 
@@ -179,11 +170,35 @@ Each weekday is a symbol such as `monday', `tuesday', or `saturday'."
   (let ((today (calendar-day-of-week date)))
     (seq-some
      (lambda (weekday)
-       (let ((day-number (alist-get weekday cpj/diary-weekdays)))
-         (unless day-number
+       (let ((entry
+              (assoc-string (symbol-name weekday)
+                            parse-time-weekdays)))
+         (unless entry
            (error "Unknown weekday: %S" weekday))
-         (= today day-number)))
+         (= today (cdr entry))))
      weekdays)))
+
+(defun cpj/diary-fortnightly (month day year)
+  "Return non-nil every fourteen days from MONTH DAY YEAR."
+  (let ((today (calendar-absolute-from-gregorian date))
+        (start
+         (calendar-absolute-from-gregorian
+          (list month day year))))
+    (and (>= today start)
+         (zerop (% (- today start) 14)))))
+
+(defun cpj/diary-fortnightly-summer ()
+  "Return non-nil every fourteen days from June's first Saturday through September."
+  (let* ((year (calendar-extract-year date))
+         (today (calendar-absolute-from-gregorian date))
+         (start
+          (calendar-absolute-from-gregorian
+           (calendar-nth-named-day 1 6 6 year)))
+         (end
+          (calendar-absolute-from-gregorian
+           (list 9 30 year))))
+    (and (<= start today end)
+         (zerop (% (- today start) 14)))))
 
 (provide 'calendar-routines)
 ;;; calendar-functions.el ends here.

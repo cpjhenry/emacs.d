@@ -1,0 +1,32 @@
+@numchapentry{Introduction}{1}{Introduction}{1}
+@numchapentry{Using ind}{2}{Using ind}{2}
+@numchapentry{Dating Systems}{3}{Dating Systems}{3}
+@numsecentry{Hebrew Calendar}{3.1}{Hebrew Calendar}{3}
+@numsecentry{Roman AUC}{3.2}{Roman AUC}{3}
+@numsecentry{Byzantine Calendar}{3.3}{Byzantine Calendar}{3}
+@numsecentry{Indictions}{3.4}{Indictions}{3}
+@numsecentry{Julian Period}{3.5}{Julian Period}{4}
+@numsecentry{Japanese Imperial Dating}{3.6}{Japanese Imperial Dating}{4}
+@numsecentry{Chinese Calendar}{3.7}{Chinese Calendar}{4}
+@numsecentry{Tibetan Calendar}{3.8}{Tibetan Calendar}{4}
+@numsecentry{Buddhist Era}{3.9}{Buddhist Era}{4}
+@numsecentry{Masoretic Dating}{3.10}{Masoretic Dating}{5}
+@numchapentry{Computistical Values}{4}{Computistical Values}{6}
+@numsecentry{Metonic Cycle and Golden Number}{4.1}{Metonic Cycle and Golden Number}{6}
+@numsecentry{Epact}{4.2}{Epact}{6}
+@numsecentry{Dominical Letters}{4.3}{Dominical Letters}{6}
+@numsecentry{Ides}{4.4}{Ides}{6}
+@numchapentry{Continuous Day Counts}{5}{Continuous Day Counts}{7}
+@numsecentry{Julian Date}{5.1}{Julian Date}{7}
+@numsecentry{Modified Julian Date}{5.2}{Modified Julian Date}{7}
+@numsecentry{Truncated Julian Date}{5.3}{Truncated Julian Date}{7}
+@numsecentry{Rata Die}{5.4}{Rata Die}{7}
+@numchapentry{Traditional Observances}{6}{Traditional Observances}{8}
+@numsecentry{Quarter and Cross-quarter Days}{6.1}{Quarter and Cross-quarter Days}{8}
+@numsecentry{Scottish Term and Quarter Days}{6.2}{Scottish Term and Quarter Days}{8}
+@numsecentry{Uposatha}{6.3}{Uposatha}{9}
+@numchapentry{Alternative Calendars}{7}{Alternative Calendars}{10}
+@numsecentry{Hanke-Henry Permanent Calendar}{7.1}{Hanke-Henry Permanent Calendar}{10}
+@numsecentry{Discordian Calendar}{7.2}{Discordian Calendar}{10}
+@numchapentry{Sources and Further Reading}{8}{Sources and Further Reading}{11}
+@unnchapentry{Concept Index}{10001}{Concept Index}{12}

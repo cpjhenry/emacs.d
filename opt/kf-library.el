@@ -70,24 +70,6 @@ With two prefix args, insert an x'ed checkbox."
      ((= prefix 16) (insert ?☒)) ; 9746
      (t (error "What do you want me to put in that checkbox?")))))
 
-(defun kf-arrow (type)
-  "Insert an arrow of TYPE, where type is a single letter:
-    - \"[u]p\"
-    - \"[d]own\"
-    - \"[l]eft\"
-    - \"[r]ight\"
-    - \"[h]orizontal double arrow\"
-    - \"[v]ertical double arrow\""
-  (interactive
-   "cArrow type ([u]p, [d]own, [l]eft, [r]ight, [h]oriz, [v]ert): ")
-  (insert (cdr (assoc type '((?u . ?↑)
-                             (?d . ?↓)
-                             (?l . ?←)
-                             (?r . ?→)
-                             (?h . ?↔)
-                             (?v . ?↕)
-                             )))))
-
 (defun kf-reverse-lines-region (b e)
   "Reverse the order of lines containing B (inclusive) to E (exclusive)."
   (interactive "r")

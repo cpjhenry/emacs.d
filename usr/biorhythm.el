@@ -46,6 +46,21 @@ calendar date representation."
   "Return ordinal day on Earth since `user-birthdate'."
   (1+ (days-since-birthdate date)))
 
+(defun weeks-on-earth (&optional date)
+  "Return the number of complete weeks elapsed since `user-birthdate'.
+
+DATE is a Gregorian date in (MONTH DAY YEAR) form and defaults
+to the current date."
+  (/ (days-since-birthdate date) 7))
+
+(defun years-on-earth (&optional date)
+  "Return elapsed years since `user-birthdate'.
+
+DATE is a Gregorian date in (MONTH DAY YEAR) form and defaults
+to the current date.  A year is the mean Gregorian year of
+365.2425 days."
+  (/ (days-since-birthdate date) 365.2425))
+
 (defun biorhythm-string ()
   "Return today's biorhythm as a string.
 

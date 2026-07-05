@@ -1,0 +1,201 @@
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdftex 2026.3.22)  23 JUN 2026 21:39
+entering extended mode
+ restricted \write18 enabled.
+ file:line:error style messages enabled.
+ %&-line parsing enabled.
+**ind.texi
+(./ind.texi (/usr/local/texlive/2026/texmf-dist/tex/texinfo/texinfo.tex
+Loading texinfo [version 2025-12-23.13]:
+\bindingoffset=\dimen16
+\normaloffset=\dimen17
+\txipagewidth=\dimen18
+\txipageheight=\dimen19
+\defaultoutput=\toks13
+\headlinebox=\box16
+\footlinebox=\box17
+\savedtopmark=\toks14
+\margin=\insert252
+\EMsimple=\toks15
+\groupbox=\box18
+\groupinvalidhelp=\toks16
+\mil=\dimen20
+\exdentamount=\skip18
+\inmarginspacing=\skip19
+\centerpenalty=\count27
+ pdf,
+\tempnum=\count28
+\lnkcount=\count29
+\filename=\toks17
+\filenamelength=\count30
+\pgn=\count31
+\toksA=\toks18
+\toksB=\toks19
+\toksC=\toks20
+\toksD=\toks21
+\boxA=\box19
+\boxB=\box20
+\countA=\count32
+\pagecount=\count33
+\romancount=\count34
+\arabiccount=\count35
+\contentsendcount=\count36
+\nopdfimagehelp=\toks22
+ fonts,
+\textleading=\dimen21
+\sffam=\fam8
+\fontdepth=\count37
+ glyphs,
+\errorbox=\box21
+ page headings,
+\titlepagetopglue=\skip20
+\titlepagebottomglue=\skip21
+\evenheadline=\toks23
+\oddheadline=\toks24
+\evenchapheadline=\toks25
+\oddchapheadline=\toks26
+\evenfootline=\toks27
+\oddfootline=\toks28
+
+tables,
+\tableindent=\dimen22
+\itemindent=\dimen23
+\itemmargin=\dimen24
+\itemmax=\dimen25
+\itemno=\count38
+\colcount=\count39
+\everytab=\toks29
+ conditionals,
+\doignorecount=\count40
+ indexing,
+\dummybox=\box22
+\whatsitskip=\skip22
+\whatsitpenalty=\count41
+\idxinitialno=\count42
+\entryrightmargin=\dimen26
+\entrycontskip=\dimen27
+\thinshrinkable=\skip23
+\partialpage=\box23
+\doublecolumnhsize=\dimen28
+\balancedcolumns=\box24
+ sectioning,
+\unnumberedno=\count43
+\chapno=\count44
+\secno=\count45
+\subsecno=\count46
+\subsubsecno=\count47
+\appendixno=\count48
+\absseclevel=\count49
+\secbase=\count50
+\chapheadingskip=\skip24
+\secheadingskip=\skip25
+\subsecheadingskip=\skip26
+ toc,
+\tocfile=\write0
+\curchapmax=\dimen29
+\cursecmax=\dimen30
+\curssecmax=\dimen31
+\secnowidthchap=\dimen32
+\secnowidthsec=\dimen33
+\secnowidthssec=\dimen34
+\contentsrightmargin=\skip27
+\savepageno=\count51
+\lastnegativepageno=\count52
+\tocindent=\dimen35
+\secnowidth=\dimen36
+\extrasecnoskip=\dimen37
+\labelspace=\dimen38
+ environments,
+\lispnarrowing=\skip28
+\envskipamount=\skip29
+\lskip=\skip30
+\rskip=\skip31
+\circthick=\dimen39
+\cartouter=\dimen40
+\cartinner=\dimen41
+\normbskip=\skip32
+\normpskip=\skip33
+\normlskip=\skip34
+\nonfillparindent=\dimen42
+\tabw=\dimen43
+\verbbox=\box25
+ defuns,
+\defbodyindent=\skip35
+\defargsindent=\skip36
+\deflastargmargin=\skip37
+\defunpenalty=\count53
+\parencount=\count54
+\brackcount=\count55
+ macros,
+\paramno=\count56
+\macname=\toks30
+
+cross references,
+\auxfile=\write1
+\savesfregister=\count57
+\toprefbox=\box26
+\printedrefnamebox=\box27
+\infofilenamebox=\box28
+\printedmanualbox=\box29
+ insertions,
+\footnoteno=\count58
+\SAVEfootins=\box30
+\SAVEmargin=\box31
+
+(/usr/local/texlive/2026/texmf-dist/tex/generic/epsf/epsf.tex
+This is `epsf.tex' v2.7.4 <14 February 2011>
+\epsffilein=\read1
+\epsfframemargin=\dimen44
+\epsfframethickness=\dimen45
+\epsfrsize=\dimen46
+\epsftmp=\dimen47
+\epsftsize=\dimen48
+\epsfxsize=\dimen49
+\epsfysize=\dimen50
+\pspoints=\dimen51
+)
+\noepsfhelp=\toks31
+\capheight=\dimen52
+ localization,
+\nolanghelp=\toks32
+\countUTFx=\count59
+\countUTFy=\count60
+\countUTFz=\count61
+ formatting,
+\defaultparindent=\dimen53
+ microtype,
+\countC=\count62
+\countB=\count63
+ and turning on texinfo input format.)
+(/usr/local/texlive/2026/texmf-dist/tex/texinfo/txi-en.tex) [1{/usr/local/texli
+ve/2026/texmf-var/fonts/map/pdftex/updmap/pdftex.map}] [2] [-1] Chapter 1
+\openout0 = `ind.toc'.
+
+\openout1 = `ind.aux'.
+
+
+Chapter 2 [1] Chapter 3 [2] [3] [4] Chapter 4 [5] Chapter 5 [6] Chapter 6
+[7] [8] Chapter 7 [9] Chapter 8 [10] (Concept Index) [11]
+No file ind.cps.
+[12] ) 
+Here is how much of TeX's memory you used:
+ 3783 strings out of 494552
+ 38649 string characters out of 6144521
+ 89449 words of memory out of 5000000
+ 5301 multiletter control sequences out of 15000+600000
+ 34203 words of font info for 119 fonts, out of 8000000 for 9000
+ 1453 hyphenation exceptions out of 8191
+ 12i,6n,16p,285b,145s stack positions out of 10000i,1000n,20000p,200000b,200000s
+</usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12
+.pfb></usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.p
+fb></usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb>
+</usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmsl10.pfb><
+/usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></
+usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></u
+sr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb>
+Output written on ind.pdf (15 pages, 121180 bytes).
+PDF statistics:
+ 151 PDF objects out of 1000 (max. 8388607)
+ 122 compressed objects within 2 object streams
+ 46 named destinations out of 1000 (max. 500000)
+ 525 words of extra memory for PDF output out of 10000 (max. 10000000)
+

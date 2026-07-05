@@ -93,6 +93,7 @@
   (keymap-global-set "s-z" 'undo)
 
   (keymap-global-set "s-1" "C-x 1")
+  (keymap-global-set "s-3" "C-x 3")
 
   (dolist (key '("s-C" "s-D" "s-d" "s-e" "s-F" "s-f" "s-g" "s-j" "s-L"
 		 "s-M" "s-m" "s-n" "s-p" "s-q" "s-t" "s-^" "s-&" "s-|"))
@@ -166,6 +167,7 @@
 
 (setopt	standard-indent 4
 	tab-width 4
+	;fill-column 70
 
 	;indent-line-function 'indent-according-to-mode
 	;tab-always-indent nil
@@ -406,7 +408,10 @@
               ("[" . Info-history-back)
               ("]" . Info-history-forward)
               ("{" . Info-backward-node)
-              ("}" . Info-forward-node)))
+              ("}" . Info-forward-node))
+    :config
+    (add-to-list 'Info-additional-directory-list
+		 (expand-file-name "usr/info/" user-emacs-directory)))
 
 (use-package calc
   :ensure nil
@@ -497,6 +502,7 @@
 ;;;; Mode hooks
 
 (add-hook 'doc-view-mode-hook #'auto-revert-mode)
+(add-hook 'package-menu-mode-hook #'hl-line-mode)
 (add-hook 'pdf-view-mode-hook #'auto-revert-mode)
 
 (remove-hook 'file-name-at-point-functions
@@ -890,6 +896,7 @@
 (require 'moon-holidays) ; usr/
 (require 'liturgical-year) ; usr/
 (require 'local-holidays) ; etc/
+(use-package hindu-calendar)
 
 (calendar-set-date-style 'iso)
 (setopt calendar-mark-holidays-flag t
@@ -920,7 +927,6 @@
 (add-hook 'diary-fancy-display-mode-hook 'alt-clean-equal-signs)
 
 (message "→ Configuring timekeeping.")
-
 (use-package roman-clock ; usr/
   :ensure nil
   :bind (("C-c d r" . roman-clock)
@@ -1046,7 +1052,6 @@
           (eww-auto-rename-buffer t)
 	  (eww-bookmarks-directory (concat user-emacs-directory "etc/"))
 	  (eww-readable-adds-to-history nil)
-	  (eww-url-transformers '(eww-remove-tracking eww-reddit-redirect))
 	  (url-privacy-level '(email lastloc))
 
 	  ;; look-and-feel
@@ -1070,8 +1075,8 @@
   ;:hook
   :config
   (url-setup-privacy-info)
-  (add-hook 'eww-after-render-hook 'eww-readable) ;; default to 'readable-mode'
-  (use-package ace-link :config (ace-link-setup-default))) ;; alternative to tabbing
+  (use-package ace-link
+    :config (ace-link-setup-default))) ;; alternative to tabbing
 
 (use-package free-keys
   :defer t
@@ -1419,7 +1424,7 @@
   (org-export-time-stamp-file t)
 
   ;; ASCII export.
-  (org-ascii-text-width 72)
+  (org-ascii-text-width fill-column)
   (org-ascii-inner-margin 2)
   (org-ascii-quote-margin 4)
   (org-ascii-headline-spacing '(0 . 1))
@@ -1427,9 +1432,7 @@
   ;; LaTeX export.
   (org-latex-compiler "xelatex")
   (org-latex-pdf-process
-   (list (concat "latexmk -"
-                 org-latex-compiler
-                 " -recorder -synctex=1 -bibtex-cond %b")))
+   (list (concat "latexmk -" org-latex-compiler " -recorder -synctex=1 -bibtex-cond %b")))
 
   ;; Markdown export.
   (org-md-headline-style 'atx)
@@ -1471,6 +1474,7 @@
    ("M-]"        . org-forward-heading-same-level)
    ("C-M-["      . org-back-to-top-level-heading)
    ("C-M-]"      . my/org-end-of-subtree)
+   ("C-c o ^"    . my/org-sort)
    ("C-c o c"    . org-check-misformatted-subtree)
    ("C-c o r"    . org-mode-restart)
    ("C-c o t"    . org-toggle-link-display)
@@ -1482,6 +1486,7 @@
   (require 'org-protocol)
   (require 'ox-latex)
   (require 'ox-md)
+  (require 'ox-texinfo)
 
   (load "org-functions" nil 'nomessage)
   (load "org-links" nil 'nomessage)
@@ -1612,6 +1617,8 @@
   :hook (org-mode . org-macro-display-mode))
 
 (use-package org-pretty-table
+  ;; FIXME · breaking again
+  :disabled
   :ensure nil
   :after org
   :hook (org-mode . org-pretty-table-mode))
@@ -1653,7 +1660,7 @@
   :demand t
   :after (org org-capture)
   :config
-  (defvar org-chef-recipe-book "~/Documents/Recipes/cookbook.org"
+  (defvar org-chef-recipe-book "~/Documents/Recipes/Cookbook.org"
     "Default recipe book.")
 
   (add-to-list 'org-capture-templates
@@ -1681,7 +1688,48 @@
 
 ** Notes
 ")
-	       t))
+	       t)
+
+  (defconst my/org-fraction-replacements
+    '(("1/8" . "{{{frac(1,8)}}}")
+      ("1/4" . "{{{frac(1,4)}}}")
+      ("1/3" . "{{{frac(1,3)}}}")
+      ("3/8" . "{{{frac(3,8)}}}")
+      ("1/2" . "{{{frac(1,2)}}}")
+      ("5/8" . "{{{frac(5,8)}}}")
+      ("2/3" . "{{{frac(2,3)}}}")
+      ("3/4" . "{{{frac(3,4)}}}")
+      ("7/8" . "{{{frac(7,8)}}}")
+      ("⅛"   . "{{{frac(1,8)}}}")
+      ("¼"   . "{{{frac(1,4)}}}")
+      ("⅓"   . "{{{frac(1,3)}}}")
+      ("⅜"   . "{{{frac(3,8)}}}")
+      ("½"   . "{{{frac(1,2)}}}")
+      ("⅝"   . "{{{frac(5,8)}}}")
+      ("⅔"   . "{{{frac(2,3)}}}")
+      ("¾"   . "{{{frac(3,4)}}}")
+      ("⅞"   . "{{{frac(7,8)}}}"))
+    "Fraction spellings normalized by `my/org-normalize-fractions'.")
+
+  (defun my/org-normalize-fractions ()
+    "Normalize common fractions in the accessible portion of the buffer."
+    (interactive)
+    (save-mark-and-excursion
+      (dolist (replacement my/org-fraction-replacements)
+	(goto-char (point-min))
+	(while (search-forward (car replacement) nil t)
+          (replace-match (cdr replacement) t t)))
+
+      ;; Close up mixed numbers such as 1 1/2, 1-½, and 1–½.
+      (goto-char (point-min))
+      (while (re-search-forward
+              "\\b\\([0-9]+\\)[[:space:]\u00A0\u2010\u2011\u2012\u2013-]*\
+\\({{{frac([0-9]+,[0-9]+)}}}\\)"
+              nil t)
+	(replace-match "\\1\\2"))))
+
+  (add-hook 'org-capture-before-finalize-hook
+            #'my/org-normalize-fractions))
 
 (use-package org-cliplink
   :after org
@@ -1752,10 +1800,12 @@
 	 :map org-agenda-mode-map
 	 ("q"      . org-agenda-exit))
   :hook (org-agenda-finalize . cpj/org-agenda-register-diary-buffer)
+        (org-agenda-mode . hl-line-mode)
 
   :custom
   (org-agenda-include-diary t)
   (org-agenda-skip-deadline-if-done t)
+  (org-agenda-skip-additional-timestamps-same-entry t)
   (org-agenda-skip-scheduled-if-done t)
   (org-agenda-start-on-weekday 1)
   (org-agenda-text-search-extra-files '(agenda-archives))
@@ -1779,28 +1829,70 @@
        (tags-todo "HOME")
        (tags-todo "COMPUTER")))))
 
+  (org-agenda-prefix-format
+   '((agenda . " %i %-12:c%?-12t")
+     (todo . " %i %-12:c")
+     (tags . " %i %-12:c")
+     (search . " %i %-12:c")))
+
   :config
+  ;; normalize face for previously scheduled items
+  (set-face-attribute 'org-scheduled-previously nil
+                      :inherit nil
+                      :foreground (face-foreground 'default nil t)
+                      :background (face-background 'default nil t)
+                      :weight 'normal)
+
   (defun cpj/org-agenda-register-diary-buffer ()
     "Register diary buffer for cleanup when Org Agenda exits."
     (when-let* ((buf (get-buffer "diary")))
       (add-to-list 'org-agenda-new-buffers buf))))
 
+(use-package calfw
+  :after (calendar org)
+  :demand t
+  :init (setq calfw-render-line-breaker
+	      'calfw-render-line-breaker-none) ; wordwrap
+  :bind ( :map calfw-calendar-mode-map
+	  ("q" . quit-window))
+  :config
+  (use-package calfw-cal
+    :demand t)
+  (use-package calfw-ical
+    :demand t)
+  (use-package calfw-org
+    :demand t)
+
+  (defun cpj/calfw ()
+    "Display a calfw calendar buffer; clean up on exit."
+    (interactive)
+    (let ((cfw-buf
+           (calfw-open-calendar-buffer
+            :contents-sources
+            (append
+             (list
+              (calfw-cal-create-source "diary" "orange")
+              (calfw-org-create-source nil "org-agenda" "green"))
+             (cpj/maccalfw-create-sources '("Birthdays")))
+            :view 'two-weeks)))
+      (with-current-buffer cfw-buf
+        (add-hook
+         'kill-buffer-hook
+         (lambda ()
+           (kill-unmodified-file-buffer cpj/org-agenda-file)
+           (kill-unmodified-file-buffer org-gcal-file)
+           (kill-unmodified-file-buffer (concat (expand-file-name org-gcal-file) "_archive")))
+         nil t)))))
+
 (use-package maccalfw
-  :ensure nil
   :after calfw
+  :demand t
   :commands (maccalfw-open
              maccalfw-get-calendars
-             maccalfw-get-calendars-by-name))
-
-(use-package calfw
-  :bind (("C-c C" . cpj/calfw))
+             maccalfw-get-calendars-by-name)
   :config
   (defun cpj/maccalfw-create-sources (&optional calendar-names)
-    "Return calfw sources for macOS Calendar.
-
-If CALENDAR-NAMES is non-nil, include only Apple calendars whose
-names appear in that list.  If `maccalfw' cannot load or macOS
-Calendar access fails, return nil rather than breaking `cpj/calfw'."
+    "Return calfw sources for macOS Calendar."
     (when (require 'maccalfw nil t)
       (condition-case err
           (progn
@@ -1817,28 +1909,7 @@ Calendar access fails, return nil rather than breaking `cpj/calfw'."
                calendars)))
         (error
          (message "maccalfw unavailable: %s" (error-message-string err))
-         nil))))
-
-  (defun cpj/calfw ()
-    "Display a two-week calfw calendar and clean up temporary Org buffers on exit."
-    (interactive)
-    (let ((cfw-buf
-           (calfw-open-calendar-buffer
-            :contents-sources
-            (append
-             (list
-              (calfw-cal-create-source "diary" "orange")
-              (calfw-org-create-source nil "org-agenda" "Green"))
-             (cpj/maccalfw-create-sources '("Birthdays")))
-            :view 'two-weeks)))
-      (with-current-buffer cfw-buf
-        (add-hook
-         'kill-buffer-hook
-         (lambda ()
-           (kill-unmodified-file-buffer cpj/org-agenda-file)
-           (kill-unmodified-file-buffer org-gcal-file)
-           (cpj/delete-gcal-archive-file))
-         nil t)))))
+         nil)))))
 
 (use-package org-gcal
   :after org
@@ -1849,6 +1920,7 @@ Calendar access fails, return nil rather than breaking `cpj/calfw'."
   (plstore-cache-passphrase-for-symmetric-encryption t)
   (org-gcal-remove-api-cancelled-events nil)
   (org-gcal-update-cancelled-events-with-todo nil)
+  :bind (("C-c C" . cpj/calfw-gcal))
   :config
   (add-to-list 'org-agenda-files org-gcal-file t)
 
@@ -2288,6 +2360,7 @@ Calendar access fails, return nil rather than breaking `cpj/calfw'."
 ;; Safe local variables
 (add-to-list 'safe-local-variable-values '(org-log-done))
 (add-to-list 'safe-local-variable-values '(truncate-lines . -1))
+(add-to-list 'safe-local-variable-values '(before-save-hook . (my/org-sort)))
 
 ;; and...
 
@@ -2341,13 +2414,6 @@ Calendar access fails, return nil rather than breaking `cpj/calfw'."
 
 
 ;;; Ctrl-x (buffer functions)
-(bind-key "C-x 8 0" (kbd "​")) ; zero-width-space
-(bind-key "C-x 8 <left>" (kbd "←"))
-(bind-key "C-x 8 <right>" (kbd "→"))
-(which-key-alias "C-x 8" "keys")
-(which-key-alias "C-x 8 0" "ZWS")
-(which-key-alias "C-x 8 e" "emojis")
-
 (bind-key "C-x c"	'kill-current-buffer)
 
 (bind-key "C-x x SPC"	'toggle-cursor-off/on)
@@ -2371,6 +2437,21 @@ Calendar access fails, return nil rather than breaking `cpj/calfw'."
 (which-key-alias "C-x r" "registers")
 (which-key-alias "C-x t" "tabs")
 (which-key-alias "C-x w" "windows")
+
+
+;;; Ctrl-x 8 sequences
+(defun my/insert-zero-width-space ()
+  "Insert a zero-width space."
+  (interactive)
+  (insert #x200B))
+
+(with-eval-after-load 'iso-transl
+  (keymap-set iso-transl-ctl-x-8-map "0" #'my/insert-zero-width-space)
+  (keymap-set iso-transl-ctl-x-8-map "a |" "↕"))
+
+(which-key-alias "C-x 8" "keys")
+(which-key-alias "C-x 8 0" "ZWS")
+(which-key-alias "C-x 8 e" "emojis")
 
 
 ;;; Aliases

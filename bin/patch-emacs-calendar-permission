@@ -1,0 +1,101 @@
+#!/usr/bin/env bash
+# patch-emacs-calendar-permission
+#
+# Patch Emacs.app so macOS can ask for Calendar permission.
+# Intended for Emacs Plus / macOS / maccalfw.
+#
+# Usage:
+#   ./patch-emacs-calendar-permission.sh
+#   ./patch-emacs-calendar-permission.sh /Applications/Emacs.app
+
+set -euo pipefail
+
+APP="${1:-/Applications/Emacs.app}"
+PLIST="$APP/Contents/Info.plist"
+USAGE_KEY="NSCalendarsUsageDescription"
+USAGE_TEXT="Emacs requires permission to access Calendar for maccalfw."
+
+die() {
+    printf 'error: %s\n' "$*" >&2
+    exit 1
+}
+
+say() {
+    printf '==> %s\n' "$*"
+}
+
+need_cmd() {
+    command -v "$1" >/dev/null 2>&1 || die "required command not found: $1"
+}
+
+need_cmd /usr/libexec/PlistBuddy
+need_cmd codesign
+need_cmd tccutil
+
+[[ -d "$APP" ]] || die "app bundle not found: $APP"
+[[ -f "$PLIST" ]] || die "Info.plist not found: $PLIST"
+[[ -w "$PLIST" ]] || die "Info.plist is not writable: $PLIST"
+
+BUNDLE_ID="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$PLIST" 2>/dev/null || true)"
+[[ -n "$BUNDLE_ID" ]] || die "could not read CFBundleIdentifier from $PLIST"
+
+say "Patching $APP"
+say "Bundle identifier: $BUNDLE_ID"
+
+if /usr/libexec/PlistBuddy -c "Print :$USAGE_KEY" "$PLIST" >/dev/null 2>&1; then
+    say "Updating existing $USAGE_KEY"
+    /usr/libexec/PlistBuddy -c "Set :$USAGE_KEY $USAGE_TEXT" "$PLIST"
+else
+    say "Adding $USAGE_KEY"
+    /usr/libexec/PlistBuddy -c "Add :$USAGE_KEY string $USAGE_TEXT" "$PLIST"
+fi
+
+say "Verifying plist value"
+/usr/libexec/PlistBuddy -c "Print :$USAGE_KEY" "$PLIST"
+
+say "Re-signing app bundle ad hoc"
+codesign --force --deep --sign - "$APP"
+
+say "Resetting Calendar permission for $BUNDLE_ID"
+
+if tccutil reset Calendar "$BUNDLE_ID" >/dev/null 2>&1; then
+    say "Reset TCC service: Calendar"
+elif tccutil reset Calendars "$BUNDLE_ID" >/dev/null 2>&1; then
+    say "Reset TCC service: Calendars"
+else
+    say "Could not reset Calendar permission for this bundle ID."
+    say "This may be harmless; you can still check System Settings manually."
+fi
+
+cat <<EOF
+
+Done.
+
+Next steps:
+
+  1. Fully quit Emacs, including any daemon:
+
+       emacsclient -e '(kill-emacs)' 2>/dev/null
+       pkill Emacs 2>/dev/null
+
+  2. Reopen the GUI app bundle:
+
+       open -a Emacs
+
+  3. In Emacs, trigger maccalfw:
+
+       M-: (require 'maccalfw) RET
+       M-x maccalfw-open
+
+  4. When macOS asks for Calendar permission, grant full access.
+
+If no prompt appears, open:
+
+       System Settings → Privacy & Security → Calendars
+
+and enable Emacs manually.
+
+EOF
+
+#  LocalWords:  usr maccalfw plist NSCalendarsUsageDescription
+#  LocalWords:  CFBundleIdentifier

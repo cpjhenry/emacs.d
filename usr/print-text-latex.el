@@ -214,6 +214,15 @@ that file directly."
 \\usepackage{fontspec}
 \\setmainfont{%s}
 \\pagestyle{%s}
+
+\\usepackage[none]{hyphenat}
+\\usepackage{ragged2e}
+
+\\hyphenpenalty=10000
+\\exhyphenpenalty=10000
+\\emergencystretch=2em
+\\RaggedRight
+
 \\setlength{\\parindent}{0pt}
 \\setlength{\\parskip}{%s}
 \\begin{document}

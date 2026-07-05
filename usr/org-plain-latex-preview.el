@@ -29,7 +29,7 @@
   "Plain-text preview of LaTeX-oriented Org documents."
   :group 'org-export)
 
-(defcustom org-plain-latex-preview-width 52
+(defcustom org-plain-latex-preview-width 50
   "Text width used by `org-plain-latex-preview'.
 
 This value is bound to `org-ascii-text-width' during export.
@@ -52,8 +52,18 @@ intended print pipeline."
     ("\\third{}" . "(3rd)"))
   "Alist mapping LaTeX macros to plain-text replacements.")
 
+(defun org-plain-latex-preview--today ()
+  "Return today's date for plain LaTeX preview."
+  (format-time-string "%-d %B %Y"))
+
 (defun org-plain-latex-preview--replace-macros (string)
   "Replace known LaTeX macros in STRING."
+  ;; Expand simple LaTeX macros understood by the preview.
+  (setq string
+	(replace-regexp-in-string
+	 "\\\\today\\b"
+	 (format-time-string "%-d %B %Y")
+	 string t t))
   (dolist (pair org-plain-latex-preview-macro-alist string)
     (setq string
           (replace-regexp-in-string

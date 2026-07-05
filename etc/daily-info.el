@@ -12,6 +12,8 @@
 (require 'diary-lib)
 (require 'holidays)
 
+(require 'ind)
+
 (declare-function wwv-summary "wwv")
 (declare-function biorhythm-string "biorhythm")
 (declare-function days-on-earth "biorhythm")
@@ -30,8 +32,8 @@
       s)))
 
 (defun daily-info--ind-summary ()
-  "Return `ind' daily summary."
-  (daily-info--shell-string "ind -faruiq"))
+  "Return the native Emacs `ind' daily summary."
+  (ind-summary-string))
 
 (defconst daily-info-birthday-command
   (concat
@@ -64,8 +66,10 @@
           (append
            (list
             (wwv-summary)
-            (format "My %s day on Planet Earth."
-                    (ordinal-number (days-on-earth)))
+            (format "My %s day (%s weeks, %.1f years)."
+		    (ordinal-number (days-on-earth date))
+		    (commify-number (weeks-on-earth date))
+		    (years-on-earth date))
             (biorhythm-string))
            holidays
            diary-entries))))
