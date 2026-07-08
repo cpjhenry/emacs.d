@@ -299,25 +299,39 @@ Sunday after Epiphany, with Epiphany fixed on January 6."
                (calendar-date-string (car holiday) nil t)
                (cadr holiday))))))
 
-(defun list-roman-liturgical-year ()
-  "Display Roman Rite liturgical year boundaries."
-  (interactive)
-  (let ((year (holiday-liturgical--current-or-displayed-year)))
-    (liturgical-year--display
-     year
-     (holiday-roman-liturgical-boundaries-for-year year)
+(defconst liturgical-year-traditions
+  '(("Roman Rite"
+     holiday-roman-liturgical-boundaries-for-year
      "*Roman Liturgical Year*"
-     "Roman Rite Liturgical Year Boundaries")))
+     "Roman Rite Liturgical Year Boundaries")
+    ("Anglican Church of Canada"
+     holiday-anglican-canada-liturgical-boundaries-for-year
+     "*Anglican Canada Liturgical Year*"
+     "Anglican Church of Canada Liturgical Year Boundaries"))
+  "Available liturgical-year traditions.
 
-(defun list-anglican-canada-liturgical-year ()
-  "Display Anglican Church of Canada liturgical year boundaries."
-  (interactive)
-  (let ((year (holiday-liturgical--current-or-displayed-year)))
+Each entry has the form:
+
+  (NAME BOUNDARY-FUNCTION BUFFER-NAME HEADING)")
+
+(defun list-liturgical-year (tradition)
+  "Display liturgical year boundaries for TRADITION."
+  (interactive
+   (list
+    (completing-read
+     "Liturgical tradition: "
+     liturgical-year-traditions
+     nil t)))
+  (let* ((year (holiday-liturgical--current-or-displayed-year))
+         (entry (assoc tradition liturgical-year-traditions))
+         (boundary-function (nth 1 entry))
+         (buffer-name (nth 2 entry))
+         (heading (nth 3 entry)))
     (liturgical-year--display
      year
-     (holiday-anglican-canada-liturgical-boundaries-for-year year)
-     "*Anglican Canada Liturgical Year*"
-     "Anglican Church of Canada Liturgical Year Boundaries")))
+     (funcall boundary-function year)
+     buffer-name
+     heading)))
 
 (provide 'liturgical-year)
 

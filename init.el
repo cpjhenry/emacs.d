@@ -183,6 +183,7 @@
 	display-line-numbers-widen t
 	enable-recursive-minibuffers t
 	enable-remote-dir-locals t ; .dir-locals.el
+	eval-expression-debug-on-error nil
 	fill-nobreak-predicate '(fill-single-word-nobreak-p fill-single-char-nobreak-p fill-french-nobreak-p)
 	find-file-visit-truename t
 	goto-address-mail-face 'default
@@ -416,7 +417,18 @@
 (use-package calc
   :ensure nil
   :bind (:map calc-mode-map
-              ("q" . kill-current-buffer)))
+              ("q" . kill-current-buffer))
+  :config
+  (defun cpj/quick-calc-cleanup (function &rest arguments)
+    "Run FUNCTION with ARGUMENTS without leaving a new Calc buffer."
+    (let ((calculator-buffer (get-buffer "*Calculator*")))
+      (unwind-protect
+          (apply function arguments)
+        (unless calculator-buffer
+          (when-let* ((buffer (get-buffer "*Calculator*")))
+            (kill-buffer buffer))))))
+
+  (advice-add 'quick-calc :around #'cpj/quick-calc-cleanup))
 
 (use-package help-mode
   :ensure nil
@@ -671,8 +683,10 @@
                      (name . "^\\*Org Agenda\\*")
                      (name . "^\\*Virgo\\*")
                      (name . "^calendar@*")
-		     (name . "^\\*Holidays\\*")))
-      ("TeX"  (name . "\\.tex"))
+		     (name . "^\\*Holidays\\*")
+		     (name . "^\\*ind\\*")))
+      ("TeX"  (or (name . "\\.tex")
+		  (name . "\\.bib")))
       ("ePub" (mode . nov-mode))
       ;("erc" (mode . erc-mode))
       ("Eww"  (mode . eww-mode))
@@ -700,7 +714,8 @@
   (add-to-list 'ibuffer-never-show-predicates "^\\*Messages\\*")
   (add-to-list 'ibuffer-never-show-predicates "^\\*Shell Command Output\\*")
   (add-to-list 'ibuffer-never-show-predicates "^\\*tramp/")
-  (add-to-list 'ibuffer-never-show-predicates "^\\*Latex Preview Pane Welcome\\*"))
+  (add-to-list 'ibuffer-never-show-predicates "^\\*Latex Preview Pane Welcome\\*")
+  (add-to-list 'ibuffer-never-show-predicates "^\\*Flymake log\\*"))
 
 
 ;;; Dired
@@ -893,10 +908,13 @@
 ;;; calendar
 (message "→ Configuring calendar.")
 (load "calendar-functions" nil 'nomessage)
-(require 'moon-holidays) ; usr/
+(require 'moon-holidays) ; usr/ -- Buddhist
 (require 'liturgical-year) ; usr/
-(require 'local-holidays) ; etc/
+(require 'discordian-calendar) ; usr/
+(require 'mercury-retrograde) ; usr/
 (use-package hindu-calendar)
+(require 'hindu-diwali) ; usr/
+(require 'local-holidays) ; etc/
 
 (calendar-set-date-style 'iso)
 (setopt calendar-mark-holidays-flag t
@@ -951,7 +969,10 @@
   :commands (wwv
 	     wwv-summary))
 
-(load "daily-info" nil 'nomessage) ; etc/
+(use-package daily-info ; etc/
+  :ensure nil
+  :commands (di
+	     ind))
 
 (use-package sparkweather
   :after calendar
@@ -1483,6 +1504,7 @@
 
   :config
   (require 'org-tempo)
+  (require 'org-capture)
   (require 'org-protocol)
   (require 'ox-latex)
   (require 'ox-md)

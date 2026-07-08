@@ -11,14 +11,16 @@
 
 ;;; Commentary:
 
-;; Convert dates between the Gregorian and Discordian calendars.
+;; Convert dates between the Gregorian and Discordian calendars, and
+;; provide Discordian holydays and related observances for the Emacs
+;; calendar and holiday system.
 ;;
 ;; An ordinary Discordian date is represented as:
 ;;
 ;;     (SEASON DAY YEAR)
 ;;
-;; SEASON is one of `chaos', `discord', `confusion', `bureaucracy',
-;; or `aftermath'.  YEAR is expressed in YOLD.
+;; SEASON is one of `chaos', `discord’, `confusion', `bureaucracy’,
+;; or `aftermath'. YEAR is expressed in YOLD.
 ;;
 ;; St. Tib's Day is represented as:
 ;;
@@ -26,10 +28,18 @@
 ;;
 ;; With no date supplied, commands referring to the current date use
 ;; the local civil date.
+;;
+;; Add holiday-discordian-observances’ to one of the standard holiday
+;; lists, for example:
+;;
+;;   (setq holiday-other-holidays
+;;         (append holiday-other-holidays
+;;                 holiday-discordian-observances))
 
 ;;; Code:
 
 (require 'calendar)
+(require 'holidays)
 (require 'cl-lib)
 
 (defgroup discordian-calendar nil
@@ -64,6 +74,37 @@
     ((aftermath 5) . "Maladay")
     ((aftermath 50) . "Afflux"))
   "Discordian Apostle and Season Holydays.")
+
+(defun holiday-st-tibs-day ()
+  "Return St. Tib's Day in leap years.
+
+St. Tib's Day is a Discordian holiday observed on 29 February,
+which is considered outside the normal Discordian calendar."
+  (when (calendar-leap-year-p displayed-year)
+    (holiday-filter-visible-calendar
+     (list
+      (list (list 2 29 displayed-year)
+            "St. Tib's Day")))))
+
+(defvar holiday-discordian-observances
+  '((holiday-fixed 1 5  "Mungday")
+    (holiday-fixed 2 19 "Chaoflux")
+    (holiday-fixed 3 19 "Mojoday")
+    (holiday-fixed 5 3  "Discoflux")
+    (holiday-fixed 5 31 "Syaday")
+    (holiday-fixed 7 15 "Confuflux")
+    (holiday-fixed 8 12 "Zaraday")
+    (holiday-fixed 9 26 "Bureflux")
+    (holiday-fixed 10 24 "Maladay")
+    (holiday-fixed 12 8 "Afflux")
+
+    (holiday-st-tibs-day)
+
+    (holiday-fixed 5 23 "Eris Day")
+    (holiday-fixed 5 25 "Towel Day")
+    (holiday-fixed 7 2  "Mid-Year")
+    (holiday-fixed 7 5  "X-Day"))
+  "Discordian holydays and related observances.")
 
 (defun discordian-calendar--season-index (season)
   "Return the zero-based index of Discordian SEASON, or nil."
@@ -121,13 +162,18 @@ DATE uses Emacs calendar ordering: (MONTH DAY YEAR)."
   "Convert Discordian DATE to a Gregorian date.
 
 Return the Gregorian date in Emacs calendar ordering."
-  (unless (discordian-calendar-valid-date-p date)
-    (signal 'wrong-type-argument
-            (list 'discordian-calendar-valid-date-p date)))
   (pcase date
     (`(st-tibs-day ,year)
-     (list 2 29 (- year discordian-calendar-year-offset)))
+     (let ((gregorian-year
+            (- year discordian-calendar-year-offset)))
+       (unless (calendar-leap-year-p gregorian-year)
+         (user-error
+          "St. Tib's Day does not occur in YOLD %d" year))
+       (list 2 29 gregorian-year)))
+
     (`(,season ,day ,year)
+     (unless (discordian-calendar-valid-date-p date)
+       (user-error "Invalid Discordian date: %S" date))
      (let* ((gregorian-year
              (- year discordian-calendar-year-offset))
             (season-index
@@ -142,7 +188,10 @@ Return the Gregorian date in Emacs calendar ordering."
        (calendar-gregorian-from-absolute
         (+ (calendar-absolute-from-gregorian
             (list 1 1 gregorian-year))
-           gregorian-offset))))))
+           gregorian-offset))))
+
+    (_
+     (user-error "Invalid Discordian date: %S" date))))
 
 (defun discordian-calendar-weekday (date)
   "Return the weekday name for Discordian DATE.
@@ -238,3 +287,6 @@ GREGORIAN-DATE defaults to the current local civil date."
 (provide 'discordian-calendar)
 
 ;;; discordian-calendar.el ends here
+
+; LocalWords:  holydays holyday discordian tibs Sweetmorn Boomtime
+; LocalWords:  Pungenday

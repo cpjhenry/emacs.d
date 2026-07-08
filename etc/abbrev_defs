@@ -1,4 +1,4 @@
-;;-*-coding: utf-8;-*-
+;; -*- coding: utf-8; lexical-binding: t -*-
 (define-abbrev-table 'emacs-lisp-mode-abbrev-table
   '(
     ("advicename" "'((name . \"test\"))" nil :count 0)
@@ -38,17 +38,14 @@
     ("a5vc" "# Set for A5 paper. You can still print this to booklet format." nil :count 0)
     ("ccc" "#+AUTHOR:/Capital City Council \\textnumero154/" nil :count 0)
     ("hdr" "#+LATEX_HEADER:" nil :count 142)
-    ("lat" "#+LATEX:" nil :count 60)
-    ("lsvc" "# This is the letter-size version.
-#+LATEX_CLASS_OPTIONS: [letterpaper]
-#+LATEX_HEADER: \\lettersize" nil :count 2)
+    ("lat" "#+LATEX:" nil :count 64)
     ("mapleleaf" "\\twemoji{maple leaf}" nil :count 0)
     ("mp" "#+LATEX: \\begin{minipage}{\\linewidth}" nil :count 1)
     ("myabstract" "#+LATEX: \\begin{abstract}
 #+LATEX: \\noindent\\parindent=0pt\\parskip=.5\\baselineskip plus 2pt
 
 #+LATEX: \\end{abstract}" nil :count 0)
-    ("myheader" "#+INCLUDE: \"~/Documents/org/latexhdr.org\"" nil :count 3)
+    ("myheader" "#+INCLUDE: \"~/Documents/org/latexhdr.org\"" nil :count 4)
     ("mykeywords" ":KEYWORDS:
 #+DESCRIPTION:
 #+KEYWORDS:

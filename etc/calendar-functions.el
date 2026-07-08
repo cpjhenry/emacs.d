@@ -13,11 +13,12 @@
 (defvar displayed-month)
 
 (defun calendar-world-clock ()
-  "Display a world clock buffer with times in various time zones."
+  "Display a world clock alongside the Calendar."
   (interactive)
-  (world-clock)
-  (next-window-any-frame)
-  (fit-window-to-buffer))
+  (let ((calendar-window (selected-window)))
+    (world-clock)
+    (select-window calendar-window)
+    (calendar-redraw)))
 
 (defun display-current-date-and-time ()
   "Display current date and time."

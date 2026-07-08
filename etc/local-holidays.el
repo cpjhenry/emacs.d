@@ -17,6 +17,7 @@
 (defvar displayed-year)
 (defvar displayed-month)
 (defvar holiday-buddhist-holidays)
+(defvar holiday-mercury-retrograde)
 
 (message "→ Setting holidays and time defaults.")
 
@@ -47,6 +48,7 @@ the resulting day in March."
                       (- y (1- 1844)))))))))
 
 ;; Prefer Hebcal-style English transliterations for Hebrew month names.
+;; https://www.hebcal.com/
 (with-eval-after-load 'cal-hebrew
   (setq calendar-hebrew-month-name-array-common-year
         ["Nisan" "Iyyar" "Sivan" "Tamuz" "Av" "Elul"
@@ -117,6 +119,27 @@ nominal date in the Hebrew calendar."
               "Fast of Esther (observed)"))
           h)))))
 
+(defun holiday-hebrew-yom-hashoah ()
+  "Return Yom HaShoah, moved away from Shabbat.
+
+Yom HaShoah normally falls on 27 Nisan.  If that date is
+Friday, observe it on Thursday; if Sunday, observe it on Monday."
+  (let ((h (holiday-hebrew 1 27 "Holocaust Memorial Day")))
+    (when h
+      (let* ((date (caar h))
+             (offset (pcase (calendar-day-of-week date)
+                       (5 -1)              ; Friday → Thursday
+                       (0  1)              ; Sunday → Monday
+                       (_  0))))
+        (if (zerop offset)
+            h
+          (list
+           (list
+            (calendar-gregorian-from-absolute
+             (+ (calendar-absolute-from-gregorian date)
+                offset))
+            "Holocaust Memorial Day (observed)")))))))
+
 (defconst chinese-zodiac-elements
 ["Wood" "Wood" "Fire" "Fire" "Earth" "Earth"
  "Metal" "Metal" "Water" "Water"])
@@ -166,84 +189,6 @@ nominal date in the Hebrew calendar."
    (holiday-fixed 5 15  "Whitsun")
    (holiday-fixed 8  1  "Lammas")
    (holiday-fixed 11 11 "Martinmas")))
-
-(defconst mercury-retrograde-periods
-  '((2016 ((1 5)  (1 25))
-          ((4 28) (5 22))
-          ((8 30) (9 22))
-          ((12 19) (1 8)))
-    (2017 ((4 9)  (5 3))
-          ((8 12) (9 5))
-          ((12 3) (12 22)))
-    (2018 ((3 22) (4 15))
-          ((7 26) (8 18))
-          ((11 16) (12 6)))
-    (2019 ((3 5)  (3 28))
-          ((7 7)  (7 31))
-          ((10 31) (11 20)))
-    (2020 ((2 16) (3 9))
-          ((6 17) (7 12))
-          ((10 13) (11 3)))
-    (2021 ((1 30) (2 20))
-          ((5 29) (6 22))
-          ((9 27) (10 18)))
-    (2022 ((1 14) (2 3))
-          ((5 10) (6 3))
-          ((9 9)  (10 2))
-          ((12 29) (1 18)))
-    (2023 ((4 21) (5 14))
-          ((8 23) (9 15))
-          ((12 13) (1 1)))
-    (2024 ((4 1)  (4 25))
-          ((8 4)  (8 28))
-          ((11 25) (12 15)))
-    (2025 ((3 14) (4 7))
-          ((7 18) (8 10))
-          ((11 9) (11 29)))
-    (2026 ((2 25) (3 20))
-	  ((6 29) (7 23))
-	  ((10 24)(11 13)))
-    (2027 ((2 9)  (3 3))
-	  ((6 10) (7 4))
-	  ((10 7) (10 28)))
-    (2028 ((1 24) (2 14))
-	  ((5 21) (6 13))
-	  ((9 19) (10 11)))
-    (2029 ((1 7)  (1 27))
-	  ((5 1)  (5 25))
-	  ((9 2)  (9 24))
-	  ((12 21) (1 10)))
-    (2030 ((4 12) (5 6))
-	  ((8 15) (9 8))
-	  ((12 5) (12 25))))
-  "Published Mercury retrograde periods.
-
-Each period is of the form:
-
-  ((START-MONTH START-DAY)
-   (END-MONTH   END-DAY))
-
-where the first date is the station retrograde and the second date
-is the station direct.")
-
-(defun holiday-mercury-retrograde ()
-  "Return Mercury retrograde station dates for the displayed year."
-  (let (holidays)
-    (dolist (year (list (1- displayed-year) displayed-year))
-      (dolist (period (cdr (assoc year mercury-retrograde-periods)))
-        (pcase-let ((`((,sm ,sd) (,em ,ed)) period))
-          (let ((end-year (if (< em sm) (1+ year) year)))
-            (when (= year displayed-year)
-              (push (list (list sm sd year)
-                          "Mercury Retrograde")
-                    holidays))
-            (when (= end-year displayed-year)
-              (push (list (list em ed end-year)
-                          "Mercury Retrograde Ends")
-                    holidays))))))
-
-    (holiday-filter-visible-calendar
-     (nreverse holidays))))
 
 (defun solar-equinoxes-only ()
   "Return only equinox entries from `solar-equinoxes-solstices'."
@@ -326,54 +271,6 @@ Tuesday instead."
      (list
       (list start "Archives Awareness Week begins")))))
 
-(defconst holiday-diwali-dates
-  '((2022 . (10 24 2022))
-    (2023 . (11 12 2023))
-    (2024 . (11 1 2024))
-    (2025 . (10 21 2025))
-    (2026 . (11 8 2026))
-    (2027 . (10 29 2027))
-    (2028 . (10 17 2028))
-    (2029 . (11 5 2029))
-    (2030 . (10 26 2030))
-    (2031 . (11 14 2031))
-    (2032 . (11 2 2032))
-    (2033 . (10 22 2033))
-    (2034 . (11 10 2034))
-    (2035 . (10 30 2035))
-    (2036 . (10 18 2036))
-    (2037 . (11 6 2037))
-    (2038 . (10 27 2038))
-    (2039 . (10 17 2039))
-    (2040 . (11 4 2040)))
-  "Published civil dates for Diwali.
-
-Diwali (Deepavali) is a Hindu festival determined by the lunisolar
-calendar and the timing of Kartik Amavasya.  Because the observed
-civil date may vary by tradition, location, and the timing of lunar
-events, this table records published observance dates rather than
-attempting a full panchang calculation.")
-
-(defun holiday-diwali ()
-  "Return Diwali for the displayed year.
-
-Dates are taken from `holiday-diwali-dates'."
-  (let ((date (cdr (assoc displayed-year holiday-diwali-dates))))
-    (when date
-      (holiday-filter-visible-calendar
-       (list (list date "Diwali")))))) ;  दीपावली
-
-(defun holiday-st-tibs-day ()
-  "Return St. Tib's Day on leap years.
-
-St. Tib's Day is a Discordian holiday observed on 29 February,
-which is considered outside the normal Discordian calendar."
-  (when (calendar-leap-year-p displayed-year)
-    (holiday-filter-visible-calendar
-     (list
-      (list (list 2 29 displayed-year)
-            "St. Tib's Day")))))
-
 
 ;; -- Set holiday variables --
 ;; Static holiday lists vs computed holiday generators (solar, Bahá’í, etc.)
@@ -409,7 +306,7 @@ which is considered outside the normal Discordian calendar."
      (holiday-float 5 0 1  "Bereaved Mother's Day")
      (holiday-fixed 6 21   "Indigenous Peoples Day")
      (holiday-fixed 6 24   "Saint-Jean-Baptiste")
-     (holiday-float 7 0 -1 "Reek Sunday")
+     (holiday-float 7 0 -1 "Garland Sunday")
      (holiday-fixed 9 30   "Truth and Reconciliation")
      (holiday-float 11 0 2 "Remembrance Sunday")
      (holiday-fixed 12 11  "Statute of Westminster"))
@@ -468,6 +365,7 @@ which is considered outside the normal Discordian calendar."
    holiday-hebrew-holidays
    '((holiday-hebrew-fast-of-esther)
      (holiday-hebrew-passover)
+     (holiday-hebrew-yom-hashoah)
      (holiday-hebrew-tisha-b-av)
      (holiday-hebrew-rosh-hashanah)
      (holiday-hebrew 9 25 "Chanukah"))
@@ -482,13 +380,13 @@ which is considered outside the normal Discordian calendar."
      (if calendar-chinese-all-holidays-flag
          (append
 	  (holiday-chinese-new-years-eve) ; 除夕
-          (holiday-chinese 1 15 "Lantern Festival") ; 元宵
-          (holiday-chinese-qingming) ; 清明
-          (holiday-chinese 5 5 "Dragon Boat Festival") ; 端午
-          (holiday-chinese 7 7 "Double Seventh Festival") ; 七夕
-          (holiday-chinese 7 15 "Ghost Festival") ; 中元
-          (holiday-chinese 8 15 "Mid-Autumn Festival") ; 中秋
-          (holiday-chinese 9 9 "Double Ninth Festival")))) ; 重阳
+          (holiday-chinese 1 15 "Lantern Festival") ; 元宵 / Last Day of New Year's Celebration
+          (holiday-chinese-qingming) ; 清明 / Tomb-Sweeping Day
+          (holiday-chinese 5 5 "Dragon Boat Festival") ; 端午 / Duanwu Festival
+          (holiday-chinese 7 7 "Double Seventh Festival") ; 七夕 / Valentine's Day
+          (holiday-chinese 7 15 "Ghost Festival") ; 中元 / All Hallows' Eve
+          (holiday-chinese 8 15 "Mid-Autumn Festival") ; 中秋 / Thanksgiving
+          (holiday-chinese 9 9 "Double Ninth Festival")))) ; 重阳 / Double Yang Festival
 
    lunar-phase-names
    '("New Moon" "First Quarter" "Full Moon" "Last Quarter")
@@ -537,10 +435,6 @@ which is considered outside the normal Discordian calendar."
      (holiday-mercury-retrograde))
    "Seasonal and astronomical observances.")
 
-(defvar holiday-hindu-holidays
-  '((holiday-diwali))
-  "Hindu holidays and observances.")
-
 (defvar holiday-scottish-observances
   '((holiday-fixed 1 25  "Robert Burns Day")
     (holiday-fixed 11 30 "St. Andrew's Day")
@@ -575,7 +469,6 @@ which is considered outside the normal Discordian calendar."
   '((holiday-fixed 1 10   "Peculiar People Day")
     (holiday-fixed 1 19   "Dead of Winter")
     (holiday-fixed 1 23   "National Handwriting Day")
-    (holiday-fixed 1 27   "Holocaust Remembrance Day")
     (holiday-fixed 1 28   "Data Privacy Day")
     (holiday-float 1 4 4  "NASA Day of Remembrance")
     (holiday-fixed 1 31   "Hell is Freezing Over Day")
@@ -682,26 +575,6 @@ which is considered outside the normal Discordian calendar."
     (holiday-fixed 12 31 "St. Sylvester (Pope)"))
   "Saints' days and patronal commemorations.")
 
-(defvar holiday-discordian-observances
-  '((holiday-fixed 1 5  "Mungday")
-    (holiday-fixed 2 19 "Chaoflux")
-    (holiday-fixed 3 19 "Mojoday")
-    (holiday-fixed 5 3  "Discoflux")
-    (holiday-fixed 5 31 "Syaday")
-    (holiday-fixed 7 15 "Confuflux")
-    (holiday-fixed 8 12 "Zaraday")
-    (holiday-fixed 9 26 "Bureflux")
-    (holiday-fixed 10 24 "Maladay")
-    (holiday-fixed 12 8 "Afflux")
-
-    (holiday-st-tibs-day)
-
-    (holiday-fixed 5 23 "Eris Day")
-    (holiday-fixed 5 25 "Towel Day")
-    (holiday-fixed 7 2  "Mid-Year's Day")
-    (holiday-fixed 7 5  "X-Day"))
-  "Discordian holy days and related observances.")
-
 (setopt calendar-holidays
         (append holiday-general-holidays
                 holiday-local-holidays
@@ -750,32 +623,14 @@ which is considered outside the normal Discordian calendar."
 	       (cons "Saints" holiday-saints-days))
 	  ))))
 
-(remove-function
- (symbol-function 'holiday-available-holiday-lists)
- #'cpj/holiday-available-holiday-lists)
+(remove-function (symbol-function 'holiday-available-holiday-lists)
+		 #'cpj/holiday-available-holiday-lists)
 
-(add-function :filter-return
-              (symbol-function 'holiday-available-holiday-lists)
+(add-function :filter-return (symbol-function 'holiday-available-holiday-lists)
               #'cpj/holiday-available-holiday-lists)
-
-(defun list-holiday-category (holidays &optional name)
-  "Display HOLIDAYS for the current or displayed year."
-  (interactive)
-  (let ((year (or (and (boundp 'displayed-year) displayed-year)
-                  (nth 2 (calendar-current-date)))))
-    (list-holidays year nil holidays)))
-
-(defun list-saints-days-this-year ()
-  "Display saints' days for the current or displayed year."
-  (interactive)
-  (list-holiday-category holiday-saints-days))
-
-(defun list-discordian-this-year ()
-  (interactive)
-  (list-holiday-category holiday-discordian-observances))
 
 (provide 'local-holidays)
 ;;; local-holidays.el ends here
 
 ; LocalWords:  bahai Deepavali Kartik Amavasya panchang दीपावली Iyyar
-; LocalWords:  Jayanti Tamuz Tishrei Cheshvan Sh'vat
+; LocalWords:  Jayanti Tamuz Tishrei Cheshvan Sh'vat amavasya Kartika
