@@ -833,17 +833,48 @@
   (unless (server-running-p) (server-start))
   (when (server-running-p) (message "→ Server running."))
 
-  ;; Fix weird frame-size issue on Mac, when calling from emacsclient.
+  ;; Fix weird frame-size issue on Mac, when calling from `emacsclient'.
 
-  ;; `Finder/Open' With uses Emacs Client.app. To keep files opening in the
-  ;; existing Emacs frame, edit Emacs Client.app's `main.scpt' and remove
-  ;; the `-c' argument from its `emacsclient' invocation.
+  ;; Finder's `Open With...' and `org-protocol' use the custom
+  ;; `Emacs Client.app' in ~/Applications.
   ;;
-  ;; This must be redone after installing a new version of Emacs Client.app.
-  ;; If Finder-opened files start creating weird new frames again, this is
-  ;; the thing you forgot.
+  ;; Its `main.scpt' calls:
   ;;
-  ;; With `-c' removed, no client-frame geometry repair should be needed.
+  ;;   /usr/local/opt/emacs-plus@31/bin/emacsclient
+  ;;
+  ;; using the stable Homebrew `opt' path rather than a versioned
+  ;; Cellar path.
+  ;;
+  ;; In the `on open' handler, the `-c' argument has been removed so
+  ;; Finder-opened files use the existing Emacs frame instead of
+  ;; creating a small client frame.
+  ;;
+  ;; The `on open location' handler passes `org-protocol' URLs directly
+  ;; to `emacsclient -n', allowing browser capture to invoke
+  ;; `org-capture' in the running Emacs server.
+  ;;
+  ;; After editing `main.scpt', re-sign and re-register the app with:
+  ;;
+  ;;   ~/Applications/.local/sign-emacs-client
+  ;;
+  ;; Ordinary Emacs 31 upgrades should not require changes.
+  ;;
+  ;; When moving to a new major Emacs version:
+  ;;
+  ;;   1. Copy the newly installed Emacs Client.app from the Homebrew
+  ;;      Cellar to ~/Applications.
+  ;;   2. Reapply or replace its `main.scpt' with the customized version.
+  ;;   3. Update the Homebrew `opt' path for the new major version.
+  ;;   4. Run `~/Applications/.local/sign-emacs-client'.
+  ;;   5. Refresh the Dock entry or Launch Services registration if
+  ;;      macOS continues to find the older application.
+  ;;
+  ;; Copying the fresh app bundle is preferable to replacing only
+  ;; `main.scpt', since the bundle may contain updated metadata,
+  ;; resources, or other upstream changes.
+  ;;
+  ;; With `-c' removed from the Finder handler, no client-frame geometry
+  ;; repair should normally be needed.
 
   (defconst cpj/frame-workarea-height-fudge 4
     "Pixels to subtract from workarea height when resizing macOS frames.")
@@ -871,13 +902,16 @@
           (set-frame-position frame left top)
           (set-frame-size frame width height t)))))
 
-  ;; Uncomment hook ↓ ↓ ↓ when creating new frames.
-  ;; Or call `cpj/maximize-frame-by-geometry' manually.
+  ;; Uncomment hook ↓ ↓ ↓ when creating new frames. When calling
+  ;; emacsclient without `-c', this should not be needed. You may call
+  ;; `cpj/maximize-frame-by-geometry' manually.
 
   ;; (add-hook 'server-visit-hook
   ;;           #'cpj/maximize-frame-by-geometry)
 
-  ;; fix frame not-selected issue when closing secondary frame
+
+  ;; Fix frame not-selected issue when closing secondary frame.
+  ;; This is still a thing.
 
   (defun cpj/activate-emacs ()
     "Activate the Emacs application on macOS."
@@ -972,7 +1006,10 @@
 (use-package daily-info ; etc/
   :ensure nil
   :commands (di
-	     ind))
+             ind)
+  :custom
+  (daily-info-include-holidays nil)
+  (daily-info-include-diary nil))
 
 (use-package sparkweather
   :after calendar
@@ -1806,6 +1843,17 @@
 ;; diary, Org agenda sources, and `org-gcal'. Google Calendar events
 ;; are synced into an Org file, then displayed through both
 ;; `org-agenda' and calfw.
+
+;; macOS calendar access is granted to a specific Emacs application
+;; bundle. After installing, replacing, or moving Emacs.app, run:
+;;
+;;     patch-emacs-calendar-permission
+;;
+;; For example:
+;;
+;;     patch-emacs-calendar-permission /usr/local/opt/emacs-plus\@31/Emacs.app
+;;
+;; This restores Mac Calendar access used by `maccalfw’.
 
 (defvar cpj/org-agenda-file
   (expand-file-name "daily.org" org-directory)

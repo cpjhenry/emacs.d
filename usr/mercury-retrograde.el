@@ -87,7 +87,7 @@ is the station direct.")
                     holidays))
             (when (= end-year displayed-year)
               (push (list (list end-month end-day end-year)
-                          "Mercury Retrograde Ends")
+                          "Mercury Retrograde ends")
                     holidays))))))
     (holiday-filter-visible-calendar
      (nreverse holidays))))

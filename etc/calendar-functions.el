@@ -35,32 +35,35 @@
 (defun list-holidays-and-diary-this-month ()
   "Display holidays and diary entries for the current or displayed month."
   (interactive)
-  (let* ((month (or (and (boundp 'displayed-month) displayed-month)
-                    (nth 0 (calendar-current-date))))
-         (year  (or (and (boundp 'displayed-year) displayed-year)
-                    (nth 2 (calendar-current-date))))
+  (let* ((today (calendar-current-date))
+         (month (or (and (boundp 'displayed-month)
+                         displayed-month)
+                    (nth 0 today)))
+         (year (or (and (boundp 'displayed-year)
+                        displayed-year)
+                   (nth 2 today)))
          (last-day (calendar-last-day-of-month month year))
          (buf (get-buffer-create "*Month Almanac*")))
     (with-current-buffer buf
       (let ((inhibit-read-only t))
         (erase-buffer)
-        (insert (format "%s %d\n\n"
-                        (calendar-month-name month) year))
+        (insert (format "%s %d\n"
+                        (calendar-month-name month)
+                        year))
 
         (dotimes (i last-day)
           (let* ((day (1+ i))
                  (date (list month day year))
-                 (holidays (calendar-check-holidays date))
-                 (diary-entries-list nil)
-                 (diary-display-function #'ignore))
-            (diary-list-entries date 1)
-            (let ((entries (append holidays
-                                   (mapcar #'cadr diary-entries-list))))
-              (when entries
-                (insert (format "%02d  %s\n" day (car entries)))
-                (dolist (entry (cdr entries))
-                  (insert (format "    %s\n" entry)))
-                (insert "\n")))))
+                 (entries
+                  (append
+                   (calendar-check-holidays date)
+                   (mapcar #'cadr
+                           (diary-list-entries date 1 t)))))
+            (when entries
+              (insert "\n")
+              (insert (format "%02d  %s\n" day (car entries)))
+              (dolist (entry (cdr entries))
+                (insert (format "    %s\n" entry))))))
 
         (view-mode)))
     (switch-to-buffer buf)

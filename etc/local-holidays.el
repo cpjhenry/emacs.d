@@ -5,6 +5,34 @@
 ;; Guard against non-visible holidays returning nil in calendar windows.
 ;; Use displayed-year/displayed-month-aware helpers for computed holidays.
 
+;; Holiday lists and diary entries serve different purposes.
+;;
+;; `calendar-holidays' answers:
+;;     What is formally observed?
+;;
+;; Use holiday lists for recognized civic, religious, professional,
+;; cultural, or institutional observances, including movable observances
+;; and named days whose significance lies in their continuing observance.
+;;
+;; The diary answers:
+;;     What should be remembered?
+;;
+;; Use the diary for specific historical events, anniversaries, births,
+;; deaths, milestones, curiosities, and idiosyncratic "on this day" notes.
+;;
+;; Solemnity alone is not the deciding factor. A grave historical event
+;; may still belong in the diary when it marks a specific occurrence,
+;; while a lighter item may belong in a holiday list if it is genuinely
+;; observed as a recurring named day.
+;;
+;; Example:
+;;     Yom HaShoah            -> holiday list: formal annual observance
+;;     Kristallnacht (1938)   -> diary: specific historical remembrance
+;;
+;; In short:
+;;     observance -> holiday list
+;;     remembrance -> diary
+
 ;;; Code:
 (require 'calendar)
 (require 'holidays)
@@ -333,7 +361,45 @@ Tuesday instead."
      (holiday-float 11 4 4 "US Thanksgiving")
      (holiday-float 11 5 4 "Black Friday"))
 
-   holiday-other-holidays nil
+   holiday-other-holidays
+   '((holiday-float 1 4 4  "NASA Day of Remembrance")
+
+     (holiday-float 2 3 -1 "Anti-Bullying Day")
+
+     (holiday-fixed 3 8    "International Women's Day")
+     (holiday-fixed 3 26   "Purple Day")
+
+     (holiday-archives-awareness-week)
+     (holiday-float 4 3 2  "Pink Day")
+     (holiday-fixed 4 22   "Earth Day")
+     (holiday-fixed 4 28   "Workers' Memorial Day")
+
+     (holiday-float 5 0 1  "Emergency Preparedness Week begins")
+     (holiday-float 5 0 -1 "National Accessibility Week begins")
+     (holiday-fixed 5 8    "Victory in Europe Day")
+
+     (holiday-archives-week)
+     (holiday-fixed 6 9    "International Archives Day")
+     (holiday-fixed 6 20   "World Refugee Day")
+     (holiday-fixed 6 27   "Canadian Multiculturalism Day")
+
+     (holiday-fixed 7 14   "Bastille Day")
+
+     (holiday-fixed 8 9    "National Peacekeepers' Day")
+     (holiday-fixed 8 23   "Black Ribbon Day")
+
+     (holiday-fixed 9 25   "Franco-Ontarian Day")
+
+     (holiday-float 10 3 3 "Global Ethics Day")
+     (holiday-fixed 10 2   "Gandhi Jayanti")
+     (holiday-fixed 10 3   "German Reunification Day")
+     (holiday-fixed 10 14  "World Standards Day")
+     (holiday-fixed 10 18  "Persons' Day")
+
+     (holiday-fixed 11 8   "Indigenous Veterans Day")
+     (holiday-fixed 11 10  "Lost Mariners' Remembrance")
+
+     (holiday-fixed 12 26  "Kwanzaa"))
 
    holiday-bahai-holidays
   '((holiday-bahai-new-year)
@@ -372,7 +438,7 @@ Tuesday instead."
 
    holiday-islamic-holidays
    '((holiday-islamic-new-year)
-     (holiday-islamic 9 1 "Ramadan Begins")
+     (holiday-islamic 9 1 "Ramadan begins")
      (holiday-islamic 10 1 "Id-al-Fitr"))
 
    holiday-oriental-holidays
@@ -417,24 +483,6 @@ Tuesday instead."
      ("NZ" "Wellington"))))
 
 
-(defvar holiday-seasonal-observances
-   '((solar-equinoxes-only)
-     ;; first Saturday of June following the Summer Solstice
-     (holiday-float 6 6 1 "Midsummer" (floor (nth 1 (solar-equinoxes/solstices 1 displayed-year))))
-     (holiday-fixed 12 (floor (nth 1 (solar-equinoxes/solstices 3 displayed-year))) "Midwinter")
-     (holiday-sexp calendar-daylight-savings-starts
-                   (format "Daylight Saving Time Begins %s"
-                           (solar-time-string
-                            (/ calendar-daylight-savings-starts-time (float 60))
-                            calendar-standard-time-zone-name)))
-     (holiday-sexp calendar-daylight-savings-ends
-                   (format "Daylight Saving Time Ends %s"
-                           (solar-time-string
-                            (/ calendar-daylight-savings-ends-time (float 60))
-                            calendar-daylight-time-zone-name)))
-     (holiday-mercury-retrograde))
-   "Seasonal and astronomical observances.")
-
 (defvar holiday-scottish-observances
   '((holiday-fixed 1 25  "Robert Burns Day")
     (holiday-fixed 11 30 "St. Andrew's Day")
@@ -457,91 +505,23 @@ Tuesday instead."
     (holiday-fixed 12 13 "Ides of December"))
   "Roman calendrical observances.")
 
-;; calendar-holidays: What should be observed?
-;;     Observances, commemorations, feast days,
-;;     anniversaries that are actively celebrated.
-
-;; diary: What should be remembered?
-;;     Historical events, "on this day" notes,
-;;     births, deaths, milestones, curiosities.
-
-(defvar holiday-observances
-  '((holiday-fixed 1 10   "Peculiar People Day")
-    (holiday-fixed 1 19   "Dead of Winter")
-    (holiday-fixed 1 23   "National Handwriting Day")
-    (holiday-fixed 1 28   "Data Privacy Day")
-    (holiday-float 1 4 4  "NASA Day of Remembrance")
-    (holiday-fixed 1 31   "Hell is Freezing Over Day")
-
-    (holiday-fixed 2 12   "Darwin Day")
-    (holiday-float 2 3 -1 "Anti-Bullying Day")
-    (holiday-fixed 2 20   "Clean Out Your Bookcase Day")
-    (holiday-fixed 2 22   "Be Humble Day")
-    (holiday-fixed 2 26   "For Pete's Sake Day")
-
-    (holiday-fixed 3 3    "Talk in Third Person Day")
-    (holiday-fixed 3 8    "International Women's Day")
-    (holiday-fixed 3 11   "Pandemic Observance Day")
-    (holiday-fixed 3 14   "Pi Day")
-    (holiday-fixed 3 26   "Purple Day")
-
-    (holiday-archives-awareness-week)
-    (holiday-fixed 4 7    "International Beaver Day")
-    (holiday-float 4 3 2  "Pink Day")
-    (holiday-fixed 4 18   "World Amateur Radio Day")
-    (holiday-fixed 4 22   "Earth Day")
-    (holiday-fixed 4 28   "Workers' Memorial Day")
-
-    (holiday-float 5 0 1  "Emergency Preparedness Week Begins")
-    (holiday-fixed 5 4    "May the Fourth Be With You")
-    (holiday-fixed 5 5    "Dutch National Heritage Day")
-    (holiday-fixed 5 8    "Victory in Europe Day")
-    (holiday-fixed 5 22   "Harvey Milk Day")
-    (holiday-float 5 0 -1 "National Accessibility Week Begins")
-
-    (holiday-float 6 5 1  "National Doughnut Day")
-    (holiday-fixed 6 8    "Name Your Poison Day")
-    (holiday-archives-week)
-    (holiday-fixed 6 9    "International Archives Day")
-    (holiday-fixed 6 20   "World Refugee Day")
-    (holiday-fixed 6 27   "Canadian Multiculturalism Day")
-    (holiday-fixed 6 28   "Tau Day")
-
-    (holiday-fixed 7 14   "Bastille Day")
-
-    (holiday-fixed 8 9    "National Peacekeepers' Day")
-    (holiday-fixed 8 15   "Victory over Japan Day")
-    (holiday-fixed 8 19   "World Photography Day")
-    (holiday-fixed 8 23   "Black Ribbon Day")
-
-    (holiday-float 9 6 3  "Batman Day")
-    (holiday-fixed 9 19   "Talk Like a Pirate Day")
-    (holiday-fixed 9 25   "One-Hit Wonder Day")
-    (holiday-fixed 9 25   "Franco-Ontarian Day")
-
-    (holiday-fixed 10 2   "Gandhi Jayanti")
-    (holiday-fixed 10 3   "German Reunification Day")
-    (holiday-fixed 10 6   "Mad Hatter Day")
-    (holiday-fixed 10 14  "World Standards Day")
-    (holiday-fixed 10 18  "Persons' Day")
-    (holiday-float 10 3 3 "Global Ethics Day")
-
-    (holiday-float 11 5 1 "Fountain Pen Day")
-    (holiday-fixed 11 8   "Indigenous Veterans Day")
-    (holiday-fixed 11 10  "Lost Mariners Remembrance")
-
-    (holiday-fixed 12 5   "Day of the Ninja")
-
-    (holiday-fixed 12 17  "Saturnalia")
-    (holiday-fixed 12 23  "Festivus")
-    (holiday-fixed 12 26  "Kwanzaa")
-
-    (holiday-julian 1 1   "Old New Year")
-    (holiday-julian 2 14  "Old St. Valentine's Day")
-
-    (holiday-galactic-tick-day))
-  "Observances.
-(International, cultural, commemorative, professional, and special-interest)")
+(defvar holiday-seasonal-observances
+   '((solar-equinoxes-only)
+     ;; first Saturday of June following the Summer Solstice
+     (holiday-float 6 6 1 "Midsummer" (floor (nth 1 (solar-equinoxes/solstices 1 displayed-year))))
+     (holiday-fixed 12 (floor (nth 1 (solar-equinoxes/solstices 3 displayed-year))) "Midwinter")
+     (holiday-sexp calendar-daylight-savings-starts
+                   (format "Daylight Saving Time begins %s"
+                           (solar-time-string
+                            (/ calendar-daylight-savings-starts-time (float 60))
+                            calendar-standard-time-zone-name)))
+     (holiday-sexp calendar-daylight-savings-ends
+                   (format "Daylight Saving Time ends %s"
+                           (solar-time-string
+                            (/ calendar-daylight-savings-ends-time (float 60))
+                            calendar-daylight-time-zone-name)))
+     (holiday-mercury-retrograde))
+   "Seasonal and astronomical observances.")
 
 (defvar holiday-saints-days
   '((holiday-fixed 1 28  "St. Thomas Aquinas (Academics)")
@@ -589,8 +569,7 @@ Tuesday instead."
 		holiday-buddhist-holidays
                 holiday-oriental-holidays
 		holiday-hindu-holidays
-                holiday-seasonal-observances
-		holiday-observances))
+                holiday-seasonal-observances))
 
 (defun cpj/holiday-available-holiday-lists (holiday-lists)
   "Add custom holiday categories to HOLIDAY-LISTS."
@@ -616,12 +595,8 @@ Tuesday instead."
 	  (and holiday-seasonal-observances
 	       (cons "Seasonal" holiday-seasonal-observances))
 
-	  (and holiday-observances
-	       (cons "Observances" holiday-observances))
-
 	  (and holiday-saints-days
-	       (cons "Saints" holiday-saints-days))
-	  ))))
+	       (cons "Saints" holiday-saints-days))))))
 
 (remove-function (symbol-function 'holiday-available-holiday-lists)
 		 #'cpj/holiday-available-holiday-lists)

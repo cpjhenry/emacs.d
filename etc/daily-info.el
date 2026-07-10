@@ -50,29 +50,37 @@
   "Return upcoming birthday summary from remote icalBuddy."
   (daily-info--shell-string daily-info-birthday-command))
 
+(defcustom daily-info-include-holidays t
+  "Whether `daily-info' includes calendar holidays."
+  :type 'boolean
+  :group 'daily-info)
+
+(defcustom daily-info-include-diary t
+  "Whether `daily-info' includes diary entries."
+  :type 'boolean
+  :group 'daily-info)
+
 (defun daily-info--diary-entries (date)
   "Return diary entry strings for DATE."
-  (let ((diary-entries-list nil)
-        (diary-display-function #'ignore))
-    (diary-list-entries date 1)
-    (mapcar #'cadr diary-entries-list)))
+  (mapcar #'cadr
+          (diary-list-entries date 1 t)))
 
 (defun daily-info--items ()
   "Return daily information items for today."
-  (let* ((date (calendar-current-date))
-         (holidays (calendar-check-holidays date))
-         (diary-entries (daily-info--diary-entries date)))
+  (let ((date (calendar-current-date)))
     (delq nil
           (append
            (list
             (wwv-summary)
             (format "My %s day (%s weeks, %.1f years)."
-		    (ordinal-number (days-on-earth date))
-		    (commify-number (weeks-on-earth date))
-		    (years-on-earth date))
+                    (ordinal-number (days-on-earth date))
+                    (commify-number (weeks-on-earth date))
+                    (years-on-earth date))
             (biorhythm-string))
-           holidays
-           diary-entries))))
+           (when daily-info-include-holidays
+             (calendar-check-holidays date))
+           (when daily-info-include-diary
+             (daily-info--diary-entries date))))))
 
 (defun daily-info--insert-items (items)
   "Insert ITEMS as a simple bullet list."
