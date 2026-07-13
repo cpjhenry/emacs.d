@@ -131,10 +131,72 @@ that file directly."
            (lambda (_) (cdr pair))
            text t t))))
 
+(defun print-text-latex--bold-face-p (face)
+  "Return non-nil when FACE should print as bold."
+  (cond
+   ((null face)
+    nil)
+
+   ;; Translate colour-based agenda emphasis into bold for
+   ;; monochrome printing.
+   ((memq face '(org-agenda-date
+                 org-agenda-structure))
+    t)
+
+   ;; A named face.
+   ((symbolp face)
+    (memq (face-attribute face :weight nil t)
+          '(semi-bold bold extra-bold ultra-bold)))
+
+   ;; An anonymous face specification such as (:weight bold).
+   ((keywordp (car-safe face))
+    (or (memq (plist-get face :weight)
+              '(semi-bold bold extra-bold ultra-bold))
+        (print-text-latex--bold-face-p
+         (plist-get face :inherit))))
+
+   ;; A list of faces.
+   ((listp face)
+    (cl-some #'print-text-latex--bold-face-p face))
+
+   (t nil)))
+
+(defun print-text-latex--bold-at-p (position text)
+  "Return non-nil when TEXT is bold at POSITION."
+  (or (print-text-latex--bold-face-p
+       (get-text-property position 'face text))
+      (print-text-latex--bold-face-p
+       (get-text-property position 'font-lock-face text))))
+
+(defun print-text-latex--escape-fontified (text)
+  "Escape TEXT for LaTeX, preserving bold fontification."
+  (let ((position 0)
+        (end (length text))
+        pieces)
+    (while (< position end)
+      (let* ((next
+              (or (next-property-change position text)
+                  end))
+             (raw
+              (substring-no-properties text position next))
+             (escaped
+              (print-text-latex--escape raw)))
+        (push
+         (if (and (print-text-latex--bold-at-p position text)
+                  (not (string-empty-p raw)))
+             (concat "\\textbf{" escaped "}")
+           escaped)
+         pieces)
+        (setq position next)))
+    (apply #'concat (nreverse pieces))))
+
 (defun print-text-latex--body (text)
-  "Return escaped LaTeX body for TEXT."
+  "Return escaped LaTeX body for TEXT.
+
+Preserve bold text represented by `face' or `font-lock-face'
+properties."
   (let ((hard-break "§§LATEX-HARD-BREAK§§")
-	(rule-line "§§LATEX-RULE-LINE§§"))
+        (rule-line "§§LATEX-RULE-LINE§§"))
 
     ;; Normalize excessive blank lines.
     (setq text
@@ -142,7 +204,7 @@ that file directly."
            "\n\\{3,\\}" "\n\n" text))
 
     ;; Add breathing room before Org headings,
-    ;; except at beginning of buffer.
+    ;; except at the beginning of the buffer.
     (setq text
           (replace-regexp-in-string
            "\\(.\\)\n\\(\\*+ .+\\)"
@@ -151,10 +213,10 @@ that file directly."
 
     ;; Replace lines of repeated dashes with a horizontal rule.
     (setq text
-	  (replace-regexp-in-string
-	   "^-\\{4,\\}$"
-	   rule-line
-	   text))
+          (replace-regexp-in-string
+           "^-\\{4,\\}$"
+           rule-line
+           text))
 
     ;; Preserve remaining hard line breaks.
     (setq text
@@ -163,26 +225,27 @@ that file directly."
            (concat "\\1" hard-break "\n\\2")
            text))
 
-    ;; Normalize smart punctuation that may render awkwardly in mono CJK fonts.
+    ;; Normalize smart punctuation that may render awkwardly in
+    ;; monospaced CJK fonts.
     ;; (setq text (print-text-latex--normalize text))
 
-    ;; Escape ordinary text.
-    (setq text (print-text-latex--escape text))
+    ;; Escape ordinary text while translating bold fontification.
+    (setq text
+          (print-text-latex--escape-fontified text))
 
     ;; Restore intentional LaTeX constructs.
     (setq text
-	  (replace-regexp-in-string
-	   rule-line
-	   (lambda (_)
+          (replace-regexp-in-string
+           rule-line
+           (lambda (_)
              "\\noindent\\rule{\\linewidth}{0.4pt}")
-	   text t t))
+           text t t))
 
     (replace-regexp-in-string
      hard-break
      (lambda (_)
        "\\\\")
-     text t t)
-    ))
+     text t t)))
 
 (defun print-text-latex--document (body profile)
   "Return complete LaTeX document for BODY using PROFILE."
@@ -245,45 +308,82 @@ Normally obey `print-text-latex-save-output' and
 `print-text-latex-profile'.
 
 With prefix arg TOGGLE-SAVE-OUTPUT, temporarily invert
-`print-text-latex-save-output' for this invocation."
-  (let* ((profile (print-text-latex--profile print-text-latex-profile))
-         (engine (executable-find print-text-latex-engine))
-         (open (executable-find "open"))
+`print-text-latex-save-output' for this invocation.
+
+Preserve text properties so that `print-text-latex--body' can
+translate existing fontification into LaTeX."
+  (interactive "P")
+  (let* ((profile
+          (print-text-latex--profile print-text-latex-profile))
+         (engine
+          (executable-find print-text-latex-engine))
+         (open
+          (executable-find "open"))
          (save-output
           (if toggle-save-output
               (not print-text-latex-save-output)
-            print-text-latex-save-output)))
-    (unless (and engine open)
-      (user-error "Missing tool(s): %s"
-                  (string-join
-                   (delq nil
-                         (list (unless engine print-text-latex-engine)
-                               (unless open "open")))
-                   ", ")))
+            print-text-latex-save-output))
+         (beg
+          (if (use-region-p)
+              (region-beginning)
+            (point-min)))
+         (end
+          (if (use-region-p)
+              (region-end)
+            (point-max))))
 
-    (let* ((source-name (file-name-base
-                         (or (buffer-file-name)
-                             (buffer-name))))
-           (suffix (plist-get profile :suffix))
-           (workdir (make-temp-file "text-latex-" t))
-           (tex-file (expand-file-name
-                      (format "%s%s.tex" source-name suffix)
-                      workdir))
-           (pdf-file (expand-file-name
-                      (format "%s%s.pdf" source-name suffix)
-                      workdir))
-           (dest-dir (expand-file-name print-text-latex-destination-directory))
-           (dest-file (expand-file-name
-                       (format "%s%s-%s.pdf"
-                               source-name
-                               suffix
-                               (format-time-string "%Y-%m-%d_%H-%M-%S"))
-                       dest-dir))
-           (text (buffer-substring-no-properties
-                  (if (use-region-p) (region-beginning) (point-min))
-                  (if (use-region-p) (region-end) (point-max))))
-           (body (print-text-latex--body text))
-           (doc (print-text-latex--document body profile)))
+    (unless (and engine open)
+      (user-error
+       "Missing tool(s): %s"
+       (string-join
+        (delq nil
+              (list
+               (unless engine print-text-latex-engine)
+               (unless open "open")))
+        ", ")))
+
+    ;; Ensure that font-lock faces have been applied before copying
+    ;; the text with its properties.
+    (font-lock-ensure beg end)
+
+    (let* ((source-name
+            (file-name-base
+             (or (buffer-file-name)
+                 (buffer-name))))
+           (suffix
+            (plist-get profile :suffix))
+           (workdir
+            (make-temp-file "text-latex-" t))
+           (tex-file
+            (expand-file-name
+             (format "%s%s.tex" source-name suffix)
+             workdir))
+           (pdf-file
+            (expand-file-name
+             (format "%s%s.pdf" source-name suffix)
+             workdir))
+           (dest-dir
+            (expand-file-name
+             print-text-latex-destination-directory))
+           (dest-file
+            (expand-file-name
+             (format "%s%s-%s.pdf"
+                     source-name
+                     suffix
+                     (format-time-string "%Y-%m-%d_%H-%M-%S"))
+             dest-dir))
+           ;; Preserve `face', `font-lock-face', and other text
+           ;; properties for interpretation by the body renderer.
+           (text
+	    (replace-regexp-in-string
+	     "┄┄┄┄┄" ""
+	     (buffer-substring beg end)
+	     nil 'literal))
+           (body
+            (print-text-latex--body text))
+           (doc
+            (print-text-latex--document body profile)))
+
       (unwind-protect
           (progn
             (when save-output
@@ -293,15 +393,19 @@ With prefix arg TOGGLE-SAVE-OUTPUT, temporarily invert
             (let ((coding-system-for-write 'utf-8-unix))
               (write-region doc nil tex-file nil 'silent))
 
-            (let ((buf (get-buffer-create "*print-text-latex*")))
+            (let ((buf
+                   (get-buffer-create "*print-text-latex*")))
               (with-current-buffer buf
                 (erase-buffer))
+
               (let ((default-directory workdir)
-                    (code (call-process engine nil buf t
-                                        "-interaction=nonstopmode"
-                                        "-halt-on-error"
-                                        "-output-directory" workdir
-                                        (file-name-nondirectory tex-file))))
+                    (code
+                     (call-process
+                      engine nil buf t
+                      "-interaction=nonstopmode"
+                      "-halt-on-error"
+                      "-output-directory" workdir
+                      (file-name-nondirectory tex-file))))
                 (if (and (eq code 0)
                          (file-exists-p pdf-file))
                     (kill-buffer buf)
@@ -318,9 +422,9 @@ With prefix arg TOGGLE-SAVE-OUTPUT, temporarily invert
               (message "Opened temporary text PDF: %s" pdf-file)
               (call-process open nil 0 nil pdf-file)))
 
-        (when save-output
-          (when (file-directory-p workdir)
-            (delete-directory workdir t)))))))
+        (when (and save-output
+                   (file-directory-p workdir))
+          (delete-directory workdir t))))))
 
 (defun print-text-a5 (&optional toggle-save-output)
   "Render buffer or region as an A5 PDF using LaTeX.

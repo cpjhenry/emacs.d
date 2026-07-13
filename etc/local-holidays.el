@@ -399,7 +399,10 @@ Tuesday instead."
      (holiday-fixed 11 8   "Indigenous Veterans Day")
      (holiday-fixed 11 10  "Lost Mariners' Remembrance")
 
-     (holiday-fixed 12 26  "Kwanzaa"))
+     (holiday-fixed 12 26  "Kwanzaa")
+
+     (holiday-julian 1 1  "Old New Year")
+     (holiday-julian 2 14 "Old St. Valentine's Day"))
 
    holiday-bahai-holidays
   '((holiday-bahai-new-year)
@@ -457,7 +460,8 @@ Tuesday instead."
    lunar-phase-names
    '("New Moon" "First Quarter" "Full Moon" "Last Quarter")
 
-   holiday-solar-holidays nil
+   holiday-solar-holidays
+   '((holiday-galactic-tick-day))
 
    zoneinfo-style-world-list
    '(("Pacific/Honolulu" "Hawai'i")
@@ -569,6 +573,7 @@ Tuesday instead."
 		holiday-buddhist-holidays
                 holiday-oriental-holidays
 		holiday-hindu-holidays
+		holiday-solar-holidays
                 holiday-seasonal-observances))
 
 (defun cpj/holiday-available-holiday-lists (holiday-lists)

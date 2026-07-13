@@ -74,7 +74,7 @@
 	(fill-region (point-min) (point-max)))
 
 ;; Local Variables:
-;; truncate-lines: -1
+;; truncate-lines: t
 ;; End:
 
 ; LocalWords:  Ghostscript Munbyn

@@ -37,5 +37,5 @@
     (message "PDF saved to %s" pdf-file-name)))
 
 ;; Local Variables:
-;; truncate-lines: -1
+;; truncate-lines: t
 ;; End:

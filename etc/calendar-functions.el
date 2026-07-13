@@ -208,5 +208,7 @@ Each weekday is a symbol such as `monday', `tuesday', or `saturday'."
 ;;; calendar-functions.el ends here.
 
 ;; Local Variables:
-;; truncate-lines: -1
+;; truncate-lines: t
 ;; End:
+
+;; This is a test of truncate lines to see if it behaves and stuff. I want it to do its thing, so that local variables can be cool.

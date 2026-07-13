@@ -47,7 +47,7 @@
   "Non-nil while init.el is still loading.")
 
 (when (bound-and-true-p ns-emacs-plus-version)
-  (message "→ Running 'Emacs Plus %s'." ns-emacs-plus-version))
+  (message "→ Running `Emacs Plus %s'." ns-emacs-plus-version))
 (load "rc/me" 'noerror 'nomessage)
 (eval-after-load "startup"
   '(fset 'display-startup-echo-area-message (lambda ())))
@@ -971,13 +971,14 @@
 (advice-add 'calendar-exit :before #'save-diary-before-calendar-exit)
 
 (require 'diary-lib)
-(setopt diary-file "~/Documents/diary"
-	diary-list-include-blanks nil)
+(setopt diary-file (expand-file-name "~/Documents/diary")
+        diary-list-include-blanks nil)
 (keymap-set diary-mode-map "C-c C-q" 'kill-current-buffer)
 (add-to-list 'auto-mode-alist '("diary$" . diary-mode))
 (add-hook 'diary-list-entries-hook 'diary-sort-entries t)
 (add-hook 'diary-fancy-display-mode-hook 'alt-clean-equal-signs)
 
+;;; Timekeeping
 (message "→ Configuring timekeeping.")
 (use-package roman-clock ; usr/
   :ensure nil
@@ -1000,6 +1001,7 @@
 
 (use-package wwv ; usr/
   :ensure nil
+  :demand t
   :commands (wwv
 	     wwv-summary))
 
@@ -1010,12 +1012,6 @@
   :custom
   (daily-info-include-holidays nil)
   (daily-info-include-diary nil))
-
-(use-package sparkweather
-  :after calendar
-  :custom (sparkweather-add-footer nil)
-  :bind (:map sparkweather-mode-map
-	 ("q" . quit-window)))
 
 
 ;;; Initialize packages
@@ -1195,6 +1191,12 @@
   :bind (("<f9>" . shortcuts-mode)))
 
 (use-package simple-httpd :ensure t)
+
+(use-package sparkweather
+  :after calendar
+  :custom (sparkweather-add-footer nil)
+  :bind (:map sparkweather-mode-map
+	 ("q" . quit-window)))
 
 (use-package ssh)
 
@@ -1386,14 +1388,20 @@
 
 
 ;;; Org-mode
+(message "→ Configuring `org'.")
+(setopt org-directory
+        (expand-file-name "~/Documents/org/")
 
-(defvar org-directory
-  (expand-file-name "~/Documents/org/")
-  "Default Org directory.")
+        org-default-notes-file
+        (expand-file-name "notes.org" org-directory)
 
-(defvar org-generic-id-locations-file
-  (expand-file-name "var/org-generic-id-locations" user-emacs-directory)
-  "Location of Org Generic ID locations file.")
+        org-generic-id-locations-file
+        (expand-file-name "var/org-generic-id-locations"
+                          user-emacs-directory)
+
+        org-id-locations-file
+        (expand-file-name "var/org-id-locations"
+                          user-emacs-directory))
 
 (defun cpj/org-edit-special-disable-visual-fill-column (&rest _)
   "Disable `visual-fill-column-mode' in Org special edit buffers."
@@ -1417,9 +1425,6 @@
 (defun cpj/org-at-table-p-any-advice (oldfun &rest _args)
   "Call OLDFUN as though `org-at-table-p' had been given ANY."
   (funcall oldfun t))
-
-(setopt org-default-notes-file (expand-file-name "notes.org" org-directory)
-        org-id-locations-file  (expand-file-name "var/org-id-locations" user-emacs-directory))
 
 (use-package org
   :ensure nil
@@ -1838,14 +1843,13 @@
 ;;; End Org-mode configuration
 
 
-;;; calfw
-;; Visual calendar dashboard. This section wires together calfw,
-;; diary, Org agenda sources, and `org-gcal'. Google Calendar events
-;; are synced into an Org file, then displayed through both
-;; `org-agenda' and calfw.
-
+;;; Calendar data and Org Agenda
+;; Calendar data from macOS Calendar is projected into
+;; `calendar-data.org', which is read by `org-agenda' as an ordinary
+;; Org agenda source.
+;;
 ;; macOS calendar access is granted to a specific Emacs application
-;; bundle. After installing, replacing, or moving Emacs.app, run:
+;; bundle.  After installing, replacing, or moving Emacs.app, run:
 ;;
 ;;     patch-emacs-calendar-permission
 ;;
@@ -1853,24 +1857,30 @@
 ;;
 ;;     patch-emacs-calendar-permission /usr/local/opt/emacs-plus\@31/Emacs.app
 ;;
-;; This restores Mac Calendar access used by `maccalfw’.
+;; This restores Mac Calendar access used by `calendar-data' through
+;; `maccalfw'.
+(message "→ Configuring calendar dashboards.")
 
 (defvar cpj/org-agenda-file
   (expand-file-name "daily.org" org-directory)
   "Default Org agenda file.")
 
-;; Keep this outside `use-package' because other packages, such as
-;; `org-gcal', add generated files to `org-agenda-files' later.
-(setopt org-agenda-files (list cpj/org-agenda-file))
+(defvar cpj/calendar-data-file
+  (expand-file-name "calendar-data.org" org-directory)
+  "Generated Org file containing macOS Calendar data.")
+
+(setopt org-agenda-files
+        (list cpj/org-agenda-file
+              cpj/calendar-data-file))
 
 (use-package org-agenda
   :ensure nil
-  :after  org
-  :bind ( ("C-c a" . org-agenda-list)
-	 :map org-agenda-mode-map
-	 ("q"      . org-agenda-exit))
-  :hook (org-agenda-finalize . cpj/org-agenda-register-diary-buffer)
-        (org-agenda-mode . hl-line-mode)
+  :after org
+  :bind (("C-c a" . cpj/org-agenda-list)
+         :map org-agenda-mode-map
+         ("q" . org-agenda-exit))
+  :hook ((org-agenda-finalize . cpj/org-agenda-register-diary-buffer)
+         (org-agenda-mode . hl-line-mode))
 
   :custom
   (org-agenda-include-diary t)
@@ -1879,145 +1889,59 @@
   (org-agenda-skip-scheduled-if-done t)
   (org-agenda-start-on-weekday 1)
   (org-agenda-text-search-extra-files '(agenda-archives))
+  (org-agenda-time-leading-zero t)
   (org-agenda-todo-ignore-deadlines t)
   (org-agenda-todo-ignore-scheduled t)
   (org-agenda-use-time-grid nil)
   (org-agenda-window-setup 'only-window)
 
-  (org-agenda-custom-commands
-   '(("P" "Project List"
-      ((tags "PROJECT")))
-     ("O" "Office"
-      ((agenda)
-       (tags-todo "OFFICE")))
-     ("W" "Weekly Plan"
-      ((agenda)
-       (todo "TODO")
-       (tags "PROJECT")))
-     ("H" "Home NA Lists"
-      ((agenda)
-       (tags-todo "HOME")
-       (tags-todo "COMPUTER")))))
-
   (org-agenda-prefix-format
-   '((agenda . " %i %-12:c%?-12t")
+   '((agenda . " %i %?-12t")
      (todo . " %i %-12:c")
      (tags . " %i %-12:c")
      (search . " %i %-12:c")))
 
   :config
-  ;; normalize face for previously scheduled items
+  ;; Normalize the face for previously scheduled items.
   (set-face-attribute 'org-scheduled-previously nil
                       :inherit nil
                       :foreground (face-foreground 'default nil t)
                       :background (face-background 'default nil t)
                       :weight 'normal)
 
+  (defun cpj/org-agenda-list ()
+    "Refresh calendar data, then display the Org agenda."
+    (interactive)
+    (calendar-data-refresh-if-stale)
+    (org-agenda-list))
+
   (defun cpj/org-agenda-register-diary-buffer ()
-    "Register diary buffer for cleanup when Org Agenda exits."
+    "Register the diary buffer for cleanup when Org Agenda exits."
     (when-let* ((buf (get-buffer "diary")))
       (add-to-list 'org-agenda-new-buffers buf))))
 
-(use-package calfw
-  :after (calendar org)
-  :demand t
-  :init (setq calfw-render-line-breaker
-	      'calfw-render-line-breaker-none) ; wordwrap
-  :bind ( :map calfw-calendar-mode-map
-	  ("q" . quit-window))
-  :config
-  (use-package calfw-cal
-    :demand t)
-  (use-package calfw-ical
-    :demand t)
-  (use-package calfw-org
-    :demand t)
-
-  (defun cpj/calfw ()
-    "Display a calfw calendar buffer; clean up on exit."
-    (interactive)
-    (let ((cfw-buf
-           (calfw-open-calendar-buffer
-            :contents-sources
-            (append
-             (list
-              (calfw-cal-create-source "diary" "orange")
-              (calfw-org-create-source nil "org-agenda" "green"))
-             (cpj/maccalfw-create-sources '("Birthdays")))
-            :view 'two-weeks)))
-      (with-current-buffer cfw-buf
-        (add-hook
-         'kill-buffer-hook
-         (lambda ()
-           (kill-unmodified-file-buffer cpj/org-agenda-file)
-           (kill-unmodified-file-buffer org-gcal-file)
-           (kill-unmodified-file-buffer (concat (expand-file-name org-gcal-file) "_archive")))
-         nil t)))))
-
-(use-package maccalfw
-  :after calfw
-  :demand t
-  :commands (maccalfw-open
-             maccalfw-get-calendars
-             maccalfw-get-calendars-by-name)
-  :config
-  (defun cpj/maccalfw-create-sources (&optional calendar-names)
-    "Return calfw sources for macOS Calendar."
-    (when (require 'maccalfw nil t)
-      (condition-case err
-          (progn
-            (maccalfw--load-module)
-            (let ((calendars (if calendar-names
-                                 (maccalfw-get-calendars-by-name calendar-names)
-                               (maccalfw-get-calendars))))
-              (mapcar
-               (lambda (cal)
-                 (maccalfw--create-source
-                  (plist-get cal :title)
-                  (plist-get cal :id)
-                  (plist-get cal :color)))
-               calendars)))
-        (error
-         (message "maccalfw unavailable: %s" (error-message-string err))
-         nil)))))
-
-(use-package org-gcal
-  :after org
+(use-package calfw :defer t)
+(use-package maccalfw :defer t)
+(use-package calendar-data
+  :ensure nil
+  :commands (calendar-data-refresh
+             calendar-data-refresh-if-stale)
   :custom
-  (org-gcal-fetch-file-alist `((,user-gmail . ,org-gcal-file)))
-  (org-gcal-notify-p nil)
-  (org-gcal-recurring-events-mode 'top-level)
-  (plstore-cache-passphrase-for-symmetric-encryption t)
-  (org-gcal-remove-api-cancelled-events nil)
-  (org-gcal-update-cancelled-events-with-todo nil)
-  :bind (("C-c C" . cpj/calfw-gcal))
-  :config
-  (add-to-list 'org-agenda-files org-gcal-file t)
-
-  (defun cpj/org-gcal-sync-buffer-around (oldfun &rest args)
-    "Run `org-gcal-sync-buffer' from `org-gcal-file' to shush warnings."
-    (let ((buf (find-file-noselect org-gcal-file)))
-      (with-current-buffer buf
-	(unless (derived-mode-p 'org-mode)
-          (org-mode))
-	(apply oldfun args))))
-
-  (advice-add 'org-gcal-sync-buffer
-              :around #'cpj/org-gcal-sync-buffer-around)
-
-  (defun cpj/calfw-gcal ()
-    "Fetch Google Calendar events, then display calfw."
-    (interactive)
-    (with-current-buffer (find-file-noselect org-gcal-file)
-      (ignore (org-gcal-fetch)))
-    (cpj/calfw)))
+  (calendar-data-file cpj/calendar-data-file)
+  (calendar-data-calendar-names
+   '("Family"
+     "Birthdays"
+     "Ottawa District 1"
+     "Home"
+     "cpjhenry@gmail.com"))
+  (calendar-data-past-days 30)
+  (calendar-data-future-days 365))
 
 
 ;;; TeX
 (use-package tex
   :unless *w32*
   :ensure auctex
-  ;:defer t
   :mode ("\\.tex\\'" . LaTeX-mode)
   :hook
   (LaTeX-mode . (lambda () ;; Make the prettify addition buffer-local and avoid duplicates
@@ -2038,6 +1962,7 @@
 
 
 ;;; spell checking
+(message "→ Configuring spellchecker.")
 (bind-key "<f7>" 'my/ispell-buffer)
 
 (use-package jinx
@@ -2429,12 +2354,15 @@
 
 ;; Safe local variables
 (add-to-list 'safe-local-variable-values '(org-log-done))
-(add-to-list 'safe-local-variable-values '(truncate-lines . -1))
+(add-to-list 'safe-local-variable-values '(truncate-lines . t))
 (add-to-list 'safe-local-variable-values '(before-save-hook . (my/org-sort)))
 
-;; and...
-
-(add-to-list 'safe-local-eval-forms '(flymake-mode -1))
+(dolist (value '((flymake-mode . nil)
+		 (org-comment-placeholder-mode . nil)
+                 (org-hide-inline-footnotes-mode . nil)
+                 (org-macro-display-mode . nil)
+                 (org-quote-indent-mode . nil)))
+  (add-to-list 'safe-local-variable-values value))
 
 
 ;;; Shortcuts

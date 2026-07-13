@@ -95,33 +95,27 @@
   (interactive)
   ;; Load buffers in reverse reading order, so that *daily-info* is
   ;; the final selected buffer.
-  (org-agenda nil "a")
+  (org-agenda-list)
   (wx-alert)
 
-  (let ((items (daily-info--items)))
-    (switch-to-buffer "*daily-info*")
+  (switch-to-buffer "*daily-info*")
 
-    (let ((inhibit-read-only t))
-      (erase-buffer)
+  (let ((inhibit-read-only t))
+    (erase-buffer)
 
-      (when-let* ((ind (daily-info--ind-summary)))
-	(insert (string-trim-right ind))
-	(insert "\n"))
+    (when-let* ((ind (daily-info--ind-summary)))
+      (insert (string-trim-right ind))
+      (insert "\n"))
 
-      (daily-info--insert-items items)
+    (daily-info--insert-items (daily-info--items))
 
-      (when-let* ((birthdays (daily-info--birthday-summary)))
-	(insert "\n")
-	(insert (string-trim-right birthdays))
-	(insert "\n"))
+    (when-let* ((birthdays (daily-info--birthday-summary)))
+      (insert "\n")
+      (insert (string-trim-right birthdays))
+      (insert "\n")))
 
-      (when (get-buffer "diary")
-	(kill-buffer "diary"))
-      (goto-char (point-min)))
-
-    (view-mode)
-    (turn-off-cursor)
-    (message "'cbc' / 'xkcd' / 'elfeed'")))
+  (view-mode)
+  (turn-off-cursor))
 
 (provide 'daily-info)
 
