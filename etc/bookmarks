@@ -12,10 +12,10 @@
   (handler . Info-bookmark-jump))
 ("org-capture-last-stored"
  (filename . "~/Documents/org/notes.org")
- (front-context-string . "** [[https://www")
+ (front-context-string . "** [[https://cmd")
  (rear-context-string . "ture in emacs]]\n")
  (position . 30835)
- (last-modified 27214 36491 944625 0))
+ (last-modified 27221 29654 169263 0))
 ("2023-05-10 - Six years of gopher"
  (position . 684)
  (location . "gemini://zaibatsu.circumlunar.space/users/solderpunk/gemlog/six-years-of-gopher.gmi")

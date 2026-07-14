@@ -155,12 +155,6 @@
   (use-package-compute-statistics t)
   (use-package-verbose t))
 
-(use-package quelpa
-  :custom (quelpa-packages-dir (expand-file-name "var/quelpa/" user-emacs-directory))
-	  (quelpa-melpa-dir (expand-file-name "var/quelpa/melpa/" user-emacs-directory)))
-(use-package quelpa-use-package
-  :after quelpa)
-
 
 ;;; settings
 (set-language-environment 'utf-8)
@@ -645,6 +639,8 @@
 	(add-to-list 'ido-ignore-files ".DS_Store")
 	(add-to-list 'ido-ignore-files "ido.last")
 	(add-to-list 'completion-ignored-extensions ".synctex.gz")
+	(add-to-list 'completion-ignored-extensions ".tex")
+	(add-to-list 'completion-ignored-extensions ".pdf")
 
 	(use-package ido-sort-mtime :config (ido-sort-mtime-mode 1)))
 
@@ -721,7 +717,9 @@
 ;;; Dired
 (use-package dired
   :ensure nil
-  :demand t)
+  :demand t
+  :config (set-face-attribute 'dired-ignored nil
+			      :inherit 'dired-file-name))
 
 (use-package dired-x
   :ensure nil
@@ -1202,11 +1200,6 @@
 
 (use-package tmr)
 
-;; https://github.com/alphapapa/unpackaged.el
-(use-package unpackaged
-  :disabled
-  :quelpa (unpackaged :fetcher github :repo "alphapapa/unpackaged.el"))
-
 (use-package visible-mark) ; make the mark visible
 
 
@@ -1363,10 +1356,11 @@
 
 ;; Markdown
 (use-package markdown-mode
+  :demand t
   :custom (markdown-command "multimarkdown")
   (markdown-enable-prefix-prompts nil)
   (markdown-italic-underscore t)
-  (markdown-unordered-list-item-prefix "* ")
+  (markdown-unordered-list-item-prefix "- ")
   :bind ( :map markdown-mode-map
 	  ("M-p" . nil)
 	  ("C-c p" . markdown-preview-file)
@@ -1376,8 +1370,10 @@
 	 ("\\.markdown\\'" . markdown-mode)
 	 ("\\.gmi\\'" . markdown-mode)
 	 ("\\.ronn\\'" . markdown-mode))
-  :commands (markdown-mode gfm-mode)
-  :init		(setopt markdown-hide-urls t)
+  :commands (markdown-mode
+	     gfm-mode
+	     markdown-preview)
+  :init	(setopt markdown-hide-urls t)
   :config (add-to-list 'markdown-uri-types "gemini"))
 
 ;; Text utilities
@@ -1842,6 +1838,28 @@
 
 ;;; End Org-mode configuration
 
+;;; TeX
+(use-package tex
+  :unless *w32*
+  :ensure auctex
+  :mode ("\\.tex\\'" . LaTeX-mode)
+  :hook
+  (LaTeX-mode . (lambda () ;; Make the prettify addition buffer-local and avoid duplicates
+    (setq-local prettify-symbols-alist (cons '("\\\\&" . ?＆) prettify-symbols-alist))))
+  (tex-mode . (lambda () (setq ispell-parser 'tex)))
+  :custom
+  (font-latex-fontify-sectioning 'color)
+  (LaTeX-babel-hyphen-after-hyphen nil)
+  (latex-run-command "xelatex")
+  (TeX-auto-save t)
+  (TeX-master nil)         ; FIXME EMACS30 fail
+  (TeX-parse-self nil)     ; FIXME EMACS30 fail
+
+  ;; AUCTeX Preview (customizable vars)
+  (preview-leave-open-previews-visible t)
+  (preview-locating-previews-message nil)
+  (preview-protect-point t))
+
 
 ;;; Calendar data and Org Agenda
 ;; Calendar data from macOS Calendar is projected into
@@ -1938,29 +1956,6 @@
   (calendar-data-future-days 365))
 
 
-;;; TeX
-(use-package tex
-  :unless *w32*
-  :ensure auctex
-  :mode ("\\.tex\\'" . LaTeX-mode)
-  :hook
-  (LaTeX-mode . (lambda () ;; Make the prettify addition buffer-local and avoid duplicates
-    (setq-local prettify-symbols-alist (cons '("\\\\&" . ?＆) prettify-symbols-alist))))
-  (tex-mode . (lambda () (setq ispell-parser 'tex)))
-  :custom
-  (font-latex-fontify-sectioning 'color)
-  (LaTeX-babel-hyphen-after-hyphen nil)
-  (latex-run-command "xelatex")
-  (TeX-auto-save t)
-  (TeX-master nil)         ; FIXME EMACS30 fail
-  (TeX-parse-self nil)     ; FIXME EMACS30 fail
-
-  ;; AUCTeX Preview (customizable vars)
-  (preview-leave-open-previews-visible t)
-  (preview-locating-previews-message nil)
-  (preview-protect-point t))
-
-
 ;;; spell checking
 (message "→ Configuring spellchecker.")
 (bind-key "<f7>" 'my/ispell-buffer)
@@ -1987,8 +1982,8 @@
       (let ((inhibit-read-only t))
 	(jinx-correct-all)))))
 
-
 ;;; print
+(message "→ Configuring print engine.")
 (define-key global-map [menu-bar file print] nil)
 
 (use-package print-text-latex
@@ -2106,12 +2101,6 @@
   (load "w3m-functions" nil 'nomessage))
 
 ;; Others
-(use-package chatgpt-shell
-  ;:disabled
-  :if	*natasha*
-  :defer t
-  :config (setq chatgpt-shell-root-path (concat user-emacs-directory "var/")))
-
 (use-package chess
   :if	*natasha*
   :defer t
@@ -2126,35 +2115,21 @@
   :init (easy-menu-add-item  global-map '("tools" "games")
 	  ["Go" gnugo :help "Play Go"] "Gomoku"))
 
-(use-package nov ; Read ePub files
-  :if	*natasha*
-  :defer t
-  :custom (nov-save-place-file (concat user-emacs-directory "var/nov-places"))
-  :init	(add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
-  :config
-  (if (featurep 'ibuf-ext)
-      (add-to-list 'ibuffer-never-show-predicates "^\\*nov unzip\\*"))
-  (if (featurep 'ido)
-      (add-to-list 'ido-ignore-buffers "*nov unzip*")))
-
-(use-package xkcd
+(use-package nov                         ; Read EPUB files
   :if *natasha*
   :defer t
-  :hook	(xkcd-mode . turn-off-cursor)
-  :init	(setq
-	 xkcd-cache-dir    (concat user-emacs-directory "var/xkcd/")
-	 xkcd-cache-latest (concat user-emacs-directory "var/xkcd/latest"))
+  :custom
+  (nov-save-place-file
+   (expand-file-name "var/nov-places" user-emacs-directory))
+  :init
+  (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
   :config
-  (defun xkcd-add-alt (&rest r)
-    (interactive)
-    (read-only-mode -1)
-    (setq-local fill-column (window-width))
-    (visual-line-mode 1)
-    (insert "\n\n" xkcd-alt "\n")
-    (read-only-mode t)
-    (goto-char (point-min)))
-  (advice-add 'xkcd-alt-text :override #'xkcd-add-alt)
-  (advice-add 'xkcd-get :after #'xkcd-add-alt))
+  (when (featurep 'ibuf-ext)
+    (add-to-list 'ibuffer-never-show-predicates
+                 "^\\*nov unzip\\*$"))
+  (when (featurep 'ido)
+    (add-to-list 'ido-ignore-buffers
+                 "^\\*nov unzip\\*$")))
 
 (when *gnu*
 	(setq browse-url-secondary-browser-function 'browse-url-generic
@@ -2170,12 +2145,20 @@
 (load "help-cpj" nil 'nomessage)
 
 (load "pdfexport" nil 'nomessage)
-(eval-after-load
-    'latex-mode '(define-key latex-mode-map (kbd "C-c r") 'latex-compile-and-update-other-buffer))
-(eval-after-load
-    'markdown-mode '(define-key markdown-mode-map (kbd "C-c r") 'md-compile-and-update-other-buffer))
-(eval-after-load
-    'org-mode '(define-key org-mode-map (kbd "C-c o r") 'org-compile-latex-and-update-other-buffer))
+(with-eval-after-load 'latex-mode
+  (define-key latex-mode-map
+              (kbd "C-c r")
+              #'latex-compile-and-update-other-buffer))
+
+(with-eval-after-load 'markdown-mode
+  (define-key markdown-mode-map
+              (kbd "C-c r")
+              #'md-compile-and-update-other-buffer))
+
+(with-eval-after-load 'org
+  (define-key org-mode-map
+              (kbd "C-c o r")
+              #'org-compile-latex-and-update-other-buffer))
 
 ;; https://jonathanabennett.github.io/blog/2019/05/29/writing-academic-papers-with-org-mode/
 (use-package pdf-tools
@@ -2195,8 +2178,10 @@
   :hook (org-mode . org-pdftools-setup-link))
 
 
-;;; arrow keys (Darwin)
+;;; UX
 (message "→ Configuring UX.")
+
+;;; arrow keys (Darwin)
 ;; <home>  is fn-left	<end>  is fn-right
 ;; <prior> is fn-up	<next> is fn-down
 
@@ -2217,7 +2202,6 @@
 (global-set-key [remap backward-paragraph] 'my/backward-paragraph)
 (global-set-key [remap forward-paragraph] 'my/forward-paragraph)
 
-
 ;;; scroll settings
 (setq auto-window-vscroll nil
       next-screen-context-lines 0
@@ -2245,7 +2229,6 @@
 ;;	:init (setq scroll-conservatively 101) ; important!
 ;;	:config (ultra-scroll-mode 1))
 
-
 ;;; mouse
 ;; https://github.com/purcell/disable-mouse
 (setopt	mouse-yank-at-point t
@@ -2262,7 +2245,6 @@
   (global-set-key (kbd "<C-wheel-up>") 'ignore)
   (global-set-key (kbd "<C-wheel-down>") 'ignore))
 
-
 ;;; window navigation
 (use-package windmove
   :ensure nil
