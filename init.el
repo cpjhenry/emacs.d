@@ -1894,7 +1894,7 @@
 (use-package org-agenda
   :ensure nil
   :after org
-  :bind (("C-c a" . cpj/org-agenda-list)
+  :bind (("C-c a" . my/org-agenda-list)
          :map org-agenda-mode-map
          ("q" . org-agenda-exit))
   :hook ((org-agenda-finalize . cpj/org-agenda-register-diary-buffer)
@@ -1927,7 +1927,7 @@
                       :background (face-background 'default nil t)
                       :weight 'normal)
 
-  (defun cpj/org-agenda-list ()
+  (defun my/org-agenda-list ()
     "Refresh calendar data, then display the Org agenda."
     (interactive)
     (calendar-data-refresh-if-stale)
