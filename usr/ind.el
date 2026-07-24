@@ -14,8 +14,14 @@
 ;; A separate era-year concordance places several systems of historical
 ;; reckoning alongside one another, including the Hijri, Bahá’í,
 ;; Byzantine, Anno Lucis, Anno Inventionis, Anno Foederis, and Buddhist
-;; eras.  An extended display may include additional Roman, Egyptian,
-;; Japanese, Chinese, Tibetan, and astronomical reckonings.
+;; eras.  The extended display includes additional Roman, Egyptian,
+;; Japanese, Chinese, Tibetan, Indian, Sikh, and astronomical
+;; reckonings.
+;;
+;; `ind-diagnostics' displays annual calendrical diagnostics inherited
+;; from the verbose output of the author's original Bash implementation.
+;; These include computistical values, selected religious observances,
+;; calendar new years, and sexagenary year names.
 ;;
 ;; The package is an Emacs Lisp successor to the author's Bash program
 ;; of the same name.
@@ -30,21 +36,65 @@
 (require 'cal-islam)
 (require 'cal-bahai)
 (require 'cal-china)
+(require 'holidays)
+
+(require 'cl-lib)
+(require 'subr-x)
 
 (require 'discordian-calendar)
 (require 'hanke-henry-calendar)
+(require 'hindu-calendar)
 (require 'indiction-years)
 (require 'julian-day-counts)
+(require 'moon-holidays)
 (require 'regnal-years)
 (require 'roman-clock)
-
 (require 'tibdate)
 
 (defconst ind--line-width 31
   "Width of the aligned `ind' display lines.")
 
-(defconst ind--right-column-width 10
-  "Width of the right-hand year or era field.")
+(defconst ind--epacts
+  [0 29 10 21 2 13 24 5 16 27 8 19 30 11 22 3 14 25 6 17]
+  "Traditional epacts indexed by golden number.")
+
+(defconst ind--dominical-letters
+  ["G" "A" "B" "C" "D" "E" "F"]
+  "Dominical letters indexed by the traditional calculation.")
+
+(defconst ind--japanese-eras
+  '(((5 1 2019)  "R" "Reiwa ㋿")
+    ((1 8 1989)  "H" "Heisei ㍻")
+    ((12 25 1926) "S" "Shōwa ㍼")
+    ((7 30 1912) "T" "Taishō ㍽")
+    ((1 25 1868) "M" "Meiji ㍾"))
+  "Modern Japanese eras, newest first.
+
+Each entry has the form:
+
+  (START-DATE ABBREVIATION DISPLAY-NAME)
+
+START-DATE is an Emacs calendar date in (MONTH DAY YEAR) form.")
+
+(defconst ind--chinese-elements
+  [nil "Wood" "Wood" "Fire" "Fire" "Earth" "Earth"
+       "Metal" "Metal" "Water" "Water"]
+  "Elements corresponding to the ten Chinese heavenly stems.")
+
+(defconst ind--chinese-animals
+  [nil "Rat" "Ox" "Tiger" "Rabbit" "Dragon" "Snake"
+       "Horse" "Goat" "Monkey" "Rooster" "Dog" "Pig"]
+  "Animals corresponding to the twelve Chinese earthly branches.")
+
+(defconst ind--tibetan-elements
+  [nil "Wood" "Wood" "Fire" "Fire" "Earth" "Earth"
+       "Iron" "Iron" "Water" "Water"]
+  "Elements corresponding to the ten Tibetan heavenly stems.")
+
+(defconst ind--tibetan-animals
+  [nil "Mouse" "Ox" "Tiger" "Rabbit" "Dragon" "Snake"
+       "Horse" "Sheep" "Monkey" "Bird" "Dog" "Pig"]
+  "Animals corresponding to the twelve Tibetan earthly branches.")
 
 (defun ind--utc-date ()
   "Return the current UTC date in Emacs calendar form."
@@ -67,6 +117,17 @@
      (propertize suffix
                  'display '(raise 0.3)
                  'face '(:height 0.8)))))
+
+(defun ind--month-day-string (date)
+  "Return Gregorian DATE formatted as MM/DD."
+  (pcase-let ((`(,month ,day ,_year) date))
+    (format "%02d/%02d" month day)))
+
+(defun ind--date-plus-days (date days)
+  "Return Gregorian DATE shifted by DAYS."
+  (calendar-gregorian-from-absolute
+   (+ (calendar-absolute-from-gregorian date)
+      days)))
 
 (defun ind--gregorian-heading (date)
   "Return the main Gregorian heading for DATE."
@@ -136,12 +197,31 @@ When EXTENDED is non-nil, use the unabbreviated form."
 
 (defun ind--two-column-line (left right)
   "Return LEFT and right-aligned RIGHT within `ind--line-width'."
-  (let ((padding (max 1 (- ind--line-width
-                           (string-width left)
-                           (string-width right)))))
+  (let ((padding
+         (max 1
+              (- ind--line-width
+                 (string-width left)
+                 (string-width right)))))
     (concat left
             (make-string padding ?\s)
             right)))
+
+(defun ind--dated-description-line (label date description)
+  "Return LABEL followed by aligned DATE and DESCRIPTION.
+
+DATE is a five-character MM/DD string aligned with the date
+values produced by `ind--two-column-line'."
+  (concat
+   label
+   (make-string
+    (max 1
+         (- ind--line-width
+            (string-width label)
+            (string-width date)))
+    ?\s)
+   date
+   " "
+   description))
 
 (defun ind--french-line (date)
   "Return the French Republican calendar line for DATE."
@@ -194,6 +274,7 @@ When EXTENDED is non-nil, use the unabbreviated form."
      (format "AM %d" year))))
 
 ;;; Era-year concordance
+
 (defun ind--era-line (label era year)
   "Return an aligned era-year line for LABEL, ERA, and YEAR."
   (ind--two-column-line
@@ -248,8 +329,9 @@ calendar."
   (let* ((year (ind--byzantine-year date))
          (indiction (ind--byzantine-indiction year)))
     (ind--era-line
-     (concat (format "Byzantine %s" (ind--ordinal indiction))
-             (ind--fractional-space 0.45))
+     (concat
+      (format "Byzantine %s" (ind--ordinal indiction))
+      (ind--fractional-space 0.45))
      "AM"
      year)))
 
@@ -281,7 +363,7 @@ calendar."
    "BE"
    (+ (calendar-extract-year date) 543)))
 
-;;; ind-extended starts here
+;;; Extended era-year concordance
 
 (defun ind--date-on-or-after-p (date reference)
   "Return non-nil when DATE is on or after REFERENCE."
@@ -302,7 +384,8 @@ The year begins on 29 August in the Julian calendar."
                 (calendar-julian-from-absolute absolute)))
     (- year
        (if (or (> month 8)
-               (and (= month 8) (>= day 29)))
+               (and (= month 8)
+                    (>= day 29)))
            283
          284))))
 
@@ -320,31 +403,31 @@ The calculation follows the corresponding Julian calendar year."
   "Return years after the conventional 1950 present for DATE."
   (- (calendar-extract-year date) 1950))
 
-(defconst ind--japanese-eras
-  '(((5 1 2019) . "R")   ; Reiwa
-    ((1 8 1989) . "H")   ; Heisei
-    ((12 25 1926) . "S") ; Showa
-    ((7 30 1912) . "T")  ; Taisho
-    ((1 25 1868) . "M")) ; Meiji
-  "Modern Japanese eras, newest first.
+(defun ind--japanese-era-entry (date)
+  "Return the modern Japanese era entry containing DATE.
 
-Each entry is (START-DATE . ABBREVIATION), where START-DATE is an
-Emacs calendar date in (MONTH DAY YEAR) form.")
+Return nil when DATE precedes the modern era table."
+  (cl-find-if
+   (lambda (entry)
+     (ind--date-on-or-after-p date (car entry)))
+   ind--japanese-eras))
 
 (defun ind--japanese-era (date)
   "Return Japanese era abbreviation and year for DATE.
 
 The return value is (ABBREVIATION YEAR), or nil before the modern
 era table."
-  (when-let* ((entry
-               (cl-find-if
-                (lambda (entry)
-                  (ind--date-on-or-after-p date (car entry)))
-                ind--japanese-eras))
+  (when-let* ((entry (ind--japanese-era-entry date))
               (start-date (car entry)))
-    (list (cdr entry)
-          (1+ (- (calendar-extract-year date)
-                 (calendar-extract-year start-date))))))
+    (list
+     (nth 1 entry)
+     (1+ (- (calendar-extract-year date)
+            (calendar-extract-year start-date))))))
+
+(defun ind--japanese-era-name (date)
+  "Return the full Japanese era display name for DATE."
+  (when-let* ((entry (ind--japanese-era-entry date)))
+    (nth 2 entry)))
 
 (defun ind--japanese-imperial-year (date)
   "Return the Japanese Imperial year for Gregorian DATE."
@@ -366,22 +449,19 @@ The year changes at Chinese New Year."
        year
        61)))
 
-(defun ind--hindu-year (year month day)
-  "Return the Indian National Calendar year for YEAR, MONTH and DAY."
-  (car (hindu-calendar--indian-national-from-gregorian
-        year month day)))
-
 (defun ind--nanakshahi-year (date)
   "Return the Nanakshahi year for Gregorian DATE.
 
-The Nanakshahi calendar, or Sikh calendar, is a tropical solar calendar
-used in Sikhism. Its year begins on March 14 in the Gregorian calendar."
+The Nanakshahi calendar, or Sikh calendar, is a tropical solar
+calendar used in Sikhism.  Its year begins on March 14 in the
+Gregorian calendar."
   (let ((year (calendar-extract-year date))
         (month (calendar-extract-month date))
         (day (calendar-extract-day date)))
     (- year
        (if (or (< month 3)
-               (and (= month 3) (< day 14)))
+               (and (= month 3)
+                    (< day 14)))
            1469
          1468))))
 
@@ -433,8 +513,11 @@ used in Sikhism. Its year begins on March 14 in the Gregorian calendar."
   (pcase-let
       ((`(,cycle ,year ,_month ,_leap-month ,_day ,_leap-day)
         (tibdate-from-gregorian date)))
-    (let* ((rabjung-year (+ (* (1- cycle) 60) year))
-           (tibetan-era (+ rabjung-year 1153)))
+    (let* ((rabjung-year
+            (+ (* (1- cycle) 60)
+               year))
+           (tibetan-era
+            (+ rabjung-year 1153)))
       (ind--era-line
        "Tibetan"
        (format "%d/%d TE" cycle year)
@@ -458,6 +541,289 @@ used in Sikhism. Its year begins on March 14 in the Gregorian calendar."
    "NS"
    (ind--nanakshahi-year date)))
 
+;;; Diagnostics
+
+(defun ind--golden-number (year)
+  "Return the golden number for Gregorian YEAR."
+  (1+ (% year 19)))
+
+(defun ind--epact (year)
+  "Return the traditional epact for Gregorian YEAR."
+  (aref ind--epacts
+        (ind--golden-number year)))
+
+(defun ind--dominical-letter (year)
+  "Return the dominical letter or letters for Gregorian YEAR."
+  (let* ((year-1 (1- year))
+         (century-year (% year-1 100))
+         (index
+          (% (+ (* 2 (% century-year 4))
+                (* 4 (% century-year 7))
+                (* 2 (% (/ year-1 100) 4)))
+             7))
+         (first
+          (aref ind--dominical-letters index)))
+    (if (calendar-leap-year-p year)
+        (concat
+         first
+         (aref ind--dominical-letters
+               (if (zerop index)
+                   6
+                 (1- index))))
+      first)))
+
+(defun ind--julian-delta (date)
+  "Return the Gregorian-to-Julian nominal date difference for DATE."
+  (- (calendar-julian-to-absolute date)
+     (calendar-absolute-from-gregorian date)))
+
+(defun ind--hebrew-observances (year)
+  "Return selected Hebrew observances occurring in Gregorian YEAR.
+
+The return value is a list:
+
+  (PASSOVER ROSH-HASHANA YOM-KIPPUR)
+
+Each value is a Gregorian date."
+  (let* ((midyear-absolute
+          (calendar-absolute-from-gregorian
+           (list 7 1 year)))
+         (hebrew-year
+          (calendar-extract-year
+           (calendar-hebrew-from-absolute
+            midyear-absolute))))
+    (list
+     (calendar-gregorian-from-absolute
+      (calendar-hebrew-to-absolute
+       (list 1 15 hebrew-year)))
+     (calendar-gregorian-from-absolute
+      (calendar-hebrew-to-absolute
+       (list 7 1 (1+ hebrew-year))))
+     (calendar-gregorian-from-absolute
+      (calendar-hebrew-to-absolute
+       (list 7 10 (1+ hebrew-year)))))))
+
+(defun ind--easter-date (year)
+  "Return Gregorian Easter Sunday in YEAR."
+  (calendar-gregorian-from-absolute
+   (holiday-easter-etc-abs year)))
+
+(defun ind--lent-date (year)
+  "Return Ash Wednesday in YEAR."
+  (calendar-gregorian-from-absolute
+   (- (holiday-easter-etc-abs year) 46)))
+
+(defun ind--advent-date (year)
+  "Return the first Sunday of Advent in YEAR."
+  (calendar-gregorian-from-absolute
+   (calendar-dayname-on-or-before
+    0
+    (calendar-absolute-from-gregorian
+     (list 12 3 year)))))
+
+(defun ind--islamic-new-year-date (year)
+  "Return the first Islamic New Year occurring in Gregorian YEAR."
+  (let* ((start
+          (calendar-absolute-from-gregorian
+           (list 1 1 year)))
+         (end
+          (calendar-absolute-from-gregorian
+           (list 12 31 year)))
+         (first-islamic-year
+          (calendar-extract-year
+           (calendar-islamic-from-absolute start)))
+         (last-islamic-year
+          (calendar-extract-year
+           (calendar-islamic-from-absolute end)))
+         result)
+    (cl-loop
+     for islamic-year
+     from first-islamic-year
+     to (1+ last-islamic-year)
+     for absolute =
+     (calendar-islamic-to-absolute
+      (list 1 1 islamic-year))
+     when (and (<= start absolute)
+               (<= absolute end))
+     do (setq result
+              (calendar-gregorian-from-absolute absolute))
+     and return result)
+    result))
+
+(defun ind--chinese-new-year-date (year)
+  "Return Chinese New Year occurring in Gregorian YEAR."
+  (calendar-gregorian-from-absolute
+   (cadr
+    (assoc 1
+           (calendar-chinese-year year)))))
+
+(defun ind--chinese-year-description (year)
+  "Return the Chinese sexagenary description for Gregorian YEAR.
+
+The description belongs to the Chinese year whose New Year occurs
+during Gregorian YEAR."
+  (let* ((stem
+          (1+ (% (- year 4) 10)))
+         (branch
+          (1+ (% (- year 4) 12)))
+         (polarity
+          (if (cl-oddp stem)
+              "Yang"
+            "Yin")))
+    (format "%s %s %s"
+            polarity
+            (aref ind--chinese-elements stem)
+            (aref ind--chinese-animals branch))))
+
+(defun ind--tibetan-losar-data (year)
+  "Return Tibetan Losar data for Gregorian YEAR.
+
+The return value is:
+
+  (DATE DESCRIPTION)
+
+DATE is the Gregorian date of Losar.  DESCRIPTION is the gender,
+element, and animal of the Tibetan year whose Losar falls within
+Gregorian YEAR.
+
+Return nil when `tibdate-program' cannot be found."
+  (when (executable-find tibdate-program)
+    (pcase-let*
+        ((`(,cycle ,tibetan-year
+                   ,_month ,_leap-month ,_day ,_leap-day)
+          (tibdate-from-gregorian
+           (list 7 1 year)))
+         (rabjung-year
+          (+ (* (1- cycle) 60)
+             tibetan-year))
+         (stem
+          (1+ (% (+ rabjung-year 2) 10)))
+         (branch
+          (1+ (% (+ rabjung-year 2) 12)))
+         (gender
+          (if (cl-oddp stem)
+              "Male"
+            "Female"))
+         (description
+          (format "%s %s %s"
+                  gender
+                  (aref ind--tibetan-elements stem)
+                  (aref ind--tibetan-animals branch))))
+      (list
+       (tibdate-losar cycle tibetan-year)
+       description))))
+
+(defun ind--vassa-date (year)
+  "Return the Gregorian date on which Vassa begins in YEAR.
+
+Vassa begins on the day after the first full moon in July."
+  (when-let* ((full-moon
+               (moon-holidays-first-full-moon 7 year)))
+    (ind--date-plus-days full-moon 1)))
+
+(defun ind--pavarana-date (year)
+  "Return the Gregorian date of Pavarana in YEAR.
+
+Pavarana falls on the first full moon in October."
+  (moon-holidays-first-full-moon 10 year))
+
+(defun ind-diagnostics-string (&optional date)
+  "Return calendrical diagnostics for the year containing DATE.
+
+DATE defaults to the current Gregorian date."
+  (let* ((date
+          (or date
+              (calendar-current-date)))
+         (year
+          (calendar-extract-year date))
+         (hebrew
+          (ind--hebrew-observances year))
+         (passover
+          (nth 0 hebrew))
+         (rosh-hashana
+          (nth 1 hebrew))
+         (yom-kippur
+          (nth 2 hebrew))
+         (hijra
+          (ind--islamic-new-year-date year))
+         (japanese-era
+          (ind--japanese-era-name date))
+         (chinese-new-year
+          (ind--chinese-new-year-date year))
+         (tibetan-losar
+          (ind--tibetan-losar-data year))
+         (vassa
+          (ind--vassa-date year))
+         (pavarana
+          (ind--pavarana-date year)))
+    (string-join
+     (delq
+      nil
+      (list
+       (ind--two-column-line
+        "Dominical letter"
+        (ind--dominical-letter year))
+       (ind--two-column-line
+        "Epact"
+        (number-to-string
+         (ind--epact year)))
+       (ind--two-column-line
+        "Golden number"
+        (number-to-string
+         (ind--golden-number year)))
+       (ind--two-column-line
+        "Julian delta"
+        (number-to-string
+         (ind--julian-delta date)))
+       (ind--two-column-line
+        "Passover"
+        (ind--month-day-string passover))
+       (ind--two-column-line
+        "Rosh Hashana"
+        (ind--month-day-string rosh-hashana))
+       (ind--two-column-line
+        "Yom Kippur"
+        (ind--month-day-string yom-kippur))
+       (ind--two-column-line
+        "Lent"
+        (ind--month-day-string
+         (ind--lent-date year)))
+       (ind--two-column-line
+        "Easter"
+        (ind--month-day-string
+         (ind--easter-date year)))
+       (ind--two-column-line
+        "Advent"
+        (ind--month-day-string
+         (ind--advent-date year)))
+       (when hijra
+         (ind--two-column-line
+          "Hijra"
+          (ind--month-day-string hijra)))
+       (when japanese-era
+         (ind--two-column-line
+          "Japanese Era"
+          japanese-era))
+       (ind--dated-description-line
+	"Chinese New Year"
+	(ind--month-day-string chinese-new-year)
+	(ind--chinese-year-description year))
+       (ind--dated-description-line
+	"Tibetan Losar"
+	(ind--month-day-string (car tibetan-losar))
+	(cadr tibetan-losar))
+       (when vassa
+         (ind--two-column-line
+          "Vassa"
+          (ind--month-day-string vassa)))
+       (when pavarana
+         (ind--two-column-line
+          "Pavarana"
+          (ind--month-day-string pavarana)))))
+     "\n")))
+
+;;; Summary construction and display
+
 (defun ind-summary-string (&optional extended)
   "Return the compact daily `ind' summary as a string.
 
@@ -465,43 +831,57 @@ When EXTENDED is non-nil, include the extended era-year dates."
   (let ((date (calendar-current-date))
         (utc-date (ind--utc-date)))
     (string-join
-     (delq nil
-           (append
-            (list
-             (ind--gregorian-heading date)
-             (ind--ce-line date)
-             (ind--day-line date)
-             (ind--old-style-line date)
-             (ind--regnal-line date)
-             (ind--julian-count-line)
-             (ind--roman-calendar-line extended)
-             (ind--french-line date)
-             (ind--hanke-henry-line utc-date)
-             (ind--discordian-line date)
-             (ind--hebrew-line date)
+     (delq
+      nil
+      (append
+       (list
+        (ind--gregorian-heading date)
+        (ind--ce-line date)
+        (ind--day-line date)
+        (ind--old-style-line date)
+        (ind--regnal-line date)
+        (ind--julian-count-line)
+        (ind--roman-calendar-line extended)
+        (ind--french-line date)
+        (ind--hanke-henry-line utc-date)
+        (ind--discordian-line date)
+        (ind--hebrew-line date)
 
-             ;; Era-year concordance.
-             (make-string ind--line-width ?-)
-             (ind--hijri-line date)
-             (ind--bahai-line date)
-             (ind--byzantine-line date)
-             (ind--anno-lucis-line date)
-             (ind--anno-inventionis-line date)
-             (ind--anno-foederis-line date)
-             (ind--buddhist-line date))
+        ;; Era-year concordance.
+        (make-string ind--line-width ?-)
+        (ind--hijri-line date)
+        (ind--bahai-line date)
+        (ind--byzantine-line date)
+        (ind--anno-lucis-line date)
+        (ind--anno-inventionis-line date)
+        (ind--anno-foederis-line date)
+        (ind--buddhist-line date))
 
-            (when extended
-              (list
-               (ind--auc-line date)
-               (ind--diocletian-line date)
-               (ind--julian-period-line date)
-               (ind--after-present-line date)
-               (ind--japanese-line date)
-               (ind--chinese-line date)
-	       (ind--tibetan-line date)
-	       (ind--hindu-line date)
-               (ind--nanakshahi-line date)))))
+       (when extended
+         (list
+          (ind--auc-line date)
+          (ind--diocletian-line date)
+          (ind--julian-period-line date)
+          (ind--after-present-line date)
+          (ind--japanese-line date)
+          (ind--chinese-line date)
+          (ind--tibetan-line date)
+          (ind--hindu-line date)
+          (ind--nanakshahi-line date)))))
      "\n")))
+
+(defun ind--display (contents)
+  "Display CONTENTS in the `*ind*' buffer."
+  (let ((buffer (get-buffer-create "*ind*")))
+    (with-current-buffer buffer
+      (let ((inhibit-read-only t))
+        (erase-buffer)
+        (insert contents)
+        (unless (bolp)
+          (insert "\n"))
+        (goto-char (point-min))
+        (view-mode 1)))
+    (pop-to-buffer buffer)))
 
 ;;;###autoload
 (defun ind (&optional extended)
@@ -513,21 +893,21 @@ idiosyncratic representations of the current date.
 With prefix argument EXTENDED, also show the extended era-year
 dates."
   (interactive "P")
-  (let ((buffer (get-buffer-create "*ind*")))
-    (with-current-buffer buffer
-      (let ((inhibit-read-only t))
-        (erase-buffer)
-        (insert (ind-summary-string extended))
-        (insert "\n")
-        (goto-char (point-min))
-        (view-mode 1)))
-    (pop-to-buffer buffer)))
+  (ind--display
+   (ind-summary-string extended)))
 
 ;;;###autoload
 (defun ind-extended ()
   "Display the extended multi-calendar summary for today."
   (interactive)
   (ind t))
+
+;;;###autoload
+(defun ind-diagnostics ()
+  "Display calendrical diagnostics for the current year."
+  (interactive)
+  (ind--display
+   (ind-diagnostics-string)))
 
 (provide 'ind)
 

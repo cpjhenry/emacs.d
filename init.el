@@ -927,6 +927,21 @@
     "Return focus to Emacs after deleting a frame."
     (run-at-time 0 nil #'cpj/refocus-selected-frame))
 
+  (defun cpj/refocus-org-capture-frame ()
+    "Raise and focus the frame displaying an Org capture buffer."
+    (let ((frame (selected-frame)))
+      (run-at-time
+       0 nil
+       (lambda (frame)
+	 (when (frame-live-p frame)
+           (cpj/activate-emacs)
+           (raise-frame frame)
+           (select-frame-set-input-focus frame)))
+       frame)))
+
+  (add-hook 'org-capture-mode-hook
+            #'cpj/refocus-org-capture-frame)
+
   (advice-add 'delete-frame
               :after #'cpj/refocus-selected-frame-after-delete))
 
@@ -1122,6 +1137,8 @@
 	("[" . eww-back-url)
 	("]" . eww-forward-url)
 	("y" . eww-copy-page-url)
+	("M-p" . nil)
+	("M-n" . nil)
 	:map eww-bookmark-mode-map
 	("w" . eww))
   ;:hook
@@ -1399,29 +1416,6 @@
         (expand-file-name "var/org-id-locations"
                           user-emacs-directory))
 
-(defun cpj/org-edit-special-disable-visual-fill-column (&rest _)
-  "Disable `visual-fill-column-mode' in Org special edit buffers."
-  (when (bound-and-true-p visual-fill-column-mode)
-    (visual-fill-column-mode -1)))
-
-(defun cpj/org-entities-help-outline-cleanup (&rest _)
-  "Make `org-entities-help' easier to browse with Outline folding."
-  (let ((inhibit-read-only t))
-    (flush-blank-lines (point-min) (point-max)))
-  (outline-mode)
-  (setq-local truncate-lines t)
-  (outline-cycle-buffer)
-  (view-mode 1))
-
-(defun cpj/org-latex-export-as-latex-cleanup-windows (&rest _)
-  "Clean up window layout after `org-latex-export-as-latex'."
-  (when (called-interactively-p 'any)
-    (delete-other-windows)))
-
-(defun cpj/org-at-table-p-any-advice (oldfun &rest _args)
-  "Call OLDFUN as though `org-at-table-p' had been given ANY."
-  (funcall oldfun t))
-
 (use-package org
   :ensure nil
   :demand t
@@ -1448,7 +1442,7 @@
   (org-src-fontify-natively t)
   (org-src-tab-acts-natively t)
   (org-special-ctrl-a/e t)
-  (org-startup-folded 'content)
+  (org-startup-folded 'content); overview, content, showall, showeverything
   (org-startup-indented nil)
   (org-startup-shrink-all-tables t)
 
@@ -1513,12 +1507,23 @@
 
   ;; Capture.
   (org-capture-templates
-   '(("p" "Protocol" entry
+   '(("i" "Idea" entry
+      (file+headline org-default-notes-file "Ideas")
+      "* %?\n")
+     ("p" "Protocol" entry
       (file+headline org-default-notes-file "Inbox")
       "* %?[[%:link][%(transform-square-brackets-to-round-ones \"%:description\")]]\n%i\n")
      ("L" "Protocol Link" entry
       (file+headline org-default-notes-file "Inbox")
       "* %?[[%:link][%(transform-square-brackets-to-round-ones \"%:description\")]]\n")))
+
+  ;; Refile.
+  (org-refile-targets
+   `((,(expand-file-name "Emacs nix and Homebrew.org" org-directory)
+      :maxlevel . 1)))
+  (org-refile-allow-creating-parent-nodes 'confirm)
+  (org-refile-use-outline-path 'file)
+  (org-outline-path-complete-in-steps nil)
 
   :bind
   ( ("C-c k" . org-capture)
@@ -1549,7 +1554,6 @@
   (require 'ox-texinfo)
 
   (load "org-functions" nil 'nomessage)
-  (load "org-links" nil 'nomessage)
 
   (set-face-underline 'org-ellipsis nil)
 
@@ -1727,7 +1731,7 @@
 	       '("c" "Cookbook" entry
 		 (file org-chef-recipe-book)
 		 "%(org-chef-get-recipe-from-url)"
-		 :empty-lines 0)
+		 :empty-lines 1)
 	       t)
 
   (add-to-list 'org-capture-templates
@@ -1823,6 +1827,21 @@
   (org-download-heading-lvl nil)
   (org-download-image-org-width 925))
 
+(use-package org-mindmap
+  :vc (:url "https://github.com/krvkir/org-mindmap.git" :rev :newest)
+  :after org
+  :bind
+  (:map org-mindmap-mode-map
+        ("C-c m c" . org-mindmap-insert-child)
+        ("C-c m s" . org-mindmap-insert-sibling)
+        ("C-c m d" . org-mindmap-delete-node)
+        ("C-c m v" . org-mindmap-switch-layout)
+        ("C-c m p" . org-mindmap-switch-compaction)
+        ("C-c m m" . org-mindmap-list-to-mindmap)
+        ("C-c m l" . org-mindmap-to-list))
+  :config
+  (add-hook 'org-mode-hook #'org-mindmap-mode))
+
 (use-package org-ref ; setup bibliography, cite, ref, and label org-mode links
   :if *natasha*
   :disabled
@@ -1898,8 +1917,8 @@
          :map org-agenda-mode-map
          ("q" . org-agenda-exit))
   :hook ((org-agenda-finalize . cpj/org-agenda-register-diary-buffer)
-         (org-agenda-mode . hl-line-mode))
-
+	 (org-agenda-finalize . cpj/org-agenda-set-header)
+	 (org-agenda-mode . hl-line-mode))
   :custom
   (org-agenda-include-diary t)
   (org-agenda-skip-deadline-if-done t)
@@ -1933,6 +1952,14 @@
     (calendar-data-refresh-if-stale)
     (org-agenda-list))
 
+  (defun cpj/org-agenda-set-header ()
+    "Remove the redundant standard weekly agenda header."
+    (when (derived-mode-p 'org-agenda-mode)
+      (save-excursion
+	(goto-char (point-min))
+	(when (looking-at "^Week-agenda (W[0-9]+):\n")
+          (replace-match "")))))
+
   (defun cpj/org-agenda-register-diary-buffer ()
     "Register the diary buffer for cleanup when Org Agenda exits."
     (when-let* ((buf (get-buffer "diary")))
@@ -1947,11 +1974,11 @@
   :custom
   (calendar-data-file cpj/calendar-data-file)
   (calendar-data-calendar-names
-   '("Family"
-     "Birthdays"
-     "Ottawa District 1"
-     "Home"
-     "cpjhenry@gmail.com"))
+   (list "Family"
+	 "Birthdays"
+	 "Ottawa District 1"
+	 "Home"
+	 user-gmail))
   (calendar-data-past-days 30)
   (calendar-data-future-days 365))
 
@@ -2338,6 +2365,7 @@
 (add-to-list 'safe-local-variable-values '(org-log-done))
 (add-to-list 'safe-local-variable-values '(truncate-lines . t))
 (add-to-list 'safe-local-variable-values '(before-save-hook . (my/org-sort)))
+(add-to-list 'safe-local-variable-values '(cpj/org-sort-after-capture . t))
 
 (dolist (value '((flymake-mode . nil)
 		 (org-comment-placeholder-mode . nil)
@@ -2375,8 +2403,8 @@
 (bind-key "C-c e"	'elpher) ; gopher / gemini
 (bind-key "C-c i"	'my/init)
 
-(bind-key "C-c m"	'menu-bar-read-mail)
-(which-key-alias "C-c m" "read-mail")
+(bind-key "C-c M"	'menu-bar-read-mail)
+(which-key-alias "C-c M" "read-mail")
 
 (bind-key "C-c x #"	'number-lines-dwim)
 (bind-key "C-c x b"	'flush-blank-lines)
@@ -2389,7 +2417,6 @@
 (bind-key "C-c z"	'my/agenda)
 
 (global-set-key (kbd "C-c 8 c") (kbd "✓"))
-(global-set-key (kbd "C-c 8 x") (kbd "⨯"))
 (which-key-alias "C-c 8" "keys")
 
 

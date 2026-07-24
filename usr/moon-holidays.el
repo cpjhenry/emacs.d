@@ -16,89 +16,102 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-;;; commentary:
+;;; Commentary:
 
-;;; code:
+;; Define holidays based on the first full moon in selected Gregorian
+;; months.
+;;
+;; `moon-holidays-first-full-moon' provides the underlying calculation
+;; independently of the Emacs holiday display machinery.
+;;
+;; `holiday-named-full-moons' adapts that calculation to the active
+;; Calendar holiday window, whether called from Calendar, `list-holidays',
+;; `holiday-in-range', or another holiday consumer.
+
+;;; Code:
+
 (require 'calendar)
+(require 'holidays)
 (require 'lunar)
 (require 'cl-lib)
 
-(defun holiday-named-full-moons (&rest moon-specs)
-  "Return holiday entries for first full moons in selected months.
+(defun moon-holidays-first-full-moon (month year)
+  "Return the first full moon in Gregorian MONTH and YEAR.
 
-Each element of MOON-SPECS is:
+Return the date in standard Emacs calendar form, or nil if no
+full moon is found."
+  (let ((candidates
+         (cl-loop for (date _time phase)
+                  in (lunar-phase-list month year)
+                  when (and (= phase 2)
+                            (= month
+                               (calendar-extract-month date))
+                            (= year
+                               (calendar-extract-year date)))
+                  collect date)))
+    (car
+     (sort candidates
+           (lambda (a b)
+             (< (calendar-absolute-from-gregorian a)
+                (calendar-absolute-from-gregorian b)))))))
+
+(defun moon-holidays--years-in-window ()
+  "Return the Gregorian years represented in the calendar window."
+  (pcase-let ((`(,_month-1 ,year-1 ,_month-2 ,year-2)
+               (calendar-get-month-range)))
+    (number-sequence year-1 year-2)))
+
+(defun holiday-named-full-moons (&rest moon-specs)
+  "Return visible holidays based on first full moons.
+
+Each element of MOON-SPECS has the form:
 
   (MONTH FULL-NAME [NEXT-DAY-NAME])
 
-MONTH is a number 1–12.
-FULL-NAME is the holiday name for the first full moon in that month.
-If NEXT-DAY-NAME is non-nil, also add a holiday for the day
-*after* that full moon with NEXT-DAY-NAME.
+MONTH is a Gregorian month number from 1 through 12.
 
-This function is meant to be used in `calendar-holidays` /
-`holiday-other-holidays` as a (function ...) holiday form, and it
-only returns dates that are visible in the current 3-month
-calendar window."
+FULL-NAME is the holiday name assigned to the first full moon in
+that month.
 
-  (let* ((mid-m displayed-month)
-         (mid-y displayed-year)
-         ;; Compute previous and next months for the 3-month window
-         (prev-m mid-m)
-         (prev-y mid-y)
-         (next-m mid-m)
-         (next-y mid-y))
-    (calendar-increment-month prev-m prev-y -1)
-    (calendar-increment-month next-m next-y 1)
-    (let* ((visible-months
-            ;; ((month . year) ...) for the three columns
-            (list (cons prev-m prev-y)
-                  (cons mid-m  mid-y)
-                  (cons next-m next-y)))
-           (holidays '()))
+If NEXT-DAY-NAME is non-nil, also return a holiday on the day
+after the first full moon with that name.
+
+Return only dates visible in the active Calendar holiday window.
+This makes the function suitable for Calendar, `list-holidays',
+`holiday-in-range', and other Emacs holiday consumers."
+  (let (holidays)
+    (dolist (year (moon-holidays--years-in-window))
       (dolist (spec moon-specs)
         (pcase-let ((`(,month ,full-name . ,maybe-next) spec))
-          ;; Is this month in the visible 3-month window?
-          (when-let* ((my (assoc month visible-months))
-                      (year (cdr my)))
-            ;; Collect full moons for this month/year
-            (let ((candidates
-                   (cl-loop for (date _time phase)
-                            in (lunar-phase-list month year)
-                            ;; phase = 2 => full moon
-                            when (and (= phase 2)
-                                      (= month (car date)))
-                            collect date)))
-              (when candidates
-                ;; First full moon = earliest absolute date
-                (let* ((first-full
-                        (car (sort candidates
-                                   (lambda (a b)
-                                     (< (calendar-absolute-from-gregorian a)
-                                        (calendar-absolute-from-gregorian b))))))
-                       (entry (list first-full full-name)))
-                  (push entry holidays)
-                  ;; Optional extra day after the first full moon
-                  (when maybe-next
-                    (let* ((next-name (car maybe-next))
-                           (next-abs (1+ (calendar-absolute-from-gregorian first-full)))
-                           (next-date (calendar-gregorian-from-absolute next-abs)))
-                      (push (list next-date next-name) holidays)))))))))
-      holidays)))
+          (when-let* ((first-full
+                       (moon-holidays-first-full-moon month year)))
+            (push (list first-full full-name)
+                  holidays)
+            (when-let* ((next-name (car maybe-next)))
+              (push
+               (list
+                (calendar-gregorian-from-absolute
+                 (1+ (calendar-absolute-from-gregorian
+                      first-full)))
+                next-name)
+               holidays))))))
+    (holiday-filter-visible-calendar holidays)))
 
 (defun holiday-buddhist ()
-"Return all Buddhist (Theravadin) full-moon holidays.
+  "Return Theravāda Buddhist full-moon holidays.
 
-This uses `holiday-named-full-moons' for each relevant month and concatenates
-the results."
-  (append
-   (holiday-named-full-moons '(5  "Vesak (Buddha Day)"))
-   (holiday-named-full-moons '(7  "Asalha (Dhamma Day)" "Vassa"))
-   (holiday-named-full-moons '(10 "Pavarana"))
-   (holiday-named-full-moons '(2  "Magha (Sangha Day)"))))
+Return Magha, Vesak, Asalha, Vassa, and Pavarana when they fall
+within the active Calendar holiday window."
+  (holiday-named-full-moons
+   '(2  "Magha (Sangha)")
+   '(5  "Vesak (Buddha)")
+   '(7  "Asalha (Dhamma)" "Vassa")
+   '(10 "Pavarana")))
 
 (defvar holiday-buddhist-holidays
   '((holiday-buddhist))
   "Buddhist holidays and observances.")
 
 (provide 'moon-holidays)
+
 ;;; moon-holidays.el ends here
