@@ -36,6 +36,7 @@
 (define-abbrev-table 'org-mode-abbrev-table
   '(
     ("a5vc" "# Set for A5 paper. You can still print this to booklet format." nil :count 0)
+    ("cad" "CHECK AGAINST DELIVERY" nil :count 1)
     ("ccc" "#+AUTHOR:/Capital City Council \\textnumero154/" nil :count 0)
     ("hdr" "#+LATEX_HEADER:" nil :count 142)
     ("lat" "#+LATEX:" nil :count 64)

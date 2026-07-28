@@ -4,10 +4,10 @@
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
 (("org-refile-last-stored"
   (filename . "~/Documents/org/Emacs nix and Homebrew.org")
-  (front-context-string . "** [[http://yumm")
-  (rear-context-string . "Source Blocks]]\n")
-  (position . 47272)
-  (last-modified 27234 9703 616551 0))
+  (front-context-string . "** [[elfeed:plan")
+  (rear-context-string . "rom clipboard]]\n")
+  (position . 47980)
+  (last-modified 27238 7376 468851 0))
 ("(emacs) Projects"
  (front-context-string . "\n29.2 Working wi")
  (rear-context-string . "Up: Maintaining\n")

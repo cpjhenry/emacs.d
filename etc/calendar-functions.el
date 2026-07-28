@@ -204,6 +204,65 @@ Each weekday is a symbol such as `monday', `tuesday', or `saturday'."
     (and (<= start today end)
          (zerop (% (- today start) 14)))))
 
+
+;;; calfw
+
+(defun cpj/maccalfw-list-calendars ()
+  "Display macOS Calendar details in a temporary buffer."
+  (interactive)
+  (let ((calendars
+	 (sort (copy-sequence (maccalfw-get-calendars))
+               (lambda (a b)
+		 (string-lessp
+                  (or (plist-get a :title) "")
+                  (or (plist-get b :title) ""))))))
+    (with-current-buffer
+        (get-buffer-create "*maccalfw calendars*")
+      (let ((inhibit-read-only t))
+        (erase-buffer)
+
+        (insert "macOS Calendars\n"
+                "===============\n\n"
+                (format "%d calendar%s found.\n\n"
+                        (length calendars)
+                        (if (= (length calendars) 1) "" "s")))
+
+        (cl-loop
+         for calendar in calendars
+         for number from 1
+         do
+         (insert (format "%d. %s\n"
+                         number
+                         (or (plist-get calendar :title)
+                             "Unnamed Calendar"))
+                 (make-string
+                  (+ 3 (length
+                        (or (plist-get calendar :title)
+                            "Unnamed Calendar")))
+                  ?-)
+                 "\n"
+                 (format "  Editable: %s\n"
+                         (if (plist-get calendar :editable)
+                             "yes"
+                           "no"))
+                 (format "  Default:  %s\n"
+                         (if (plist-member calendar :default)
+                             (if (plist-get calendar :default)
+                                 "yes"
+                               "no")
+                           "no"))
+                 (format "  Colour:   %s\n"
+                         (or (plist-get calendar :color)
+                             "unspecified"))
+                 (format "  ID:       %s\n\n"
+                         (or (plist-get calendar :id)
+                             "unspecified"))))
+
+        (goto-char (point-min))
+        (special-mode))
+
+      (display-buffer (current-buffer)))))
+
 (provide 'calendar-routines)
 ;;; calendar-functions.el ends here.
 

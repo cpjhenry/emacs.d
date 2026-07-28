@@ -1005,27 +1005,6 @@
   :config
   (roman-clock-period-notify-mode 1))
 
-(use-package biorhythm ; usr/
-  :ensure nil
-  :demand t
-  :commands (biorhythm
-             biorhythm-string
-             days-on-earth))
-
-(use-package wwv ; usr/
-  :ensure nil
-  :demand t
-  :commands (wwv
-	     wwv-summary))
-
-(use-package daily-info ; etc/
-  :ensure nil
-  :commands (di
-             ind)
-  :custom
-  (daily-info-include-holidays nil)
-  (daily-info-include-diary nil))
-
 
 ;;; Initialize packages
 (message "→ Initializing packages.")
@@ -1445,6 +1424,7 @@
   (org-startup-folded 'content); overview, content, showall, showeverything
   (org-startup-indented nil)
   (org-startup-shrink-all-tables t)
+  (org-use-sub-superscripts '{})
 
   ;; Images.
   (org-startup-with-inline-images t)
@@ -1456,7 +1436,6 @@
    (lambda ()
      (and (looking-at org-outline-regexp)
           (looking-back "^\\**" (line-beginning-position)))))
-  (org-use-sub-superscripts '{})
 
   ;; Tags.
   (org-auto-align-tags nil)
@@ -1520,6 +1499,8 @@
   ;; Refile.
   (org-refile-targets
    `((,(expand-file-name "Emacs nix and Homebrew.org" org-directory)
+      :maxlevel . 1)
+     (org-agenda-files
       :maxlevel . 1)))
   (org-refile-allow-creating-parent-nodes 'confirm)
   (org-refile-use-outline-path 'file)
@@ -1670,22 +1651,10 @@
   :after org
   :hook (org-mode . org-hide-inline-footnotes-mode))
 
-(use-package org-quote-indent
-  :ensure nil
-  :after org
-  :hook (org-mode . org-quote-indent-mode))
-
 (use-package org-macro-display
   :ensure nil
   :after org
   :hook (org-mode . org-macro-display-mode))
-
-(use-package org-pretty-table
-  ;; FIXME · breaking again
-  :disabled
-  :ensure nil
-  :after org
-  :hook (org-mode . org-pretty-table-mode))
 
 (use-package org-rehearsal
   :ensure nil
@@ -1750,8 +1719,8 @@
 
 ** Directions
 
-** Notes
-")
+** Notes"
+		 :empty-lines 2)
 	       t)
 
   (defconst my/org-fraction-replacements
@@ -1855,31 +1824,6 @@
 (use-package ox-gemini
   :after org)
 
-;;; End Org-mode configuration
-
-;;; TeX
-(use-package tex
-  :unless *w32*
-  :ensure auctex
-  :mode ("\\.tex\\'" . LaTeX-mode)
-  :hook
-  (LaTeX-mode . (lambda () ;; Make the prettify addition buffer-local and avoid duplicates
-    (setq-local prettify-symbols-alist (cons '("\\\\&" . ?＆) prettify-symbols-alist))))
-  (tex-mode . (lambda () (setq ispell-parser 'tex)))
-  :custom
-  (font-latex-fontify-sectioning 'color)
-  (LaTeX-babel-hyphen-after-hyphen nil)
-  (latex-run-command "xelatex")
-  (TeX-auto-save t)
-  (TeX-master nil)         ; FIXME EMACS30 fail
-  (TeX-parse-self nil)     ; FIXME EMACS30 fail
-
-  ;; AUCTeX Preview (customizable vars)
-  (preview-leave-open-previews-visible t)
-  (preview-locating-previews-message nil)
-  (preview-protect-point t))
-
-
 ;;; Calendar data and Org Agenda
 ;; Calendar data from macOS Calendar is projected into
 ;; `calendar-data.org', which is read by `org-agenda' as an ordinary
@@ -1892,7 +1836,8 @@
 ;;
 ;; For example:
 ;;
-;;     patch-emacs-calendar-permission /usr/local/opt/emacs-plus\@31/Emacs.app
+;;     patch-emacs-calendar-permission \
+;;       "$(mdfind 'kMDItemCFBundleIdentifier == "org.gnu.emacs"' | head -1)"
 ;;
 ;; This restores Mac Calendar access used by `calendar-data' through
 ;; `maccalfw'.
@@ -1981,6 +1926,66 @@
 	 user-gmail))
   (calendar-data-past-days 30)
   (calendar-data-future-days 365))
+
+(use-package biorhythm ; usr/
+  :ensure nil
+  :demand t
+  :commands (biorhythm
+             biorhythm-string
+             days-on-earth))
+
+(use-package wwv ; usr/
+  :ensure nil
+  :demand t
+  :commands (wwv
+	     wwv-summary))
+
+(use-package daily-info ; etc/
+  :ensure nil
+  :commands (di
+             ind
+             cpj/org-agenda-birthdays)
+  :custom
+  (daily-info-include-holidays nil)
+  (daily-info-include-diary nil)
+  :init
+  (add-to-list
+   'org-agenda-custom-commands
+   '("b" "Birthdays"
+     agenda ""
+     ((org-agenda-files (list cpj/calendar-data-file))
+      (org-agenda-include-diary nil)
+      (org-agenda-span calendar-data-future-days)
+      (org-agenda-start-on-weekday nil)
+      (org-agenda-start-day "0d")
+      (org-agenda-show-all-dates nil)
+      (org-agenda-overriding-header "Birthdays")
+      (org-agenda-skip-function
+       '(org-agenda-skip-entry-if
+         'notregexp
+         "Birthday"))))))
+
+;;; TeX
+(use-package tex
+  :unless *w32*
+  :ensure auctex
+  :mode ("\\.tex\\'" . LaTeX-mode)
+  :hook
+  (LaTeX-mode . (lambda () ;; Make the prettify addition buffer-local and avoid duplicates
+    (setq-local prettify-symbols-alist (cons '("\\\\&" . ?＆) prettify-symbols-alist))))
+  (tex-mode . (lambda () (setq ispell-parser 'tex)))
+  :custom
+  (font-latex-fontify-sectioning 'color)
+  (LaTeX-babel-hyphen-after-hyphen nil)
+  (latex-run-command "xelatex")
+  (TeX-auto-save t)
+  (TeX-master nil)         ; FIXME EMACS30 fail
+  (TeX-parse-self nil)     ; FIXME EMACS30 fail
+
+  ;; AUCTeX Preview (customizable vars)
+  (preview-leave-open-previews-visible t)
+  (preview-locating-previews-message nil)
+  (preview-protect-point t))
 
 
 ;;; spell checking
@@ -2523,3 +2528,4 @@
 ; LocalWords:  windmove goto ripgrep nomessage lorem OAuth authinfo
 ; LocalWords:  plist nopgnos flymake api todo paren docstrings ibuf
 ; LocalWords:  ibuffer ish minibuffer emacsclient Uncomment maccalfw
+; LocalWords:  kMDItemCFBundleIdentifier mdfind

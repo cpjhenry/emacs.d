@@ -43,6 +43,13 @@
 ;; while sentence motion commands operate on the current cell rather
 ;; than treating wrapped table contents as ordinary prose.
 
+;; Install via use-package:
+
+;; (use-package org-pretty-table
+;;   :ensure nil
+;;   :after org
+;;   :hook (org-mode . org-pretty-table-mode))
+
 ;;; Code:
 (require 'org)
 (require 'org-table)

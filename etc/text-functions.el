@@ -81,18 +81,35 @@ from point."
     (save-restriction
       (indent-region (point-min) (point-max)))))
 
-;; https://github.com/jakebox/jake-emacs/blob/main/jake-emacs/jib-funcs.el
-(defun speaking-time ()
-  "Calculate how long it would take me to speak aloud the selection."
-  (interactive)
-  (if (use-region-p)
-      (let* ((wpm 150)
-	     (word-count (float (count-words-region (region-beginning) (region-end))))
-	     (raw-time (* 60 (/ word-count wpm))))
-	(message "%s minutes, %s seconds to speak at %d wpm (%d words)"
-		 (format-seconds "%m" raw-time)
-		 (floor (mod raw-time 60)) wpm word-count))
-    (error "Error: select a region")))
+(defun speaking-time (&optional wpm)
+  "Estimate how long the region or buffer will take to speak aloud.
+
+When a region is active, measure that region.  Otherwise, measure
+the accessible portion of the buffer.
+
+In Org buffers, count prose using `cpj/org-count-prose'.
+Otherwise, count all words.
+
+With a prefix argument, prompt for the speaking rate in words per
+minute.  The default is 150 words per minute."
+  (interactive
+   (list
+    (when current-prefix-arg
+      (read-number "Words per minute: " 150))))
+  (let* ((wpm     (or wpm 150))
+         (regionp (use-region-p))
+         (begin   (if regionp (region-beginning) (point-min)))
+         (end     (if regionp (region-end) (point-max)))
+         (words
+          (if (derived-mode-p 'org-mode)
+              (nth 2 (cpj/org-count-prose begin end))
+            (count-words begin end)))
+         (seconds (* 60.0 (/ words wpm))))
+    (message "%s has a speaking time of %s at %d wpm (%d words)"
+             (if regionp "Region" "Buffer")
+             (format-seconds "%m minutes, %s seconds" seconds)
+             wpm
+             words)))
 
 (defun remove-wikipedia-footnotes (&optional beg end)
   "Remove Wikipedia-style numeric footnotes like [1], [23].

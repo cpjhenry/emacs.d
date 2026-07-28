@@ -1,8 +1,15 @@
 ;;; org-quote-indent.el --- Visual indent + pretty quote/verse delimiters -*- lexical-binding: t; -*-
 
-;;; commentary:
+;;; Commentary:
 
-;;; code:
+;; Install using use-package:
+
+;; (use-package org-quote-indent
+;;   :ensure nil
+;;   :after org
+;;   :hook (org-mode . org-quote-indent-mode))
+
+;;; Code:
 (require 'cl-lib)
 
 (defgroup org-quote-indent nil
