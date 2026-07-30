@@ -1,7 +1,15 @@
 ;;; org-comment-placeholder.el --- Auto-hide comment blocks with a preview placeholder -*- lexical-binding: t; -*-
-;;; commentary:
+;;; Commentary:
 
-;;; code:
+;; Enable with:
+
+;; (use-package org-comment-placeholder
+;;   :disabled
+;;   :ensure nil
+;;   :after org
+;;   :hook (org-mode . org-comment-placeholder-mode))
+
+;;; Code:
 (require 'cl-lib)
 
 (defgroup org-comment-placeholder nil

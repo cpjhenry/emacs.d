@@ -746,7 +746,10 @@
 
   (setopt dired-omit-files (concat dired-omit-files "\\|^.DS_Store\\|^.localized"))
   (add-to-list 'dired-omit-extensions ".synctex.gz")
-  (delete "~" dired-omit-extensions)); show backup files
+
+  (dolist (ext '("~" ".pdf"))
+    (setopt dired-omit-extensions
+            (delete ext dired-omit-extensions))))
 
 ;; improve file sorting
 (use-package ls-lisp
@@ -1004,6 +1007,14 @@
   :if (display-graphic-p)
   :config
   (roman-clock-period-notify-mode 1))
+
+;;; Buddhist observances
+
+(use-package buddhist-observation
+  :ensure nil
+  :commands (buddhist-observation-display
+             buddhist-observation-today
+             buddhist-observation-stop-audio))
 
 
 ;;; Initialize packages
@@ -1501,7 +1512,7 @@
    `((,(expand-file-name "Emacs nix and Homebrew.org" org-directory)
       :maxlevel . 1)
      (org-agenda-files
-      :maxlevel . 1)))
+      :maxlevel . 1) ))
   (org-refile-allow-creating-parent-nodes 'confirm)
   (org-refile-use-outline-path 'file)
   (org-outline-path-complete-in-steps nil)
@@ -1635,17 +1646,6 @@
 
 ;;; Org-mode adjunct packages
 
-(use-package org-return
-  :ensure nil
-  :after org
-  :bind (:map org-mode-map
-              ([remap org-return] . org-return-dwim)))
-
-(use-package org-comment-placeholder
-  :ensure nil
-  :after org
-  :hook (org-mode . org-comment-placeholder-mode))
-
 (use-package org-hide-inline-footnotes
   :ensure nil
   :after org
@@ -1667,7 +1667,14 @@
               ("C-c o m" . org-rehearsal-report))
   :hook (org-mode . org-rehearsal-enable-maybe))
 
+(use-package org-return
+  :ensure nil
+  :after org
+  :bind (:map org-mode-map
+              ([remap org-return] . org-return-dwim)))
+
 (use-package org-paragraph-preview
+  ;; Org export buffer with paragraphs shortened to LIMIT characters.
   :ensure nil
   :demand t
   :after org
@@ -1825,6 +1832,7 @@
   :after org)
 
 ;;; Calendar data and Org Agenda
+
 ;; Calendar data from macOS Calendar is projected into
 ;; `calendar-data.org', which is read by `org-agenda' as an ordinary
 ;; Org agenda source.
@@ -1919,11 +1927,11 @@
   :custom
   (calendar-data-file cpj/calendar-data-file)
   (calendar-data-calendar-names
-   (list "Family"
+   (list user-gmail
 	 "Birthdays"
-	 "Ottawa District 1"
 	 "Home"
-	 user-gmail))
+	 "Family"
+	 "Ottawa District 1"))
   (calendar-data-past-days 30)
   (calendar-data-future-days 365))
 

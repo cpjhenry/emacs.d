@@ -263,6 +263,20 @@ Return a list of the form (LINES SENTENCES WORDS CHARACTERS)."
        characters  (if (= characters 1) "" "s")))
     (list lines sentences words characters)))
 
+(defun org-hide-comment-blocks ()
+  "Fold all comment blocks in the current Org buffer."
+  (interactive)
+  (org-with-wide-buffer
+    (let ((positions
+           (org-element-map (org-element-parse-buffer) 'comment-block
+             (lambda (block)
+               (org-element-property :begin block)))))
+      (dolist (position positions)
+        (goto-char position)
+        (org-fold-hide-block-toggle t)))))
+
+;(add-hook 'org-mode-hook #'org-hide-comment-blocks 90)
+
 
 ;;; Org ad hoc code, quick hacks and workarounds
 ;; https://orgmode.org/worg/org-hacks.html
