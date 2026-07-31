@@ -32,10 +32,42 @@
 ;;   M-x buddhist-observation-display
 ;;   M-x buddhist-observation-stop-audio
 ;;
-;; The observation buffer provides buttons for opening texts and
-;; playing associated audio.
+;; The observation buffer provides buttons for opening texts, playing
+;; associated audio, and uses the macOS `afplay' utility for
+;; audio playback.
 ;;
 ;; Audio playback uses the macOS `afplay' utility.
+
+;; The principal Theravāda Buddhist observances are presented in
+;; Gregorian calendar order, following the modern Thai Buddhist Era
+;; (B.E.) civil calendar, whose year begins on 1 January.
+;;
+;; Historically, however, the religious cycle forms a different
+;; narrative. In the traditional lunisolar reckoning, the observances
+;; associated with the Three Jewels unfold as:
+;;
+;;   Vesak   — the Buddha
+;;   Asalha  — the Dhamma
+;;   Magha   — the Sangha
+;;
+;; This sequence reflects the progression from the Enlightenment of
+;; the Buddha, to the proclamation of the Dhamma in the First Sermon,
+;; and finally to the gathering of the enlightened Sangha.
+;;
+;; The adoption of 1 January as the beginning of the Thai civil
+;; Buddhist year preserves the traditional observances but changes
+;; their apparent order within the calendar to:
+;;
+;;   Magha
+;;   Vesak
+;;   Asalha
+;;
+;; The package therefore distinguishes between calendrical calculation
+;; (determining when an observance occurs) and its symbolic or
+;; theological interpretation.
+
+;; The order of presentation is therefore a matter of calendar
+;; convention rather than religious precedence.
 
 ;;; Code:
 

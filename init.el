@@ -1831,6 +1831,10 @@
 (use-package ox-gemini
   :after org)
 
+(use-package ox-rapport
+  :ensure nil
+  :after ox-latex)
+
 ;;; Calendar data and Org Agenda
 
 ;; Calendar data from macOS Calendar is projected into

@@ -1,0 +1,28 @@
+#+title: Committee of General Purpose
+#+author: Senior Warden
+#+date: 28 July 2026
+#+location: Goodwood Lodge No. 159 GRC
+#+start: 19:35
+#+end: 20:53
+#+project: Pig Roast Planning
+#+present: Paul, Jimmy, Dax, Tyler, Ken, Joe, Greg, Jordan, Ted
+#+logo: ~/Documents/AFAM/Goodwood/compass.jpg
+#+options: toc:nil num:nil
+
+* Call to Order
+
+The Chairman called the meeting to order at 19:35.
+
+* Attendance
+
+Committee members as recorded (9).
+
+* New Business
+
+** Pig Roast
+
+General discussion concerning preparations for the Pig Roast.
+
+* Adjournment
+
+There being no further business, the meeting adjourned at 20:53.
