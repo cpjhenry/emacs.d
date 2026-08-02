@@ -165,6 +165,53 @@ Useful if your *scratch* is already holding something important."
 			   (buffer-list))))
 
 
+;; help functions
+(defun cpj/help-mode-setup ()
+  "Configure Help buffers."
+  (setq-local font-lock-keywords-only t)
+  (goto-address-mode 1))
+
+(defun cpj/find-symbol-source (symbol)
+  "Visit the source definition of function or variable SYMBOL.
+
+When SYMBOL names both a function and a variable, prompt for which
+definition to visit.  With a symbol at point, offer it as the default."
+  (interactive
+   (list
+    (intern
+     (completing-read
+      "Find source for symbol: "
+      obarray
+      (lambda (symbol)
+        (or (fboundp symbol)
+            (boundp symbol)))
+      t
+      (when-let ((symbol (symbol-at-point)))
+        (symbol-name symbol))))))
+
+  (let ((function-p (fboundp symbol))
+        (variable-p (boundp symbol)))
+    (cond
+     ((and function-p variable-p)
+      (pcase
+          (read-char-choice
+           (format "%s is both a function and variable: [f]unction or [v]ariable? "
+                   symbol)
+           '(?f ?v))
+        (?f (find-function symbol))
+        (?v (find-variable symbol))))
+
+     (function-p
+      (find-function symbol))
+
+     (variable-p
+      (find-variable symbol))
+
+     (t
+      (user-error "%s is neither a defined function nor variable"
+                  symbol)))))
+
+
 ;; modeline functions
 ;; https://jiewawa.me/2024/10/useful-emacs-commands-for-reading/
 (defun kill-modeline ()

@@ -318,10 +318,11 @@ Each entry has the form:
   "Display liturgical year boundaries for TRADITION."
   (interactive
    (list
-    (completing-read
-     "Liturgical tradition: "
-     liturgical-year-traditions
-     nil t)))
+    (let ((completion-ignore-case t))
+      (completing-read
+       "Liturgical tradition: "
+       liturgical-year-traditions
+       nil t))))
   (let* ((year (holiday-liturgical--current-or-displayed-year))
          (entry (assoc tradition liturgical-year-traditions))
          (boundary-function (nth 1 entry))

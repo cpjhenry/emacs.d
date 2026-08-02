@@ -1,3 +1,11 @@
+;; OAuth/GPG compatibility for org-gcal/oauth2-auto.
+(setenv "GPG_AGENT_INFO" nil)
+(setq epg-pinentry-mode 'loopback
+      plstore-encrypt-to nil)
+(defvar oauth2-auto-plstore)
+(setq oauth2-auto-plstore (expand-file-name "oauth2-auto.plist"
+			  (expand-file-name "var/" user-emacs-directory)))
+
 (use-package org-gcal
   :after org
   :custom

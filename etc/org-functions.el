@@ -277,6 +277,68 @@ Return a list of the form (LINES SENTENCES WORDS CHARACTERS)."
 
 ;(add-hook 'org-mode-hook #'org-hide-comment-blocks 90)
 
+(defcustom cpj/org-agenda-holiday-action 'dictionary
+  "Action performed when `RET' is pressed on an Agenda holiday.
+
+`message' identifies the line as a holiday.
+`dictionary' looks up the holiday name using `dictionary-search'.
+nil preserves the normal Org Agenda error."
+  :type '(choice
+          (const :tag "Display a message" message)
+          (const :tag "Search the dictionary" dictionary)
+          (const :tag "Use normal Org behaviour" nil))
+  :group 'org-agenda)
+
+(defun cpj/org-agenda-return ()
+  "Act appropriately on the current Org Agenda line.
+
+Display configured Buddhist observances, visit ordinary Org and
+diary entries, and handle non-visitable holidays according to
+`cpj/org-agenda-holiday-action'."
+  (interactive)
+  (let* ((name
+          (string-trim
+           (buffer-substring-no-properties
+            (line-beginning-position)
+            (line-end-position))))
+         (key
+          (buddhist-observation-key-for-calendar-name name)))
+    (if key
+        (buddhist-observation-display key)
+      (condition-case err
+          (org-agenda-switch-to)
+        (error
+         (if (string-match-p
+              "Command not allowed in this line"
+              (error-message-string err))
+             (pcase cpj/org-agenda-holiday-action
+               ('message
+                (message "%s is a holiday" name))
+               ('dictionary
+                (dictionary-search name))
+               (_
+                (signal (car err) (cdr err))))
+           (signal (car err) (cdr err))))))))
+
+(defun my/org-agenda-list ()
+  "Refresh calendar data, then display the Org agenda."
+  (interactive)
+  (calendar-data-refresh-if-stale)
+  (org-agenda-list))
+
+(defun cpj/org-agenda-set-header ()
+  "Remove the redundant standard weekly agenda header."
+  (when (derived-mode-p 'org-agenda-mode)
+    (save-excursion
+      (goto-char (point-min))
+      (when (looking-at "^Week-agenda (W[0-9]+):\n")
+        (replace-match "")))))
+
+(defun cpj/org-agenda-register-diary-buffer ()
+  "Register the diary buffer for cleanup when Org Agenda exits."
+  (when-let* ((buf (get-buffer "diary")))
+    (add-to-list 'org-agenda-new-buffers buf)))
+
 
 ;;; Org ad hoc code, quick hacks and workarounds
 ;; https://orgmode.org/worg/org-hacks.html
@@ -493,4 +555,4 @@ PATH should be a topic that can be thrown at the man command."
 (provide 'org-functions)
 ;;; org-functions.el ends here
 
-; LocalWords:  http pandoc mmd metadown metaup Org's
+; LocalWords:  http pandoc mmd metadown metaup Org's printf href uref

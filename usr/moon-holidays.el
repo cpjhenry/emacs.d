@@ -103,9 +103,9 @@ This makes the function suitable for Calendar, `list-holidays',
 Return Magha, Vesak, Asalha, Vassa, and Pavarana when they fall
 within the active Calendar holiday window."
   (holiday-named-full-moons
-   '(2  "Magha (Sangha)")
-   '(5  "Vesak (Buddha)")
-   '(7  "Asalha (Dhamma)" "Vassa")
+   '(2  "Magha")
+   '(5  "Vesak")
+   '(7  "Asalha" "Vassa")
    '(10 "Pavarana")))
 
 (defvar holiday-buddhist-holidays

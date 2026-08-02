@@ -26,8 +26,8 @@
 ;; observed as a recurring named day.
 ;;
 ;; Example:
-;;     Yom HaShoah            -> holiday list: formal annual observance
-;;     Kristallnacht (1938)   -> diary: specific historical remembrance
+;;     Yom HaShoah -> holiday list: formal annual observance
+;;     Kristallnacht -> diary: specific historical remembrance
 ;;
 ;; In short:
 ;;     observance -> holiday list
@@ -49,7 +49,7 @@
 
 (message "→ Setting holidays and time defaults.")
 
-;; Replacement holiday definitions
+;;; Replacement holiday definitions
 ;;
 ;; These functions replace or simplify selected holiday definitions
 ;; supplied by Emacs. They either correct observance rules, improve
@@ -128,8 +128,7 @@ nominal date in the Hebrew calendar."
               "Tisha B'Av (observed)"))
           h)))))
 
-
-;; Additional holiday calculations and observances
+;;; Additional holiday calculations and observances
 ;;
 ;; Custom calculations, helper functions, and observances not provided
 ;; by the standard Emacs holiday libraries.
@@ -299,8 +298,7 @@ Tuesday instead."
      (list
       (list start "Archives Awareness Week begins")))))
 
-
-;; -- Set holiday variables --
+;;; -- Set holiday variables --
 ;; Static holiday lists vs computed holiday generators (solar, Bahá’í, etc.)
 
 (let ((inhibit-message t))
@@ -486,7 +484,6 @@ Tuesday instead."
      ("Australia/Sydney" "Sydney")
      ("NZ" "Wellington"))))
 
-
 (defvar holiday-scottish-observances
   '((holiday-fixed 1 25  "Robert Burns Day")
     (holiday-fixed 11 30 "St. Andrew's Day")

@@ -1,6 +1,6 @@
 ;;; ox-rapport.el --- English report/minutes exporter for Org -*- lexical-binding: t; -*-
 
-;; Version: 0.3.0
+;; Version: 0.4.0
 ;; Package-Requires: ((emacs "29.1") (org "9.7"))
 ;; Keywords: outlines, wp, tex
 ;; URL: local
@@ -34,8 +34,20 @@
 ;;
 ;;   None recorded.
 ;;
+;; Action items are ordinary list items marked with an ACTION suffix:
+;;
+;;   - WM: to speak to Marc about the comically large cheque. :ACTION:
+;;   - Confirm volunteer assignments. :ACTION:
+;;
+;; The optional text before the first colon identifies the person or
+;; office responsible.  Rapport removes the ACTION marker and renders
+;; the items as:
+;;
+;;   Action Item: WM to speak to Marc about the comically large cheque.
+;;   Action Item: Confirm volunteer assignments.
+;;
 ;; Missing metadata is omitted rather than represented by an empty
-;; label. Duration is calculated from START and END when both are
+;; label.  Duration is calculated from START and END when both are
 ;; present, and displayed parenthetically in the meeting line.
 ;; An explicit DURATION value overrides the calculated duration.
 
@@ -402,9 +414,53 @@ as a filesystem path."
         #'identity
         (nreverse cells)
         "\\hfill\n")
-       "\n"
-       ;"\\rapportseparator\n"
-       ))))
+       "\n"))))
+
+(defun ox-rapport--action-contents (contents)
+  "Return specially formatted CONTENTS when it ends with :ACTION:.
+
+The optional text before the first colon is treated as the responsible
+person or office.  Return nil when CONTENTS is not an action item."
+  (let ((case-fold-search t)
+        (contents (string-trim contents)))
+    (when (string-match-p
+           "[[:space:]]*:ACTION:[[:space:]]*\\'"
+           contents)
+      (let ((action
+             (string-trim
+              (replace-regexp-in-string
+               "[[:space:]]*:ACTION:[[:space:]]*\\'"
+               ""
+               contents
+               t
+               t))))
+        (if (string-match
+             "\\`\\([^:\n]+\\):[[:space:]]*\\(.+\\)\\'"
+             action)
+            (let ((owner
+                   (string-trim
+                    (match-string 1 action)))
+                  (text
+                   (string-trim
+                    (match-string 2 action))))
+              (format
+               "\\textbf{Action Item:} \\textbf{%s} %s"
+               owner
+               text))
+          (format
+           "\\textbf{Action Item:} %s"
+           action))))))
+
+(defun ox-rapport-item (item contents info)
+  "Transcode ITEM with CONTENTS according to INFO.
+
+Items ending in :ACTION: are rendered as action items.  All other items
+are delegated unchanged to `org-latex-item'."
+  (org-latex-item
+   item
+   (or (ox-rapport--action-contents contents)
+       contents)
+   info))
 
 (defun ox-rapport--footer (project title)
   "Build footer configuration from PROJECT or TITLE."
@@ -418,7 +474,7 @@ as a filesystem path."
       "  \\sffamily\\small\\color{rapportgray}%s}\n"
       "\\fancyfoot[R]{%%\n"
       "  \\sffamily\\small\\color{rapportgray}"
-      "\\thepage\\ of \\pageref{LastPage}}\n")
+      "\\thepage\\ of \\pageref*{LastPage}}\n")
      (ox-rapport--tex-text identity))))
 
 (defun ox-rapport--pdf-metadata (title author project)
@@ -440,6 +496,8 @@ as a filesystem path."
                (ox-rapport--tex-text project))
        fields))
     (push "pdfcreator={Org mode ox-rapport}" fields)
+
+    (push "hidelinks" fields)
 
     (format
      "\\hypersetup{\n  %s\n}\n"
@@ -475,18 +533,18 @@ as a filesystem path."
            (ox-rapport--duration
             start
             end)))
-	 (meeting-line
-	  (ox-rapport--meeting-line
-	   date
-	   start
-	   end
-	   duration))
+         (meeting-line
+          (ox-rapport--meeting-line
+           date
+           start
+           end
+           duration))
          (frontmatter
           (concat
-	   (ox-rapport--pdf-metadata
-	    title
-	    author
-	    project)
+           (ox-rapport--pdf-metadata
+            title
+            author
+            project)
 
            (ox-rapport--footer
             project
@@ -508,7 +566,7 @@ as a filesystem path."
             "")
 
            "\\end{minipage}\n"
-           "\\vspace{1em}\n"))) ; 0.75
+           "\\vspace{1em}\n")))
 
     ;; Let the parent LaTeX backend create the document, but suppress
     ;; its ordinary title because Rapport supplies its own front matter.
@@ -551,7 +609,8 @@ as a filesystem path."
     (:logo "LOGO" nil nil t))
 
   :translate-alist
-  '((template . ox-rapport-template)))
+  '((item . ox-rapport-item)
+    (template . ox-rapport-template)))
 
 ;;;###autoload
 (defun ox-rapport-export-to-latex
@@ -632,17 +691,4 @@ as a filesystem path."
 
 ;;; ox-rapport.el ends here
 
-; LocalWords:  wp documentclass usepackage headheight headsep xcolor
-; LocalWords:  footskip fontspec graphicx dvipsnames amsmath amssymb
-; LocalWords:  tabularx booktabs longtable enumitem microtype parskip
-; LocalWords:  fancyhdr lastpage hyperref definecolor rapportgray
-; LocalWords:  rapportlightgray microtypesetup setlength parindent
-; LocalWords:  setlist topsep itemsep parsep partopsep newcommand
-; LocalWords:  rapportseparator nointerlineskip vspace textcolor
-; LocalWords:  textwidth rapportlabel normalsize scshape pagestyle
-; LocalWords:  fancyhead fancyfoot renewcommand headrulewidth hfill
-; LocalWords:  footrulewidth subsubsection unexported minipage color
-; LocalWords:  raggedleft includegraphics linewidth keepaspectratio
-; LocalWords:  detokenize noindent raggedright fontsize selectfont
-; LocalWords:  sffamily thepage pageref pdftitle pdfauthor pdfsubject
-; LocalWords:  pdfcreator hypersetup
+; LocalWords:  hidelinks Transcode

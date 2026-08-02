@@ -11,8 +11,9 @@
   "Weather forecast from Environment Canada."
   (interactive)
   (switch-to-buffer "*WX*")
-  (shell-command "alert -sfm" (current-buffer))
+  (shell-command "alert -sfml" (current-buffer))
   (text-scale-increase 1)
+  (form-feed-st-mode)
   (view-mode))
 
 (defun wx () "Local weather."

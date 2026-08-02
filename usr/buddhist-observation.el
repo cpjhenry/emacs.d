@@ -71,9 +71,11 @@
 
 ;;; Code:
 
-(require 'button)
 (require 'calendar)
 (require 'moon-holidays)
+
+(require 'button)
+(require 'seq)
 (require 'subr-x)
 
 (defgroup buddhist-observation nil
@@ -247,16 +249,31 @@ observances."
   (buddhist-observation-for-date
    (calendar-current-date)))
 
+(defun buddhist-observation-key-for-calendar-name (name)
+  "Return the observation key whose calendar name is NAME.
+
+Return nil when no configured observation has that calendar name."
+  (when-let ((entry
+              (seq-find
+               (lambda (entry)
+                 (equal name
+                        (plist-get (cdr entry)
+                                   :calendar-name)))
+               buddhist-observation-data)))
+    (car entry)))
+
 (defun buddhist-observation--read-key ()
   "Read and return a Buddhist observation key."
-  (let ((choices
-         (mapcar
-          (lambda (entry)
-            (let* ((key (car entry))
-                   (record (cdr entry))
-                   (title (plist-get record :title)))
-              (cons title key)))
-          buddhist-observation-data)))
+  (let* ((completion-ignore-case t)
+         (choices
+          (mapcar
+           (lambda (entry)
+             (let* ((key (car entry))
+                    (record (cdr entry))
+                    (calendar-name
+                     (plist-get record :calendar-name)))
+               (cons calendar-name key)))
+           buddhist-observation-data)))
     (cdr
      (assoc-string
       (completing-read "Buddhist observance: "
@@ -526,4 +543,4 @@ observances."
 
 ;;; buddhist-observation.el ends here
 
-; LocalWords:  buddhist afplay TBCMorningChanting Vesākha wav aiff
+; LocalWords:  buddhist afplay TBCMorningChanting wav aiff

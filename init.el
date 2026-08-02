@@ -3,7 +3,7 @@
 ;;; Commentary:
 ;; brew install emacs-plus
 
-;; - `auto-insert' inserts code templates, including GPL notice.
+;; `auto-insert' inserts code templates, including GPL notice.
 
 ;; Naming convention:
 ;;
@@ -51,14 +51,6 @@
 (load "rc/me" 'noerror 'nomessage)
 (eval-after-load "startup"
   '(fset 'display-startup-echo-area-message (lambda ())))
-
-;; OAuth/GPG compatibility for org-gcal/oauth2-auto.
-(setenv "GPG_AGENT_INFO" nil)
-(setq epg-pinentry-mode 'loopback
-      plstore-encrypt-to nil)
-(defvar oauth2-auto-plstore)
-(setq oauth2-auto-plstore (expand-file-name "oauth2-auto.plist"
-			  (expand-file-name "var/" user-emacs-directory)))
 
 
 ;;; Customize
@@ -151,7 +143,8 @@
 	(package-install 'use-package))
 (use-package use-package
   :ensure nil
-  :custom (use-package-always-ensure t)
+  :custom
+  (use-package-always-ensure t)
   (use-package-compute-statistics t)
   (use-package-verbose t))
 
@@ -227,6 +220,7 @@
 	;; completion
 	completion-auto-help 'always
 	completion-auto-select 'second-tab
+	completion-ignore-case t
 	completion-styles '(basic initials substring)
 	read-buffer-completion-ignore-case t
 	read-file-name-completion-ignore-case t)
@@ -292,17 +286,6 @@
 ;; (display-time-mode)
 ;; (load "rc/mm" 'noerror 'nomessage) ; memento-mori
 
-(use-package ewth
-  ;; https://github.com/chubin/wttr.in for deets
-  ;; https://wttr.in/:help for options
-  :disabled
-  :if *natasha*
-  :ensure nil
-  :defer 2
-  :config
-  (setq ewth-url "http://wttr.in/Ottawa?format=2&d&T")
-  (ewth-mode))
-
 ;; startup time
 (defun efs/display-startup-time ()
   (message
@@ -341,7 +324,6 @@
          ("C-x x s" . save-all-unsaved))
   :hook (find-file . large-find-file-hook)
   :config
-  ;; Emacs suffers when you open large files.
   (dolist (key '("<home>" "s-<left>" "C-a"))
     (when (key-binding (kbd key))
       (global-set-key (kbd key)
@@ -404,9 +386,15 @@
               ("]" . Info-history-forward)
               ("{" . Info-backward-node)
               ("}" . Info-forward-node))
-    :config
-    (add-to-list 'Info-additional-directory-list
-		 (expand-file-name "usr/info/" user-emacs-directory)))
+  :config
+  (dolist (face '(info-title-1
+                  info-title-2
+                  info-title-3
+                  info-title-4))
+    (set-face-attribute face nil :family "Inconsolata"))
+
+  (add-to-list 'Info-additional-directory-list
+               (expand-file-name "usr/info/" user-emacs-directory)))
 
 (use-package calc
   :ensure nil
@@ -428,15 +416,12 @@
   :ensure nil
   :hook
   (help-mode . cpj/help-mode-setup)
-  :bind (:map help-mode-map
-              ("["     . help-go-back)
-              ("]"     . help-go-forward)
-              ("M-RET" . goto-address-at-point))
-  :config
-  (defun cpj/help-mode-setup ()
-    "Configure Help buffers."
-    (setq-local font-lock-keywords-only t)
-    (goto-address-mode 1)))
+  :bind
+  (("C-h C-s" . cpj/find-symbol-source)
+   :map help-mode-map
+   ("["       . help-go-back)
+   ("]"       . help-go-forward)
+   ("M-RET"   . goto-address-at-point)))
 
 (use-package emacs-news-mode
   :ensure nil
@@ -627,21 +612,6 @@
 		("C-x C-d" . ido-dired))
 	:init	(ido-mode t)
 	:config (define-key (cdr ido-minor-mode-map-entry) [remap write-file] nil); C-x C-w remapping
-	(add-to-list 'ido-ignore-buffers "*Messages*")
-	(add-to-list 'ido-ignore-buffers "*Shell Command Output*")
-	(add-to-list 'ido-ignore-buffers "^*tramp/")
-	(add-to-list 'ido-ignore-buffers "^*debug ")
-	(add-to-list 'ido-ignore-buffers "^*Compile-Log*")
-	(add-to-list 'ido-ignore-buffers "^*Async-native-compile-log*")
-	(add-to-list 'ido-ignore-buffers "^*Backtrace*")
-	(add-to-list 'ido-ignore-buffers "^*Warnings*")
-	(add-to-list 'ido-ignore-buffers "*Flymake log*")
-	(add-to-list 'ido-ignore-files ".DS_Store")
-	(add-to-list 'ido-ignore-files "ido.last")
-	(add-to-list 'completion-ignored-extensions ".synctex.gz")
-	(add-to-list 'completion-ignored-extensions ".tex")
-	(add-to-list 'completion-ignored-extensions ".pdf")
-
 	(use-package ido-sort-mtime :config (ido-sort-mtime-mode 1)))
 
 ;; M-x enhancement
@@ -680,7 +650,8 @@
                      (name . "^\\*Virgo\\*")
                      (name . "^calendar@*")
 		     (name . "^\\*Holidays\\*")
-		     (name . "^\\*ind\\*")))
+		     (name . "^\\*ind\\*")
+		     (name . "^\\*Buddhist Observation\\*")))
       ("TeX"  (or (name . "\\.tex")
 		  (name . "\\.bib")))
       ("ePub" (mode . nov-mode))
@@ -739,17 +710,47 @@
   (defalias 'dired-find-file 'dired-find-alternate-file)
   (advice-add 'dired-find-file-other-window :after
 	      (lambda (&rest r) (delete-other-windows)))
-
   (if (keymap-lookup dired-mode-map "% s")
       (message "Error: %% s already defined in dired-mode-map")
-    (define-key dired-mode-map "%s" 'my-dired-substspaces))
+    (define-key dired-mode-map "%s" 'my-dired-substspaces)))
 
-  (setopt dired-omit-files (concat dired-omit-files "\\|^.DS_Store\\|^.localized"))
-  (add-to-list 'dired-omit-extensions ".synctex.gz")
+;; Completion and Dired visibility
 
-  (dolist (ext '("~" ".pdf"))
-    (setopt dired-omit-extensions
-            (delete ext dired-omit-extensions))))
+(dolist (pattern '("\\`\\*Messages"
+                   "\\`\\*Shell Command Output"
+                   "\\`\\*tramp/"
+                   "\\`\\*debug"
+                   "\\`\\*Compile-Log"
+                   "\\`\\*Async-native-compile-log"
+                   "\\`\\*Backtrace"
+                   "\\`\\*Warnings"
+                   "\\`\\*Flymake log"
+		   "\\`\\*Ido Completions"
+		   "\\`\\*scratch"))
+  (add-to-list 'ido-ignore-buffers pattern))
+
+(dolist (pattern '("\\.~"
+                   "\\.DS_Store"
+                   "ido\\.last"))
+  (add-to-list 'ido-ignore-files pattern))
+
+(add-to-list 'ido-ignore-directories "\\.~")
+
+(dolist (extension '(".synctex.gz"
+                     ".tex"
+                     ".pdf"
+                     ".pages"))
+  (add-to-list 'completion-ignored-extensions extension))
+
+(setopt dired-omit-files
+        (concat dired-omit-files
+                "\\|^.DS_Store"
+                "\\|^.localized"))
+
+(add-to-list 'dired-omit-extensions ".synctex.gz")
+
+(setopt dired-omit-extensions
+        (delete "~" dired-omit-extensions))
 
 ;; improve file sorting
 (use-package ls-lisp
@@ -817,25 +818,6 @@
 
 (when *mac*
 
-  ;; start Emacs server
-
-  (defun cpj/kill-daemon-save-buffers-kill-terminal ()
-    "Disable `mac-pseudo-daemon-mode', then save buffers and exit Emacs."
-    (interactive)
-    (when (bound-and-true-p mac-pseudo-daemon-mode)
-      (mac-pseudo-daemon-mode -1))
-    (save-buffers-kill-terminal))
-
-  (use-package mac-pseudo-daemon
-    :bind ( ("C-x C-c" . cpj/kill-daemon-save-buffers-kill-terminal))
-    :config (mac-pseudo-daemon-mode 1))
-
-  (require 'server)
-  (unless (server-running-p) (server-start))
-  (when (server-running-p) (message "→ Server running."))
-
-  ;; Fix weird frame-size issue on Mac, when calling from `emacsclient'.
-
   ;; Finder's `Open With...' and `org-protocol' use the custom
   ;; `Emacs Client.app' in ~/Applications.
   ;;
@@ -877,42 +859,24 @@
   ;; With `-c' removed from the Finder handler, no client-frame geometry
   ;; repair should normally be needed.
 
-  (defconst cpj/frame-workarea-height-fudge 4
-    "Pixels to subtract from workarea height when resizing macOS frames.")
+  ;;; start Emacs server
 
-  ;; Finder/Emacs Client.app frames can report `fullscreen' as
-  ;; `maximized' without being visually maximized. Resizing to the
-  ;; full monitor workarea almost works, but on macOS the bottom of
-  ;; the frame can clip the minibuffer. Subtracting a few pixels gives
-  ;; the NS frame enough room to display it properly.
+  (defun cpj/kill-daemon-save-buffers-kill-terminal ()
+    "Disable `mac-pseudo-daemon-mode', then save buffers and exit Emacs."
+    (interactive)
+    (when (bound-and-true-p mac-pseudo-daemon-mode)
+      (mac-pseudo-daemon-mode -1))
+    (save-buffers-kill-terminal))
 
-  (defun cpj/maximize-frame-by-geometry (&optional frame)
-    "Resize FRAME to fill its monitor workarea."
-    (let* ((frame (or frame (selected-frame)))
-           (workarea (alist-get 'workarea
-				(frame-monitor-attributes frame))))
-      (when (and (frame-live-p frame)
-		 (display-graphic-p frame)
-		 workarea)
-	(let ((left   (nth 0 workarea))
-              (top    (nth 1 workarea))
-              (width  (nth 2 workarea))
-              (height (- (nth 3 workarea)
-			 cpj/frame-workarea-height-fudge)))
-          (modify-frame-parameters frame '((fullscreen . nil)))
-          (set-frame-position frame left top)
-          (set-frame-size frame width height t)))))
+  (use-package mac-pseudo-daemon
+    :bind ( ("C-x C-c" . cpj/kill-daemon-save-buffers-kill-terminal))
+    :config (mac-pseudo-daemon-mode 1))
 
-  ;; Uncomment hook ↓ ↓ ↓ when creating new frames. When calling
-  ;; emacsclient without `-c', this should not be needed. You may call
-  ;; `cpj/maximize-frame-by-geometry' manually.
-
-  ;; (add-hook 'server-visit-hook
-  ;;           #'cpj/maximize-frame-by-geometry)
-
+  (require 'server)
+  (unless (server-running-p) (server-start))
+  (when (server-running-p) (message "→ Server running."))
 
   ;; Fix frame not-selected issue when closing secondary frame.
-  ;; This is still a thing.
 
   (defun cpj/activate-emacs ()
     "Activate the Emacs application on macOS."
@@ -930,6 +894,11 @@
     "Return focus to Emacs after deleting a frame."
     (run-at-time 0 nil #'cpj/refocus-selected-frame))
 
+  (advice-add 'delete-frame
+              :after #'cpj/refocus-selected-frame-after-delete)
+
+  ;; Fix org-capture capture frame not selected
+
   (defun cpj/refocus-org-capture-frame ()
     "Raise and focus the frame displaying an Org capture buffer."
     (let ((frame (selected-frame)))
@@ -943,16 +912,12 @@
        frame)))
 
   (add-hook 'org-capture-mode-hook
-            #'cpj/refocus-org-capture-frame)
-
-  (advice-add 'delete-frame
-              :after #'cpj/refocus-selected-frame-after-delete))
+            #'cpj/refocus-org-capture-frame))
 
 (use-package mac-notch-tab-bar
   :ensure nil
   :when *mac*
-  :config
-  (mac-notch-tab-bar-mode 1))
+  :config (mac-notch-tab-bar-mode 1))
 
 
 ;;; calendar
@@ -986,6 +951,7 @@
 
 (advice-add 'calendar-exit :before #'save-diary-before-calendar-exit)
 
+(message "→ Configuring diary.")
 (require 'diary-lib)
 (setopt diary-file (expand-file-name "~/Documents/diary")
         diary-list-include-blanks nil)
@@ -1009,8 +975,7 @@
   (roman-clock-period-notify-mode 1))
 
 ;;; Buddhist observances
-
-(use-package buddhist-observation
+(use-package buddhist-observation; usr/
   :ensure nil
   :commands (buddhist-observation-display
              buddhist-observation-today
@@ -1209,6 +1174,8 @@
 
 (use-package visible-mark) ; make the mark visible
 
+(use-package wiki-summary)
+
 
 ;;; Text, Prog, and Markdown modes
 (message "→ Configuring modes.")
@@ -1238,10 +1205,6 @@
 
 (if my/emacs-30-p (global-visual-wrap-prefix-mode)
   (use-package adaptive-wrap :hook (visual-line-mode . adaptive-wrap-prefix-mode)))
-
-(use-package hl-sentence) ; highlight current sentence
-
-(use-package typo) ; minor mode for typographic editing
 
 (use-package unfill
   :bind (("M-q" . unfill-toggle)))
@@ -1872,7 +1835,8 @@
   :after org
   :bind (("C-c a" . my/org-agenda-list)
          :map org-agenda-mode-map
-         ("q" . org-agenda-exit))
+         ("q" . org-agenda-exit)
+	 ("RET" . cpj/org-agenda-return))
   :hook ((org-agenda-finalize . cpj/org-agenda-register-diary-buffer)
 	 (org-agenda-finalize . cpj/org-agenda-set-header)
 	 (org-agenda-mode . hl-line-mode))
@@ -1901,26 +1865,7 @@
                       :inherit nil
                       :foreground (face-foreground 'default nil t)
                       :background (face-background 'default nil t)
-                      :weight 'normal)
-
-  (defun my/org-agenda-list ()
-    "Refresh calendar data, then display the Org agenda."
-    (interactive)
-    (calendar-data-refresh-if-stale)
-    (org-agenda-list))
-
-  (defun cpj/org-agenda-set-header ()
-    "Remove the redundant standard weekly agenda header."
-    (when (derived-mode-p 'org-agenda-mode)
-      (save-excursion
-	(goto-char (point-min))
-	(when (looking-at "^Week-agenda (W[0-9]+):\n")
-          (replace-match "")))))
-
-  (defun cpj/org-agenda-register-diary-buffer ()
-    "Register the diary buffer for cleanup when Org Agenda exits."
-    (when-let* ((buf (get-buffer "diary")))
-      (add-to-list 'org-agenda-new-buffers buf))))
+                      :weight 'normal))
 
 (use-package calfw :defer t)
 (use-package maccalfw :defer t)
@@ -2464,17 +2409,13 @@
 
 
 ;;; Ctrl-x 8 sequences
-(defun my/insert-zero-width-space ()
-  "Insert a zero-width space."
-  (interactive)
-  (insert #x200B))
-
 (with-eval-after-load 'iso-transl
-  (keymap-set iso-transl-ctl-x-8-map "0" #'my/insert-zero-width-space)
+  (keymap-set iso-transl-ctl-x-8-map "0" "\u200B")
   (keymap-set iso-transl-ctl-x-8-map "a |" "↕"))
 
-(which-key-alias "C-x 8" "keys")
+(which-key-alias "C-x 8"   "keys")
 (which-key-alias "C-x 8 0" "ZWS")
+(which-key-alias "C-x 8 a" "arrows")
 (which-key-alias "C-x 8 e" "emojis")
 
 
