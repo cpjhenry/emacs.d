@@ -53,8 +53,10 @@ Removes leading whitespace, trailing whitespace, collapses runs of
 2+ literal spaces to one space, and collapses multiple blank lines
 to a single blank line.
 
-Tabs are left untouched.  In Org buffers, internal space-collapsing
-is skipped in tables, src blocks, and fixed-width regions."
+Tabs are left untouched.  In non-Org text buffers, leading `* '
+list markers are converted to `- '.  In Org buffers, internal
+space-collapsing is skipped in tables, src blocks, and fixed-width
+regions."
   (interactive
    (if (use-region-p)
        (list (region-beginning) (region-end))
@@ -71,6 +73,13 @@ is skipped in tables, src blocks, and fixed-width regions."
         (end-of-line)
         (delete-horizontal-space)
         (forward-line 1))
+
+      ;; Normalize Markdown-style bullets in non-Org text buffers.
+      (when (and (derived-mode-p 'text-mode)
+                 (not (derived-mode-p 'org-mode)))
+        (goto-char (point-min))
+        (while (re-search-forward "^\\* " nil t)
+          (replace-match "- " t t)))
 
       ;; Collapse runs of 2+ literal spaces to one space.
       ;; Tabs are untouched.  Org tables/src/fixed-width regions are skipped.

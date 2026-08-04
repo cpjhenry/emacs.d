@@ -208,6 +208,7 @@
 	show-paren-style 'parenthesis
 	show-paren-when-point-inside-paren t
 	show-paren-when-point-in-periphery t
+	time-stamp-start "[Tt]ime-stamp:[ \t]+\\\\?[\"<]+"
 	trash-directory "~/.Trash"
 	use-dialog-box nil
 	use-file-dialog nil
@@ -266,11 +267,11 @@
 
 (use-package doom-modeline
   :custom (doom-modeline-column-zero-based nil)
-	(doom-modeline-enable-word-count t)
-	(doom-modeline-continuous-word-count-modes '(markdown-mode gfm-mode org-mode text-mode))
-	(doom-modeline-icon nil)
-	(doom-modeline-project-name nil)
-	(doom-modeline-time-icon nil)
+  (doom-modeline-enable-word-count t)
+  (doom-modeline-continuous-word-count-modes '(markdown-mode gfm-mode org-mode text-mode))
+  (doom-modeline-icon nil)
+  (doom-modeline-project-name nil)
+  (doom-modeline-time-icon nil)
   :hook (after-init . doom-modeline-mode))
 
 (setopt	battery-mode-line-format "%p%% "
@@ -375,7 +376,14 @@
 (use-package net-utils
   :ensure nil
   :custom
-  (whois-server-name "whois.ca.fury.ca"))
+  (whois-server-name "whois.ca.fury.ca")
+  :config
+  (defun cpj/whois-use-net-utils-mode (&rest _)
+    "Put the Whois results buffer in `net-utils-mode'."
+    (when-let* ((buffer (get-buffer "*Whois*")))
+      (with-current-buffer buffer
+	(net-utils-mode))))
+  (advice-add #'whois :after #'cpj/whois-use-net-utils-mode))
 
 (use-package info
   :ensure nil
@@ -542,11 +550,6 @@
 ;; Comment continuation.
 (keymap-set emacs-lisp-mode-map "S-<return>" #'default-indent-new-line)
 
-;; Comment out malfunctioning code, or, well, comment.
-(defmacro comment (&rest _body)
-  "Ignore BODY, just like `ignore', but as a macro."
-  nil)
-
 ;;;; Which-key
 
 (use-package which-key
@@ -584,21 +587,6 @@
   :ensure nil
   :bind (("C-c n" . narrow-dwim)))
 
-;;;; Deferred / disabled
-
-;; Copies every file you save in Emacs to a backup directory tree.
-;; (use-package backup-each-save
-;;   :ensure nil
-;;   :hook (after-save . backup-each-save))
-
-;; Real auto-save.
-;; (when (>= emacs-major-version 26)
-;;   (auto-save-visited-mode 1))
-
-;; whois
-;; HACK: when executing command, resultant buffer needs local key set.
-;; (advice-add 'whois :after ...)
-
 
 ;;; IDO
 ;; https://www.emacswiki.org/emacs/InteractivelyDoThings
@@ -609,80 +597,23 @@
 		(ido-enable-flex-matching t)
 		(ido-show-dot-for-dired nil)
 	:bind (	("C-<tab>" . ido-switch-buffer)
-		("C-x C-d" . ido-dired))
+		("C-x C-d" . ido-dired)
+		:map ido-common-completion-map
+		("M-TAB" . ido-switch-to-completions))
 	:init	(ido-mode t)
-	:config (define-key (cdr ido-minor-mode-map-entry) [remap write-file] nil); C-x C-w remapping
-	(use-package ido-sort-mtime :config (ido-sort-mtime-mode 1)))
+	:config
+	(define-key
+	 (cdr ido-minor-mode-map-entry)
+	 [remap write-file] nil)); C-x C-w remapping
+
+(use-package ido-sort-mtime
+  :config (ido-sort-mtime-mode 1))
 
 ;; M-x enhancement
 (use-package smex
   :custom (smex-save-file (concat user-emacs-directory "var/smex.history"))
   :bind ( ("M-x" . smex))
   :config (smex-initialize))
-
-
-;;; Ibuffer
-;; https://www.emacswiki.org/emacs/IbufferMode
-(use-package ibuffer
-  :ensure nil
-  :demand t
-  :custom (ibuffer-default-sorting-mode 'alphabetic)
-  (ibuffer-expert t)
-  (ibuffer-saved-filter-groups
-   '(("home"
-      ("Emacs" (or (name . "^\\*[^*]*scratch[^*]*\\*$")
-                   (name . "^\\*Messages\\*$")
-                   (name . "\\.el")))
-      ("Dired" (mode . dired-mode))
-      ("Shell" (or (mode . sh-mode)
-                   (mode . mistty-mode)))
-      ("Text" (or (name . "\\.txt")
-                  (name . "\\.text")))
-      ("Markdown" (or (name . "\\.md")
-                      (name . "\\.ronn")))
-      ("Org"  (name . "\\.org"))
-      ("Planner" (or (mode . calendar-mode)
-                     (mode . diary-mode)
-                     (mode . diary-fancy-display-mode)
-		     (mode . calfw-calendar-mode)
-                     (name . "^\\*daily-info\\*")
-                     (name . "^\\*Org Agenda\\*")
-                     (name . "^\\*Virgo\\*")
-                     (name . "^calendar@*")
-		     (name . "^\\*Holidays\\*")
-		     (name . "^\\*ind\\*")
-		     (name . "^\\*Buddhist Observation\\*")))
-      ("TeX"  (or (name . "\\.tex")
-		  (name . "\\.bib")))
-      ("ePub" (mode . nov-mode))
-      ;("erc" (mode . erc-mode))
-      ("Eww"  (mode . eww-mode))
-      ("gnus" (or (mode . message-mode)
-                  (mode . bbdb-mode)
-                  (mode . mail-mode)
-                  (mode . gnus-group-mode)
-                  (mode . gnus-summary-mode)
-                  (mode . gnus-article-mode)
-                  (name . "\\.bbdb$")
-                  (name . "^\\.newsrc-dribble"))) )))
-  :bind ( :map ibuffer-mode-map
-          ("C-x C-f" . ibuffer-ido-find-file)
-          ("<up>" . ibuffer-previous-line)
-          ("<down>" . ibuffer-next-line)
-          ("<left>" . ibuffer-previous-header)
-          ("<right>" . ibuffer-next-header)
-          ("<return>" . my/ibuffer-visit-buffer))
-  :init   (defalias 'list-buffers 'ibuffer) ; always use Ibuffer
-  :config (add-hook 'ibuffer-mode-hook
-	    (lambda ()
-	      (ibuffer-switch-to-saved-filter-groups "home")
-	      (ibuffer-update nil t)))
-  (require 'ibuf-ext)
-  (add-to-list 'ibuffer-never-show-predicates "^\\*Messages\\*")
-  (add-to-list 'ibuffer-never-show-predicates "^\\*Shell Command Output\\*")
-  (add-to-list 'ibuffer-never-show-predicates "^\\*tramp/")
-  (add-to-list 'ibuffer-never-show-predicates "^\\*Latex Preview Pane Welcome\\*")
-  (add-to-list 'ibuffer-never-show-predicates "^\\*Flymake log\\*"))
 
 
 ;;; Dired
@@ -784,6 +715,70 @@
   :config
   (easy-menu-add-item dired-mode-map '(menu-bar immediate)
     ["Reveal in Finder" reveal-in-osx-finder :help "Reveal the file in the OS X Finder"]))
+
+
+;;; Ibuffer
+;; https://www.emacswiki.org/emacs/IbufferMode
+(use-package ibuffer
+  :ensure nil
+  :demand t
+  :custom (ibuffer-default-sorting-mode 'alphabetic)
+  (ibuffer-expert t)
+  (ibuffer-saved-filter-groups
+   '(("home"
+      ("Emacs" (or (name . "^\\*[^*]*scratch[^*]*\\*$")
+                   (name . "^\\*Messages\\*$")
+                   (name . "\\.el")))
+      ("Dired" (mode . dired-mode))
+      ("Shell" (or (mode . sh-mode)
+                   (mode . mistty-mode)))
+      ("Text" (or (name . "\\.txt")
+                  (name . "\\.text")))
+      ("Markdown" (or (name . "\\.md")
+                      (name . "\\.ronn")))
+      ("Org"  (name . "\\.org"))
+      ("Planner" (or (mode . calendar-mode)
+                     (mode . diary-mode)
+                     (mode . diary-fancy-display-mode)
+		     (mode . calfw-calendar-mode)
+                     (name . "^\\*daily-info\\*")
+                     (name . "^\\*Org Agenda\\*")
+                     (name . "^\\*Virgo\\*")
+                     (name . "^calendar@*")
+		     (name . "^\\*Holidays\\*")
+		     (name . "^\\*ind\\*")
+		     (name . "^\\*Buddhist Observation\\*")))
+      ("TeX"  (or (name . "\\.tex")
+		  (name . "\\.bib")))
+      ("ePub" (mode . nov-mode))
+      ;("erc" (mode . erc-mode))
+      ("Eww"  (mode . eww-mode))
+      ("gnus" (or (mode . message-mode)
+                  (mode . bbdb-mode)
+                  (mode . mail-mode)
+                  (mode . gnus-group-mode)
+                  (mode . gnus-summary-mode)
+                  (mode . gnus-article-mode)
+                  (name . "\\.bbdb$")
+                  (name . "^\\.newsrc-dribble"))) )))
+  :bind ( :map ibuffer-mode-map
+          ("C-x C-f" . ibuffer-ido-find-file)
+          ("<up>" . ibuffer-previous-line)
+          ("<down>" . ibuffer-next-line)
+          ("<left>" . ibuffer-previous-header)
+          ("<right>" . ibuffer-next-header)
+          ("<return>" . my/ibuffer-visit-buffer))
+  :init   (defalias 'list-buffers 'ibuffer) ; always use Ibuffer
+  :config (add-hook 'ibuffer-mode-hook
+	    (lambda ()
+	      (ibuffer-switch-to-saved-filter-groups "home")
+	      (ibuffer-update nil t)))
+  (require 'ibuf-ext)
+  (add-to-list 'ibuffer-never-show-predicates "^\\*Messages\\*")
+  (add-to-list 'ibuffer-never-show-predicates "^\\*Shell Command Output\\*")
+  (add-to-list 'ibuffer-never-show-predicates "^\\*tramp/")
+  (add-to-list 'ibuffer-never-show-predicates "^\\*Latex Preview Pane Welcome\\*")
+  (add-to-list 'ibuffer-never-show-predicates "^\\*Flymake log\\*"))
 
 
 ;;; Tramp
@@ -1845,6 +1840,7 @@
   (org-agenda-skip-deadline-if-done t)
   (org-agenda-skip-additional-timestamps-same-entry t)
   (org-agenda-skip-scheduled-if-done t)
+  (org-agenda-span 'week)
   (org-agenda-start-on-weekday 1)
   (org-agenda-text-search-extra-files '(agenda-archives))
   (org-agenda-time-leading-zero t)
@@ -2471,12 +2467,12 @@
 ; LocalWords:  INPROGRESS kfhelp setq xm readabilizing JS dev Lorem
 ; LocalWords:  Gopherspace filesandbuffers ipsum ePub epub xelatex kf
 ; LocalWords:  vcusepackage latexmk synctex bibtex cond xah dirs Ctrl
-; LocalWords:  remotehost modeline mori featurep cbc smex vc ns
+; LocalWords:  remotehost modeline mori featurep cbc smex vc ns ime
 ; LocalWords:  setq's setopt mailutils imagemagick usr dunnet Async
 ; LocalWords:  dir fullscreen dropbox keymap toc buddhist ewth ronn
 ; LocalWords:  enscript noerror formfeed hline erc bbdb newsrc laGhv
 ; LocalWords:  pandoc alphapapa unpackaged xml xsl xhtml nxml parens
-; LocalWords:  MidnightBlue src numero documentclass subsubsection
+; LocalWords:  MidnightBlue src numero documentclass subsubsection Tt
 ; LocalWords:  github cliplink Waterfox waterfox nov backend fboundp
 ; LocalWords:  windmove goto ripgrep nomessage lorem OAuth authinfo
 ; LocalWords:  plist nopgnos flymake api todo paren docstrings ibuf

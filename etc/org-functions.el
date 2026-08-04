@@ -327,11 +327,18 @@ diary entries, and handle non-visitable holidays according to
   (org-agenda-list))
 
 (defun cpj/org-agenda-set-header ()
-  "Remove the redundant standard weekly agenda header."
+  "Remove redundant standard agenda headers."
   (when (derived-mode-p 'org-agenda-mode)
     (save-excursion
       (goto-char (point-min))
-      (when (looking-at "^Week-agenda (W[0-9]+):\n")
+      (when (looking-at
+	     (rx bol
+		 (or "Week" "Fortnight" "Month")
+		 "-agenda (W"
+		 (+ digit)
+		 (optional "-W" (+ digit))
+		 "):"
+		 "\n"))
         (replace-match "")))))
 
 (defun cpj/org-agenda-register-diary-buffer ()
