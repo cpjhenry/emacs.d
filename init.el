@@ -154,10 +154,6 @@
 
 (setopt	standard-indent 4
 	tab-width 4
-	;fill-column 70
-
-	;indent-line-function 'indent-according-to-mode
-	;tab-always-indent nil
 
 	ad-redefinition-action 'accept
 	async-shell-command-buffer 'new-buffer
@@ -321,6 +317,7 @@
   :bind (("M-j"     . join-line) ; default-indent-new-line, see C-M-j
          ("C-w"     . kill-region-or-backward-word)
          ("M-w"     . kill-region-or-thing-at-point)
+	 ("C-M-["   . match-paren)
          ("C-M-]"   . match-paren)
          ("C-x x s" . save-all-unsaved))
   :hook (find-file . large-find-file-hook)
@@ -417,7 +414,6 @@
         (unless calculator-buffer
           (when-let* ((buffer (get-buffer "*Calculator*")))
             (kill-buffer buffer))))))
-
   (advice-add 'quick-calc :around #'cpj/quick-calc-cleanup))
 
 (use-package help-mode
@@ -447,7 +443,6 @@
               ("q" . View-kill-and-leave)))
 
 ;;;; Files and saving
-
 (setopt auto-save-default nil
         auto-save-list-file-prefix
         (expand-file-name "var/auto-save/" user-emacs-directory)
@@ -466,8 +461,7 @@
 (add-hook 'before-save-hook #'time-stamp)
 
 ;; Give files +x permissions when saved if they contain a valid shebang.
-(add-hook 'after-save-hook
-          #'executable-make-buffer-file-executable-if-script-p)
+(add-hook 'after-save-hook #'executable-make-buffer-file-executable-if-script-p)
 
 ;; Remove trailing whitespace on save.
 ;; (add-hook 'before-save-hook #'delete-trailing-whitespace)
@@ -972,6 +966,7 @@
 ;;; Buddhist observances
 (use-package buddhist-observation; usr/
   :ensure nil
+  :demand t
   :commands (buddhist-observation-display
              buddhist-observation-today
              buddhist-observation-stop-audio))
@@ -1513,8 +1508,6 @@
   ;; Org special-edit buffers inherit visual-fill-column from the parent
   ;; buffer, which makes source/example editing awkward. Disable it after
   ;; `org-edit-special' creates the edit buffer.
-  (advice-remove 'org-edit-special
-		 #'cpj/org-edit-special-disable-visual-fill-column)
   (advice-add 'org-edit-special
               :after #'cpj/org-edit-special-disable-visual-fill-column)
 
@@ -1560,8 +1553,6 @@
                '("textnumero" "\\textnumero" nil "&numero;" "No." "No." "№"))
 
   ;; Better `org-entities-help'.
-  (advice-remove 'org-entities-help
-		 #'cpj/org-entities-help-outline-cleanup)
   (advice-add 'org-entities-help
               :after #'cpj/org-entities-help-outline-cleanup)
 
@@ -1578,8 +1569,6 @@
                  ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))
                t)
 
-  (advice-remove 'org-latex-export-as-latex
-		 #'cpj/org-latex-export-as-latex-cleanup-windows)
   (advice-add 'org-latex-export-as-latex
               :after #'cpj/org-latex-export-as-latex-cleanup-windows)
 
@@ -1595,10 +1584,6 @@
   ;; Treat table.el tables as tables when Org asks `org-at-table-p'.
   ;; This works around failures in table.el / Org integration, notably
   ;; commands that call `org-at-table-p' without passing ANY.
-  ;;
-  ;; Remove first so form-feed/page evaluation does not stack duplicate advice.
-  (advice-remove 'org-at-table-p
-		 #'cpj/org-at-table-p-any-advice)
   (advice-add 'org-at-table-p
               :around #'cpj/org-at-table-p-any-advice))
 
@@ -1840,7 +1825,7 @@
   (org-agenda-skip-deadline-if-done t)
   (org-agenda-skip-additional-timestamps-same-entry t)
   (org-agenda-skip-scheduled-if-done t)
-  (org-agenda-span 'week)
+  (org-agenda-span 'fortnight)
   (org-agenda-start-on-weekday 1)
   (org-agenda-text-search-extra-files '(agenda-archives))
   (org-agenda-time-leading-zero t)
@@ -1893,10 +1878,15 @@
   :commands (wwv
 	     wwv-summary))
 
+(use-package ind ; etc/
+  :ensure nil
+  :commands (ind
+             ind-extended
+             ind-diagnostics))
+
 (use-package daily-info ; etc/
   :ensure nil
   :commands (di
-             ind
              cpj/org-agenda-birthdays)
   :custom
   (daily-info-include-holidays nil)
@@ -1989,84 +1979,166 @@
 (message "→ Configuring specific machines.")
 (when *natasha*
   (setopt browse-url-secondary-browser-function 'browse-url-generic
-	  ;browse-url-generic-program "/Applications/Waterfox.app/Contents/MacOS/waterfox"
 	  browse-url-generic-program "open"))
 
 ;; Mail / News
-(use-package rmail
-  :if	*natasha*
+(use-package gnus
+  :if *natasha*
   :ensure nil
   :defer t
-  :custom (rmail-secondary-file-directory (concat user-emacs-directory "var/"))
-  (rmail-default-file (concat rmail-secondary-file-directory "XMAIL"))
-  (rmail-file-name (concat rmail-secondary-file-directory "RMAIL"))
-
-  (rmail-primary-inbox-list '("imaps://cn914@mail.ncf.ca"))
-  (rmail-remote-password-required t)
-  :hook	(rmail-show-message . goto-address-mode)
-  (rmail-quit . kill-current-buffer)
+  :custom
+  (gnus-startup-file "~/.newsrc")
+  (gnus-interactive-exit nil)
+  (gnus-message-archive-group nil)
+  (gnus-permanently-visible-groups
+   (regexp-opt '("Drafts" "INBOX" "Sent") 'symbols))
+  (gnus-select-method user-gnus-select-method)
+  (gnus-secondary-select-methods user-gnus-secondary-select-methods)
+  (gnus-read-newsrc-file nil)
+  (gnus-show-threads nil)
+  (gnus-summary-line-format "%U%R%z %16&user-date; / %s\n")
+  (gnus-user-date-format-alist
+   '(((gnus-seconds-today) . "Today %H:%M")
+     ((+ 86400 (gnus-seconds-today)) . "Yesterday %H:%M")
+     (604800 . "%A %H:%M")
+     ((gnus-seconds-month) . "%A %d")
+     ((gnus-seconds-year) . "%B %d")
+     (t . "%b %d %Y")))
+  (gnus-use-cache nil)
+  (read-mail-command #'gnus)
   :config
-  (setq
-   smtpmail-smtp-server "mail.ncf.ca"
-   send-mail-function   'smtpmail-send-it
-   smtpmail-smtp-service 587
+  (keymap-set gnus-summary-mode-map
+	      "c" #'cpj/gnus-summary-catchup-and-exit)
+  (gnus-add-configuration
+   '(only-article (vertical 1.0 (article 1.0 point))))
 
-   rmail-mime-prefer-html nil
-   rmail-preserve-inbox nil
-   rmail-delete-after-output t
-   rmail-mail-new-frame t
-   rmail-mime-prefer-html nil
-   rmail-movemail-variant-in-use 'mailutils
+  (defun cpj/gnus-export-newsrc ()
+    "Export subscribed NNTP groups to ~/.newsrc."
+    (interactive)
+    (unless (and (boundp 'gnus-newsrc-hashtb)
+		 (hash-table-p gnus-newsrc-hashtb))
+      (user-error "Gnus must be active to export .newsrc"))
+    (let (groups)
+    (maphash
+     (lambda (group _info)
+       (when (string-prefix-p "nntp+" group)
+         (when-let* ((colon (string-search ":" group)))
+           (push (substring group (1+ colon)) groups))))
+     gnus-newsrc-hashtb)
 
-   rmail-highlighted-headers "^Subject:"
-   rmail-ignored-headers (concat rmail-ignored-headers
-				 "\\|^In-Reply-To:\\|^Content-Type:\\|^DKIM-Filter:")
-   rmail-nonignored-headers nil))
+    (if (null groups)
+        (user-error "No NNTP groups found; .newsrc unchanged")
+      (setq groups (sort groups #'string-lessp))
+      (with-temp-file (expand-file-name "~/.newsrc")
+        (dolist (group groups)
+          (insert group ":\n")))
+      (message "Exported %d NNTP groups to ~/.newsrc"
+               (length groups)))))
+
+  (add-hook 'gnus-exit-gnus-hook #'cpj/gnus-export-newsrc)
+
+  (defun cpj/gnus-summary-catchup-and-exit ()
+    "Mark unread articles as read and exit without confirmation."
+    (interactive)
+    (gnus-summary-catchup-and-exit nil t)))
+
+(use-package nndraft
+  :if *natasha*
+  :ensure nil
+  :defer t
+  :config
+  (defun cpj/nndraft-expire-without-backup-directory (orig &rest args)
+    "Expire nndraft articles without using custom backup directories."
+    (let ((backup-directory-alist nil))
+      (apply orig args)))
+
+  (advice-add 'nndraft-request-expire-articles
+              :around #'cpj/nndraft-expire-without-backup-directory))
+
+(use-package smtpmail
+  :if *natasha*
+  :ensure nil
+  :custom
+  (smtpmail-smtp-server user-mail-server)
+  (smtpmail-smtp-service 587)
+  (smtpmail-stream-type 'starttls)
+  (send-mail-function #'smtpmail-send-it)
+  (message-send-mail-function #'smtpmail-send-it))
+
+(use-package ecomplete
+  :ensure nil
+  :custom
+  (ecomplete-database-file
+   (concat user-emacs-directory "var/ecompleterc")))
 
 (use-package message
   :if *natasha*
   :ensure nil
-  :custom (message-kill-buffer-on-exit t)
-  :bind ( :map  message-mode-map ("A-<return>" . message-send-and-exit)))
+  :custom
+  (message-kill-buffer-on-exit t)
+  (message-mail-alias-type 'ecomplete)
+  (message-expand-name-standard-ui t)
+  (message-self-insert-commands nil)
+  :hook
+  (message-mode . cpj/message-disable-smart-tab)
+  :bind
+  (:map message-mode-map
+	("C-c C-k" . cpj/message-kill-buffer)
+        ("A-<return>" . message-send-and-exit))
+  :config
+  (defun cpj/message-disable-smart-tab ()
+    "Disable `smart-tab-mode' in Message buffers."
+    (smart-tab-mode -1))
+
+  (defun cpj/message-kill-buffer ()
+    "Kill the current Message buffer without confirmation."
+    (interactive)
+    (let ((message-kill-buffer-query nil))
+      (cl-letf (((symbol-function #'yes-or-no-p)
+		 (lambda (&rest _) t)))
+	(message-kill-buffer)))
+    (message "Message aborted without let or hindrance")))
 
 ;; RSS
 (use-package elfeed
-  :if	*natasha*
-  :custom (elfeed-db-directory (concat user-emacs-directory "var/elfeed/db/"))
-  (elfeed-enclosure-default-dir (concat user-emacs-directory "var/elfeed/enclosures/"))
+  :if *natasha*
+  :custom
+  (elfeed-db-directory (expand-file-name "var/elfeed/db/" user-emacs-directory))
+  (elfeed-enclosure-default-dir (expand-file-name "var/elfeed/enclosures/" user-emacs-directory))
+  (elfeed-log-level 'error)
+  (elfeed-search-filter "@6months +unread -daily")
   (elfeed-search-remain-on-entry t)
-  (elfeed-show-truncate-long-urls nil)
+  (elfeed-show-truncate-long-urls t)
   (elfeed-sort-order 'ascending)
   (elfeed-use-curl t)
-  :bind (("C-c f" . elfeed)
-	 :map elfeed-search-mode-map
-	 ("/" . elfeed-search-live-filter)
-	 ("[" . beginning-of-buffer) ; top
-	 ("]" . end-of-buffer) ; bottom
-	 ("B" . elfeed-search-beginning-to-point-as-read)
-	 ("R" . elfeed-search-mark-all-as-read)
-	 ("m" . elfeed-mail-todo)
-	 ("s" . elfeed-toggle-star)
-	 :map elfeed-show-mode-map
-	 ("[" . beginning-of-buffer)
-	 ("]" . end-of-buffer)
-	 ("TAB" . shr-next-link)
-	 ("SPC" . scroll-up-half)
-	 ("B" . elfeed-show-visit-secondary-browser)
-	 ("i" . elfeed-show-toggle-images))
-  :init	(easy-menu-add-item global-map '(menu-bar tools)
-	  ["Read RSS Feeds" elfeed :help "Read RSS Feeds"] "Read Mail")
-  :config (setq
-	   elfeed-score-score-file (concat user-emacs-directory "etc/elfeed/score/score.el")
-	   elfeed-log-level 'error)
-
-  (eval-after-load 'elfeed `(make-directory ,(concat user-emacs-directory "var/elfeed/") t))
-  (advice-add 'elfeed-search-fetch :after
-	      (lambda (&rest _) (goto-char (point-min))))
-  ;(add-to-list 'global-jinx-modes 'elfeed-show-mode)
-
+  :bind
+  (("C-c f" . elfeed)
+   :map elfeed-search-mode-map
+   ("/" . elfeed-search-live-filter)
+   ("[" . beginning-of-buffer) ; top
+   ("]" . end-of-buffer)       ; bottom
+   ("B" . elfeed-search-beginning-to-point-as-read)
+   ("R" . elfeed-search-mark-all-as-read)
+   ("m" . elfeed-mail-todo)
+   ("s" . elfeed-toggle-star)
+   :map elfeed-show-mode-map
+   ("[" . beginning-of-buffer)
+   ("]" . end-of-buffer)
+   ("TAB" . shr-next-link)
+   ("SPC" . scroll-up-half)
+   ("B" . elfeed-show-visit-secondary-browser)
+   ("i" . elfeed-show-toggle-images))
+  :init
+  (easy-menu-add-item global-map '(menu-bar tools)
+                      ["Read RSS Feeds" elfeed :help "Read RSS Feeds"]
+                      "Read Mail")
+  :config
+  (require 'elfeed-functions)
+  (defalias 'db #'cpj/elfeed-daily)
+  (make-directory (expand-file-name "var/elfeed/" user-emacs-directory) t)
   (load "rc/feeds" 'noerror 'nomessage)
-  (load "elfeed-functions" nil 'nomessage))
+  (advice-add 'elfeed-show-refresh
+              :after #'cpj/elfeed-show-hide-enclosures))
 
 ;; Web
 (use-package w3m
@@ -2125,6 +2197,7 @@
 (message "→ Configuring sundry.")
 (load "misc-functions" nil 'nomessage)
 (load "scripts" 'noerror 'nomessage)
+(require 'cbc-ottawa)
 
 (require 'kf-library)
 (load "help-cpj" nil 'nomessage)
@@ -2361,8 +2434,8 @@
 (bind-key "C-c e"	'elpher) ; gopher / gemini
 (bind-key "C-c i"	'my/init)
 
-(bind-key "C-c M"	'menu-bar-read-mail)
-(which-key-alias "C-c M" "read-mail")
+(bind-key "C-c m"	'menu-bar-read-mail)
+(which-key-alias "C-c m" "read-mail")
 
 (bind-key "C-c x #"	'number-lines-dwim)
 (bind-key "C-c x b"	'flush-blank-lines)
@@ -2477,4 +2550,5 @@
 ; LocalWords:  windmove goto ripgrep nomessage lorem OAuth authinfo
 ; LocalWords:  plist nopgnos flymake api todo paren docstrings ibuf
 ; LocalWords:  ibuffer ish minibuffer emacsclient Uncomment maccalfw
-; LocalWords:  kMDItemCFBundleIdentifier mdfind
+; LocalWords:  kMDItemCFBundleIdentifier mdfind nndraft defvar nnimap
+; LocalWords:  funcall ecompleterc nntp

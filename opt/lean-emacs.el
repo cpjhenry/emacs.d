@@ -14,8 +14,9 @@
 ;;
 ;; The original article was no longer available when this file
 ;; was created and does not appear to have been preserved in the
-;; Internet Archive. Any code in this file reflects local
-;; modifications and maintenance.
+;; Internet Archive.
+;;
+;; Any code in this file reflects local modifications and maintenance.
 
 ;;; Code:
 (defun back-to-indentation-or-beginning-of-line (&optional arg)
@@ -23,12 +24,15 @@
 
 With prefix ARG, operate on the ARGth line forward (like
 `move-beginning-of-line')."
-
   (interactive "^p")
   (setq arg (or arg 1))
   (when (/= arg 1)
     (forward-line (1- arg)))
-  (let ((indent-pos (save-excursion (back-to-indentation) (point))))
+  (let ((indent-pos
+         (save-excursion
+           (beginning-of-line)
+           (skip-chars-forward " \t")
+           (point))))
     (if (= (point) indent-pos)
         (beginning-of-line)
       (goto-char indent-pos))))

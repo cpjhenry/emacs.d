@@ -7,6 +7,9 @@
 (declare-function markdown-preview "markdown-mode")
 (declare-function toggle-fill-column-center "filesandbuffers")
 
+(require 'seq)
+(require 'subr-x)
+
 (defun wx-alert (&rest _ignore)
   "Weather forecast from Environment Canada."
   (interactive)
@@ -27,22 +30,34 @@
   (view-mode)
   (turn-off-cursor))
 
-(defun cbc () "Today's headlines from CBC Ottawa."
+(defun ccalt ()
+  "Display today's Chinese calendar."
   (interactive)
-  (switch-to-buffer "*CBC*")
-  (shell-command "cbc-mode" (current-buffer))
-  (org-mode)
-  (view-mode)
-  (goto-char (point-min)))
-
-(defun /. () "/."
-  (interactive)
-  (switch-to-buffer "*/.*")
-  (shell-command "slashdot-mode" (current-buffer))
-  (org-mode)
-  (view-mode)
-  (if (featurep 'jinx) (jinx-mode -1))
-  (goto-char (point-min)))
+  (let ((missing
+         (seq-remove #'executable-find '("calendar" "ccal"))))
+    (when missing
+      (user-error
+       "Required executable%s not found: %s"
+       (if (cdr missing) "s" "")
+       (string-join missing ", "))))
+  (let ((buffer (get-buffer-create "*Chinese Calendar (today)*")))
+    (with-current-buffer buffer
+      (let ((inhibit-read-only t))
+        (erase-buffer)
+        (shell-command
+         "calendar -s chinese | head -n3; echo; ccal"
+         buffer)
+        (goto-char (point-min))
+        (while (re-search-forward
+                "\e\\[7m\\(.*?\\)\e\\[0m"
+                nil t)
+          (replace-match
+           (propertize (match-string 1) 'face 'bold)
+           t t))
+        (goto-char (point-min))
+        (view-mode 1)
+        (turn-off-cursor)))
+    (switch-to-buffer buffer)))
 
 (defun fw () "Weekly Forecast."
   (interactive)
@@ -82,5 +97,5 @@
 
 ;;; scripts.el ends here
 
-; LocalWords:  cbc sfm slashdot fw uf wttr aries perl eof az
-; LocalWords:  filesandbuffers
+; LocalWords:  cbc sfm slashdot fw uf wttr aries perl eof az ccal
+; LocalWords:  filesandbuffers sfml chinese

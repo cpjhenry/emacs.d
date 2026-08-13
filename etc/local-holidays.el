@@ -261,42 +261,62 @@ International Date Line to leave astronomers slightly unhinged."
            out))))
     (holiday-filter-visible-calendar (nreverse out))))
 
-(defun holiday-archives-week ()
-  "Return the beginning of International Archives Week.
+(defun archives-week-date (year)
+  "Return the beginning of International Archives Week in YEAR.
+
 International Archives Day is June 9.  International Archives
 Week begins on the Monday of the ISO-style week containing June 9."
-  (let* ((iad (list 6 9 displayed-year))
-         (dow (calendar-day-of-week iad)) ; 0 Sunday ... 6 Saturday
-         (start (calendar-gregorian-from-absolute
-                 (- (calendar-absolute-from-gregorian iad)
-                    (mod (1- dow) 7)))))
-    (holiday-filter-visible-calendar
-     (list
-      (list start "International Archives Week begins")))))
+  (let* ((iad (list 6 9 year))
+         (dow (calendar-day-of-week iad)))
+    (calendar-gregorian-from-absolute
+     (- (calendar-absolute-from-gregorian iad)
+        (mod (1- dow) 7)))))
 
-(defun holiday-archives-awareness-week ()
-  "Return the beginning of Archives Awareness Week.
+(defun archives-awareness-week-date (year)
+  "Return the beginning of Archives Awareness Week in YEAR.
 
 Archives Awareness Week normally begins on the first Monday in April.
 If that Monday is Easter Monday, the observance begins on the following
 Tuesday instead."
-  (let* ((year displayed-year)
-         (first-monday
+  (let* ((first-monday
           (calendar-gregorian-from-absolute
            (calendar-dayname-on-or-before
             1
             (+ 6 (calendar-absolute-from-gregorian
                   (list 4 1 year))))))
          (easter-monday
-          (caar (holiday-easter-etc 1 "Easter Monday")))
-         (start
-          (if (equal first-monday easter-monday)
-              (calendar-gregorian-from-absolute
-               (1+ (calendar-absolute-from-gregorian first-monday)))
-            first-monday)))
-    (holiday-filter-visible-calendar
-     (list
-      (list start "Archives Awareness Week begins")))))
+          (calendar-gregorian-from-absolute
+           (1+ (holiday-easter-etc-abs year)))))
+    (if (equal first-monday easter-monday)
+        (calendar-gregorian-from-absolute
+         (1+ (calendar-absolute-from-gregorian first-monday)))
+      first-monday)))
+
+(defun holiday-archives-week ()
+  "Return the beginning of International Archives Week."
+  (holiday-filter-visible-calendar
+   (list
+    (list (archives-week-date displayed-year)
+          "International Archives Week begins"))))
+
+(defun holiday-archives-awareness-week ()
+  "Return the beginning of Archives Awareness Week."
+  (holiday-filter-visible-calendar
+   (list
+    (list (archives-awareness-week-date displayed-year)
+          "Archives Awareness Week begins"))))
+
+(defun diary-archives-week ()
+  "Return non-nil on the beginning of International Archives Week."
+  (equal date
+         (archives-week-date
+          (calendar-extract-year date))))
+
+(defun diary-archives-awareness-week ()
+  "Return non-nil on the beginning of Archives Awareness Week."
+  (equal date
+         (archives-awareness-week-date
+          (calendar-extract-year date))))
 
 ;;; -- Set holiday variables --
 ;; Static holiday lists vs computed holiday generators (solar, Bahá’í, etc.)
@@ -307,7 +327,7 @@ Tuesday instead."
    calendar-christian-all-holidays-flag t
    world-clock-time-format "%a %e %b %R %Z"
 
-   holiday-local-holidays ;; National / Provincial Holidays and Commemorations
+   holiday-local-holidays ;; (Canadian) National / Provincial Holidays and Commemorations
    '((holiday-fixed 1 1    "New Year's Day")
      (holiday-fixed 2 2    "Groundhog Day")
      (holiday-fixed 2 14   "Valentine's Day")
@@ -360,44 +380,7 @@ Tuesday instead."
      (holiday-float 11 5 4 "Black Friday"))
 
    holiday-other-holidays
-   '((holiday-float 1 4 4  "NASA Day of Remembrance")
-
-     (holiday-float 2 3 -1 "Anti-Bullying Day")
-
-     (holiday-fixed 3 8    "International Women's Day")
-     (holiday-fixed 3 26   "Purple Day")
-
-     (holiday-archives-awareness-week)
-     (holiday-float 4 3 2  "Pink Day")
-     (holiday-fixed 4 22   "Earth Day")
-     (holiday-fixed 4 28   "Workers' Memorial Day")
-
-     (holiday-float 5 0 1  "Emergency Preparedness Week begins")
-     (holiday-float 5 0 -1 "National Accessibility Week begins")
-     (holiday-fixed 5 8    "Victory in Europe Day")
-
-     (holiday-archives-week)
-     (holiday-fixed 6 9    "International Archives Day")
-     (holiday-fixed 6 20   "World Refugee Day")
-     (holiday-fixed 6 27   "Canadian Multiculturalism Day")
-
-     (holiday-fixed 7 14   "Bastille Day")
-
-     (holiday-fixed 8 9    "National Peacekeepers' Day")
-     (holiday-fixed 8 23   "Black Ribbon Day")
-
-     (holiday-fixed 9 25   "Franco-Ontarian Day")
-
-     (holiday-float 10 3 3 "Global Ethics Day")
-     (holiday-fixed 10 2   "Gandhi Jayanti")
-     (holiday-fixed 10 3   "German Reunification Day")
-     (holiday-fixed 10 14  "World Standards Day")
-     (holiday-fixed 10 18  "Persons' Day")
-
-     (holiday-fixed 11 8   "Indigenous Veterans Day")
-     (holiday-fixed 11 10  "Lost Mariners' Remembrance")
-
-     (holiday-fixed 12 26  "Kwanzaa")
+   '((holiday-fixed 12 26  "Kwanzaa")
 
      (holiday-julian 1 1  "Old New Year")
      (holiday-julian 2 14 "Old St. Valentine's Day"))

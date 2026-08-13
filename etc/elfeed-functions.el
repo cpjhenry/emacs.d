@@ -1,8 +1,36 @@
-;;; elfeed-routines.el --- Elfeed routines
+;;; elfeed-functions.el --- Elfeed routines
 ;;; commentary:
 ;;; code:
 (require 'elfeed)
 (require 'elfeed-show)
+
+(defvar cpj/elfeed-daily-filter
+  "+unread +daily"
+  "Search filter for the daily Elfeed briefing.")
+
+(defun cpj/elfeed-daily ()
+  "Display the daily briefing feeds in Elfeed."
+  (interactive)
+  (elfeed)
+  (setq-local elfeed-search-date-format '("%H:%M" 5 :left)
+              mode-name "Elfeed Daily")
+  (elfeed-search-set-filter cpj/elfeed-daily-filter)
+  (elfeed-search-update :force))
+
+(defun cpj/elfeed-show-hide-enclosures (&rest _)
+  "Hide enclosure metadata in Elfeed show buffers."
+  (let ((inhibit-read-only t))
+    (save-excursion
+      (goto-char (point-min))
+      (while (re-search-forward "^Enclosure:[[:space:]].*\n" nil t)
+	(replace-match "")))))
+
+(defun cpj/elfeed-search-goto-top (&rest _)
+  "Move to the beginning of the Elfeed search buffer."
+  (goto-char (point-min)))
+
+(advice-add 'elfeed-search-fetch
+            :after #'cpj/elfeed-search-goto-top)
 
 (defun elfeed-search-beginning-to-point-as-read ()
   "Mark from the beginning to point."
@@ -40,7 +68,8 @@
   (elfeed-show-tidy-buffer)
   (message "Inhibit images: %s" shr-inhibit-images))
 
-;;; Clean-up routines
+
+;;; Clean-up routines
 (defun elfeed-copy-edit ()
   "Fixes spurious typesetting errors in Elfeed buffers."
   (save-excursion
@@ -180,5 +209,7 @@
 	(scroll-down-command arg)
 	(error (elfeed-show-prev)))))
 
-;;; elfeed-routines.el ends here
+(provide 'elfeed-functions)
+;;; elfeed-functions.el ends here
+
 ; LocalWords:  elfeed

@@ -77,7 +77,7 @@ Calendar
 C-<spc> ... M-=			number of days between mark and point")
 (kf-gen-displayer my/emacs-help "Display Emacs help." "*Emacs cheat-sheet*")
 
-(defconst vt-escapes "vt sequences:
+(defconst cpj/vt-escapes "vt sequences:
 
 <esc>[1~    - Home     <esc>[16~   -          <esc>[31~   - F17
 <esc>[2~    - Insert   <esc>[17~   - F6       <esc>[32~   - F18
@@ -95,9 +95,9 @@ C-<spc> ... M-=			number of days between mark and point")
 <esc>[14~   - F4       <esc>[29~   - F16
 <esc>[15~   - F5       <esc>[30~   -")
 
-(kf-gen-displayer vt-escapes "vt terminal escape sequences" "*vt sequences*")
+(kf-gen-displayer cpj/vt-escapes "vt terminal escape sequences" "*vt sequences*")
 
-(defconst cm-keys "C-M keys:
+(defconst cpj/cm-keys "C-M keys:
 
 C-M-<delete>	backward-kill-sexp
 C-M-<home>		beginning-of-defun
@@ -137,7 +137,7 @@ C-M-;			eval-region
 C-M-S-l			recenter-other-window
 C-M-S-v			scroll-other-window-down")
 
-(kf-gen-displayer cm-keys "C-M key bindings" "*C-M keys*")
+(kf-gen-displayer cpj/cm-keys "C-M key bindings" "*C-M keys*")
 
 (defconst cpj/Hanke-Henry "                                Hanke-Henry Permanent Calendar (HHPC)
 

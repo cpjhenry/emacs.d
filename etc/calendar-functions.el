@@ -32,11 +32,19 @@
    (or (and (boundp 'displayed-year) displayed-year)
        (nth 2 (calendar-current-date)))))
 
-(defun list-holidays-and-diary-this-month ()
-  "Display holidays and diary entries for the current or displayed month."
-  (interactive)
+(defun list-holidays-and-diary-this-month (&optional month)
+  "Display holidays and diary entries for MONTH.
+
+When called interactively with a prefix argument, prompt for MONTH.
+Otherwise use the currently displayed calendar month, or the
+current month if no calendar month is displayed."
+  (interactive
+   (list
+    (when current-prefix-arg
+      (read-number "Month: "))))
   (let* ((today (calendar-current-date))
-         (month (or (and (boundp 'displayed-month)
+         (month (or month
+                    (and (boundp 'displayed-month)
                          displayed-month)
                     (nth 0 today)))
          (year (or (and (boundp 'displayed-year)

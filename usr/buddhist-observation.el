@@ -253,7 +253,7 @@ observances."
   "Return the observation key whose calendar name is NAME.
 
 Return nil when no configured observation has that calendar name."
-  (when-let ((entry
+  (when-let* ((entry
               (seq-find
                (lambda (entry)
                  (equal name
@@ -331,7 +331,7 @@ FILENAME is interpreted relative to
   (let ((file
          (buddhist-observation--ensure-resource-file
           filename)))
-    (when-let ((process
+    (when-let* ((process
                 (buddhist-observation-audio-process)))
       (delete-process process))
     (let ((process
@@ -347,7 +347,7 @@ FILENAME is interpreted relative to
 (defun buddhist-observation-stop-audio ()
   "Stop the current Buddhist observation audio playback."
   (interactive)
-  (if-let ((process
+  (if-let* ((process
             (buddhist-observation-audio-process)))
       (progn
         (delete-process process)
@@ -377,7 +377,7 @@ FILENAME is passed to ACTION when the button is activated."
 
 (defun buddhist-observation--insert-resource (key)
   "Insert the Buddhist observation resource identified by KEY."
-  (when-let ((resource
+  (when-let* ((resource
               (buddhist-observation-resource-get key)))
     (let ((title (plist-get resource :title))
           (description

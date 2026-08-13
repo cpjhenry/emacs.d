@@ -186,7 +186,7 @@ definition to visit.  With a symbol at point, offer it as the default."
         (or (fboundp symbol)
             (boundp symbol)))
       t
-      (when-let ((symbol (symbol-at-point)))
+      (when-let* ((symbol (symbol-at-point)))
         (symbol-name symbol))))))
 
   (let ((function-p (fboundp symbol))
