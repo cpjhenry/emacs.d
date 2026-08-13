@@ -3,7 +3,7 @@
 	gnus-use-dribble-file t
 	gnus-always-read-dribble-file t
 
-	gnus-select-method '(nntp "news.newshosting.com")
+	gnus-select-method user-gnus-select-method
 	gnus-thread-hide-subtree t
 	gnus-thread-ignore-subject t
 	gnus-newsgroup-maximum-articles 100
@@ -14,13 +14,6 @@
 		(not gnus-thread-sort-by-number))
 	gnus-use-cache t
 	gnus-use-correct-string-widths nil)
-
-(add-to-list 'gnus-secondary-select-methods
-	'(nnimap ""
-		(nnimap-user "cn914")
-		(nnimap-address "mail.ncf.ca")
-		(nnimap-server-port "imaps")
-		(nnimap-stream ssl)))
 
 ;; press "o" to view all groups
 ;; gnus-guide-en.org
