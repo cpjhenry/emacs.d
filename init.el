@@ -192,6 +192,7 @@
 	page-delimiter "^[#; ]*"
 	pop-up-windows nil
 	pop-up-frames nil
+	recenter-positions '(top middle bottom)
 	require-final-newline nil
 	resize-mini-windows t
 	revert-buffer-quick-short-answers t
@@ -281,7 +282,6 @@
 (column-number-mode)
 ;; (display-battery-mode)
 ;; (display-time-mode)
-;; (load "rc/mm" 'noerror 'nomessage) ; memento-mori
 
 ;; startup time
 (defun efs/display-startup-time ()
@@ -901,12 +901,12 @@
        frame)))
 
   (add-hook 'org-capture-mode-hook
-            #'cpj/refocus-org-capture-frame))
+            #'cpj/refocus-org-capture-frame)
 
-(use-package mac-notch-tab-bar
-  :ensure nil
-  :when *mac*
-  :config (mac-notch-tab-bar-mode 1))
+  (use-package mac-notch-tab-bar
+    :ensure nil
+    :when *mac*
+    :config (mac-notch-tab-bar-mode 1)))
 
 
 ;;; calendar
@@ -1939,19 +1939,22 @@
   :demand t
   :pin gnu ; source from 'gnu' package archives only
   :if (executable-find "aspell")
-  :bind ( ([remap ispell-word] . jinx-correct)
-	  ([remap my/ispell-buffer] . my/jinx-correct-all)
-	  :map jinx-mode-map
-	  ("M-$" . jinx-correct)
-	  ("C-M-$" . jinx-languages)
-	  ("<f7>" . my/jinx-correct-all)
-	  ("M-n" . jinx-next))
-  :hook	(emacs-startup . global-jinx-mode)
+  :bind
+  (([remap ispell-word] . jinx-correct)
+   ([remap my/ispell-buffer] . my/jinx-correct-all)
+   :map jinx-mode-map
+   ("M-$" . jinx-correct)
+   ("C-M-$" . jinx-languages)
+   ("<f7>" . my/jinx-correct-all)
+   ("M-n" . jinx-next))
+  :hook
+  (emacs-startup . global-jinx-mode)
+  (jinx-mode . my/jinx-add-ispell-localwords)
   :config
   (load "jinx-functions" nil 'nomessage)
-  (add-hook 'jinx-mode-hook #'my/jinx-add-ispell-localwords)
   (setf (alist-get ?* jinx--save-keys) #'my/jinx-save-as-ispell-localword)
   (defun my/jinx-correct-all ()
+    "Correct all Jinx misspellings in the current buffer."
     (interactive)
     (with-silent-modifications
       (let ((inhibit-read-only t))
@@ -1981,15 +1984,19 @@
   (setopt browse-url-secondary-browser-function 'browse-url-generic
 	  browse-url-generic-program "open"))
 
-;; Mail / News
+;;;; Mail / News
 (use-package gnus
   :if *natasha*
   :ensure nil
   :defer t
+  :bind
+  ("A-<backspace>" . gnus-summary-delete-article)
   :custom
   (gnus-startup-file "~/.newsrc")
+  (gnus-interactive-catchup nil)
   (gnus-interactive-exit nil)
   (gnus-message-archive-group nil)
+  (gnus-novice-user nil)
   (gnus-permanently-visible-groups
    (regexp-opt '("Drafts" "INBOX" "Sent") 'symbols))
   (gnus-select-method user-gnus-select-method)
@@ -2006,41 +2013,19 @@
      (t . "%b %d %Y")))
   (gnus-use-cache nil)
   (read-mail-command #'gnus)
+  :hook
+  (gnus-exit-gnus . cpj/gnus-export-newsrc)
   :config
-  (keymap-set gnus-summary-mode-map
-	      "c" #'cpj/gnus-summary-catchup-and-exit)
+  (load "gnus-functions" nil 'nomessage)
   (gnus-add-configuration
    '(only-article (vertical 1.0 (article 1.0 point))))
 
-  (defun cpj/gnus-export-newsrc ()
-    "Export subscribed NNTP groups to ~/.newsrc."
-    (interactive)
-    (unless (and (boundp 'gnus-newsrc-hashtb)
-		 (hash-table-p gnus-newsrc-hashtb))
-      (user-error "Gnus must be active to export .newsrc"))
-    (let (groups)
-    (maphash
-     (lambda (group _info)
-       (when (string-prefix-p "nntp+" group)
-         (when-let* ((colon (string-search ":" group)))
-           (push (substring group (1+ colon)) groups))))
-     gnus-newsrc-hashtb)
-
-    (if (null groups)
-        (user-error "No NNTP groups found; .newsrc unchanged")
-      (setq groups (sort groups #'string-lessp))
-      (with-temp-file (expand-file-name "~/.newsrc")
-        (dolist (group groups)
-          (insert group ":\n")))
-      (message "Exported %d NNTP groups to ~/.newsrc"
-               (length groups)))))
-
-  (add-hook 'gnus-exit-gnus-hook #'cpj/gnus-export-newsrc)
-
-  (defun cpj/gnus-summary-catchup-and-exit ()
-    "Mark unread articles as read and exit without confirmation."
-    (interactive)
-    (gnus-summary-catchup-and-exit nil t)))
+  (easy-menu-remove-item global-map '(menu-bar tools) 'gnus)
+  (easy-menu-remove-item global-map '(menu-bar tools) 'rmail)
+  (easy-menu-add-item global-map '(menu-bar tools)
+		      ["Read Mail and Net News" menu-bar-read-mail
+		       :help "Read your mail and network news groups"]
+		      "Compose New Mail"))
 
 (use-package nndraft
   :if *natasha*
@@ -2076,6 +2061,7 @@
   :ensure nil
   :custom
   (message-kill-buffer-on-exit t)
+  (message-kill-buffer-query nil)
   (message-mail-alias-type 'ecomplete)
   (message-expand-name-standard-ui t)
   (message-self-insert-commands nil)
@@ -2083,23 +2069,13 @@
   (message-mode . cpj/message-disable-smart-tab)
   :bind
   (:map message-mode-map
-	("C-c C-k" . cpj/message-kill-buffer)
         ("A-<return>" . message-send-and-exit))
   :config
   (defun cpj/message-disable-smart-tab ()
     "Disable `smart-tab-mode' in Message buffers."
-    (smart-tab-mode -1))
+    (smart-tab-mode -1)))
 
-  (defun cpj/message-kill-buffer ()
-    "Kill the current Message buffer without confirmation."
-    (interactive)
-    (let ((message-kill-buffer-query nil))
-      (cl-letf (((symbol-function #'yes-or-no-p)
-		 (lambda (&rest _) t)))
-	(message-kill-buffer)))
-    (message "Message aborted without let or hindrance")))
-
-;; RSS
+;;;; RSS
 (use-package elfeed
   :if *natasha*
   :custom
@@ -2108,6 +2084,7 @@
   (elfeed-log-level 'error)
   (elfeed-search-filter "@6months +unread -daily")
   (elfeed-search-remain-on-entry t)
+  (elfeed-show-refresh-function #'cpj/elfeed-show-refresh)
   (elfeed-show-truncate-long-urls t)
   (elfeed-sort-order 'ascending)
   (elfeed-use-curl t)
@@ -2125,52 +2102,46 @@
    ("[" . beginning-of-buffer)
    ("]" . end-of-buffer)
    ("TAB" . shr-next-link)
-   ("SPC" . scroll-up-half)
    ("B" . elfeed-show-visit-secondary-browser)
-   ("i" . elfeed-show-toggle-images))
+   ("i" . elfeed-show-toggle-images)
+
+   ([remap elfeed-show-scroll-up-or-next]
+    . cpj/elfeed-show-scroll-up-half-or-next)
+   ([remap elfeed-show-scroll-down-or-prev]
+    . cpj/elfeed-show-scroll-down-half-or-prev))
+  :hook
+  (elfeed-search-update . cpj/elfeed-search-goto-top)
+  (elfeed-show-update . cpj/elfeed-show-hide-metadata)
+  (elfeed-show-update . cpj/elfeed-show-wrap-title)
   :init
+  (make-directory (expand-file-name "var/elfeed/" user-emacs-directory) t)
+  (autoload 'cpj/elfeed-daily "elfeed-functions"
+    "Display the daily briefing feeds in Elfeed." t)
+  (defalias 'db #'cpj/elfeed-daily)
   (easy-menu-add-item global-map '(menu-bar tools)
-                      ["Read RSS Feeds" elfeed :help "Read RSS Feeds"]
-                      "Read Mail")
+                      ["Read RSS Feeds" elfeed :help "Read RSS and Atom feeds"]
+                      "Directory Servers")
   :config
   (require 'elfeed-functions)
-  (defalias 'db #'cpj/elfeed-daily)
-  (make-directory (expand-file-name "var/elfeed/" user-emacs-directory) t)
-  (load "rc/feeds" 'noerror 'nomessage)
-  (advice-add 'elfeed-show-refresh
-              :after #'cpj/elfeed-show-hide-enclosures))
+  (load "rc/feeds" 'noerror 'nomessage))
 
-;; Web
-(use-package w3m
-  :defer t
-  :bind ( :map w3m-mode-map
-	  ("<left>" . w3m-view-previous-page)
-	  ("&" . macosx-open-url)
-	  ("Q" . my/w3m-quit)
-	  ("M-o" . ace-link-w3m))
-  :commands (w3m-browse-url)
-  ;; :init (setq browse-url-browser-function 'w3m-browse-url)
-  :config (setq
-	   w3m-bookmark-file (concat user-emacs-directory "etc/w3m-bookmarks.html")
-	   w3m-confirm-leaving-secure-page nil
-	   w3m-default-save-directory "~/Downloads"
-	   w3m-use-filter nil)
-  (load "w3m-functions" nil 'nomessage))
-
-;; Others
+;;;; Others
 (use-package chess
   :if	*natasha*
   :defer t
   :custom
-  (chess-default-engine 'chess-gnuchess)
-  (chess-images-default-size 80))
+  (chess-images-default-size 90)     ; comfortable board scale
+  (chess-images-separate-frame nil) ; obey existing frame geometry
+  :config
+  (defvar cpj/chess-movetime 1000
+    "UCI chess engine thinking time per move, in milliseconds."))
 
 (use-package gnugo ; Game of Go
-  :disabled
   :if *natasha*
   :defer t
-  :init (easy-menu-add-item  global-map '("tools" "games")
-	  ["Go" gnugo :help "Play Go"] "Gomoku"))
+  :init
+  (easy-menu-add-item  global-map '(menu-bar tools games)
+		       ["Go" gnugo :help "Play Go"] "Gomoku"))
 
 (use-package nov                         ; Read EPUB files
   :if *natasha*
@@ -2197,10 +2168,9 @@
 (message "→ Configuring sundry.")
 (load "misc-functions" nil 'nomessage)
 (load "scripts" 'noerror 'nomessage)
-(require 'cbc-ottawa)
 
 (require 'kf-library)
-(load "help-cpj" nil 'nomessage)
+(load "cpj-help-functions" nil 'nomessage)
 
 (load "pdfexport" nil 'nomessage)
 (with-eval-after-load 'latex-mode
@@ -2271,8 +2241,8 @@
 (global-set-key (kbd "C->") 'scroll-right)
 
 ;; half-scroll
-(global-set-key [prior] 'scroll-down-half)
-(global-set-key [next] 'scroll-up-half)
+(define-key global-map [remap scroll-up-command] #'cpj/scroll-up-half)
+(define-key global-map [remap scroll-down-command] #'cpj/scroll-down-half)
 (global-set-key (kbd "A-<up>") [prior])
 (global-set-key (kbd "A-<down>") [next])
 (when *mac*

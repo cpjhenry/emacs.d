@@ -1,4 +1,4 @@
-;;; cpjhelp.el --- Custom help screens  -*- lexical-binding: t; -*-
+;;; cpj-help-functions.el --- Custom help screens  -*- lexical-binding: t; -*-
 ;;; commentary:
 
 ;;; code:
@@ -429,7 +429,7 @@ using a numerical code system for frequently used phrases.")
 
 (kf-gen-displayer cpj/qdays "Quarter Days" "*Quarter Days*")
 
-;;; cpjhelp.el ends here
+;;; cpj-help-functions.el ends here
 
 ;; Local Variables:
 ;; tab-width: 4

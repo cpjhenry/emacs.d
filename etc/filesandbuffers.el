@@ -517,9 +517,18 @@ the current page.  Otherwise, call `elisp-eval-region-or-buffer'."
 
 
 ;; scrolling
-(defun window-half-height ()	(max 1 (/ (1- (window-height (selected-window))) 2)))
-(defun scroll-up-half ()	(interactive) (scroll-up (window-half-height)))
-(defun scroll-down-half ()	(interactive) (scroll-down (window-half-height)))
+(defun cpj/window-half-height ()
+  (max 1 (/ (1- (window-height (selected-window))) 2)))
+
+(defun cpj/scroll-up-half ()
+  "Scroll forward half a window."
+  (interactive)
+  (scroll-up-command (cpj/window-half-height)))
+
+(defun cpj/scroll-down-half ()
+  "Scroll backward half a window."
+  (interactive)
+  (scroll-down-command (cpj/window-half-height)))
 
 
 ;; web browsing

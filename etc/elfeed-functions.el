@@ -3,6 +3,7 @@
 ;;; code:
 (require 'elfeed)
 (require 'elfeed-show)
+(require 'shr)
 
 (defvar cpj/elfeed-daily-filter
   "+unread +daily"
@@ -13,24 +14,24 @@
   (interactive)
   (elfeed)
   (setq-local elfeed-search-date-format '("%H:%M" 5 :left)
+	      elfeed-show-author nil
               mode-name "Elfeed Daily")
   (elfeed-search-set-filter cpj/elfeed-daily-filter)
   (elfeed-search-update :force))
 
-(defun cpj/elfeed-show-hide-enclosures (&rest _)
-  "Hide enclosure metadata in Elfeed show buffers."
-  (let ((inhibit-read-only t))
-    (save-excursion
-      (goto-char (point-min))
-      (while (re-search-forward "^Enclosure:[[:space:]].*\n" nil t)
-	(replace-match "")))))
-
 (defun cpj/elfeed-search-goto-top (&rest _)
-  "Move to the beginning of the Elfeed search buffer."
-  (goto-char (point-min)))
+  "Move point and window to the first Elfeed entry."
+  (when elfeed--position-restore-wpoint
+    (remove-hook 'pre-redisplay-functions
+                 elfeed--position-restore-wpoint 'local)
+    (setq elfeed--position-restore-wpoint nil))
+  (goto-char (point-min))
+  (set-window-point (selected-window) (point-min))
+  (set-window-start (selected-window) (point-min))
+  (hl-line-highlight))
 
-(advice-add 'elfeed-search-fetch
-            :after #'cpj/elfeed-search-goto-top)
+;; (advice-add 'elfeed-search--update-immediately
+;;             :after #'cpj/elfeed-search-goto-top)
 
 (defun elfeed-search-beginning-to-point-as-read ()
   "Mark from the beginning to point."
@@ -54,12 +55,50 @@
   (let ((buffer elfeed-log-buffer-name))
   (and (get-buffer buffer) (kill-buffer buffer)))))
 
+(defcustom cpj/elfeed-show-hidden-fields
+  '("Enclosure" "Link" "Tags")
+  "Metadata fields to hide in Elfeed show buffers."
+  :type '(repeat string)
+  :group 'elfeed)
+
+(defun cpj/elfeed-show-hide-metadata ()
+  "Hide selected metadata fields in the Elfeed show header."
+  (let ((inhibit-read-only t))
+    (save-excursion
+      (goto-char (point-min))
+      (when-let* ((end (re-search-forward "^$" nil t)))
+        (flush-lines
+         (concat "^"
+                 (regexp-opt cpj/elfeed-show-hidden-fields)
+                 ":[[:space:]]")
+         (point-min) end)))))
+
+(defun cpj/elfeed-show-wrap-title ()
+  "Wrap the Elfeed title with a hanging indent."
+  (setq-local word-wrap t)
+  (remove-overlays (point-min) (point-max) 'cpj/elfeed-title-wrap t)
+  (save-excursion
+    (goto-char (point-min))
+    (when (re-search-forward "^Title: " nil t)
+      (let ((overlay
+             (make-overlay
+              (line-beginning-position)
+              (1+ (line-end-position)))))
+        (overlay-put overlay 'cpj/elfeed-title-wrap t)
+        (overlay-put overlay 'wrap-prefix "       ")
+        (overlay-put overlay 'evaporate t)))))
+
+(defun cpj/elfeed-show-refresh ()
+  "Refresh an Elfeed entry using local display policy."
+  (setq-local elfeed-show-author
+              (not (memq 'daily (elfeed-entry-tags elfeed-show-entry))))
+  (elfeed-show-refresh--mail-style))
+
 (defun elfeed-show-visit-secondary-browser ()
   "Visit buffer in secondary browser."
   (interactive)
   (elfeed-show-visit '(4)))
 
-(require 'shr)
 (defun elfeed-show-toggle-images ()
   "Toggle images in `elfeed-show'."
   (interactive)
@@ -67,6 +106,22 @@
   (elfeed-show-refresh)
   (elfeed-show-tidy-buffer)
   (message "Inhibit images: %s" shr-inhibit-images))
+
+(defun cpj/elfeed-show-scroll-up-half-or-next ()
+  "Scroll half a window or go to the next entry."
+  (interactive)
+  (condition-case nil
+      (scroll-up-command (window-half-height))
+    (error (elfeed-show-next))))
+
+(defun cpj/elfeed-show-scroll-down-half-or-prev ()
+  "Scroll half a window or go to the previous entry."
+  (interactive)
+  (condition-case nil
+      (scroll-down-command (window-half-height))
+    (error
+     (elfeed-show-prev)
+     (with-no-warnings (end-of-buffer)))))
 
 
 ;;; Clean-up routines

@@ -1,0 +1,21 @@
+(defun cpj/gnus-export-newsrc ()
+  "Export subscribed NNTP groups to ~/.newsrc."
+  (interactive)
+  (unless (and (boundp 'gnus-newsrc-hashtb)
+	       (hash-table-p gnus-newsrc-hashtb))
+    (user-error "Gnus must be active to export .newsrc"))
+  (let (groups)
+    (maphash
+     (lambda (group _info)
+       (when (string-prefix-p "nntp+" group)
+         (when-let* ((colon (string-search ":" group)))
+           (push (substring group (1+ colon)) groups))))
+     gnus-newsrc-hashtb)
+    (if (null groups)
+        (user-error "No NNTP groups found; .newsrc unchanged")
+      (setq groups (sort groups #'string-lessp))
+      (with-temp-file (expand-file-name "~/.newsrc")
+        (dolist (group groups)
+          (insert group ":\n")))
+      (message "Exported %d NNTP groups to ~/.newsrc"
+               (length groups)))))
