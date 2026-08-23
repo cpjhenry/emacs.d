@@ -49,6 +49,8 @@
 (when (bound-and-true-p ns-emacs-plus-version)
   (message "→ Running `Emacs Plus %s'." ns-emacs-plus-version))
 (load "rc/me" 'noerror 'nomessage)
+(when (bound-and-true-p user-full-name)
+  (message "Hello, %s." user-full-name))
 (eval-after-load "startup"
   '(fset 'display-startup-echo-area-message (lambda ())))
 
@@ -85,6 +87,7 @@
   (keymap-global-set "s-z" 'undo)
 
   (keymap-global-set "s-1" "C-x 1")
+  (keymap-global-set "s-2" "C-x 2")
   (keymap-global-set "s-3" "C-x 3")
 
   (dolist (key '("s-C" "s-D" "s-d" "s-e" "s-F" "s-f" "s-g" "s-j" "s-L"
@@ -223,6 +226,7 @@
 	read-buffer-completion-ignore-case t
 	read-file-name-completion-ignore-case t)
 
+;; quit-window
 (if my/emacs-31-p
     (setopt quit-window-kill-buffer t)
   (defun my/quit-window ()
@@ -230,15 +234,18 @@
     (interactive)
     (quit-window t))
   (define-key key-translation-map [remap quit-window] #'my/quit-window))
+(keymap-set messages-buffer-mode-map "q" #'bury-buffer)
 
-;; files
-(setopt	custom-file			(concat user-emacs-directory "custom.el")
+;; files --- move out of ~/.emacs.d
+(setopt	custom-file			(concat user-emacs-directory "var/custom.el")
 	nsm-settings-file		(concat user-emacs-directory "var/network-security.data")
 	transient-history-file		(concat user-emacs-directory "var/transient/history.el")
 	transient-levels-file		(concat user-emacs-directory "var/transient/levels.el")
 	transient-values-file		(concat user-emacs-directory "var/transient/values.el")
 	url-configuration-directory	(concat user-emacs-directory "var/url/configuration/"))
-(setq	persist--directory-location	(concat user-emacs-directory "var/persist"))
+
+(require 'persist)
+(setq persist--directory-location (concat user-emacs-directory "var/persist"))
 
 (require 'multisession)
 (setopt multisession-directory (concat user-emacs-directory "var/multisession/"))
@@ -340,7 +347,7 @@
   :ensure nil
   :custom
   (bookmark-save-flag 1)
-  (bookmark-set-fringe-mark nil)
+  (bookmark-fringe-mark nil)
   (bookmark-sort-flag nil)
   (bookmark-default-file (expand-file-name "etc/bookmarks" user-emacs-directory)))
 
@@ -500,12 +507,6 @@
 
 (remove-hook 'file-name-at-point-functions
              #'ffap-guess-file-name-at-point)
-
-;;;; Special buffers
-
-;; Modes derived from `special-mode' pick this up.
-(keymap-set special-mode-map "q" #'kill-current-buffer)
-(keymap-set messages-buffer-mode-map "q" #'bury-buffer)
 
 (add-to-list
  'display-buffer-alist
@@ -929,6 +930,7 @@
 	cal-tex-holidays t
 	cal-tex-diary t)
 
+(keymap-set calendar-mode-map "d" #'cpj/calendar-view-diary)
 (keymap-set calendar-mode-map "q" 'calendar-exit-kill)
 (keymap-set calendar-mode-map "w" 'calendar-world-clock)
 (keymap-set calendar-mode-map "y" 'list-holidays-this-year)
@@ -1012,11 +1014,13 @@
 
 ;; Fast, friendly searching with ripgrep
 (use-package deadgrep
-  :bind (("<f5>" . 'deadgrep)
-	 :map deadgrep-mode-map
-	 ("f" . delete-other-windows))
+  :bind
+  (("<f5>" . 'deadgrep)
+   :map deadgrep-mode-map
+   ("f" . delete-other-windows))
   :config
   (defalias 'find-grep 'deadgrep)
+  (add-to-list 'deadgrep-extra-arguments "--glob=!*~" t)
   (advice-add 'deadgrep :after #'my/delete-other-windows)
   (add-hook 'deadgrep-mode-hook #'flymake-mode-off))
 
@@ -1060,37 +1064,52 @@
 (use-package eww
   :ensure nil
   :demand t
-  :custom (browse-url-browser-function 'eww-browse-url)
-          (eww-auto-rename-buffer t)
-	  (eww-bookmarks-directory (concat user-emacs-directory "etc/"))
-	  (eww-readable-adds-to-history nil)
-	  (url-privacy-level '(email lastloc))
+  :custom
+  (browse-url-browser-function 'eww-browse-url)
+  (eww-auto-rename-buffer t)
+  (eww-bookmarks-directory (concat user-emacs-directory "etc/"))
+  (eww-readable-adds-to-history nil)
+  (eww-search-confirm-send-region nil)
+  (url-privacy-level '(email lastloc))
 
-	  ;; look-and-feel
-	  (shr-folding-mode t)
-	  (shr-inhibit-images t)
-	  (shr-use-colors nil)
-	  (shr-use-fonts nil)
-	  (shr-bullet "• ")
-	  (shr-indentation 2)	; Left-side margin
-	  (shr-width nil)	; Fold text for comfiness
-	  (shr-max-width 94)	; Controls fold-column in web-derived pages (ie. Elfeed)
-				; Useful especially when you increase text-scale.
-
-  :bind (("C-x g" . browse-url-at-point)
-	:map eww-mode-map
-	("[" . eww-back-url)
-	("]" . eww-forward-url)
-	("y" . eww-copy-page-url)
-	("M-p" . nil)
-	("M-n" . nil)
-	:map eww-bookmark-mode-map
-	("w" . eww))
-  ;:hook
+  ;; look-and-feel
+  (shr-folding-mode t)
+  (shr-inhibit-images t)
+  (shr-use-colors nil)
+  (shr-use-fonts nil)
+  (shr-bullet "• ")
+  (shr-indentation 2)	; Left-side margin
+  (shr-width nil)	; Fold text for comfiness
+  (shr-max-width 94)	; Controls fold-column in web-derived pages (ie. Elfeed)
+			; Useful especially when you increase text-scale.
+  :bind
+  (("C-x g" . browse-url-at-point)
+   ("M-s M-w" . cpj/eww-search-words)
+   :map eww-mode-map
+   ("[" . eww-back-url)
+   ("]" . eww-forward-url)
+   ("y" . eww-copy-page-url)
+   ("M-p" . nil)
+   ("M-n" . nil)
+   :map eww-bookmark-mode-map
+   ("w" . eww))
   :config
   (url-setup-privacy-info)
   (use-package ace-link
-    :config (ace-link-setup-default))) ;; alternative to tabbing
+    :config (ace-link-setup-default)) ;; alternative to tabbing
+  (defun cpj/eww-search-words ()
+    "Search the web for the region, agenda item, or word at point.
+
+In `org-agenda-mode', temporarily treat the current line as the
+active region.  Otherwise call `eww-search-words' normally."
+    (interactive)
+    (if (and (derived-mode-p 'org-agenda-mode)
+             (not (use-region-p)))
+	(save-mark-and-excursion
+          (goto-char (line-beginning-position))
+          (push-mark (line-end-position) t t)
+          (call-interactively #'eww-search-words))
+      (call-interactively #'eww-search-words))))
 
 (use-package free-keys
   :defer t
@@ -1164,7 +1183,49 @@
 
 (use-package visible-mark) ; make the mark visible
 
-(use-package wiki-summary)
+(use-package wiki-summary
+  :bind ("M-s M-s" . cpj/wiki-summary)
+  :config
+  (defun cpj/wiki-summary-clean-term (term)
+    "Clean TERM for use as a Wikipedia search phrase."
+    (when term
+      (setq term
+            (replace-regexp-in-string
+             "[ \t]*(.*?)[ \t]*" " " term))
+      (setq term
+            (replace-regexp-in-string
+             "[ \t]*\"[^\"]*\"[ \t]*" " " term))
+      (setq term (string-trim term))
+      (setq term
+            (replace-regexp-in-string
+             "[ \t]+Day\\'" "" term))
+      (string-trim term)))
+
+  (defun cpj/wiki-summary (&optional prompt)
+    "Look up the region, agenda item, or word at point in Wikipedia.
+
+With prefix argument PROMPT, confirm or edit the search term first."
+    (interactive "P")
+    (let* ((term
+            (cond
+             ((use-region-p)
+              (buffer-substring-no-properties
+               (region-beginning) (region-end)))
+             ((derived-mode-p 'org-agenda-mode)
+              (buffer-substring-no-properties
+               (line-beginning-position)
+               (line-end-position)))
+             (t
+              (thing-at-point 'word t))))
+           (term (cpj/wiki-summary-clean-term term)))
+      (wiki-summary
+       (if prompt
+           (read-string
+            (concat "Wikipedia Article"
+                    (if term (format " (%s)" term) "")
+                    ": ")
+            nil nil term)
+	 term)))))
 
 
 ;;; Text, Prog, and Markdown modes
@@ -1471,24 +1532,24 @@
   (org-outline-path-complete-in-steps nil)
 
   :bind
-  ( ("C-c k" . org-capture)
-    ("C-c l" . org-store-link)
+  (("C-c k" . org-capture)
+   ("C-c l" . org-store-link)
 
    :map org-mode-map
    ([remap backward-paragraph] . my/org-backward-paragraph)
    ([remap forward-paragraph]  . my/org-forward-paragraph)
-   ("S-<return>" . org-open-link-at-point-external)
-   ("M-<f4>"     . org-speed-command-help)
-   ("M-["        . org-backward-heading-same-level)
-   ("M-]"        . org-forward-heading-same-level)
-   ("C-M-["      . org-back-to-top-level-heading)
-   ("C-M-]"      . my/org-end-of-subtree)
+   ("S-<return>" . cpj/org-open-link-at-point-external)
+   ("M-["        . org-previous-visible-heading)
+   ("M-]"        . my/org-end-of-subtree)
    ("C-c o ^"    . my/org-sort)
    ("C-c o c"    . org-check-misformatted-subtree)
    ("C-c o r"    . org-mode-restart)
    ("C-c o t"    . org-toggle-link-display)
    ("A-b"        . cpj/org-emphasize-bold)
    ("A-i"        . cpj/org-emphasize-italic))
+
+  :hook
+  (org-capture-after-finalize . cpj/org-sort-capture-target)
 
   :config
   (require 'org-tempo)
@@ -1504,6 +1565,12 @@
 
   (which-key-alias "C-c o" "org")
   (which-key-alias "C-c o c" "misformatted subtree")
+
+  ;; add custom speed commands
+  (add-to-list 'org-speed-commands
+               '("P" . ded/org-show-previous-heading-tidily))
+  (add-to-list 'org-speed-commands
+               '("N" . ded/org-show-next-heading-tidily))
 
   ;; Org special-edit buffers inherit visual-fill-column from the parent
   ;; buffer, which makes source/example editing awkward. Disable it after
@@ -1527,12 +1594,18 @@
              #'org-beginning-of-line)
 
   ;; Tweak behaviour of M-up and M-down.
-  (add-to-list 'org-metaup-hook
-               (lambda () (interactive)
-                 (org-transpose-paragraphs -1)))
-  (add-to-list 'org-metadown-hook
-               (lambda () (interactive)
-                 (org-transpose-paragraphs 1)))
+  (defun my/org-transpose-paragraph-up ()
+    "Transpose the current Org paragraph upward."
+    (interactive)
+    (org-transpose-paragraphs -1))
+
+  (defun my/org-transpose-paragraph-down ()
+    "Transpose the current Org paragraph downward."
+    (interactive)
+    (org-transpose-paragraphs 1))
+
+  (add-to-list 'org-metaup-hook #'my/org-transpose-paragraph-up)
+  (add-to-list 'org-metadown-hook #'my/org-transpose-paragraph-down)
 
   ;; View mode helpers, useful for Org-ish read-only buffers.
   (with-eval-after-load 'view
@@ -1598,6 +1671,10 @@
   :ensure nil
   :after org
   :hook (org-mode . org-macro-display-mode))
+
+(use-package org-prose
+  :ensure nil
+  :commands org-prose-count)
 
 (use-package org-rehearsal
   :ensure nil
@@ -1990,7 +2067,8 @@
   :ensure nil
   :defer t
   :bind
-  ("A-<backspace>" . gnus-summary-delete-article)
+  (:map gnus-summary-mode-map
+	("A-<backspace>" . gnus-summary-delete-article))
   :custom
   (gnus-startup-file "~/.newsrc")
   (gnus-interactive-catchup nil)
@@ -2082,28 +2160,34 @@
   (elfeed-db-directory (expand-file-name "var/elfeed/db/" user-emacs-directory))
   (elfeed-enclosure-default-dir (expand-file-name "var/elfeed/enclosures/" user-emacs-directory))
   (elfeed-log-level 'error)
+  (elfeed-search-confirm-tag nil)
   (elfeed-search-filter "@6months +unread -daily")
   (elfeed-search-remain-on-entry t)
-  (elfeed-show-refresh-function #'cpj/elfeed-show-refresh)
-  (elfeed-show-truncate-long-urls t)
-  (elfeed-sort-order 'ascending)
+  (elfeed-search-sort-order 'ascending)
   (elfeed-use-curl t)
+  :custom-face
+  ;; (elfeed-show-header-face ((t (:inherit default))))
+  (elfeed-show-title-face  ((t (:inherit elfeed-show-header-face :weight bold))))
+  (elfeed-show-author-face ((t (:inherit elfeed-show-header-face))))
+  (elfeed-show-date-face   ((t (:inherit elfeed-show-header-face))))
+  (elfeed-show-feed-face   ((t (:inherit elfeed-show-header-face))))
   :bind
   (("C-c f" . elfeed)
    :map elfeed-search-mode-map
    ("/" . elfeed-search-live-filter)
-   ("[" . beginning-of-buffer) ; top
-   ("]" . end-of-buffer)       ; bottom
-   ("B" . elfeed-search-beginning-to-point-as-read)
-   ("R" . elfeed-search-mark-all-as-read)
+   ("[" . beginning-of-buffer)
+   ("]" . end-of-buffer)
+   ("B" . cpj/elfeed-search-beginning-to-point-as-read)
+   ("R" . cpj/elfeed-search-mark-all-as-read)
+   ("c" . cpj/elfeed-search-clear-filter)
    ("m" . elfeed-mail-todo)
    ("s" . elfeed-toggle-star)
    :map elfeed-show-mode-map
    ("[" . beginning-of-buffer)
    ("]" . end-of-buffer)
    ("TAB" . shr-next-link)
-   ("B" . elfeed-show-visit-secondary-browser)
-   ("i" . elfeed-show-toggle-images)
+   ("B" . cpj/elfeed-show-visit-secondary-browser)
+   ("i" . cpj/elfeed-show-toggle-images)
 
    ([remap elfeed-show-scroll-up-or-next]
     . cpj/elfeed-show-scroll-up-half-or-next)
@@ -2111,8 +2195,9 @@
     . cpj/elfeed-show-scroll-down-half-or-prev))
   :hook
   (elfeed-search-update . cpj/elfeed-search-goto-top)
-  (elfeed-show-update . cpj/elfeed-show-hide-metadata)
-  (elfeed-show-update . cpj/elfeed-show-wrap-title)
+  (elfeed-show-update . cpj/elfeed-show-tidy-buffer)
+  (elfeed-show-update . replace-garbage-chars)
+  (elfeed-show-update . my/text-scale-increase)
   :init
   (make-directory (expand-file-name "var/elfeed/" user-emacs-directory) t)
   (autoload 'cpj/elfeed-daily "elfeed-functions"
@@ -2123,6 +2208,7 @@
                       "Directory Servers")
   :config
   (require 'elfeed-functions)
+  (setq elfeed-show-refresh-function #'cpj/elfeed-show-refresh)
   (load "rc/feeds" 'noerror 'nomessage))
 
 ;;;; Others
@@ -2479,6 +2565,7 @@
 (defalias 'jsm 'js-mode)
 (defalias 'mm 'markdown-mode)
 (defalias 'om 'org-mode)
+(defalias 'otbl 'turn-on-orgtbl)
 (defalias 'tm 'text-mode)
 (defalias 'ssm 'shell-script-mode)
 (defalias 'vfc 'visual-fill-column-mode)

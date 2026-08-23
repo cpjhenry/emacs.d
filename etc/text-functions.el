@@ -7,6 +7,10 @@
   (interactive)
   (fill-paragraph nil t))
 
+(defun my/text-scale-increase ()
+  "Increase the text scale by one step."
+  (text-scale-set 1))
+
 (defun flush-blank-lines (beg end)
   "Remove blank lines in a buffer.
 
@@ -87,7 +91,7 @@ from point."
 When a region is active, measure that region.  Otherwise, measure
 the accessible portion of the buffer.
 
-In Org buffers, count prose using `cpj/org-count-prose'.
+In Org buffers, count prose using `org-prose-count'.
 Otherwise, count all words.
 
 With a prefix argument, prompt for the speaking rate in words per
@@ -102,14 +106,14 @@ minute.  The default is 150 words per minute."
          (end     (if regionp (region-end) (point-max)))
          (words
           (if (derived-mode-p 'org-mode)
-              (nth 2 (cpj/org-count-prose begin end))
+              (nth 2 (org-prose-count begin end))
             (count-words begin end)))
-         (seconds (* 60.0 (/ words wpm))))
-    (message "%s has a speaking time of %s at %d wpm (%d words)"
+         (seconds (/ (* words 60.0) wpm)))
+    (message "%s has a speaking time of %s at %s wpm (%s words)"
              (if regionp "Region" "Buffer")
              (format-seconds "%m minutes, %s seconds" seconds)
-             wpm
-             words)))
+             (commify-number wpm)
+             (commify-number words))))
 
 (defun remove-wikipedia-footnotes (&optional beg end)
   "Remove Wikipedia-style numeric footnotes like [1], [23].

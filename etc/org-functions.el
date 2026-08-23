@@ -23,6 +23,11 @@
   (org-forward-paragraph)
   (recenter-top-bottom 0))
 
+(defun my/org-up-heading ()
+  "Move to the parent Org heading."
+  (interactive)
+  (org-speed-move-safe 'outline-up-heading))
+
 (defun my/org-end-of-subtree ()
   "Move point to the end of the current Org subtree, including invisible text."
   (interactive)
@@ -65,76 +70,8 @@
   "Call OLDFUN as though `org-at-table-p' had been given ANY."
   (funcall oldfun t))
 
-;;; auto-sort after capture (when variable set)
-
-(defun my/org-sort ()
-  "Sort all top-level Org entries alphabetically."
-  (interactive)
-  (save-mark-and-excursion
-    (save-restriction
-      (widen)
-      (goto-char (point-min))
-      (push-mark (point-max) nil t)
-      (org-sort-entries nil ?a))))
-
-(defvar-local cpj/org-sort-after-capture nil
-  "Non-nil means sort this Org buffer after capture finalization.")
-
-(defun cpj/org-sort-capture-target ()
-  "Sort and save an opted-in Org capture target."
-  (unless org-note-abort
-    (when-let* ((marker org-capture-last-stored-marker)
-                (buffer (marker-buffer marker)))
-      (with-current-buffer buffer
-        (when cpj/org-sort-after-capture
-          (save-restriction
-            (widen)
-            (save-excursion
-              (my/org-sort)))
-          (save-buffer))))))
-
-(add-hook 'org-capture-after-finalize-hook
-          #'cpj/org-sort-capture-target)
-
-;;; mine
-;;; FIXME add prefix `cpj/'
-
-(defun org-count-paragraphs-in-region (beg end)
-  "Count Org \='paragraph' elements between BEG and END."
-  (save-excursion
-    (save-restriction
-      (narrow-to-region beg end)
-      (let ((ast (org-element-parse-buffer)))
-        (length (org-element-map ast 'paragraph #'identity))))))
-
-(defun org-count-paragraphs ()
-  "Report number of Org paragraphs in the current top-level heading.
-
-If point is not in a heading, count in the whole buffer."
-  (interactive)
-  (unless (derived-mode-p 'org-mode)
-    (user-error "Not an Org buffer"))
-  (save-excursion
-    (save-restriction
-      (widen)
-      (let (beg end scope-label)
-        (if (org-before-first-heading-p)
-            (setq beg (point-min)
-                  end (point-max)
-                  scope-label "Buffer")
-          ;; Find current top-level (level 1) ancestor, then narrow to its subtree.
-          (org-back-to-heading t)
-          (while (> (org-current-level) 1)
-            (org-up-heading-safe))
-          (setq scope-label (format "%s" (org-get-heading t t t t)))
-          (setq beg (point))
-          (org-end-of-subtree t t)
-          (setq end (point)))
-        (let ((n (org-count-paragraphs-in-region beg end)))
-          (message "%s has %d paragraph%s" scope-label n (if (= n 1) "" "s")))))))
-
 (require 'browse-url)
-(defun org-open-link-at-point-external ()
+(defun cpj/org-open-link-at-point-external ()
   "Open the Org link at point in the secondary browser."
   (interactive)
   (let* ((context (org-element-context))
@@ -186,85 +123,13 @@ If point is not in a heading, count in the whole buffer."
             (delete-region (point) end)
             (insert "\n")))))))
 
-(defun cpj/org--prose-paragraph-string (paragraph)
-  "Return the text of PARAGRAPH with footnote references removed.
-
-Return nil when PARAGRAPH belongs to a footnote definition."
-  (unless (org-element-lineage paragraph '(footnote-definition))
-    (let* ((begin (org-element-property :contents-begin paragraph))
-           (end   (org-element-property :contents-end paragraph))
-           (text  (buffer-substring-no-properties begin end))
-           ranges)
-      (org-element-map paragraph 'footnote-reference
-        (lambda (footnote)
-          (push (cons (- (org-element-property :begin footnote) begin)
-                      (- (org-element-property :end footnote) begin))
-                ranges)))
-      ;; Delete from the end so earlier positions remain valid.
-      (dolist (range (sort ranges
-                           (lambda (a b)
-                             (> (car a) (car b)))))
-        (setq text
-              (concat (substring text 0 (car range))
-                      (substring text (cdr range)))))
-      text)))
-
-(defun cpj/org-count-prose (&optional begin end)
-  "Count lines, sentences, words, and characters of Org prose.
-
-Exclude headings, metadata, structural elements, footnote
-definitions, and inline or labelled footnote references.
-
-When the region is active, count prose within the region.
-Otherwise, count prose in the accessible portion of the buffer.
-
-Return a list of the form (LINES SENTENCES WORDS CHARACTERS)."
-  (interactive
-   (when (use-region-p)
-     (list (region-beginning) (region-end))))
-  (unless (derived-mode-p 'org-mode)
-    (user-error "This command is intended for Org buffers"))
-  (let ((regionp    (and begin end))
-        (begin      (or begin (point-min)))
-        (end        (or end (point-max)))
-        (lines      0)
-        (sentences  0)
-        (words      0)
-        (characters 0))
-    (save-restriction
-      (narrow-to-region begin end)
-      (org-element-map
-          (org-element-parse-buffer)
-          'paragraph
-        (lambda (paragraph)
-          (when-let* ((text
-                       (cpj/org--prose-paragraph-string paragraph)))
-            (with-temp-buffer
-              (insert text)
-              (setq lines
-                    (+ lines
-                       (count-lines (point-min) (point-max)))
-                    sentences
-                    (+ sentences
-                       (count-sentences (point-min) (point-max)))
-                    words
-                    (+ words
-                       (count-words (point-min) (point-max)))
-                    characters
-                    (+ characters
-                       (buffer-size))))))))
-    (when (called-interactively-p 'interactive)
-      (message
-       "%s has %d line%s, %d sentence%s, %d word%s, and %d character%s"
-       (if regionp "Region" "Buffer")
-       lines       (if (= lines 1) "" "s")
-       sentences   (if (= sentences 1) "" "s")
-       words       (if (= words 1) "" "s")
-       characters  (if (= characters 1) "" "s")))
-    (list lines sentences words characters)))
-
 (defun org-hide-comment-blocks ()
-  "Fold all comment blocks in the current Org buffer."
+  "Fold all comment blocks in the current Org buffer.
+
+Intended for `org-mode-hook', where it runs late so Org has
+finished its normal buffer setup:
+
+  (add-hook \\='org-mode-hook #\\='org-hide-comment-blocks 90)"
   (interactive)
   (org-with-wide-buffer
     (let ((positions
@@ -275,7 +140,37 @@ Return a list of the form (LINES SENTENCES WORDS CHARACTERS)."
         (goto-char position)
         (org-fold-hide-block-toggle t)))))
 
-;(add-hook 'org-mode-hook #'org-hide-comment-blocks 90)
+
+;;; auto-sort after capture (when variable set)
+
+(defun my/org-sort ()
+  "Sort all top-level Org entries alphabetically."
+  (interactive)
+  (save-mark-and-excursion
+    (save-restriction
+      (widen)
+      (goto-char (point-min))
+      (push-mark (point-max) nil t)
+      (org-sort-entries nil ?a))))
+
+(defvar-local cpj/org-sort-after-capture nil
+  "Non-nil means sort this Org buffer after capture finalization.")
+
+(defun cpj/org-sort-capture-target ()
+  "Sort and save an opted-in Org capture target."
+  (unless org-note-abort
+    (when-let* ((marker org-capture-last-stored-marker)
+                (buffer (marker-buffer marker)))
+      (with-current-buffer buffer
+        (when cpj/org-sort-after-capture
+          (save-restriction
+            (widen)
+            (save-excursion
+              (my/org-sort)))
+          (save-buffer))))))
+
+
+;;; org-agenda commands
 
 (defcustom cpj/org-agenda-holiday-action 'dictionary
   "Action performed when `RET' is pressed on an Agenda holiday.
@@ -355,6 +250,33 @@ diary entries, and handle non-visitable holidays according to
   (interactive)
   (or (re-search-backward "^\* " nil t)
       (goto-char (point-min))))
+
+(defun ded/org-show-next-heading-tidily ()
+  "Show next entry, keeping other entries closed."
+  (if (save-excursion (end-of-line) (outline-invisible-p))
+      (progn (org-show-entry) (show-children))
+    (outline-next-heading)
+    (unless (and (bolp) (org-on-heading-p))
+      (org-up-heading-safe)
+      (hide-subtree)
+      (error "Boundary reached"))
+    (org-overview)
+    (org-reveal t)
+    (org-show-entry)
+    (show-children)))
+
+(defun ded/org-show-previous-heading-tidily ()
+  "Show previous entry, keeping other entries closed."
+  (let ((pos (point)))
+    (outline-previous-heading)
+    (unless (and (< (point) pos) (bolp) (org-on-heading-p))
+      (goto-char pos)
+      (hide-subtree)
+      (error "Boundary reached"))
+    (org-overview)
+    (org-reveal t)
+    (org-show-entry)
+    (show-children)))
 
 (require 'cl-lib)
 (require 'lunar)

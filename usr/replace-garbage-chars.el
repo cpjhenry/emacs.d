@@ -120,29 +120,22 @@ Creates:
   (message "replace-garbage-chars cache rebuilt."))
 
 ;;;###autoload
-(defun replace-garbage-chars (&optional beg end quiet)
+(defun replace-garbage-chars (&optional beg end)
   "Replace MS/CP1252 and other garbage characters with plain equivalents.
 
 If the region is active, operate on BEG and END.
 Otherwise, operate on the whole buffer.
 
-When called interactively:
-- no prefix argument: report replacement count
-- with \\[universal-argument]: suppress the message
-
-When called from Lisp:
-- QUIET non-nil suppresses the message
+When called interactively, report the number of replacements made.
 
 Returns the number of replacements made."
   (interactive
    (list (and (region-active-p) (region-beginning))
-         (and (region-active-p) (region-end))
-         current-prefix-arg))
+         (and (region-active-p) (region-end))))
   (replace-garbage-chars--ensure-cache)
   (let* ((beg (or beg (point-min)))
          (end (or end (point-max)))
-         (count 0)
-         (suppress (and quiet t)))
+         (count 0))
     (atomic-change-group
       (save-excursion
         (save-restriction
@@ -150,13 +143,19 @@ Returns the number of replacements made."
             (narrow-to-region beg end)
             (goto-char (point-min))
             (while (re-search-forward replace-garbage-chars--regexp nil t)
-              (let ((replacement
-                     (gethash (match-string-no-properties 0)
-                              replace-garbage-chars--table)))
+              (let* ((face (get-text-property (match-beginning 0) 'face))
+                     (replacement
+                      (gethash (match-string-no-properties 0)
+                               replace-garbage-chars--table)))
                 (when replacement
                   (replace-match replacement t t)
+                  (when face
+                    (add-text-properties
+                     (- (point) (length replacement))
+                     (point)
+                     `(face ,face)))
                   (setq count (1+ count)))))))))
-    (unless suppress
+    (when (called-interactively-p 'interactive)
       (message "Garbage in, garbage out. %d replacement%s made."
                count
                (if (= count 1) "" "s")))

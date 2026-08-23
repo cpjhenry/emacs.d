@@ -79,6 +79,7 @@ current month if no calendar month is displayed."
 
 ;; Harvest solar events via `solar-equinoxes-solstices' (DST-correct),
 ;; then filter/de-duplicate for full-year display.
+
 (defun list-solar-events-this-year ()
   "Display equinoxes and solstices for the displayed or current year."
   (interactive)
@@ -117,7 +118,7 @@ current month if no calendar month is displayed."
     (pop-to-buffer buf)))
 
 
-;; cleanup routines
+;;; cleanup routines
 
 (defun calendar-exit-kill ()
   "Kill Calendar when exiting."
@@ -174,6 +175,18 @@ current month if no calendar month is displayed."
 
 
 ;;; Diary
+
+(defun cpj/calendar-view-diary (&optional arg)
+  "Display diary entries for the date at point, including an empty day."
+  (interactive "p")
+  (let ((display-function diary-display-function))
+    (let ((diary-display-function
+           (lambda ()
+             (unless diary-entries-list
+               (setq diary-entries-list
+                     (list (list original-date " " "" nil nil))))
+             (funcall display-function))))
+      (diary-view-entries arg))))
 
 (defun cpj/diary-weekday (&rest weekdays)
   "Return non-nil if diary DATE falls on one of WEEKDAYS.

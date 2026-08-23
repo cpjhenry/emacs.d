@@ -95,7 +95,7 @@ C-<spc> ... M-=			number of days between mark and point")
 <esc>[14~   - F4       <esc>[29~   - F16
 <esc>[15~   - F5       <esc>[30~   -")
 
-(kf-gen-displayer cpj/vt-escapes "vt terminal escape sequences" "*vt sequences*")
+(kf-gen-displayer cpj/vt-escapes "Display vt terminal escape sequences." "*vt sequences*")
 
 (defconst cpj/cm-keys "C-M keys:
 
@@ -427,7 +427,21 @@ using a numerical code system for frequently used phrases.")
 25 Dec  Quarter Day (1/4)"
   "The Quarter, Cross-Quarter, and Scottish Quarter Days.")
 
-(kf-gen-displayer cpj/qdays "Quarter Days" "*Quarter Days*")
+(kf-gen-displayer cpj/qdays "Quarter Days." "*Quarter Days*")
+
+(defconst cpj/chol "Holidays in China
+
+Spring Festival 春节          Chinese New Year
+Lantern Festival 元宵节       Last Day of New Year's Celebration
+Qingming Festival 清明节      Tomb-Sweeping Day
+Dragon Boat Festival 端午节   Double Five; good luck
+Double Seven Festival 七夕节  Chinese Valentine's Day
+Mid-Autumn Festival 中秋节    Chinese Thanksgiving
+Ghost Festival 中元节         Chinese All Hallows' Eve
+Double Nine Festival 重阳节   Chongyang; drive away danger"
+  "Holidays in China.")
+
+(kf-gen-displayer cpj/chol "Holidays in China." "*Holidays in China*")
 
 ;;; cpj-help-functions.el ends here
 
