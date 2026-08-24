@@ -166,11 +166,6 @@ Useful if your *scratch* is already holding something important."
 
 
 ;; help functions
-(defun cpj/help-mode-setup ()
-  "Configure Help buffers."
-  (setq-local font-lock-keywords-only t)
-  (goto-address-mode 1))
-
 (defun cpj/find-symbol-source (symbol)
   "Visit the source definition of function or variable SYMBOL.
 
@@ -551,7 +546,6 @@ the current page.  Otherwise, call `elisp-eval-region-or-buffer'."
 
 
 ;; Lookup words in browser
-;; cpj / Sage
 (defvar search-engine-query-url "https://duckduckgo.com/?q="
   "Base query URL for browser searches.")
 
@@ -584,6 +578,20 @@ falling back to `browse-url-browser-function'."
         (browse-url
          (concat search-engine-query-url
                  (url-hexify-string term)))))))
+
+(defun cpj/eww-search-words ()
+  "Search the web for the region, agenda item, or word at point.
+
+In `org-agenda-mode', temporarily treat the current line as the
+active region.  Otherwise call `eww-search-words' normally."
+  (interactive)
+  (if (and (derived-mode-p 'org-agenda-mode)
+           (not (use-region-p)))
+      (save-mark-and-excursion
+        (goto-char (line-beginning-position))
+        (push-mark (line-end-position) t t)
+        (call-interactively #'eww-search-words))
+    (call-interactively #'eww-search-words)))
 
 ;;; filesandbuffers.el ends here
 

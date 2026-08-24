@@ -11,6 +11,10 @@
   "Increase the text scale by one step."
   (text-scale-set 1))
 
+(defun my/truncate-lines ()
+  "Enable line truncation in the current buffer."
+  (setq-local truncate-lines t))
+
 (defun flush-blank-lines (beg end)
   "Remove blank lines in a buffer.
 

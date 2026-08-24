@@ -265,51 +265,10 @@
 (use-package gcmh :config (gcmh-mode 1))
 
 
-;;; modeline
-(message "→ Configuring modeline.")
-(require 'battery)
-
-(use-package doom-modeline
-  :custom (doom-modeline-column-zero-based nil)
-  (doom-modeline-enable-word-count t)
-  (doom-modeline-continuous-word-count-modes '(markdown-mode gfm-mode org-mode text-mode))
-  (doom-modeline-icon nil)
-  (doom-modeline-project-name nil)
-  (doom-modeline-time-icon nil)
-  :hook (after-init . doom-modeline-mode))
-
-(setopt	battery-mode-line-format "%p%% "
-	display-time-24hr-format t
-	display-time-default-load-average nil
-	mode-line-compact nil
-	mode-line-position (list mode-line-percent-position " " "(%l,%C)")
-	mode-line-right-align-edge 'right-fringe)
-(if my/emacs-30-p (setopt project-mode-line t))
-
-(column-number-mode)
-;; (display-battery-mode)
-;; (display-time-mode)
-
-;; startup time
-(defun efs/display-startup-time ()
-  (message
-   "GNU Emacs %s loaded in %s with %d garbage collection(s).%s"
-   emacs-version
-   (format "%.2f seconds"
-           (float-time
-            (time-subtract after-init-time before-init-time)))
-   gcs-done
-   (if cpj/init-loading-incomplete
-       " [WARNING: 'init.el' did not complete]"
-     "")))
-
-(add-hook 'emacs-startup-hook #'efs/display-startup-time)
-
-
 ;;; buffers
 (message "→ Configuring buffers.")
 
-;;;; Libraries
+;; Libraries
 
 (use-package s)
 (use-package dash) ; for `-find', `-compose' and `-partial'
@@ -324,8 +283,7 @@
   :bind (("M-j"     . join-line) ; default-indent-new-line, see C-M-j
          ("C-w"     . kill-region-or-backward-word)
          ("M-w"     . kill-region-or-thing-at-point)
-	 ("C-M-["   . match-paren)
-         ("C-M-]"   . match-paren)
+	 ("C-M-m"   . match-paren)
          ("C-x x s" . save-all-unsaved))
   :hook (find-file . large-find-file-hook)
   :config
@@ -334,7 +292,7 @@
       (global-set-key (kbd key)
                       #'back-to-indentation-or-beginning-of-line))))
 
-;;;; Built-in packages
+;; Built-in packages
 
 (use-package abbrev
   :ensure nil
@@ -351,12 +309,9 @@
   (bookmark-sort-flag nil)
   (bookmark-default-file (expand-file-name "etc/bookmarks" user-emacs-directory)))
 
-(use-package esh-mode
+(use-package eshell
   :ensure nil
-  :requires em-alias
   :custom
-  (eshell-aliases-file
-   (expand-file-name "etc/eshell/aliases" user-emacs-directory))
   (eshell-directory-name
    (expand-file-name "var/eshell/" user-emacs-directory)))
 
@@ -369,13 +324,6 @@
   :ensure nil
   :custom
   (Man-notify-method 'pushy))
-
-(use-package prog-mode
-  :ensure nil
-  :config
-  (global-prettify-symbols-mode)
-  :custom
-  (prettify-symbols-unprettify-at-point 'right-edge))
 
 (use-package net-utils
   :ensure nil
@@ -426,7 +374,7 @@
 (use-package help-mode
   :ensure nil
   :hook
-  (help-mode . cpj/help-mode-setup)
+  (help-mode . goto-address-mode)
   :bind
   (("C-h C-s" . cpj/find-symbol-source)
    :map help-mode-map
@@ -449,7 +397,7 @@
               ("k" . my/View-scroll-line-backward)
               ("q" . View-kill-and-leave)))
 
-;;;; Files and saving
+;; Files and saving
 (setopt auto-save-default nil
         auto-save-list-file-prefix
         (expand-file-name "var/auto-save/" user-emacs-directory)
@@ -470,9 +418,6 @@
 ;; Give files +x permissions when saved if they contain a valid shebang.
 (add-hook 'after-save-hook #'executable-make-buffer-file-executable-if-script-p)
 
-;; Remove trailing whitespace on save.
-;; (add-hook 'before-save-hook #'delete-trailing-whitespace)
-
 ;; Diffs on save
 (add-to-list
  'save-some-buffers-action-alist
@@ -482,7 +427,7 @@
           (buffer-file-name buffer)))
        "show diff between the buffer and its file"))
 
-;;;; Auto-save when changing buffers/windows
+;; Auto-save when changing buffers/windows
 
 ;; Save all unsaved files when changing focus
 (setq after-focus-change-function #'save-all-unsaved)
@@ -499,7 +444,7 @@
 (advice-add 'windmove-up       :before #'cpj/save-current-file-buffer)
 (advice-add 'windmove-down     :before #'cpj/save-current-file-buffer)
 
-;;;; Mode hooks
+;; Mode hooks
 
 (add-hook 'doc-view-mode-hook #'auto-revert-mode)
 (add-hook 'package-menu-mode-hook #'hl-line-mode)
@@ -525,27 +470,38 @@
 ;; Opening multiple files.
 (add-hook 'window-setup-hook #'delete-other-windows)
 
-;;;; Scratch buffer
+;; Scratch buffer
 
 (use-package autoscratch
   :custom
   (initial-major-mode 'autoscratch-mode))
 
-;;;; Form feed
+;; Form feed
 
 ;; The form-feed ASCII character, 0x0C, historically marked the end of a page.
 ;; It is still useful in code for dividing a file into logical pages.
 (use-package form-feed-st
   :config
-  (global-form-feed-st-mode)
-  (add-to-list 'form-feed-st-include-modes 'help-mode t))
+  (defun my/kf-display-with-form-feed-st (fn &rest args)
+    "Run FN with ARGS, then enable `form-feed-st-mode' in its result buffer."
+    (let ((buf (apply fn args)))
+      (when (buffer-live-p buf)
+        (with-current-buffer buf
+          (form-feed-st-mode 1)))
+      buf))
 
-;;;; Editing conveniences
+  (global-form-feed-st-mode)
+
+  (with-eval-after-load 'kf-library
+    (advice-add 'kf-display-something-maybe-big
+                :around #'my/kf-display-with-form-feed-st)))
+
+;; Editing conveniences
 
 ;; Comment continuation.
 (keymap-set emacs-lisp-mode-map "S-<return>" #'default-indent-new-line)
 
-;;;; Which-key
+;; Which-key
 
 (use-package which-key
   :custom
@@ -573,7 +529,7 @@
   (push '((nil . "\\`cpj/which-key-abort-quietly\\'") . t)
         which-key-replacement-alist))
 
-;;;; Search and narrowing
+;; Search and narrowing
 
 ;; Search TERM in a web browser.
 (keymap-set search-map "b" #'browser-search)
@@ -581,6 +537,31 @@
 (use-package narrow-dwim
   :ensure nil
   :bind (("C-c n" . narrow-dwim)))
+
+;;; modeline
+(message "→ Configuring modeline.")
+(require 'battery)
+
+(use-package doom-modeline
+  :custom (doom-modeline-column-zero-based nil)
+  (doom-modeline-enable-word-count t)
+  (doom-modeline-continuous-word-count-modes '(markdown-mode gfm-mode org-mode text-mode))
+  (doom-modeline-icon nil)
+  (doom-modeline-project-name nil)
+  (doom-modeline-time-icon nil)
+  :hook (after-init . doom-modeline-mode))
+
+(setopt	battery-mode-line-format "%p%% "
+	display-time-24hr-format t
+	display-time-default-load-average nil
+	mode-line-compact nil
+	mode-line-position (list mode-line-percent-position " " "(%l,%C)")
+	mode-line-right-align-edge 'right-fringe)
+(if my/emacs-30-p (setopt project-mode-line t))
+
+(column-number-mode)
+;; (display-battery-mode)
+;; (display-time-mode)
 
 
 ;;; IDO
@@ -1094,22 +1075,11 @@
    :map eww-bookmark-mode-map
    ("w" . eww))
   :config
-  (url-setup-privacy-info)
-  (use-package ace-link
-    :config (ace-link-setup-default)) ;; alternative to tabbing
-  (defun cpj/eww-search-words ()
-    "Search the web for the region, agenda item, or word at point.
+  (url-setup-privacy-info))
 
-In `org-agenda-mode', temporarily treat the current line as the
-active region.  Otherwise call `eww-search-words' normally."
-    (interactive)
-    (if (and (derived-mode-p 'org-agenda-mode)
-             (not (use-region-p)))
-	(save-mark-and-excursion
-          (goto-char (line-beginning-position))
-          (push-mark (line-end-position) t t)
-          (call-interactively #'eww-search-words))
-      (call-interactively #'eww-search-words))))
+(use-package ace-link ; alternative to tabbing
+  :after eww
+  :config (ace-link-setup-default))
 
 (use-package free-keys
   :defer t
@@ -1135,15 +1105,12 @@ active region.  Otherwise call `eww-search-words' normally."
 
 (use-package hl-todo
   :custom (hl-todo-keyword-faces
-	   `(("TODO"       warning bold)
+	   '(("TODO"       warning bold)
 	     ("FIXME"      error bold)
-	     ("HACK"       font-lock-constant-face bold)
-	     ("REVIEW"     font-lock-keyword-face bold)
+	     ("HACK"       highlight)
 	     ("NOTE"       success bold)
-	     ("NB"         success bold)
 	     ("DEPRECATED" shadow bold)))
   :hook	(prog-mode . hl-todo-mode)
-	(emacs-lisp-mode . hl-todo-mode)
 	(org-mode . hl-todo-mode))
 
 (use-package list-projects)
@@ -1261,6 +1228,7 @@ With prefix argument PROMPT, confirm or edit the search term first."
   :bind (("M-q" . unfill-toggle)))
 
 ;; prog-mode
+(global-prettify-symbols-mode)
 (add-hook 'prog-mode-hook
 	  (lambda ()
 	    (setq show-trailing-whitespace t)  ; needs to be buffer local
@@ -2061,7 +2029,7 @@ With prefix argument PROMPT, confirm or edit the search term first."
   (setopt browse-url-secondary-browser-function 'browse-url-generic
 	  browse-url-generic-program "open"))
 
-;;;; Mail / News
+;; Mail / News
 (use-package gnus
   :if *natasha*
   :ensure nil
@@ -2153,7 +2121,7 @@ With prefix argument PROMPT, confirm or edit the search term first."
     "Disable `smart-tab-mode' in Message buffers."
     (smart-tab-mode -1)))
 
-;;;; RSS
+;; RSS
 (use-package elfeed
   :if *natasha*
   :custom
@@ -2166,7 +2134,6 @@ With prefix argument PROMPT, confirm or edit the search term first."
   (elfeed-search-sort-order 'ascending)
   (elfeed-use-curl t)
   :custom-face
-  ;; (elfeed-show-header-face ((t (:inherit default))))
   (elfeed-show-title-face  ((t (:inherit elfeed-show-header-face :weight bold))))
   (elfeed-show-author-face ((t (:inherit elfeed-show-header-face))))
   (elfeed-show-date-face   ((t (:inherit elfeed-show-header-face))))
@@ -2198,10 +2165,10 @@ With prefix argument PROMPT, confirm or edit the search term first."
   (elfeed-show-update . cpj/elfeed-show-tidy-buffer)
   (elfeed-show-update . replace-garbage-chars)
   (elfeed-show-update . my/text-scale-increase)
+  (elfeed-show-update . my/truncate-lines)
   :init
   (make-directory (expand-file-name "var/elfeed/" user-emacs-directory) t)
-  (autoload 'cpj/elfeed-daily "elfeed-functions"
-    "Display the daily briefing feeds in Elfeed." t)
+  (autoload 'cpj/elfeed-daily "elfeed-functions" "Display the daily briefing feeds in Elfeed." t)
   (defalias 'db #'cpj/elfeed-daily)
   (easy-menu-add-item global-map '(menu-bar tools)
                       ["Read RSS Feeds" elfeed :help "Read RSS and Atom feeds"]
@@ -2211,7 +2178,7 @@ With prefix argument PROMPT, confirm or edit the search term first."
   (setq elfeed-show-refresh-function #'cpj/elfeed-show-refresh)
   (load "rc/feeds" 'noerror 'nomessage))
 
-;;;; Others
+;; Others
 (use-package chess
   :if	*natasha*
   :defer t
@@ -2290,6 +2257,21 @@ With prefix argument PROMPT, confirm or edit the search term first."
 (use-package org-pdftools
   :after org pdf-tools
   :hook (org-mode . org-pdftools-setup-link))
+
+;; startup time
+(defun efs/display-startup-time ()
+  (message
+   "GNU Emacs %s loaded in %s with %d garbage collection(s).%s"
+   emacs-version
+   (format "%.2f seconds"
+           (float-time
+            (time-subtract after-init-time before-init-time)))
+   gcs-done
+   (if cpj/init-loading-incomplete
+       " [WARNING: 'init.el' did not complete]"
+     "")))
+
+(add-hook 'emacs-startup-hook #'efs/display-startup-time)
 
 
 ;;; UX
