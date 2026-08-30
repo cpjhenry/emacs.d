@@ -28,7 +28,7 @@
   "User's birth date.
 
 The value is stored as a Gregorian date list in the form (MONTH DAY YEAR),
-as used internally by Emacs calendar functions.  Interactive date entry
+as used internally by Emacs calendar functions. Interactive date entry
 may respect `calendar-date-style', but the stored value uses Emacs'
 calendar date representation."
   :type '(choice
@@ -57,7 +57,7 @@ to the current date."
   "Return elapsed years since `user-birthdate'.
 
 DATE is a Gregorian date in (MONTH DAY YEAR) form and defaults
-to the current date.  A year is the mean Gregorian year of
+to the current date. A year is the mean Gregorian year of
 365.2425 days."
   (/ (days-since-birthdate date) 365.2425))
 
@@ -93,9 +93,9 @@ Set variable `user-birthdate' in format `(MONTH DAY YEAR)'."
 (defun biorhythm (&optional insert)
   "Show today's biorhythm.
 
-Uses `user-birthdate' as the birth date.  `user-birthdate' should be
+Uses `user-birthdate' as the birth date. `user-birthdate' should be
 a Gregorian date list in the form (MONTH DAY YEAR), as used internally
-by Emacs calendar functions.  Display follows the user's calendar
+by Emacs calendar functions. Display follows the user's calendar
 settings where possible.
 
 With prefix argument INSERT, insert the result at point instead of

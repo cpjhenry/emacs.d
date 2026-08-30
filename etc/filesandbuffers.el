@@ -49,6 +49,11 @@
   (goto-char (point-max))
   (recenter -1))
 
+(defun my/recenter-top-bottom ()
+  "Scroll the window so that current line is at the top."
+  (interactive)
+  (recenter-top-bottom 0))
+
 
 (declare-function View-scroll-line-backward "view")
 (defun my/View-scroll-line-backward ()
@@ -276,49 +281,6 @@ mode when toggled off."
   (eval-region b e)
   (deactivate-mark)
   (message "Region evaluated."))
-
-
-;;; Elisp eval-page
-
-;;; HACK · Consider moving page-aware Elisp evaluation to usr/ as
-;;; a minor mode.
-
-(defun cpj/elisp-buffer-has-pages-p ()
-  "Return non-nil if the current buffer contains form-feed page breaks."
-  (save-excursion
-    (save-restriction
-      (widen)
-      (goto-char (point-min))
-      (search-forward "\f" nil t))))
-
-(defun cpj/elisp-eval-page ()
-  "Evaluate the current Elisp page, bounded by form-feed characters."
-  (interactive)
-  (save-excursion
-    (save-restriction
-      (narrow-to-page)
-      (let ((beg (point-min))
-            (end (point-max))
-            (page-name
-             (save-excursion
-               (goto-char (point-min))
-               (if (re-search-forward "^;;;+ +\\(.+\\)" nil t)
-                   (match-string 1)
-                 "unnamed"))))
-        (eval-region beg end)
-        (message "Evaluated page: %s" page-name)))))
-
-(defun cpj/elisp-eval-region-page-or-buffer ()
-  "Evaluate active region, current page, or whole Elisp buffer.
-
-If the region is active, call `elisp-eval-region-or-buffer'.
-Otherwise, if the buffer contains form-feed page breaks, evaluate
-the current page.  Otherwise, call `elisp-eval-region-or-buffer'."
-  (interactive)
-  (if (and (not (use-region-p))
-           (cpj/elisp-buffer-has-pages-p))
-      (cpj/elisp-eval-page)
-    (call-interactively #'elisp-eval-region-or-buffer)))
 
 
 (defun turn-off-cursor ()

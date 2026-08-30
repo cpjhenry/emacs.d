@@ -32,6 +32,21 @@ BEG and END mark the limits of the region."
   (interactive)
   (insert (format-time-string "%-d %B %Y")))
 
+(defun indent-whole-buffer ()
+  "Indent the entire buffer without affecting point or mark."
+  (interactive)
+  (save-excursion
+    (save-restriction
+      (indent-region (point-min) (point-max)))))
+
+(defun kill-word-dwim (&optional arg)
+  "Kill ARG words forward, including following horizontal whitespace."
+  (interactive "p")
+  (let ((beg (point)))
+    (forward-word arg)
+    (skip-chars-forward " \t")
+    (kill-region beg (point))))
+
 (defun markdown-preview-file ()
   "Run `Marked' on the current file and revert the buffer."
   (interactive)
@@ -43,51 +58,6 @@ BEG and END mark the limits of the region."
   "Mark the region from the beginning of the buffer to point."
   (interactive)
   (push-mark (point-min) nil t))
-
-;; https://emacs.stackexchange.com/questions/35069/best-way-to-select-a-word
-(defun mark-whole-word (&optional arg allow-extend)
-  "Like `mark-word', but select whole words and skips over whitespace.
-If you use a negative prefix ARG then select words backward.
-Otherwise select them forward.
-
-If cursor starts in the middle of word then select that whole word.
-
-If there is whitespace between the initial cursor position and the
-first word (in the selection direction), it is skipped (not selected).
-
-If the command is repeated or the mark is active, select the next NUM
-words, where NUM is the numeric prefix argument.  (Negative NUM
-selects backward.)
-
-When called from Lisp with ALLOW-EXTEND omitted or nil, mark is
-set ARG words from point.
-
-With ARG and ALLOW-EXTEND both non-nil (interactively, with prefix
-argument), the place to which mark goes is the same place \\[forward-word]
-would move to with the same argument; if the mark is active, it moves
-ARG words from its current position, otherwise it is set ARG words
-from point."
-  (interactive "P\np")
-  (let ((num  (prefix-numeric-value arg)))
-    (unless (eq last-command this-command)
-      (if (natnump num)
-          (skip-syntax-forward "\\s-")
-        (skip-syntax-backward "\\s-")))
-    (unless (or (eq last-command this-command)
-                (if (natnump num)
-                    (looking-at "\\b")
-                  (looking-back "\\b")))
-      (if (natnump num)
-          (left-word)
-        (right-word)))
-    (mark-word arg allow-extend)))
-
-(defun indent-whole-buffer ()
-  "Indent the entire buffer without affecting point or mark."
-  (interactive)
-  (save-excursion
-    (save-restriction
-      (indent-region (point-min) (point-max)))))
 
 (defun speaking-time (&optional wpm)
   "Estimate how long the region or buffer will take to speak aloud.
@@ -140,6 +110,45 @@ Operate on region if active, otherwise entire buffer."
       (message "Removed %d footnotes." count))
     count))
 
+
+;; https://emacs.stackexchange.com/questions/35069/best-way-to-select-a-word
+(defun mark-whole-word (&optional arg allow-extend)
+  "Like `mark-word', but select whole words and skips over whitespace.
+If you use a negative prefix ARG then select words backward.
+Otherwise select them forward.
+
+If cursor starts in the middle of word then select that whole word.
+
+If there is whitespace between the initial cursor position and the
+first word (in the selection direction), it is skipped (not selected).
+
+If the command is repeated or the mark is active, select the next NUM
+words, where NUM is the numeric prefix argument.  (Negative NUM
+selects backward.)
+
+When called from Lisp with ALLOW-EXTEND omitted or nil, mark is
+set ARG words from point.
+
+With ARG and ALLOW-EXTEND both non-nil (interactively, with prefix
+argument), the place to which mark goes is the same place \\[forward-word]
+would move to with the same argument; if the mark is active, it moves
+ARG words from its current position, otherwise it is set ARG words
+from point."
+  (interactive "P\np")
+  (let ((num  (prefix-numeric-value arg)))
+    (unless (eq last-command this-command)
+      (if (natnump num)
+          (skip-syntax-forward "\\s-")
+        (skip-syntax-backward "\\s-")))
+    (unless (or (eq last-command this-command)
+                (if (natnump num)
+                    (looking-at "\\b")
+                  (looking-back "\\b")))
+      (if (natnump num)
+          (left-word)
+        (right-word)))
+    (mark-word arg allow-extend)))
+
 ;; https://github.com/sprig/org-capture-extension
 (defun transform-square-brackets-to-round-ones (string-to-transform)
   "Transforms `\[' into `\(' and `\]' into `\)', other chars left unchanged."
@@ -152,10 +161,5 @@ like \\[yank-pop] does, but in the opposite direction."
   (interactive "p")
   (yank-pop (- arg)))
 
-(defun zero-width-space ()
-  "Insert ZERO WIDTH SPACE."
-  (interactive)
-  (insert-char (char-from-name "ZERO WIDTH SPACE"))
-  (message "ZWS"))
 
 ;;; text-functions.el ends here

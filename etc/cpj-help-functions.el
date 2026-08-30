@@ -6,6 +6,23 @@
 
 (defconst my/emacs-help "EMACS
 
+|-----+----------------+----+------------+----+----+-----+----+----|
+| Key | no mod         | Em | S          | C  | M  | C-M | s  | A  |
+|-----+----------------+----+------------+----+----+-----+----+----|
+| F1  | help           | Y  | emacs-help | -- | -- | --  | -- | -- |
+| F2  | 2C             | Y  | shortdoc   | -- | -- | --  | -- | -- |
+| F3  | macro          | Y  | --         | -- | -- | --  | -- | -- |
+| F4  | end macro      | Y  | --         | -- | -- | --  | -- | -- |
+| F5  | deadgrep       |    | --         | -- | -- | --  | -- | -- |
+| F6  | fill-column    |    | --         | -- | -- | --  | -- | -- |
+| F7  | jinx           |    | --         | -- | -- | --  | -- | -- |
+| F8  | list-bookmarks |    | --         | -- | -- | --  | -- | -- |
+| F9  | shortcuts      |    | --         | -- | -- | --  | -- | -- |
+| F10 | menu-bar       | Y  | --         | -- | -- | --  | -- | -- |
+| F11 | fullscreen     | Y  | --         | -- | -- | --  | -- | -- |
+| F12 | list-buffers   |    | --         | -- | -- | --  | -- | -- |
+|-----+----------------+----+------------+----+----+-----+----+----|
+
 <ROPT>-…	   			MacOS alt keys
 C-x 8 …					Emacs alt keys
 
@@ -13,7 +30,7 @@ M-X						extended command (buffer)
 M-TAB					completion at point
 
 C-TAB | C-x ← | →		switch buffer
-C-k | C-S-DEL			kill eol | line
+C-k | C-S-DEL			kill EOL | line
 C-DEL | (fn)-C-BS 		kill word ← →
 C-g						abort action
 C-s | C-r				search forward | back
@@ -44,7 +61,7 @@ C-x C-e					evaluate last standard expression (sexp)
 C-u 0 C-M-\\   			remove indent
 C-u C-x r N				number lines
 
-
+\f
 ORG-MODE
 
 S-TAB					cycle visibility
@@ -71,7 +88,7 @@ C-c C-q					tag
 
 C-c TAB					toggle table column width
 
-
+\f
 Calendar
 
 C-<spc> ... M-=			number of days between mark and point")
@@ -268,7 +285,7 @@ APOTHECARIES' MEASURES								APOTHECARIES' WEIGHTS
 20 fl.ounces (UK)	=	1 pint						12 ounces			=	1 pound (5760 grains)
 16 fl.ounces (US)	=	1 pint
 
-
+\f
 OBSCURE MEASUREMENTS
 
 LENGTH
@@ -295,7 +312,7 @@ AREA
 MASS
 1 oz.				=	2 shekels
 
-
+\f
 IMPERIAL LIQUID MEASURES
 
 +---------+-----------+-----------+-----------+------------+-----------+-----------+
@@ -318,7 +335,7 @@ IMPERIAL LIQUID MEASURES
 | 1 gal   |   4 qt    |   8 pt    |   16 cups | 128 fl oz  |           |           |
 +---------+-----------+-----------+-----------+------------+-----------+-----------+
 
-
+\f
 CANADIAN MEASUREMENTS
 
 | Imperial      | Symbol | CA     | UK                  | US                  |
@@ -447,7 +464,11 @@ Double Nine Festival 重阳节   Chongyang; drive away danger"
 
 ;; Local Variables:
 ;; tab-width: 4
+;; eval: (orgtbl-mode 1)
+;; before-save-hook: (elisp-check-literal-form-feeds)
 ;; End:
 
 ; LocalWords:  kf un sexp esc PgUp PgDn isearch dabbrev eval Su Xtra
 ; LocalWords:  denarius Benedetto ˈɡɪni gn gns drachm drachms nau Req
+; LocalWords:  elisp 春节 元宵节 清明节 端午节 七夕节 中秋节 中元节
+; LocalWords:  重阳节 Chongyang orgtbl

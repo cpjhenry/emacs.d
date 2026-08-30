@@ -35,6 +35,7 @@
     ("#+LATEX: \\clearpage" . "=====")
     ("#+LATEX: \\newpage" . "=====")
     ("#+LATEX: \\asterism" . "* * *")
+    ("#+LATEX: \\dinkus\\clearpage" . "= = =")
     ("#+LATEX: \\begin{samepage}" . "⟦keep together⟧")
     ("#+LATEX: \\end{samepage}" . "·")
     ("#+LATEX: \\begin{minipage}{\\linewidth}" . "⟦keep item together⟧")
@@ -67,14 +68,10 @@ Keys are matched literally (exact string match) and may include braces."
 (defvar-local org-macro-display--saved-keywords nil
   "Buffer-local copy of the keywords installed by `org-macro-display-mode`.")
 
-(defcustom org-macro-display-horizontal-rule-width 52
-  "Width of displayed horizontal rules."
-  :type 'integer
+(defface org-macro-display-horizontal-rule
+  '((t (:strike-through t)))
+  "Face used for displayed horizontal rules."
   :group 'org-macro-display)
-
-(defun org-macro-display--horizontal-rule ()
-  "Return a horizontal rule matching the current window width."
-  (make-string (max 4 (- (window-width) 2)) ?―))
 
 (defun org-macro-display--horizontal-rule-keywords ()
   "Return font-lock keyword for displaying dash lines as horizontal rules."
@@ -83,8 +80,12 @@ Keys are matched literally (exact string match) and may include braces."
        (0 (prog1 nil
             (put-text-property (match-beginning 0) (match-end 0)
                                'org-macro-display "horizontal rule")
-            (put-text-property (match-beginning 0) (match-end 0)
-			       'display (org-macro-display--horizontal-rule))))))))
+            (put-text-property
+             (match-beginning 0) (match-end 0)
+             'display '(space :align-to right-fringe))
+            (put-text-property
+             (match-beginning 0) (match-end 0)
+             'face 'org-macro-display-horizontal-rule)))))))
 
 (defun org-macro-display--clear ()
   "Remove only display properties added by `org-macro-display-mode`."

@@ -102,8 +102,6 @@
   (keymap-global-set "<end>"  nil) ; 'move-end-of-line
 
   ;; Alternates
-  (keymap-global-set "C-<f11>" 'display-battery-mode)
-
   (keymap-global-set "A-<left>" "s-<left>")
   (keymap-global-set "A-<right>" "s-<right>")
   (keymap-global-set "A-k" "s-k")
@@ -226,7 +224,7 @@
 	read-buffer-completion-ignore-case t
 	read-file-name-completion-ignore-case t)
 
-;; quit-window
+;; quit-window / kill-buffer
 (if my/emacs-31-p
     (setopt quit-window-kill-buffer t)
   (defun my/quit-window ()
@@ -235,6 +233,10 @@
     (quit-window t))
   (define-key key-translation-map [remap quit-window] #'my/quit-window))
 (keymap-set messages-buffer-mode-map "q" #'bury-buffer)
+
+;; kill-region
+(if my/emacs-31-p
+    (setopt kill-region-dwim 'emacs-word))
 
 ;; files --- move out of ~/.emacs.d
 (setopt	custom-file			(concat user-emacs-directory "var/custom.el")
@@ -280,17 +282,14 @@
 (use-package lean-emacs
   :ensure nil
   :demand t
-  :bind (("M-j"     . join-line) ; default-indent-new-line, see C-M-j
-         ("C-w"     . kill-region-or-backward-word)
-         ("M-w"     . kill-region-or-thing-at-point)
-	 ("C-M-m"   . match-paren)
-         ("C-x x s" . save-all-unsaved))
-  :hook (find-file . large-find-file-hook)
+  :bind
+  ("C-M-m" . match-paren)
+  :hook
+  (find-file . large-find-file-hook)
   :config
   (dolist (key '("<home>" "s-<left>" "C-a"))
     (when (key-binding (kbd key))
-      (global-set-key (kbd key)
-                      #'back-to-indentation-or-beginning-of-line))))
+      (keymap-global-set key 'back-to-indentation-or-beginning-of-line))))
 
 ;; Built-in packages
 
@@ -476,7 +475,7 @@
   :custom
   (initial-major-mode 'autoscratch-mode))
 
-;; Form feed
+;; Form-feed
 
 ;; The form-feed ASCII character, 0x0C, historically marked the end of a page.
 ;; It is still useful in code for dividing a file into logical pages.
@@ -923,6 +922,10 @@
 
 (advice-add 'calendar-exit :before #'save-diary-before-calendar-exit)
 
+(use-package year-calendar
+  :ensure nil
+  :commands year-calendar)
+
 (message "→ Configuring diary.")
 (require 'diary-lib)
 (setopt diary-file (expand-file-name "~/Documents/diary")
@@ -1116,9 +1119,14 @@
 (use-package list-projects)
 
 (use-package lorem-ipsum
-  :init	(easy-menu-add-item global-map '(menu-bar edit)
-	  ["Lorem-ipsum" lorem-ipsum-insert-paragraphs :help "Insert..."])
-  :config (setq-default lorem-ipsum-sentence-separator " "))
+  :bind
+  ("C-c x l" . lorem-ipsum-insert-paragraphs)
+  :init
+  (easy-menu-add-item global-map '(menu-bar edit)
+		      ["Lorem-ipsum" lorem-ipsum-insert-paragraphs :help "Insert..."])
+  :config
+  (setq-default lorem-ipsum-sentence-separator " ")
+  (which-key-alias "C-c x l" "lorem-ipsum"))
 
 (use-package mistty
   :bind ( :map mistty-prompt-map
@@ -1242,16 +1250,23 @@ With prefix argument PROMPT, confirm or edit the search term first."
 	      (visual-fill-column-mode -1))))
 
 ;; Emacs lisp
-(add-hook 'emacs-lisp-mode-hook
-	  (lambda ()
-	    (setq tab-width 8
-		  truncate-lines t)))
+(use-package elisp-tools
+  :ensure nil
+  :demand t
+  :bind
+  (:map emacs-lisp-mode-map
+        ("C-c C-e" . elisp-eval-page-region-or-buffer)))
 
-(with-eval-after-load 'elisp-mode
-  (keymap-set emacs-lisp-mode-map "C-c C-e" #'cpj/elisp-eval-region-page-or-buffer)
-
-  (keymap-unset emacs-lisp-mode-map "C-c C-f" t)
-  (keymap-unset emacs-lisp-mode-map "C-c C-b" t))
+(use-package elisp-mode
+  :ensure nil
+  :hook
+  (emacs-lisp-mode . (lambda ()
+                       (setq tab-width 8
+                             truncate-lines t)))
+  :bind
+  (:map emacs-lisp-mode-map
+        ("C-c C-f" . nil)
+        ("C-c C-b" . nil)))
 
 (use-package flymake
   :ensure nil
@@ -1834,11 +1849,6 @@ With prefix argument PROMPT, confirm or edit the search term first."
 ;;
 ;;     patch-emacs-calendar-permission
 ;;
-;; For example:
-;;
-;;     patch-emacs-calendar-permission \
-;;       "$(mdfind 'kMDItemCFBundleIdentifier == "org.gnu.emacs"' | head -1)"
-;;
 ;; This restores Mac Calendar access used by `calendar-data' through
 ;; `maccalfw'.
 (message "→ Configuring calendar dashboards.")
@@ -1905,8 +1915,7 @@ With prefix argument PROMPT, confirm or edit the search term first."
    (list user-gmail
 	 "Birthdays"
 	 "Home"
-	 "Family"
-	 "Ottawa District 1"))
+	 "Family"))
   (calendar-data-past-days 30)
   (calendar-data-future-days 365))
 
@@ -1978,7 +1987,7 @@ With prefix argument PROMPT, confirm or edit the search term first."
 
 ;;; spell checking
 (message "→ Configuring spellchecker.")
-(bind-key "<f7>" 'my/ispell-buffer)
+(keymap-global-set "<f7>" 'my/ispell-buffer)
 
 (use-package jinx
   :demand t
@@ -2273,6 +2282,19 @@ With prefix argument PROMPT, confirm or edit the search term first."
 
 (add-hook 'emacs-startup-hook #'efs/display-startup-time)
 
+;; Work-specific
+(when *w32*
+  (load (expand-file-name ".work" user-emacs-directory) 'noerror nil))
+
+(when *mac*
+  (defun my/find-work-agenda ()
+    "Open the work agenda."
+    (interactive)
+    (find-file "/db:/!.org"))
+
+  (keymap-global-set "C-c Z" #'my/find-work-agenda)
+  (which-key-alias "C-c Z" "work-agenda"))
+
 
 ;;; UX
 (message "→ Configuring UX.")
@@ -2281,22 +2303,24 @@ With prefix argument PROMPT, confirm or edit the search term first."
 ;; <home>  is fn-left	<end>  is fn-right
 ;; <prior> is fn-up	<next> is fn-down
 
-(global-set-key (kbd "C-<home>" ) 'beginning-of-buffer)
-(global-set-key (kbd "C-<end>"  ) 'my/end-of-buffer)
-(global-set-key (kbd "C-<prior>") 'scroll-down-line)
-(global-set-key (kbd "C-<next>" ) 'scroll-up-line)
+(keymap-global-set "C-<home>"  #'beginning-of-buffer)
+(keymap-global-set "C-<end>"   #'my/end-of-buffer)
+(keymap-global-set "C-<prior>" #'scroll-down-line)
+(keymap-global-set "C-<next>"  #'scroll-up-line)
 
 ;; M-<home>		'beginning-of-buffer-other-window
 ;; M-<end>		'end-of-buffer-other-window
 ;; M-<prior>		'scroll-other-window-down
 ;; M-<next>		'scroll-other-window
 
-(global-unset-key (kbd "M-<left>"))
-(global-unset-key (kbd "M-<right>"))
-(global-set-key (kbd "M-[") 'my/backward-page)
-(global-set-key (kbd "M-]") 'my/forward-page)
-(global-set-key [remap backward-paragraph] 'my/backward-paragraph)
-(global-set-key [remap forward-paragraph] 'my/forward-paragraph)
+(keymap-global-unset "M-<left>")
+(keymap-global-unset "M-<right>")
+
+(keymap-global-set "M-[" #'my/backward-page)
+(keymap-global-set "M-]" #'my/forward-page)
+
+(keymap-global-set "<remap> <backward-paragraph>" #'my/backward-paragraph)
+(keymap-global-set "<remap> <forward-paragraph>" #'my/forward-paragraph)
 
 ;;; scroll settings
 (setq auto-window-vscroll nil
@@ -2305,25 +2329,20 @@ With prefix argument PROMPT, confirm or edit the search term first."
       scroll-margin 0
       scroll-preserve-screen-position t
       scroll-step 0)
-(global-set-key (kbd "C-<") 'scroll-left)
-(global-set-key (kbd "C->") 'scroll-right)
+
+(keymap-global-set "C-<" #'scroll-left)
+(keymap-global-set "C->" #'scroll-right)
 
 ;; half-scroll
-(define-key global-map [remap scroll-up-command] #'cpj/scroll-up-half)
-(define-key global-map [remap scroll-down-command] #'cpj/scroll-down-half)
-(global-set-key (kbd "A-<up>") [prior])
-(global-set-key (kbd "A-<down>") [next])
-(when *mac*
-  (global-set-key (kbd "s-<up>") [prior])
-  (global-set-key (kbd "s-<down>") [next]))
+(keymap-global-set "<remap> <scroll-up-command>" #'cpj/scroll-up-half)
+(keymap-global-set "<remap> <scroll-down-command>" #'cpj/scroll-down-half)
 
-;; (unless (package-installed-p 'ultra-scroll)
-;;	(package-vc-install '(ultra-scroll
-;;		:vc-backend Git
-;;		:url "https://github.com/jdtsmith/ultra-scroll")))
-;; (use-package ultra-scroll
-;;	:init (setq scroll-conservatively 101) ; important!
-;;	:config (ultra-scroll-mode 1))
+(keymap-global-set "A-<up>" [prior])
+(keymap-global-set "A-<down>" [next])
+
+(when *mac*
+  (keymap-global-set "s-<up>" [prior])
+  (keymap-global-set "s-<down>" [next]))
 
 ;;; mouse
 ;; https://github.com/purcell/disable-mouse
@@ -2337,9 +2356,7 @@ With prefix argument PROMPT, confirm or edit the search term first."
 
 (when *mac*
   ;; https://lmno.lol/alvaro/hey-mouse-dont-mess-with-my-emacs-font-size
-  (global-set-key (kbd "<pinch>") 'ignore)
-  (global-set-key (kbd "<C-wheel-up>") 'ignore)
-  (global-set-key (kbd "<C-wheel-down>") 'ignore))
+  (keymap-global-set "<pinch>" #'ignore))
 
 ;;; window navigation
 (use-package windmove
@@ -2350,46 +2367,36 @@ With prefix argument PROMPT, confirm or edit the search term first."
    ("C-M-<up>". windmove-up)
    ("C-M-<down>". windmove-down)))
 
-;; (when (fboundp 'windmove-default-keybindings)
-;; (global-set-key (kbd "C-c <left>")  'windmove-left)
-;; (global-set-key (kbd "C-c <right>") 'windmove-right)
-;; (global-set-key (kbd "C-c <up>")    'windmove-up)
-;; (global-set-key (kbd "C-c <down>")  'windmove-down))
-
-;; Winner mode is a global minor mode that records the changes in the window configuration.
-;; https://www.gnu.org/software/emacs/manual/html_node/emacs/Window-Convenience.html
-;(winner-mode t)
-
 
 ;;; alternate keys
-(global-set-key (kbd "C-s")	'isearch-forward-regexp)
-(global-set-key (kbd "C-r")	'isearch-backward-regexp)
-(global-set-key (kbd "M-s s")	'isearch-forward)
-(global-set-key (kbd "M-s r")	'isearch-backward)
-(global-set-key (kbd "M-z")	'zap-up-to-char)
+(message "→ Configuring alternate keys.")
 
-(global-set-key (kbd "<f12>")	'list-buffers)
-(global-set-key (kbd "M-<f11>")	'toggle-modeline)
+(keymap-global-set "C-s" 'isearch-forward-regexp)
+(keymap-global-set "C-r" 'isearch-backward-regexp)
+(keymap-global-set "M-s s" 'isearch-forward)
+(keymap-global-set "M-s r" 'isearch-backward)
 
-(global-set-key (kbd "A-<return>") (kbd "M-<return>"))
-(global-set-key (kbd "A-S-<return>") (kbd "M-S-<return>"))
-
-(defun my/recenter-top-bottom ()
-  "Scroll the window so that current line is at the top."
-  (interactive)
-  (recenter-top-bottom 0))
 (keymap-global-set "C-l" 'my/recenter-top-bottom)
+(keymap-global-set "C-x x s" 'save-all-unsaved)
+
+(keymap-global-set "M-d" 'kill-word-dwim)
+(keymap-global-set "M-j" 'join-line) ; default is `default-indent-new-line', see C-M-j
+(keymap-global-set "M-z" 'zap-up-to-char)
+
+(keymap-global-set "A-<return>" "M-<return>")
+(keymap-global-set "A-S-<return>" "M-S-<return>")
 
 ;; https://www.matem.unam.mx/~omar/apropos-emacs.html#writing-experience
-(bind-key "C-d" 'delete-forward-char)      ; better replacement for delete-char
-(bind-key "M-c" 'capitalize-dwim)          ; capitalize-word
-(bind-key "M-K" 'kill-paragraph)           ; M-k capitalizes sentence
-(bind-key "C-x M-t" 'transpose-paragraphs) ; C-x C-t transpose-lines
-(global-set-key [remap mark-word] 'mark-whole-word)
-(global-set-key [remap forward-word] 'forward-to-word) ; leaves point in better spot
+(keymap-global-set "C-d" 'delete-forward-char)      ; better replacement for delete-char
+(keymap-global-set "M-c" 'capitalize-dwim)          ; capitalize-word
+(keymap-global-set "M-K" 'kill-paragraph)           ; M-k capitalizes sentence
+(keymap-global-set "C-x M-t" 'transpose-paragraphs) ; C-x C-t transpose-lines
+
+(keymap-global-set "<remap> <mark-word>" 'mark-whole-word)
+(keymap-global-set "<remap> <forward-word>" 'forward-to-word)
 
 ;; Disable alternate suspend-frame
-(global-unset-key (kbd "C-x C-z"))
+(keymap-global-unset "C-x C-z")
 
 ;; Disable the "numeric argument". Prefer universal argument (C-u) prefix.
 (dolist (prefix '("C-" "M-" "C-M-"))
@@ -2403,8 +2410,8 @@ With prefix argument PROMPT, confirm or edit the search term first."
 ;; C-<f10>	buffer-menu-open
 ;; M-<f10>	toggle-frame-maximized
 
-(dolist (key '("C-<f10>"))
-  (global-unset-key (kbd key)))
+(dolist (key '("C-<f10>" "M-<f10>"))
+  (keymap-global-unset key))
 
 ;; Cleanup abbrev menu
 (dolist (key '("C-a" "+" "-" "'"))
@@ -2418,91 +2425,60 @@ With prefix argument PROMPT, confirm or edit the search term first."
 (keymap-global-unset "C-x u")
 
 
-;;; Disabled functions
-;(setq disabled-command-function 'enable-me)
-
-(put 'dired-find-alternate-file 'disabled nil)
-(put 'downcase-region 'disabled nil) ; C-x C-l
-(put 'narrow-to-region 'disabled nil) ; C-x n n
-(put 'suspend-frame 'disabled nil) ; C-z
-(put 'upcase-region 'disabled nil) ; C-x C-u
-
-;; https://lists.gnu.org/archive/html/bug-gnu-emacs/2024-02/msg01410.html
-(with-eval-after-load 'help-fns (put 'help-fns-edit-variable 'disabled nil))
-
-;; Safe local variables
-(add-to-list 'safe-local-variable-values '(org-log-done))
-(add-to-list 'safe-local-variable-values '(truncate-lines . t))
-(add-to-list 'safe-local-variable-values '(before-save-hook . (my/org-sort)))
-(add-to-list 'safe-local-variable-values '(cpj/org-sort-after-capture . t))
-
-(dolist (value '((flymake-mode . nil)
-		 (org-comment-placeholder-mode . nil)
-                 (org-hide-inline-footnotes-mode . nil)
-                 (org-macro-display-mode . nil)
-                 (org-quote-indent-mode . nil)))
-  (add-to-list 'safe-local-variable-values value))
-
-
 ;;; Shortcuts
-(bind-key "<f8>"	'list-bookmarks)
+(keymap-global-set "<f8>"	'list-bookmarks)
+(keymap-global-set "<f12>" 	'list-buffers)
 
-(bind-key "C-`"		'scratch-buffer)
-(bind-key "C-<escape>"	'my/shell)
+(keymap-global-set "C-`"	'scratch-buffer)
+(keymap-global-set "C-<escape>"	'my/shell)
 
-(bind-key "M-<f1>"	'my/emacs-help)
-(bind-key "M-<f2>"	'describe-personal-keybindings)
-(bind-key "M-<f3>"	'shortdoc)
+(keymap-global-set "S-<f1>"	'my/emacs-help)
+(keymap-global-set "S-<f2>"	'shortdoc)
 
-(bind-key "C-M-;"	'my/eval-region)
-(bind-key "C-M-y"	'undo-yank)
+(keymap-global-set "C-M-;"	'my/eval-region)
+(keymap-global-set "C-M-y"	'undo-yank)
 
 
 ;;; Ctrl-c (personal keybindings)
-(bind-key "C-c b"	'eww-list-bookmarks) ; WWW
+(keymap-global-set "C-c b"	'eww-list-bookmarks) ; WWW
 (which-key-alias "C-c b" "eww-bookmarks")
 
-(bind-key "C-c c"	'calendar)
+(keymap-global-set "C-c c"	'calendar)
 
-(bind-key "C-c d SPC"	'display-current-date-and-time)
-(bind-key "C-c d c"	'insert-date)
-(bind-key "C-c d i"	'insert-iso-date)
+(keymap-global-set "C-c d SPC"	'display-current-date-and-time)
+(keymap-global-set "C-c d c"	'insert-date)
+(keymap-global-set "C-c d i"	'insert-iso-date)
 (which-key-alias "C-c d" "dates")
 
-(bind-key "C-c e"	'elpher) ; gopher / gemini
-(bind-key "C-c i"	'my/init)
+(keymap-global-set "C-c e"	'elpher) ; gopher / gemini
+(keymap-global-set "C-c i"	'my/init)
 
-(bind-key "C-c m"	'menu-bar-read-mail)
+(keymap-global-set "C-c m"	'menu-bar-read-mail)
 (which-key-alias "C-c m" "read-mail")
 
-(bind-key "C-c x #"	'number-lines-dwim)
-(bind-key "C-c x b"	'flush-blank-lines)
-(bind-key "C-c x g"	'replace-garbage-chars)
-(bind-key "C-c x l"	'lorem-ipsum-insert-paragraphs)
-(which-key-alias "C-c x l" "lorem-ipsum")
-(bind-key "C-c x n"	'normalize-text-dwim)
+(keymap-global-set "C-c x #"	'number-lines-dwim)
+(keymap-global-set "C-c x b"	'flush-blank-lines)
+(keymap-global-set "C-c x g"	'replace-garbage-chars)
+(keymap-global-set "C-c x n"	'normalize-text-dwim)
 (which-key-alias "C-c x" "text")
 
-(bind-key "C-c z"	'my/agenda)
-
-(global-set-key (kbd "C-c 8 c") (kbd "✓"))
-(which-key-alias "C-c 8" "keys")
+(keymap-global-set "C-c z"	'my/agenda)
 
 
 ;;; Ctrl-x (buffer functions)
-(bind-key "C-x c"	'kill-current-buffer)
+(keymap-global-set "C-x c"	'kill-current-buffer)
 
-(bind-key "C-x x SPC"	'toggle-cursor-off/on)
-(bind-key "C-x x L"	'buf-to-LF)
-(bind-key "C-x x V"	'view-text-file-as-info-manual)
-(bind-key "C-x x a"	'align-regexp)
-(bind-key "C-x x c"	'toggle-fill-column)
-(bind-key "C-x x k"	'kill-other-buffers)
-(bind-key "C-x x l"	'add-file-local-variable)
-(bind-key "C-x x m"	'move-buffer-file)
-(bind-key "C-x x r"	'rename-file-and-buffer)
-(bind-key "C-x x v"	'view-mode)
-(bind-key "C-x x w"	'preview-html)
+(keymap-global-set "C-x x SPC"	'toggle-cursor-off/on)
+(keymap-global-set "C-x x L"	'buf-to-LF)
+(keymap-global-set "C-x x V"	'view-text-file-as-info-manual)
+(keymap-global-set "C-x x a"	'align-regexp)
+(keymap-global-set "C-x x c"	'toggle-fill-column)
+(keymap-global-set "C-x x k"	'kill-other-buffers)
+(keymap-global-set "C-x x l"	'add-file-local-variable)
+(keymap-global-set "C-x x m"	'move-buffer-file)
+(keymap-global-set "C-x x r"	'rename-file-and-buffer)
+(keymap-global-set "C-x x v"	'view-mode)
+(keymap-global-set "C-x x w"	'preview-html)
 (which-key-alias "C-x x" "buffers")
 
 ;; Additional which-key aliases
@@ -2518,7 +2494,8 @@ With prefix argument PROMPT, confirm or edit the search term first."
 ;;; Ctrl-x 8 sequences
 (with-eval-after-load 'iso-transl
   (keymap-set iso-transl-ctl-x-8-map "0" "\u200B")
-  (keymap-set iso-transl-ctl-x-8-map "a |" "↕"))
+  (keymap-set iso-transl-ctl-x-8-map "a |" "↕")
+  (keymap-set iso-transl-ctl-x-8-map "y" "✓"))
 
 (which-key-alias "C-x 8"   "keys")
 (which-key-alias "C-x 8 0" "ZWS")
@@ -2557,10 +2534,34 @@ With prefix argument PROMPT, confirm or edit the search term first."
 (defalias 'dr 'desktop-read)
 (defalias 'ds 'desktop-save)
 
-;; Work-specific
-(when *w32* (load (expand-file-name ".work" user-emacs-directory) 'noerror nil))
-(when *mac* (bind-key "C-c Z" (lambda () (interactive) (find-file "/db:/!.org")))
-      (which-key-alias "C-c Z" "work-agenda"))
+
+;;; Disabled functions & safe local variables
+;(setq disabled-command-function 'enable-me)
+(message "→ Disabling unused functions.")
+
+(put 'dired-find-alternate-file 'disabled nil)
+(put 'downcase-region 'disabled nil) ; C-x C-l
+(put 'narrow-to-region 'disabled nil) ; C-x n n
+(put 'suspend-frame 'disabled nil) ; C-z
+(put 'upcase-region 'disabled nil) ; C-x C-u
+
+;; https://lists.gnu.org/archive/html/bug-gnu-emacs/2024-02/msg01410.html
+(with-eval-after-load 'help-fns
+  (put 'help-fns-edit-variable 'disabled nil))
+
+;; Safe local variables
+(dolist (value
+         '((org-log-done)
+           (truncate-lines . t)
+           (cpj/org-sort-after-capture . t)
+           (before-save-hook . (my/org-sort))
+           (before-save-hook . (elisp-check-literal-form-feeds))
+           (flymake-mode . nil)
+           (org-comment-placeholder-mode . nil)
+           (org-hide-inline-footnotes-mode . nil)
+           (org-macro-display-mode . nil)
+           (org-quote-indent-mode . nil)))
+  (add-to-list 'safe-local-variable-values value))
 
 (setq cpj/init-loading-incomplete nil)
 (message "✓ Init file loaded completely.")

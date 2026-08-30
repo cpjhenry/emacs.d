@@ -18,10 +18,10 @@
  (handler . Info-bookmark-jump))
 ("org-capture-last-stored"
  (filename . "~/Documents/org/notes.org")
- (front-context-string . "** [[https://kar")
- (rear-context-string . " Loving Grace]]\n")
- (position . 38274)
- (last-modified 27269 64987 843159 0))
+ (front-context-string . "** [[elfeed:www.")
+ (rear-context-string . " of Manliness]]\n")
+ (position . 38559)
+ (last-modified 27283 2206 653420 0))
 ("2023-05-10 - Six years of gopher"
  (position . 684)
  (location . "gemini://zaibatsu.circumlunar.space/users/solderpunk/gemlog/six-years-of-gopher.gmi")

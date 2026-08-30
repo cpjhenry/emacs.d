@@ -1,4 +1,4 @@
-;; 
+;;
 
 (defun point-of-beginning-of-bottom-line ()
   (save-excursion
