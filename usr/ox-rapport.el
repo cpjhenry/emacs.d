@@ -1,6 +1,6 @@
 ;;; ox-rapport.el --- English report/minutes exporter for Org -*- lexical-binding: t; -*-
 
-;; Version: 0.4.0
+;; Version: 0.4.1
 ;; Package-Requires: ((emacs "29.1") (org "9.7"))
 ;; Keywords: outlines, wp, tex
 ;; URL: local
@@ -234,11 +234,6 @@ as a filesystem path."
       (unless (string-empty-p value)
         value))))
 
-(defun ox-rapport--tex-text (value)
-  "Escape plain VALUE for use as LaTeX text."
-  (when value
-    (org-latex-plain-text value nil)))
-
 (defun ox-rapport--minutes (time)
   "Convert TIME in HH:MM form to minutes after midnight."
   (when (and time
@@ -357,8 +352,7 @@ as a filesystem path."
        "\\raggedright\n"
        "\\fontsize{23}{27}\\selectfont\n"
        "\\textbf{%s}\\par\n")
-      (or (ox-rapport--tex-text title)
-          ""))
+      (or title ""))
 
      (when details
        (concat
@@ -366,8 +360,7 @@ as a filesystem path."
         "\\large\n"
         (mapconcat
          (lambda (line)
-           (format "%s\\par"
-                   (ox-rapport--tex-text line)))
+           (format "%s\\par" line))
          details
          "\n")))
 
@@ -393,7 +386,7 @@ as a filesystem path."
          "\\rapportlabel{Initiated By}\\\\[-0.1em]\n"
          "%s\n"
          "\\end{minipage}")
-        (ox-rapport--tex-text initiated-by))
+        initiated-by)
        cells))
 
     (when author
@@ -404,7 +397,7 @@ as a filesystem path."
          "\\rapportlabel{Prepared By}\\\\[-0.1em]\n"
          "%s\n"
          "\\end{minipage}")
-        (ox-rapport--tex-text author))
+        author)
        cells))
 
     (when cells
@@ -475,7 +468,7 @@ are delegated unchanged to `org-latex-item'."
       "\\fancyfoot[R]{%%\n"
       "  \\sffamily\\small\\color{rapportgray}"
       "\\thepage\\ of \\pageref*{LastPage}}\n")
-     (ox-rapport--tex-text identity))))
+     identity)))
 
 (defun ox-rapport--pdf-metadata (title author project)
   "Return PDF metadata settings for TITLE, AUTHOR, and PROJECT."
@@ -483,17 +476,17 @@ are delegated unchanged to `org-latex-item'."
     (when title
       (push
        (format "pdftitle={%s}"
-               (ox-rapport--tex-text title))
+               title)
        fields))
     (when author
       (push
        (format "pdfauthor={%s}"
-               (ox-rapport--tex-text author))
+               author)
        fields))
     (when project
       (push
        (format "pdfsubject={%s}"
-               (ox-rapport--tex-text project))
+               project)
        fields))
     (push "pdfcreator={Org mode ox-rapport}" fields)
 

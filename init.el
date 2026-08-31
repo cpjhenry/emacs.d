@@ -473,7 +473,18 @@
 
 (use-package autoscratch
   :custom
-  (initial-major-mode 'autoscratch-mode))
+  (initial-major-mode 'autoscratch-mode)
+  :config
+  (setf (alist-get "#" autoscratch-triggers-alist nil nil #'string=)
+	'(autoscratch-select
+          '(("org"    . (org-mode))
+            ("perl"   . (cperl-mode))
+            ("ruby"   . (ruby-mode))
+            ("python" . (python-mode))
+            ("conf"   . (conf-unix-mode))
+            ("shell"  . (shell-script-mode)))))
+  (setf (alist-get "*" autoscratch-triggers-alist nil nil #'string=)
+	'(org-mode)))
 
 ;; Form-feed
 
@@ -595,30 +606,41 @@
 (use-package dired
   :ensure nil
   :demand t
-  :config (set-face-attribute 'dired-ignored nil
-			      :inherit 'dired-file-name))
-
-(use-package dired-x
-  :ensure nil
-  :demand t
-  :custom (dired-dwim-target t) ; suggest other visible Dired buffer
-          (dired-listing-switches "-laGhv  --group-directories-first")
-          (dired-garbage-files-regexp (concat dired-garbage-files-regexp
-            "\\|\\.DS_Store\\|\\.old\\|\\.synctex\\.gz\\|\\.log\\|\\.tex"))
-	  (dired-omit-verbose nil)
-	  (image-dired-thumbnail-storage 'standard)
+  :custom
+  (dired-free-space nil)
+  (dired-movement-style 'bounded-files)
+  (dired-dwim-target t) ; suggest other visible Dired buffer
+  (dired-listing-switches "-laGhv  --group-directories-first")
+  (dired-garbage-files-regexp
+   (concat dired-garbage-files-regexp
+	   "\\|\\.DS_Store\\|\\.old\\|\\.synctex\\.gz\\|\\.log\\|\\.tex"))
   :bind ( :map dired-mode-map
           ("q" . kill-dired-buffers)
-          ("C-<home>" . dired-home)
-          ("C-<end>" . dired-end))
-  :hook   (dired-mode . dired-omit-mode)
-  :config (unless *w32* (setq dired-kill-when-opening-new-dired-buffer t))
+	  ("C-<home>" . dired-home)
+	  ("C-<end>" . dired-end))
+  :config
+  (set-face-attribute 'dired-ignored nil
+		      :inherit 'dired-file-name)
+  (unless *w32* (setq dired-kill-when-opening-new-dired-buffer t))
   (defalias 'dired-find-file 'dired-find-alternate-file)
   (advice-add 'dired-find-file-other-window :after
 	      (lambda (&rest r) (delete-other-windows)))
   (if (keymap-lookup dired-mode-map "% s")
       (message "Error: %% s already defined in dired-mode-map")
     (define-key dired-mode-map "%s" 'my-dired-substspaces)))
+
+(use-package dired-x
+  :ensure nil
+  :demand t
+  :custom
+  (dired-omit-verbose nil)
+  :hook
+  (dired-mode . dired-omit-mode))
+
+(use-package image-dired
+  :ensure nil
+  :custom
+  (image-dired-thumbnail-storage 'standard))
 
 ;; Completion and Dired visibility
 
@@ -653,7 +675,8 @@
                 "\\|^.DS_Store"
                 "\\|^.localized"))
 
-(add-to-list 'dired-omit-extensions ".synctex.gz")
+(dolist (ext '(".synctex.gz" ".tex"))
+  (add-to-list 'dired-omit-extensions ext))
 
 (setopt dired-omit-extensions
         (delete "~" dired-omit-extensions))
