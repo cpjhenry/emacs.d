@@ -1955,11 +1955,16 @@ With prefix argument PROMPT, confirm or edit the search term first."
   :commands (wwv
 	     wwv-summary))
 
-(use-package ind ; etc/
+(use-package ind ; usr/
   :ensure nil
   :commands (ind
              ind-extended
-             ind-diagnostics))
+             ind-diagnostics)
+  :custom
+  (ind-show-lodge-dates t)
+  :config
+  (dolist (lodge user-lodges)
+    (add-to-list 'ind-lodge-dates lodge t)))
 
 (use-package daily-info ; etc/
   :ensure nil
@@ -2158,10 +2163,10 @@ With prefix argument PROMPT, confirm or edit the search term first."
   :if *natasha*
   :custom
   (elfeed-db-directory (expand-file-name "var/elfeed/db/" user-emacs-directory))
-  (elfeed-enclosure-default-dir (expand-file-name "var/elfeed/enclosures/" user-emacs-directory))
+  (elfeed-enclosure-default-dir
+   (expand-file-name "var/elfeed/enclosures/" user-emacs-directory))
   (elfeed-log-level 'error)
   (elfeed-search-confirm-tag nil)
-  (elfeed-search-filter "@6months +unread -daily")
   (elfeed-search-remain-on-entry t)
   (elfeed-search-sort-order 'ascending)
   (elfeed-use-curl t)
@@ -2178,7 +2183,6 @@ With prefix argument PROMPT, confirm or edit the search term first."
    ("]" . end-of-buffer)
    ("B" . cpj/elfeed-search-beginning-to-point-as-read)
    ("R" . cpj/elfeed-search-mark-all-as-read)
-   ("c" . cpj/elfeed-search-clear-filter)
    ("m" . elfeed-mail-todo)
    ("s" . elfeed-toggle-star)
    :map elfeed-show-mode-map
@@ -2199,16 +2203,30 @@ With prefix argument PROMPT, confirm or edit the search term first."
   (elfeed-show-update . my/text-scale-increase)
   (elfeed-show-update . my/truncate-lines)
   :init
-  (make-directory (expand-file-name "var/elfeed/" user-emacs-directory) t)
-  (autoload 'cpj/elfeed-daily "elfeed-functions" "Display the daily briefing feeds in Elfeed." t)
-  (defalias 'db #'cpj/elfeed-daily)
-  (easy-menu-add-item global-map '(menu-bar tools)
-                      ["Read RSS Feeds" elfeed :help "Read RSS and Atom feeds"]
-                      "Directory Servers")
+  (make-directory
+   (expand-file-name "var/elfeed/" user-emacs-directory) t)
+  (easy-menu-add-item
+   global-map '(menu-bar tools)
+   ["Read RSS Feeds" elfeed :help "Read RSS and Atom feeds"]
+   "Directory Servers")
   :config
   (require 'elfeed-functions)
-  (setq elfeed-show-refresh-function #'cpj/elfeed-show-refresh)
   (load "rc/feeds" 'noerror 'nomessage))
+
+(use-package elfeed-daily
+  :ensure nil
+  :if *natasha*
+  :after elfeed
+  :commands cpj/elfeed-daily
+  :custom
+  (elfeed-search-filter "@6months +unread -daily")
+  :bind
+  (:map elfeed-search-mode-map
+        ("c" . cpj/elfeed-search-clear-filter))
+  :init
+  (defalias 'db #'cpj/elfeed-daily)
+  :config
+  (setq elfeed-show-refresh-function #'cpj/elfeed-show-refresh))
 
 ;; Others
 (use-package chess

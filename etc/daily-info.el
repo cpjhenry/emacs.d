@@ -58,7 +58,7 @@
           (append
            (list
             (wwv-summary)
-            (format "My %s day (%s weeks, %.1f years)."
+            (format "My %s day (%s weeks, %.2f years)."
                     (ordinal-number (days-on-earth date))
                     (commify-number (weeks-on-earth date))
                     (years-on-earth date))

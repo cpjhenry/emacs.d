@@ -1,37 +1,8 @@
 ;;; elfeed-functions.el --- Elfeed routines
-;;; commentary:
-;;; code:
+;;; Commentary:
+
+;;; Code:
 (require 'elfeed)
-(require 'shr)
-
-;;; daily briefings machinery
-
-(defvar cpj/elfeed-daily-filter
-  "+unread +daily"
-  "Search filter for the daily Elfeed briefing.")
-
-(defun cpj/elfeed-daily ()
-  "Display the daily briefing feeds in Elfeed."
-  (interactive)
-  (elfeed-search cpj/elfeed-daily-filter)
-  (setq-local elfeed-search-date-format '("%H:%M" 5 :left)
-              mode-name "Elfeed Daily")
-  (elfeed-search-update :force))
-
-(defun cpj/elfeed-search-clear-filter ()
-  "Restore the default Elfeed search view."
-  (interactive)
-  (kill-local-variable 'elfeed-search-date-format)
-  (setq-local mode-name "elfeed-search")
-  (elfeed-search-clear-filter))
-
-(defun cpj/elfeed-show-refresh ()
-  "Refresh an Elfeed entry using local display policy."
-  (setq-local elfeed-show-author
-              (not (memq 'daily (elfeed-entry-tags elfeed-show-entry))))
-  (elfeed-show-refresh--mail-style))
-
-;;; generalized elfeed helper functions
 
 (defun cpj/elfeed-search-goto-top (&rest _)
   "Move point and window to the first Elfeed entry."
@@ -64,6 +35,7 @@
   (interactive)
   (elfeed-show-visit '(4)))
 
+(require 'shr)
 (defun cpj/elfeed-show-toggle-images ()
   "Toggle images in `elfeed-show'."
   (interactive)
@@ -137,7 +109,8 @@
 
 (defun cpj/elfeed-show--wrap-title ()
   "Wrap the Elfeed title with a hanging indent."
-  (setq-local word-wrap t)
+  (setq-local truncate-lines nil
+              word-wrap t)
   (remove-overlays (point-min) (point-max) 'cpj/elfeed-title-wrap t)
   (save-excursion
     (goto-char (point-min))

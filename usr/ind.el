@@ -24,6 +24,12 @@
 ;; entries and adds Persian, Roman, Egyptian, Japanese, Chinese,
 ;; Tibetan, Mayan, Indian, Sikh, and astronomical reckonings.
 ;;
+;; The extended display can optionally include the ages of selected
+;; historic and present Lodges or similar organizations; this is
+;; disabled by default and controlled by `ind-show-lodge-dates'.
+;; The default entries may be extended or replaced through
+;; `ind-lodge-dates' to reflect locally relevant institutions.
+;;
 ;; `ind-diagnostics' displays annual calendrical diagnostics inherited
 ;; from the verbose output of the author's original Bash
 ;; implementation. These include computistical values, selected
@@ -63,12 +69,23 @@
 (require 'cl-lib)
 (require 'subr-x)
 
-(defconst ind--line-width 32
+(defconst ind--line-width 38
   "Width of the aligned `ind' display lines.")
 
-(defconst ind--section-rule
-  (make-string ind--line-width ?─)
-  "Horizontal rule separating major sections in `ind'.")
+(defcustom ind-show-anno-depositionis nil
+  "Whether to show Anno Depositionis in the Masoretic display."
+  :type 'boolean
+  :group 'ind)
+
+(defcustom ind-show-anno-ordinis nil
+  "Whether to show the Anno Ordinis Knights Templar year."
+  :type 'boolean
+  :group 'ind)
+
+(defconst ind--nabonassar-epoch -272787
+  "Absolute date of 1 Thoth 1 in the Era of Nabonassar.
+
+This corresponds to 26 February 747 BCE in the Julian calendar.")
 
 (defconst ind--epacts
   [0 29 10 21 2 13 24 5 16 27 8 19 30 11 22 3 14 25 6 17]
@@ -126,11 +143,40 @@ START-DATE is an Emacs calendar date in (MONTH DAY YEAR) form.")
    "Cumku" "Uayeb"]
   "Mayan Haab month names.")
 
-(defun ind--utc-date ()
-  "Return the current UTC date in Emacs calendar form."
-  (pcase-let ((`(,_second ,_minute ,_hour ,day ,month ,year . ,_)
-                (decode-time nil t)))
-    (list month day year)))
+(defcustom ind-show-lodge-dates nil
+  "Whether `ind-extended' shows Lodge age lines."
+  :type 'boolean
+  :group 'ind)
+
+(defcustom ind-lodge-dates
+  '(("United Grand Lodge"     . 1717)
+    ("Provincial Grand Lodge" . 1792)
+    ("Grand Lodge of Canada"  . 1855))
+  "Alist of organizations and their founding years for `ind-extended'.
+
+Each entry has the form (NAME . YEAR), where NAME is the label
+shown in the display and YEAR is the Gregorian founding year.
+
+The default entries are Masonic Grand Lodges, but the list may
+be extended or replaced with locally relevant Lodges or other
+organizations."
+  :type '(alist :key-type string :value-type integer)
+  :group 'ind)
+
+(defun ind--two-column-line (left right)
+  "Return LEFT and right-aligned RIGHT within `ind--line-width'."
+  (let ((padding
+         (max 1
+              (- ind--line-width
+                 (string-width left)
+                 (string-width right)))))
+    (concat left
+            (make-string padding ?\s)
+            right)))
+
+(defun ind--section-rule ()
+  "Return a horizontal rule of `ind--line-width' characters."
+  (make-string ind--line-width ?─))
 
 (defun ind--ordinal (number)
   "Return NUMBER as an ordinal string with a raised suffix."
@@ -173,10 +219,12 @@ START-DATE is an Emacs calendar date in (MONTH DAY YEAR) form.")
 (defun ind--ce-line (date)
   "Return the Common Era and CE indiction line for DATE."
   (let ((year (calendar-extract-year date)))
-    (format "CE %d %s %s ind."
-            year
-            (roman-clock--int-to-roman year)
-            (ind--ordinal (indiction-ce year)))))
+    (concat
+     (format "CE %d %s %s ind."
+             year
+             (roman-clock--int-to-roman year)
+             (ind--ordinal (indiction-ce year)))
+     (ind--fractional-space 0.45))))
 
 (defun ind--day-line (date)
   "Return day-of-year, days remaining, ISO week, quarter, and time zone for DATE."
@@ -215,12 +263,13 @@ START-DATE is an Emacs calendar date in (MONTH DAY YEAR) form.")
             day
             (ind--julian-day-number julian))))
 
-(defun ind--roman-calendar-line (&optional extended)
-  "Return the Roman ante-diem date string.
+(defun ind--roman-calendar-line (date &optional extended)
+  "Return the Roman ante-diem date string for DATE.
 
 When EXTENDED is non-nil, use the unabbreviated form."
   (roman-clock-ante-diem-string
-   (unless extended '(4))))
+   (unless extended '(4))
+   date))
 
 (defun ind--regnal-line (date)
   "Return the royal and papal regnal line for DATE."
@@ -285,34 +334,6 @@ When EXTENDED is non-nil, use the unabbreviated form."
             (ind--lunar-phase-name age)
             (floor age))))
 
-(defun ind--two-column-line (left right)
-  "Return LEFT and right-aligned RIGHT within `ind--line-width'."
-  (let ((padding
-         (max 1
-              (- ind--line-width
-                 (string-width left)
-                 (string-width right)))))
-    (concat left
-            (make-string padding ?\s)
-            right)))
-
-(defun ind--dated-description-line (label date description)
-  "Return LABEL followed by aligned DATE and DESCRIPTION.
-
-DATE is a five-character MM/DD string aligned with the date
-values produced by `ind--two-column-line'."
-  (concat
-   label
-   (make-string
-    (max 1
-         (- ind--line-width
-            (string-width label)
-            (string-width date)))
-    ?\s)
-   date
-   " "
-   description))
-
 (defun ind--french-day-name (date)
   "Return the French Revolutionary feast name for Gregorian DATE."
   (pcase-let* ((absolute (calendar-absolute-from-gregorian date))
@@ -322,23 +343,51 @@ values produced by `ind--two-column-line'."
       (aref calendar-french-feasts-array
             (+ -31 (* 30 month) day)))))
 
-(defun ind--french-day-line (date)
-  "Return the French Revolutionary feast-day line for DATE."
+(defun ind--french-feast-name (date)
+  "Return the compact French Revolutionary feast name for DATE."
   (when-let* ((name (ind--french-day-name date)))
-    (format "  Jour %s" name)))
+    (setq name
+          (replace-regexp-in-string
+           (rx string-start
+               (or "du "
+                   "de la "
+                   "de l'"
+                   "de l’"
+                   "des "
+                   "de "))
+           ""
+           name))
+    (replace-regexp-in-string
+     (rx " de ")
+     " "
+     name)))
 
-(defun ind--french-line (date)
-  "Return the French Republican calendar line for DATE."
+(defun ind--french-date-label (month day)
+  "Return a compact French Republican date label."
+  (if (= month 13)
+      (format "%d jour compl." day)
+    (format "%d %s"
+            day
+            (aref calendar-french-month-name-array
+                  (1- month)))))
+
+(defun ind--french-line (date &optional extended)
+  "Return the French Republican calendar line for DATE.
+
+When EXTENDED is non-nil, include the day's traditional name
+in parentheses."
   (pcase-let* ((absolute (calendar-absolute-from-gregorian date))
                (`(,month ,day ,year)
                 (calendar-french-from-absolute absolute))
-               (month-name
-                (aref calendar-french-month-name-array
-                      (1- month))))
-    (ind--two-column-line
-     (format "%d %s" day month-name)
-     (roman-clock--int-to-roman year))))
-
+               (label (ind--french-date-label month day))
+               (name (and extended
+                          (ind--french-feast-name date)))
+               (left (if name
+                         (format "%s (%s)" label name)
+                       label))
+               (right (roman-clock--int-to-roman year)))
+    (when (> year 0)
+      (ind--two-column-line left right))))
 
 (defun ind--hanke-henry-line (utc-date)
   "Return the Hanke-Henry line for UTC-DATE."
@@ -440,26 +489,51 @@ calendar."
      "AM"
      year)))
 
-(defun ind--anno-lucis-line (date)
-  "Return the Anno Lucis year line for DATE."
+(defun ind--anno-line (date name abbreviation offset)
+  "Return an anno-era line for DATE.
+
+NAME is the display label, ABBREVIATION is the era abbreviation,
+and OFFSET is added to the Gregorian year."
   (ind--era-line
-   "Anno Lucis"
-   "AL"
-   (+ (calendar-extract-year date) 4000)))
+   name
+   "" ; abbreviation
+   (+ (calendar-extract-year date) offset)))
+
+(defun ind--anno-lucis-line (date)
+  "Return the Anno Lucis year line for DATE.
+
+Traditionally reckons years from the creation of the world,
+using a Masonic epoch 4000 years before the Common Era."
+  (ind--anno-line date "Anno Lucis" "AL" 4000))
 
 (defun ind--anno-inventionis-line (date)
-  "Return the Anno Inventionis year line for DATE."
-  (ind--era-line
-   "Anno Inventionis"
-   "AI"
-   (+ (calendar-extract-year date) 530)))
+  "Return the Anno Inventionis year line for DATE.
+
+Traditionally marks the completion of the Second Temple by
+Zerubbabel (destroyed 70 CE)."
+  (ind--anno-line date "Anno Inventionis" "AI" 530))
+
+(defun ind--anno-depositionis-line (date)
+  "Return the Anno Depositionis line for DATE.
+
+Traditionally marks the completion of the First Temple by
+Solomon (destroyed 587/586 BCE)."
+  (when ind-show-anno-depositionis
+    (ind--anno-line date "Anno Depositionis" "AD" 1000)))
+
+(defun ind--anno-ordinis-line (date)
+  "Return the Anno Ordinis Knights Templar line for DATE.
+
+Traditionally marks the foundation of the Knights Templar
+in 1118 CE."
+  (when ind-show-anno-ordinis
+    (ind--anno-line date "Anno Ordinis KT" "AO" -1117)))
 
 (defun ind--anno-foederis-line (date)
-  "Return the Anno Foederis year line for DATE."
-  (ind--era-line
-   "Anno Foederis"
-   "AF"
-   (+ (calendar-extract-year date) 1250)))
+  "Return the Anno Foederis year line for DATE.
+
+Traditionally marks the covenant made with Abraham."
+  (ind--anno-line date "Anno Foederis" "AF" 1250))
 
 (defun ind--buddhist-line (date)
   "Return the Thai solar Buddhist Era year line for DATE."
@@ -478,6 +552,16 @@ calendar."
 (defun ind--auc-year (date)
   "Return the Ab Urbe Condita year for Gregorian DATE."
   (+ (calendar-extract-year date) 753))
+
+(defun ind--nabonassar-year (date)
+  "Return the Nabonassarian era year for DATE.
+
+The Era of Nabonassar uses Egyptian years of exactly 365 days,
+without intercalation, from the epoch 26 February 747 BCE
+(Julian)."
+  (1+ (/ (- (calendar-absolute-from-gregorian date)
+            ind--nabonassar-epoch)
+         365)))
 
 (defun ind--diocletian-year (date)
   "Return the Diocletian Era year for Gregorian DATE.
@@ -577,6 +661,13 @@ Gregorian calendar."
    "AUC"
    (ind--auc-year date)))
 
+(defun ind--nabonassar-line (date)
+  "Return the Era of Nabonassar line for DATE."
+  (ind--era-line
+   "Nabonassar"
+   "AN"
+   (ind--nabonassar-year date)))
+
 (defun ind--diocletian-line (date)
   "Return the Diocletian Era line for DATE."
   (ind--era-line
@@ -605,35 +696,24 @@ Gregorian calendar."
       (ind--era-line "Present" "BP"
        0)))))
 
-(defun ind--pad-right (string width)
-  "Pad STRING on the right to display WIDTH."
-  (concat string
-          (make-string
-           (max 0 (- width (string-width string)))
-           ?\s)))
-
-(defun ind--right-aligned-line (label datum)
-  "Return LABEL and DATUM aligned to `ind--line-width'."
-  (concat (ind--pad-right
-           label
-           (- ind--line-width (string-width datum)))
-          datum))
-
 (defun ind--japanese-line (date)
   "Return the Japanese era and Kōki year line for DATE."
   (when-let* ((era (ind--japanese-era date))
               (name (ind--japanese-era-name date)))
-    (format "Japanese %s%2d · Kōki %4d"
-            (ind--pad-right name 9)
-            (cadr era)
-            (ind--japanese-imperial-year date))))
+    (ind--two-column-line
+     (format "Japanese %s %d"
+             name
+             (cadr era))
+     (format "Kōki %d"
+             (ind--japanese-imperial-year date)))))
 
 (defun ind--chinese-line (date)
   "Return the Republic of China and Yellow Emperor year line for DATE."
-  (format "%-15sROC %3d · YE %4d"
-          "Chinese"
-          (ind--roc-year date)
-          (ind--chinese-imperial-year date)))
+  (ind--two-column-line
+   (format "Chinese  ROC %d"
+           (ind--roc-year date))
+   (format "YE %d"
+           (ind--chinese-imperial-year date))))
 
 (defun ind--tibetan-line (date)
   "Return the Tibetan Rabjung cycle and Tibetan Era line for DATE."
@@ -645,10 +725,9 @@ Gregorian calendar."
                year))
            (tibetan-era
             (+ rabjung-year 1153)))
-      (ind--era-line
-       "Tibetan"
-       (format "%d/%d TE" cycle year)
-       tibetan-era))))
+      (ind--two-column-line
+       (format "Tibetan  %d/%d" cycle year)
+       (format "TE %d" tibetan-era)))))
 
 (defun ind--hindu-line (date)
   "Return the Indian National Calendar era line for DATE."
@@ -877,14 +956,29 @@ Pavarana falls on the first full moon in October."
                 (calendar-mayan-tzolkin-from-absolute absolute))
                (`(,haab-day . ,haab-month)
                 (calendar-mayan-haab-from-absolute absolute)))
-    (ind--right-aligned-line
-     "Mayan"
-     (format "%d %s · %d %s"
+    (ind--two-column-line
+     (format "Mayan    %d %s"
              tz-number
-             (aref ind--mayan-tzolkin-names (1- tz-name))
+             (aref ind--mayan-tzolkin-names (1- tz-name)))
+     (format "%d %s"
              haab-day
              (aref ind--mayan-haab-month-names
                    (1- haab-month))))))
+
+;; Lodge dates
+(defun ind--lodge-lines (date)
+  "Return Lodge age lines for DATE."
+  (let ((year (calendar-extract-year date)))
+    (delq
+     nil
+     (mapcar
+      (lambda (entry)
+        (pcase-let ((`(,name . ,founded) entry))
+          (when (> year founded)
+            (ind--two-column-line
+             name
+             (format "%4d" (- year founded))))))
+      ind-lodge-dates))))
 
 (defun ind-diagnostics-string (&optional date)
   "Return calendrical diagnostics for the year containing DATE.
@@ -958,14 +1052,15 @@ DATE defaults to the current Gregorian date."
          (ind--two-column-line
           "Hijra"
           (ind--month-day-string hijra)))
-       (ind--dated-description-line
-	"Chinese New Year"
-	(ind--month-day-string chinese-new-year)
-	(ind--chinese-year-description year))
-       (ind--dated-description-line
-	"Tibetan Losar"
-	(ind--month-day-string (car tibetan-losar))
-	(cadr tibetan-losar))
+       (ind--two-column-line
+	(format "Chinese (%s)"
+		(ind--chinese-year-description year))
+	(ind--month-day-string chinese-new-year))
+       (when tibetan-losar
+	 (ind--two-column-line
+	  (format "Tibetan (%s)"
+		  (cadr tibetan-losar))
+	  (ind--month-day-string (car tibetan-losar))))
        (when vassa
          (ind--two-column-line
           "Vassa"
@@ -978,59 +1073,107 @@ DATE defaults to the current Gregorian date."
 
 ;;; Summary construction and display
 
+(defun ind--columnize (left right &optional gap)
+  "Return LEFT and RIGHT line lists rendered as two columns.
+
+GAP is the number of spaces between columns and defaults to 3."
+  (let* ((gap (or gap 3))
+         (width (apply #'max 0 (mapcar #'string-width left)))
+         (count (max (length left) (length right))))
+    (string-join
+     (cl-loop for i below count
+              for lhs = (or (nth i left) "")
+              for rhs = (or (nth i right) "")
+              collect
+              (if (string-empty-p rhs)
+                  lhs
+                (concat lhs
+                        (make-string
+                         (+ gap (- width (string-width lhs)))
+                         ?\s)
+                        rhs)))
+     "\n")))
+
+(defun ind--primary-lines (date extended)
+  "Return primary calendar lines for DATE.
+
+When EXTENDED is non-nil, include extended primary-calendar
+information."
+  (delq
+   nil
+   (list
+    (ind--gregorian-heading date)
+    (ind--ce-line date)
+    (ind--day-line date)
+    (ind--old-style-line date)
+    (ind--regnal-line date)
+    (ind--julian-count-line date)
+    (ind--lunar-line date)
+    (ind--roman-calendar-line date extended)
+    (ind--french-line date extended)
+    (ind--hanke-henry-line date)
+    (ind--discordian-line date)
+    (ind--hebrew-line date)
+    (when extended
+      (ind--persian-line date)))))
+
+(defun ind--concordance-lines (date extended)
+  "Return era-year concordance lines for DATE.
+
+When EXTENDED is non-nil, include the extended concordance and
+optional Lodge dates."
+  (delq
+   nil
+   (append
+    (list
+     (ind--hijri-line date)
+     (ind--bahai-line date)
+     (ind--byzantine-line date)
+     (ind--buddhist-line date))
+
+    (when extended
+      (list
+       (ind--auc-line date)
+       (ind--nabonassar-line date)
+       (ind--diocletian-line date)
+       (ind--julian-period-line date)
+       (ind--present-era-line date)
+       (ind--hindu-line date)
+       (ind--nanakshahi-line date)
+       (ind--japanese-line date)
+       (ind--chinese-line date)
+       (ind--tibetan-line date)
+       (ind--mayan-line date)
+       (ind--section-rule)))
+
+    (list
+     (ind--anno-lucis-line date)
+     (ind--anno-inventionis-line date)
+     (ind--anno-depositionis-line date)
+     (ind--anno-ordinis-line date)
+     (ind--anno-foederis-line date))
+
+    (when extended
+       (ind--lodge-lines date)))))
+
 (defun ind-summary-string (&optional extended date)
   "Return the daily `ind' summary as a string.
 
 When EXTENDED is non-nil, include the extended era-year dates.
 DATE is an Emacs calendar date, defaulting to today."
   (let* ((date (or date (calendar-current-date)))
-         (utc-date date))
-    (string-join
-     (delq
-      nil
-      (append
-       (list
-        (ind--gregorian-heading date)
-        (ind--ce-line date)
-        (ind--day-line date)
-        (ind--old-style-line date)
-        (ind--regnal-line date)
-        (ind--julian-count-line date)
-	(ind--lunar-line date)
-        (ind--roman-calendar-line extended)
-        (ind--french-line date)
-	(when extended
-	  (ind--french-day-line date))
-        (ind--hanke-henry-line utc-date)
-        (ind--discordian-line date)
-        (ind--hebrew-line date)
-	(when extended
-	  (ind--persian-line date))
-
-        ;; Era-year concordance.
-        ;; (make-string ind--line-width ?-)
-	ind--section-rule
-        (ind--hijri-line date)
-        (ind--bahai-line date)
-        (ind--byzantine-line date)
-        (ind--anno-lucis-line date)
-        (ind--anno-inventionis-line date)
-        (ind--anno-foederis-line date)
-        (ind--buddhist-line date))
-
-       (when extended
-         (list
-          (ind--auc-line date)
-          (ind--diocletian-line date)
-          (ind--julian-period-line date)
-          (ind--present-era-line date)
-          (ind--japanese-line date)
-          (ind--chinese-line date)
-          (ind--tibetan-line date)
-	  (ind--mayan-line date)
-          (ind--hindu-line date)
-          (ind--nanakshahi-line date)))))
-     "\n")))
+         (primary (ind--primary-lines date extended))
+         (concordance (ind--concordance-lines date extended)))
+    (if extended
+	(ind--columnize
+	 (append (list (car primary) "")
+		 (cdr primary))
+	 (append '("" "") concordance))
+      (string-join
+       (append primary
+               (list (ind--section-rule))
+               concordance)
+       "\n"))))
 
 (defun ind--display (contents)
   "Display CONTENTS in the `*ind*' buffer."
@@ -1070,6 +1213,40 @@ dates."
   (interactive)
   (ind--display
    (ind-diagnostics-string)))
+
+(defun ind--french-width-overflows (year)
+  "Return French Republican display overflows occurring in YEAR.
+
+Each result has the form:
+
+  (DATE LABEL WIDTH AVAILABLE)
+
+where DATE is the Gregorian date, LABEL is the extended French
+Republican label, WIDTH is its display width, and AVAILABLE is
+the width available before the Roman year."
+  (let (overflows)
+    (cl-loop
+     for absolute
+     from (calendar-absolute-from-gregorian (list 1 1 year))
+     to (calendar-absolute-from-gregorian (list 12 31 year))
+     for date = (calendar-gregorian-from-absolute absolute)
+     do
+     (pcase-let* ((`(,month ,day ,french-year)
+                   (calendar-french-from-absolute absolute))
+                  (label (ind--french-date-label month day))
+                  (name (ind--french-feast-name date))
+                  (left (if name
+                            (format "%s (%s)" label name)
+                          label))
+                  (right (roman-clock--int-to-roman french-year))
+                  (available (- ind--line-width
+                                (string-width right)
+                                1))
+                  (width (string-width left)))
+       (when (> width available)
+         (push (list date left width available)
+               overflows))))
+    (nreverse overflows)))
 
 (provide 'ind)
 

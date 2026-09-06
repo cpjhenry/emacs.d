@@ -262,26 +262,32 @@ Examples (not exhaustive):
             (format "prid. Kal. %s" next-name)
           (format "a.d. %s Kal. %s" roman next-name)))))))
 
-(defun roman-clock-ante-diem-string (&optional abbreviated)
-"Return ante diem-style Roman calendar date for the *current Roman day*.
+(defun roman-clock-ante-diem-string (&optional abbreviated date)
+  "Return an ante-diem-style Roman calendar date.
 
-Roman day: begins at local 18:00. After 18:00, the \"day\" is
-treated as tomorrow’s civil date.
+If DATE is non-nil, it is an Emacs calendar date in
+(MONTH DAY YEAR) form and is used directly.
 
-If ABBREVIATED is non-nil, return the abbreviated format
-(using `roman-clock--ante-diem-from-dmy`). Otherwise, return the
-long form (using `roman-clock--roman-calendar-string`)."
+Otherwise, use the current Roman day, which begins at 18:00
+local time; after 18:00, tomorrow's civil date is used.
 
-  (let* ((now-time (current-time))
-         (now      (decode-time now-time))
-         (hour     (nth 2 now))
-         ;; Roman date: if after 18:00, use tomorrow’s civil date.
-         (roman-fields (if (>= hour 18)
-                           (decode-time (time-add now-time (days-to-time 1)))
-                         now))
-         (day   (nth 3 roman-fields))
-         (month (nth 4 roman-fields))
-         (year  (nth 5 roman-fields)))
+If ABBREVIATED is non-nil, return the abbreviated format using
+`roman-clock--ante-diem-from-dmy'.  Otherwise, return the long
+form using `roman-clock--roman-calendar-string'."
+  (pcase-let
+      ((`(,month ,day ,year)
+        (or date
+            (let* ((now-time (current-time))
+                   (now (decode-time now-time))
+                   (hour (nth 2 now))
+                   (roman-time
+                    (if (>= hour 18)
+                        (time-add now-time (days-to-time 1))
+                      now-time))
+                   (roman-fields (decode-time roman-time)))
+              (list (nth 4 roman-fields)
+                    (nth 3 roman-fields)
+                    (nth 5 roman-fields))))))
     (if abbreviated
         (roman-clock--ante-diem-from-dmy day month year)
       (roman-clock--roman-calendar-string day month year))))
