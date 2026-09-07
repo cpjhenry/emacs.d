@@ -55,9 +55,6 @@
 :END:" nil :count 0)
     ("mytitle" "#+TITLE: 
 #+AUTHOR: 
-#+DATE: 
-
-CHECK AGAINST DELIVERY" nil :count 5)
-    ("sufold" "#+STARTUP: fold" nil :count 0)
+#+DATE: " nil :count 5)
    ))
 

@@ -377,18 +377,22 @@ Format example:
 ;;; Interactive command
 ;;; ------------------------------------------------------------
 (defun roman-clock ()
-"Display the current local Roman 6-hour clock in the echo area."
+  "Display the current local Roman 6-hour clock and copy it to the kill ring."
   (interactive)
-  (message "%s" (roman-clock-current-string)))
+  (let ((clock (roman-clock-current-string)))
+    (kill-new clock)
+    (message "%s" clock)))
 
-(defun roman-clock- ()
-"Echo ante diem-style Roman calendar date and abbreviation for current Roman day.
+(defun roman-date ()
+  "Echo the Roman calendar date and copy its long form to the kill ring.
 
-Roman day begins at 18:00 local time. After 18:00, the date is treated as
-tomorrow’s civil date."
-
+Roman day begins at 18:00 local time.  After 18:00, the date is
+treated as tomorrow's civil date."
   (interactive)
-  (message "%s (%s)" (roman-clock-ante-diem-string) (roman-clock-ante-diem-string '(4))))
+  (let ((long (roman-clock-ante-diem-string))
+        (short (roman-clock-ante-diem-string '(4))))
+    (kill-new long)
+    (message "%s (%s)" long short)))
 
 (provide 'roman-clock)
 

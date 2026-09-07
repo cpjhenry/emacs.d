@@ -963,7 +963,7 @@
 (use-package roman-clock ; usr/
   :ensure nil
   :bind (("C-c d r" . roman-clock)
-         ("C-c d R" . roman-clock-)))
+         ("C-c d d" . roman-date)))
 
 (use-package roman-clock-period-notify-mode ; usr/
   :disabled
@@ -1024,6 +1024,8 @@
   :bind
   (("<f5>" . 'deadgrep)
    :map deadgrep-mode-map
+   ("[" . beginning-of-buffer)
+   ("]" . end-of-buffer)
    ("f" . delete-other-windows))
   :config
   (defalias 'find-grep 'deadgrep)
@@ -2487,9 +2489,10 @@ With prefix argument PROMPT, confirm or edit the search term first."
 (keymap-global-set "C-c c"	'calendar)
 
 (keymap-global-set "C-c d SPC"	'display-current-date-and-time)
-(keymap-global-set "C-c d c"	'insert-date)
+(keymap-global-set "C-c d e"	'insert-euro-date)
 (keymap-global-set "C-c d i"	'insert-iso-date)
 (which-key-alias "C-c d" "dates")
+(which-key-alias "C-c d SPC" "current date/time")
 
 (keymap-global-set "C-c e"	'elpher) ; gopher / gemini
 (keymap-global-set "C-c i"	'my/init)

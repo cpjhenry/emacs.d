@@ -84,7 +84,7 @@
   "<" #'year-calendar-backward
   ">" #'year-calendar-forward
   "." #'year-calendar-current-month
-  "y" #'year-calendar-current-year)
+  "y" #'year-calendar-start-of-year)
 
 (define-derived-mode year-calendar-mode special-mode "Year Calendar"
   "Major mode for displaying a rolling twelve-month calendar."
@@ -102,13 +102,11 @@ the second position."
     (year-calendar-mode))
   (year-calendar-current-month))
 
-(defun year-calendar-current-year ()
-  "Display January through December of the current year."
+(defun year-calendar-start-of-year ()
+  "Display January through December of the currently displayed year."
   (interactive)
-  (pcase-let ((`(,_month ,_day ,year) (calendar-current-date)))
-    (setq year-calendar-month 1
-          year-calendar-year year)
-    (year-calendar--generate)))
+  (setq year-calendar-month 1)
+  (year-calendar--generate))
 
 (provide 'year-calendar)
 

@@ -23,12 +23,12 @@ BEG and END mark the limits of the region."
   (flush-lines "^\\s-*$" beg end nil))
 
 (defun insert-iso-date ()
-  "Insert ISO-formatted date."
+  "Insert ISO-formatted date (Y-m-d)."
   (interactive)
   (insert (format-time-string "%Y-%m-%d")))
 
-(defun insert-date ()
-  "Insert European-formatted date."
+(defun insert-euro-date ()
+  "Insert European-formatted date (d B Y)."
   (interactive)
   (insert (format-time-string "%-d %B %Y")))
 
