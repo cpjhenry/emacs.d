@@ -1877,7 +1877,7 @@ With prefix argument PROMPT, confirm or edit the search term first."
 
 (use-package org-agenda
   :ensure nil
-  :after org
+  :commands (org-agenda my/org-agenda-list)
   :bind (("C-c a" . my/org-agenda-list)
          :map org-agenda-mode-map
          ("q" . org-agenda-exit)
@@ -1965,22 +1965,23 @@ With prefix argument PROMPT, confirm or edit the search term first."
   :custom
   (daily-info-include-holidays nil)
   (daily-info-include-diary nil)
-  :init
-  (add-to-list
-   'org-agenda-custom-commands
-   '("b" "Birthdays"
-     agenda ""
-     ((org-agenda-files (list cpj/calendar-data-file))
-      (org-agenda-include-diary nil)
-      (org-agenda-span calendar-data-future-days)
-      (org-agenda-start-on-weekday nil)
-      (org-agenda-start-day "0d")
-      (org-agenda-show-all-dates nil)
-      (org-agenda-overriding-header "Birthdays")
-      (org-agenda-skip-function
-       '(org-agenda-skip-entry-if
-         'notregexp
-         "Birthday"))))))
+  :config
+  (with-eval-after-load 'org-agenda
+    (add-to-list
+     'org-agenda-custom-commands
+     '("b" "Birthdays"
+       agenda ""
+       ((org-agenda-files (list cpj/calendar-data-file))
+	(org-agenda-include-diary nil)
+	(org-agenda-span calendar-data-future-days)
+	(org-agenda-start-on-weekday nil)
+	(org-agenda-start-day "0d")
+	(org-agenda-show-all-dates nil)
+	(org-agenda-overriding-header "Birthdays")
+	(org-agenda-skip-function
+	 '(org-agenda-skip-entry-if
+           'notregexp
+           "Birthday")))))))
 
 ;;; TeX
 (use-package tex
@@ -2208,7 +2209,6 @@ With prefix argument PROMPT, confirm or edit the search term first."
 (use-package elfeed-daily
   :ensure nil
   :if *natasha*
-  :after elfeed
   :commands cpj/elfeed-daily
   :custom
   (elfeed-search-filter "@6months +unread -daily")

@@ -229,6 +229,33 @@
     (when block
       (string-join (nreverse block) "\n"))))
 
+(defconst weather-alert--period-regexp
+  (concat
+   "\\(?:"
+   (regexp-opt
+    '("Today" "Tonight" "This afternoon" "This evening" "Overnight"
+      "Sunday" "Monday" "Tuesday" "Wednesday"
+      "Thursday" "Friday" "Saturday"))
+   "\\)\\.\\.")
+  "Regexp matching the start of a forecast period.")
+
+(defun weather-alert--normalize-forecast (text)
+  "Normalize source wrapping in forecast TEXT."
+  (let* ((lines (split-string text "\n" t "[ \t]+"))
+         (location (string-trim (car lines)))
+         (forecast
+          (string-join
+           (mapcar #'string-trim (cdr lines))
+           " ")))
+    ;; Environment Canada's meaningful divisions are PERIOD.. markers,
+    ;; not the arbitrary wrapping in the source bulletin.
+    (setq forecast
+          (replace-regexp-in-string
+           (concat "\\s-*" "\\(" weather-alert--period-regexp "\\)")
+           "\n\\1"
+           forecast))
+    (concat location "\n" (string-trim forecast))))
+
 (defun weather-alert--short ()
   "Return the short-term Environment Canada forecast."
   (let* ((text
@@ -247,17 +274,17 @@
       (let* ((lines (split-string header "\n" t))
              (code (car lines))
              (prose (string-join (cdr lines) " ")))
-	(setq prose
+        (setq prose
               (replace-regexp-in-string
                "[ \t]+" " " prose))
-	(setq prose
+        (setq prose
               (replace-regexp-in-string
                "The next scheduled forecast.*\\'" "" prose))
-	(setq header
+        (setq header
               (string-join
                (delq nil
                      (list (string-trim code)
-			   (string-trim prose)))
+                           (string-trim prose)))
                "\n"))))
 
     (unless forecast
@@ -265,24 +292,15 @@
        "No short-term forecast found for %s"
        weather-alert-city))
 
-    ;; Join source-wrapped continuation lines.
+    ;; Join source-wrapped continuation lines while preserving
+    ;; each forecast period on its own line.
     (setq forecast
-          (replace-regexp-in-string
-           "\n[ \t]+"
-           " "
-           forecast))
-
-    ;; Start each forecast period on a new line.
-    (setq forecast
-	  (replace-regexp-in-string
-	   "\n*\\(Tonight\\|Sun\\|Mon\\|Tue\\|Wed\\|Thu\\|Fri\\|Sat\\)"
-	   "\n\\1"
-	   forecast))
+	  (weather-alert--normalize-forecast forecast))
 
     (string-join
      (delq nil
-	   (list (and header (string-trim header))
-		 (and forecast (string-trim forecast))))
+           (list (and header (string-trim header))
+                 (and forecast (string-trim forecast))))
      "\n\n")))
 
 (defun weather-alert--maritime ()

@@ -215,6 +215,7 @@ diary entries, and handle non-visitable holidays according to
                 (signal (car err) (cdr err))))
            (signal (car err) (cdr err))))))))
 
+;;;###autoload
 (defun my/org-agenda-list ()
   "Refresh calendar data, then display the Org agenda."
   (interactive)

@@ -55,6 +55,7 @@
               elfeed-search-title-max-width
               (cpj/elfeed-daily-title-max-width)))
 
+;;;###autoload
 (defun cpj/elfeed-daily ()
   "Display the daily briefing feeds in Elfeed."
   (interactive)
@@ -67,6 +68,9 @@
   (add-hook 'elfeed-search-update-hook
             #'cpj/elfeed-daily-update-widths nil t)
   (elfeed-search-update :force))
+
+;;;###autoload
+(defalias 'db #'cpj/elfeed-daily)
 
 (defun cpj/elfeed-search-clear-filter ()
   "Restore the default Elfeed search view."
