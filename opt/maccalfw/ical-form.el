@@ -29,6 +29,7 @@
 ;;; Code:
 (require 'wid-edit)
 (require 'org)
+(require 'shr)
 
 (defcustom ical-form-event-updated-hook nil
   "Hook called when an event is updated successfully.
@@ -37,10 +38,22 @@ second is the new event data."
   :type 'hook
   :group 'ical-form)
 
-(defcustom ical-form-render-html-p #'ignore
-  "A function to detect if an event content should be rendered in shr."
-  :type 'function
-  :group 'ical-form)
+(defconst ical-form--html-tag-rx
+  ;; [[:space:]] does not match newline in Emacs regexps, so this
+  ;; spells out the whitespace characters explicitly.
+  "</?[a-zA-Z][-a-zA-Z0-9]*\\(?:[ \t\n\r][^<>]*\\)?/?>"
+  "Regexp matching generic HTML/XML tag syntax.
+Deliberately doesn't check the tag name against a list of known
+HTML elements: no purely syntactic or structural check can
+distinguish a real tag from a stray bracketed word like \"<TBD>\"
+anyway (rendering strips both the same way), so this just gates
+against obviously-plain text before bothering to parse/render at
+all -- `ical-form--html-content-maybe' is what actually decides
+whether rendering did anything worth keeping.")
+
+(defun ical-form--looks-like-html-p (content)
+  "Return non-nil if CONTENT contains anything that looks like a tag."
+  (string-match-p ical-form--html-tag-rx content))
 
 (defcustom ical-form-update-event-function
   (lambda (&rest _) (error "`ical-form-update-event-function' not set correctly."))
@@ -109,10 +122,13 @@ were modified, relative to the old values."
 (defvar-local ical-form--timezones nil)
 (defvar-local ical-form--calendars nil)
 (defvar-local ical-form--default-timezone nil)
+(defvar-local ical-form--inhibit-auto-time-update nil)
+
 
 ;; These need to be dynamically bound when using `org-pick-date'
 (defvar org-time-was-given)
 (defvar org-end-time-was-given)
+
 
 (defun ical-form--parse-ical-date (ical-list)
   "Parse an iCal list format ICAL-LIST into date components.
@@ -132,7 +148,17 @@ Returns a list (DATE (ALL-DAY-P val) (TZ val))."
                               "T000000"
                             "")))))
       (if parsed-date
-          (list (apply #'encode-time parsed-date)
+          ;; `parse-time-string' leaves the ZONE slot nil for a bare
+          ;; wall-clock string like "20260810T083000" (no trailing Z),
+          ;; which makes `encode-time' assume system-local time. A
+          ;; TZID names a specific zone instead, so it must be plugged
+          ;; into that slot -- otherwise a TZID'd time is silently
+          ;; misinterpreted as being in whatever zone Emacs is
+          ;; currently running in.
+          (list (encode-time
+                 (if time-zone-id
+                     (append (butlast parsed-date) (list time-zone-id))
+                   parsed-date))
                 `(ALL-DAY-P . ,is-all-day)
                 `(TZID . ,time-zone-id))
         (error "Failed to parse iCal list")))))
@@ -149,42 +175,47 @@ specifies the timezone."
                   (all-day "%Y%m%d")
                   (time-zone-id "%Y%m%dT%H%M%S")
                   (t "%Y%m%dT%H%M%SZ")))
-         (time-string (format-time-string format date)))
+         ;; DATE is an absolute instant; formatting it without pinning
+         ;; ZONE to TIME-ZONE-ID would print the wall-clock time in
+         ;; whatever zone Emacs is currently running in, while still
+         ;; tagging it with TIME-ZONE-ID's TZID param -- a mismatched
+         ;; pair that decodes to the wrong instant on read-back.
+         (time-string (format-time-string
+                       format date (or time-zone-id (and (not all-day) t)))))
     (list params time-string)))
 
 (defun ical-form--parse-ical-rrule (ical-list)
   "Parse an iCal list format ICAL-LIST into date components.
 Returns a list (DATE IS-ALL-DAY TIME-ZONE)."
   (when ical-list
-    (let ((trim "[[:space:]]*"))
-      (append
-       (list 'rrule)
-       (mapcar
-        (lambda (item)
-          (let* ((key-val (string-split item "=" t trim))
-                 (value (string-join (cdr key-val) "="))
-                 (key (intern (car key-val))))
-            (cons key
-                  (cl-case key
-                    (UNTIL (encode-time (parse-time-string value)))
-                    (FREQ (intern (downcase value)))
-                    ((COUNT INTERVAL)
-                     (string-to-number value))
-                    (BYDAY
-                     (mapcar
-                      (lambda (x)
-                        (save-match-data
-                          (string-match
-                           "^\\(?:\\([-+]?[[:digit:]]+\\)\\)?\\([A-Z]+\\)$"
-                           x)
-                          (cons (intern (match-string 2 x))
-                                (when (match-string 1 x)
-                                  (string-to-number (match-string 1 x))))))
-                      (string-split value "," t trim)))
-                    (otherwise
-                     (mapcar
-                      #'string-to-number
-                      (string-split value "," t trim)))))))
+  (let ((trim "[[:space:]]*"))
+    (append
+     (list 'rrule)
+     (mapcar
+      (lambda (item)
+        (let* ((key-val (string-split item "=" t trim))
+               (value (string-join (cdr key-val) "="))
+               (key (intern (car key-val))))
+          (cons key
+                (cl-case key
+                  (UNTIL (encode-time (parse-time-string value)))
+                  (FREQ (intern (downcase value)))
+                  ((COUNT INTERVAL)
+                   (string-to-number value))
+                  (BYDAY
+                   (mapcar
+                    (lambda (x)
+                      (save-match-data
+                        (string-match
+                         "^\\(?:\\([-+]?[[:digit:]]+\\)\\)?\\([A-Z]+\\)$"
+                         x)
+                        (cons (intern (match-string 2 x))
+                              (when (match-string 1 x)
+                                (string-to-number (match-string 1 x))))))
+                    (string-split value "," t trim)))
+                  (otherwise (mapcar
+                              #'string-to-number
+                              (string-split value "," t trim)))))))
         (and (cadr ical-list)
              (string-split (cadr ical-list) ";" t trim)))))))
 
@@ -196,9 +227,8 @@ is t, return (PROP-VALUE ALIST) where ALIST is a a list of
 subproperties. Otherwise, return value corresponding to SUBPROP
 from ALIST."
   (when-let* ((prop-val (alist-get prop event)))
-    (let* ((parse-quote-string
-            (lambda (x)
-              (list (intern (downcase (cadr x))))))
+    (let* ((parse-quote-string (lambda (x) (list (intern
+                                                  (downcase (cadr x))))))
            (trans
             (or (alist-get
                  prop
@@ -216,6 +246,7 @@ from ALIST."
             (alist-get subprop (cdr prop-val))
           (car prop-val))))))
 
+
 (defun ical-form-kill ()
   "Kill event buffer.
 Warn if the buffer is modified and offer to save."
@@ -226,10 +257,10 @@ Warn if the buffer is modified and offer to save."
     (quit-window t)))
 
 (cl-defun ical-form--diff-plist (A B
-                                   &key
-                                   symmetric
-                                   test
-                                   test-plist)
+                                        &key
+                                        symmetric
+                                        test
+                                        test-plist)
   "Compare plists A and B and return differing properties.
 If SYMMETRIC t, return properties in B not in A. TEST-PLIST is a
 plist mapping property names to comparison functions, or defaults
@@ -254,7 +285,7 @@ values which are different, or nil if no values are different."
       (let* ((key (car B))
              (value-b (cadr B))
              (cmp (or (plist-get test-plist key) test)))
-        (unless (or (plist-get AA key)
+        (unless (or (plist-get AA key) ;; was processed already
                     (funcall cmp nil value-b))
           (setq result-A (append result-A (list key nil)))
           (setq result-B (append result-B (list key value-b)))))
@@ -264,10 +295,10 @@ values which are different, or nil if no values are different."
       nil)))
 
 (cl-defun ical-form--diff-alist (A B
-                                   &key
-                                   symmetric
-                                   test
-                                   test-plist)
+                                        &key
+                                        symmetric
+                                        test
+                                        test-plist)
   "Compare alists A and B and return differing properties.
 If SYMMETRIC t, return properties in B not in A. TEST-PLIST is a
 plist mapping property names to comparison functions, or defaults
@@ -294,7 +325,7 @@ values which are different, or nil if no values are different."
              (key (car kv))
              (value-b (cdr kv))
              (cmp (or (plist-get test-plist key) test)))
-        (unless (or (alist-get key AA)
+        (unless (or (alist-get key AA) ;; was processed already
                     (funcall cmp nil value-b))
           (setq result-A (append result-A (list (cons key nil))))
           (setq result-B (append result-B (list (cons key value-b))))))
@@ -312,20 +343,16 @@ If DUPLICATE is non-nil, save the event as a new one."
          (old-data (widget-get title-wid :event-data))
          (tz (ical-form--value 'timezone widgets))
          (all-day (ical-form--value 'all-day widgets))
-         (start
-          (ical-form--parse-datetime
-           (if all-day
-               "00:00"
-             (ical-form--value 'start-time widgets))
-           (ical-form--value 'start-date widgets)))
-         (end
-          (ical-form--parse-datetime
-           (if all-day
-               "23:59:59"
-             (ical-form--value 'end-time widgets))
-           (if all-day
-               (ical-form--value 'end-date widgets)
-             (ical-form--value 'start-date widgets))))
+         (start (ical-form--parse-datetime
+                 (if all-day
+                     "00:00"
+                   (ical-form--value 'start-time widgets))
+                 (ical-form--value 'start-date widgets)))
+         (end (ical-form--parse-datetime
+               (if all-day
+                   "23:59:59"
+                 (ical-form--value 'end-time widgets))
+               (ical-form--value 'end-date widgets)))
          (old-id (unless duplicate
                    (ical-form-event-get old-data 'UID)))
          (new-data
@@ -336,12 +363,11 @@ If DUPLICATE is non-nil, save the event as a new one."
                    ,(when (ical-form--value 'recurrence-p widgets)
                       (ical-form--value 'recurrence widgets)))
             (LOCATION nil ,(ical-form--value 'location widgets))
-            (DESCRIPTION nil ,(ical-form--value 'notes widgets))
+            (DESCRIPTION nil ,(ical-form--notes-value widgets))
             (X-EMACS-AVAILABILITY
              nil
-             ,(upcase
-               (symbol-name
-                (ical-form--value 'availability widgets))))))
+             ,(upcase (symbol-name
+                       (ical-form--value 'availability widgets))))))
          (new-event (null old-id)))
     (when (ical-form-event-get old-data 'X-EMACS-READ-ONLY)
       (user-error "Event is not editable.?"))
@@ -349,20 +375,14 @@ If DUPLICATE is non-nil, save the event as a new one."
     (setq new-data
           (append
            new-data
-           (list
-            (cons 'DTSTART
-                  (ical-form--format-ical-date start all-day tz))
-            (cons 'DTEND
-                  (ical-form--format-ical-date end all-day tz)))))
+           (list (cons 'DTSTART (ical-form--format-ical-date start all-day tz))
+                 (cons 'DTEND (ical-form--format-ical-date end all-day tz)))))
+
 
     (cl-flet ((non-trivial-p (x)
                 ;; If the list is just nil empty strings, it's trivial
                 (cl-some
-                 (lambda (z)
-                   (if (stringp z)
-                       (not (string= z ""))
-                     z))
-                 x)))
+                 (lambda (z) (if (stringp z) (not (string= z "")) z)) x)))
       (if new-event
           ;; Keep all fields except those which are null
           (setq new-data
@@ -374,35 +394,31 @@ If DUPLICATE is non-nil, save the event as a new one."
                (ical-form--diff-alist
                 new-data
                 old-data
-                :test
-                (lambda (x y)
-                  (equal (and (non-trivial-p x) x)
-                         (and (non-trivial-p y) y)))
-                :test-plist
-                `(RRULE
-                  (lambda (x y)
-                    (not
-                     (ical-form--diff-alist
-                      (cdr (ical-form--parse-ical-rrule x))
-                      (cdr (ical-form--parse-ical-rrule y))
-                      :test #'seq-set-equal-p
-                      :test-plist
-                      '(;
-                        ;; ignore this value
-                        WKST always
-                        UNTIL equal
-                        COUNT eq
-                        INTERVAL eq
-                        FREQ equal))))))))))
+                :test (lambda (x y)
+                        (equal (and (non-trivial-p x) x)
+                               (and (non-trivial-p y) y)))
+                :test-plist `(RRULE
+                              (lambda (x y)
+                                (not (ical-form--diff-alist
+                                      (cdr (ical-form--parse-ical-rrule x))
+                                      (cdr (ical-form--parse-ical-rrule y))
+                                      :test #'seq-set-equal-p
+                                      :test-plist
+                                      '(;
+                                        ;; ignore this value
+                                        WKST always
+                                        UNTIL equal
+                                        COUNT eq
+                                        INTERVAL eq
+                                        FREQ equal))))))))))
     (if new-data
         (progn
-          (widget-put
-           title-wid
-           :event-data
-           (funcall
-            ical-form-update-event-function
-            (unless new-event old-data)
-            new-data))
+          (widget-put title-wid
+                      :event-data
+                      (funcall
+                       ical-form-update-event-function
+                       (unless new-event old-data)
+                     new-data))
           (when (called-interactively-p 'interactive)
             (message "Event saved."))
           (run-hook-with-args
@@ -425,10 +441,9 @@ If DUPLICATE is non-nil, save the event as a new one."
              '((?y "yes" "kill buffer without saving")
                (?n "no" "exit without doing anything")
                (?s "save and then kill" "save the even and then kill buffer"))
-             nil nil
-             (and (not use-short-answers)
-                  (and (fboundp #'use-dialog-box-p)
-                       (not (use-dialog-box-p))))))))
+             nil nil (and (not use-short-answers)
+                          (and (fboundp #'use-dialog-box-p)
+                               (not (use-dialog-box-p))))))))
       (if (equal response "no")
           nil
         (unless (equal response "yes")
@@ -442,116 +457,90 @@ WIDGET defaults to the one at `(point)' if it is for a date.
 Otherwise, the widgets for start time/date are set, unless prefix
 is given or the widget at (point) is for end time/date, in which
 case the end time/date is set."
-  (interactive
-   (list
-    (let ((wid (widget-at)))
-      (if (and wid
-               (eq (widget-get wid :value-to-external)
-                   #'ical-form--parse-date-field))
-          wid
-        (if (or current-prefix-arg
-                (when-let* ((wid (widget-at (point)))
-                            (key (widget-get wid :field-key)))
-                  (member key '(end-time end-date))))
-            'end-time
-          'start-time)))))
+  (interactive (list (widget-at)))
+  (let* ((widgets (ical-form--get-widgets))
+         (for-end-date (or current-prefix-arg
+                           (and widget
+                                (member (widget-get widget :field-key)
+                                        '(end-time end-date)))))
+         (ktime (if for-end-date 'end-time 'start-time))
+         (kdate (if for-end-date 'end-date 'start-date)))
+    (if (widget-get (ical-form--find-widget ktime widgets) :inactive)
+        (ical-form-read-only)
+      (let* ((all-day-p  (ical-form--value 'all-day widgets))
+             ;; Define these two to make sure they are bound for
+             ;; `org-read-date'
+             org-time-was-given
+             org-end-time-was-given
+             (new-time (org-read-date
+                        (not all-day-p)
+                        t
+                        nil
+                        (if for-end-date "End" "Start")
+                        (ical-form--parse-datetime
+                         (if all-day-p
+                             (if for-end-date "23:59" "00:00")
+                           (ical-form--value ktime widgets))
+                         (ical-form--value kdate widgets)))))
+        (save-excursion
+          (let ((ical-form--inhibit-auto-time-update t))
+            (widget-value-set (ical-form--find-widget kdate widgets)
+                              (format-time-string "%F" new-time))
+            (when (and (not all-day-p)
+                       org-time-was-given)
+              (widget-value-set (ical-form--find-widget ktime widgets)
+                                (ical-form--format-time new-time))))
 
-  (let ((widgets (ical-form--get-widgets))
-        (for-end-date (eq widget 'end-time)))
-    (if (widgetp widget)
-        (let* ((old-time
-                (ical-form--parse-datetime
-                 "00:00"
-                 (or (widget-value widget)
-                     (ical-form--value
-                      'start-date widgets)))))
+          (unless for-end-date
+            (ical-form--update-end-time))
+
+          (when (and (not all-day-p)
+                     (not for-end-date)
+                     org-time-was-given
+                     org-end-time-was-given)
+            (widget-value-set (ical-form--find-widget 'end-time widgets)
+                              org-end-time-was-given)))))))
+
+(defun ical-form--update-end-time (&rest _)
+  "Update end time and date to maintain previous duration.
+Ignores arguments."
+  (unless ical-form--inhibit-auto-time-update
+    (let* ((widgets (ical-form--get-widgets))
+           (start-time-wid (ical-form--find-widget 'start-time widgets))
+           (start-date-wid (ical-form--find-widget 'start-date widgets))
+           (end-time-wid (ical-form--find-widget 'end-time widgets))
+           (end-date-wid (ical-form--find-widget 'end-date widgets))
+           (all-day-p  (ical-form--value 'all-day widgets))
+           (tz (ical-form--value 'timezone widgets))
+           (new-start-time
+            (ignore-errors (ical-form--parse-datetime
+                            (if all-day-p
+                                "00:00"
+                              (widget-value start-time-wid))
+                            (widget-value start-date-wid)
+                            tz)))
+           (old-start-time (widget-get start-time-wid :prev-time))
+           (end-time (ignore-errors
+                       (ical-form--parse-datetime
+                        (if all-day-p
+                            "23:59"
+                          (widget-value end-time-wid))
+                        (widget-value end-date-wid)
+                        tz)))
+           new-end-time)
+      (when (and end-time new-start-time)
+        (setq new-end-time (time-add new-start-time
+                                     (time-subtract
+                                      end-time
+                                      old-start-time)))
+        (save-excursion
           (widget-value-set
-           widget
-           (org-read-date
-            nil nil nil
-            "Date"
-            old-time)))
-      (if (widget-get
-           (ical-form--find-widget 'start-time widgets)
-           :inactive)
-          (ical-form-read-only)
-        (let* ((start-time-wid
-                (ical-form--find-widget 'start-time widgets))
-               (start-date-wid
-                (ical-form--find-widget 'start-date widgets))
-               (end-time-wid
-                (ical-form--find-widget 'end-time widgets))
-               (end-date-wid
-                (ical-form--find-widget 'end-date widgets))
-               (all-day-wid
-                (ical-form--find-widget 'all-day widgets))
-               (all-day-p (widget-value all-day-wid))
-               (start-time
-                (ical-form--parse-datetime
-                 (if all-day-p
-                     "00:00"
-                   (widget-value start-time-wid))
-                 (widget-value start-date-wid)))
-               (end-time
-                (ical-form--parse-datetime
-                 (if all-day-p
-                     "23:59"
-                   (widget-value end-time-wid))
-                 (widget-value end-date-wid)))
-               ;; Define these two to make sure they are bound for
-               ;; `org-read-date'
-               org-time-was-given
-               org-end-time-was-given
-               (new-time
-                (org-read-date
-                 (not (widget-value all-day-wid))
-                 t
-                 nil
-                 (if for-end-date
-                     "End"
-                   "Start")
-                 (if for-end-date
-                     end-time
-                   start-time))))
-          (save-excursion
-            (widget-value-set
-             (if (and for-end-date all-day-p)
-                 end-date-wid
-               start-date-wid)
-             (format-time-string "%F" new-time))
-
-            (when (not for-end-date)
-              ;; Shift end date as well
-              (widget-value-set
-               end-date-wid
-               (format-time-string
-                "%F"
-                (time-add
-                 new-time
-                 (* (- (time-to-days end-time)
-                       (time-to-days start-time))
-                    24 60 60)))))
-
-            (when (and (not all-day-p) org-time-was-given)
-              ;; Update time as well
-              (if (or (not for-end-date) org-end-time-was-given)
-                  (progn
-                    (widget-value-set
-                     start-time-wid
-                     (ical-form--format-time new-time))
-                    (widget-value-set
-                     end-time-wid
-                     (or org-end-time-was-given
-                         (ical-form--format-time
-                          (time-add
-                           new-time
-                           (time-subtract
-                            end-time
-                            start-time))))))
-                ;; for-end-date and range not given
-                (widget-value-set
-                 end-time-wid
-                 (ical-form--format-time new-time))))))))))
+           end-date-wid
+           (format-time-string "%F" new-end-time tz))
+          (widget-value-set
+           end-time-wid
+           (ical-form--format-time new-end-time tz))
+          (widget-put start-time-wid :prev-time new-start-time))))))
 
 (defun ical-form-open (event calendars timezones &optional update-fn)
   "Open a buffer to display the details of EVENT.
@@ -603,7 +592,8 @@ If DELETE is non-nil, delete the widget instead."
             (when (looking-back "\n" nil)
               (setq from (point)))))
         (setq overlay (make-overlay from to nil t nil))
-        (cl-loop for (key val) on props by #'cddr
+        (cl-loop for (key val) on
+                 props by #'cddr
                  do (overlay-put overlay key val))
         (widget-put widget key overlay)))))
 
@@ -612,31 +602,29 @@ If DELETE is non-nil, delete the widget instead."
 
 Recursively go childeren and buttons inside WIDGET. Hidden
 children and children of `radio-button-choice' widgets
-\\(typically labels) are always made untabbable regardless of the
+\(typically labels) are always made untabbable regardless of the
 value of UNTABBABLE."
   ;; Need to check if any of the parents are hidden
   (widget-put widget :tab-order (when untabbable -1))
   ;; Do the same to child widgets
-  (cl-loop
-   for (lst untabbable) in
-   (list
-    (list (widget-get widget :children)
-          (or
-           (eq (widget-type widget) 'radio-button-choice)
-           untabbable))
-    ;; Some widgets have buttons, which are not
-    ;; children. Make these untabbable as well
-    (list (widget-get widget :buttons)
-          untabbable))
-   do
-   (cl-loop
-    for child in lst
-    do
-    (ical-form--make-widget-untabbale
-     child
-     (or
-      (widget-get child :hidden)
-      untabbable)))))
+  (cl-loop for
+           (lst untabbable) in
+           (list (list (widget-get widget :children)
+                       (or
+                        (eq (widget-type widget) 'radio-button-choice)
+                        untabbable))
+                 ;; Some widgets have buttons, which are not
+                 ;; children. Make these untabbable as well
+                 (list (widget-get widget :buttons)
+                       untabbable))
+           do
+           (cl-loop for child in lst
+                    do
+                    (ical-form--make-widget-untabbale
+                     child
+                     (or
+                      (widget-get child :hidden)
+                      untabbable)))))
 
 (defun ical-form--show-hide-widget (widget visible)
   "Show/hide WIDGET based on value of VISIBLE.
@@ -680,28 +668,23 @@ If ACTIVE is t, activate widgets instead"
 (defun ical-form--find-widget (key widgets)
   "Find widget field corresponding to KEY in WIDGETS."
   (cl-find-if
-   (lambda (x)
-     (eq key (widget-get x :field-key)))
-   widgets))
+   (lambda (x) (eq key (widget-get x :field-key))) widgets))
 
 (defun ical-form--get-widgets ()
   "Return all field widget in the current form."
   (save-excursion
     (goto-char (point-min))
     (cl-loop
-     for wid =
-     (cl-loop
-      with old = (widget-at)
-      do
-      (cond
-       (widget-use-overlay-change
-        (goto-char (next-overlay-change (point))))
-       (t
-        (forward-char 1)))
-      for new = (widget-at)
-      until (or (and new (not (eq new old)))
-                (eobp))
-      finally return (and (not (eq new old)) new))
+     for wid = (cl-loop
+                with old = (widget-at)
+                do (cond
+                    (widget-use-overlay-change
+	             (goto-char (next-overlay-change (point))))
+                    (t (forward-char 1)))
+                for new = (widget-at)
+                until (or (and new (not (eq new old)))
+                          (eobp))
+                finally return (and (not (eq new old)) new))
      while wid
      append
      (cl-loop
@@ -713,10 +696,8 @@ If ACTIVE is t, activate widgets instead"
 (defun ical-form--format-time (time &optional timezone)
   "Convert TIME to new TIMEZONE and format it as a string.
 Assumes time is in the default timezone."
-  (let ((tz (and timezone
-                 (alist-get timezone
-                            ical-form--timezones
-                            nil nil #'equal))))
+  (let ((tz (and timezone (alist-get timezone ical-form--timezones
+                                     nil nil #'equal))))
     (format-time-string
      "%R"
      (if tz
@@ -724,9 +705,7 @@ Assumes time is in the default timezone."
           time
           (-
            (plist-get tz :offset)
-           (plist-get
-            (cdr ical-form--default-timezone)
-            :offset)))
+           (plist-get (cdr ical-form--default-timezone) :offset)))
        time))))
 
 (defun ical-form--parse-datetime (time-str date-str &optional timezone)
@@ -734,26 +713,18 @@ Assumes time is in the default timezone."
 Time is in DATE-STR and TIME-STR is assumed to be in a given
 TIMEZONE. If TIMEZONE, convert back to default time zone in
 `ical-form--default-timezone'."
-  (let ((tz (and timezone
-                 (alist-get timezone
-                            ical-form--timezones
-                            nil nil #'equal)))
-        (time
-         (encode-time
-          (parse-time-string
-           (format "%s %s" time-str date-str)))))
+  (let ((tz (and timezone (alist-get timezone ical-form--timezones
+                                     nil nil #'equal)))
+        (time (encode-time
+               (parse-time-string (format "%s %s" time-str date-str)))))
     (if tz
         (time-add
          time
          (-
-          (plist-get
-           (cdr ical-form--default-timezone)
-           :offset)
-          (plist-get
-           (alist-get timezone
-                      ical-form--timezones
-                      nil nil #'equal)
-           :offset)))
+          (plist-get (cdr ical-form--default-timezone) :offset)
+          (plist-get (alist-get timezone ical-form--timezones
+                                nil nil #'equal)
+                     :offset)))
       time)))
 
 (defun ical-form--parse-integer-field (_widget value)
@@ -765,15 +736,13 @@ TIMEZONE. If TIMEZONE, convert back to default time zone in
   "Parse VALUE of WIDGET as a list of integers delimited by non-numbers."
   (unless (string-empty-p value)
     ;; TODO: This doesn't resolve cases such as "1-2"
-    (mapcar #'string-to-number
-            (string-split value "[^-[:digit:]]+" t))))
+    (mapcar #'string-to-number (string-split value "[^-[:digit:]]+" t))))
 
 (defun ical-form--parse-date-field (_widget value)
   "Parse VALUE of WIDGET as a date."
   (unless (string-empty-p value)
-    (encode-time
-     (parse-time-string
-      (format "%s 00:00:00" value)))))
+    (encode-time (parse-time-string (format "%s 00:00:00"
+                                            value)))))
 
 (defun ical-form--timezone-widget-notify (widget &rest _)
   "Action for timezone action.
@@ -783,25 +752,24 @@ function)."
   (let ((widgets (ical-form--get-widgets)))
     (unless (ical-form--value 'all-day widgets)
       (let* ((old-tz (widget-get widget :old-value))
-             (tz (widget-value widget)))
+             (tz (widget-value widget))
+             (ical-form--inhibit-auto-time-update t))
         (save-excursion
-          (cl-loop
-           for (date-wid . time-wid)
-           in '((start-date . start-time)
-                (end-date . end-time))
-           for time-widget =
-           (ical-form--find-widget time-wid widgets)
-           for date-widget =
-           (ical-form--find-widget date-wid widgets)
-           do
-           (widget-value-set
-            time-widget
-            (ical-form--format-time
-             (ical-form--parse-datetime
-              (widget-value time-widget)
-              (widget-value date-widget)
-              old-tz)
-             tz)))
+          ;; Change only start time, the end time is changed automatically
+          ;; `ical-form--update-end-time'
+          ;; Start with end-time
+          (cl-loop for (date-wid . time-wid) in '((end-date . end-time)
+                                                  (start-date . start-time))
+                   for time-widget = (ical-form--find-widget time-wid widgets)
+                   for date-widget = (ical-form--find-widget date-wid widgets)
+                   for old-time-utc = (ical-form--parse-datetime
+                                       (widget-value time-widget)
+                                       (widget-value date-widget)
+                                       old-tz)
+                   do
+                   (widget-value-set
+                    time-widget
+                    (ical-form--format-time old-time-utc tz)))
           (widget-put widget :old-value tz))))))
 
 (defun ical-form--checkbox-hs (t-widgets &optional nil-widgets)
@@ -829,49 +797,113 @@ checkbox."
         (hs (widget-get widget :hs))
         (widgets (ical-form--get-widgets))
         wid-all)
-    (cl-loop
-     for rule in hs
-     for valchk = (car rule)
-     for valeq =
-     (if (consp valchk)
-         (apply (car valchk) val (cdr valchk))
-       (eq val valchk))
-     for wid-ids = (ensure-list (cdr rule))
-     do
-     (cl-loop
-      for wid-id in wid-ids
-      do
-      (setf
-       (alist-get wid-id wid-all)
-       (cons valeq
-             (alist-get wid-id wid-all))))
-     finally
-     (cl-loop
-      for (wid-id . vis) in wid-all
-      for wid = (ical-form--find-widget wid-id widgets)
-      when wid
-      do
-      (ical-form--show-hide-widget
-       wid
-       (cl-some #'identity vis))))))
+    (cl-loop for rule in hs
+             for valchk = (car rule)
+             for valeq = (if (consp valchk)
+                             (apply (car valchk) val (cdr valchk))
+                           (eq val valchk))
+             for wid-ids = (ensure-list (cdr rule))
+             do
+             (cl-loop for wid-id in wid-ids
+                      do
+                      (setf
+                       (alist-get wid-id wid-all)
+                       (cons valeq
+                             (alist-get wid-id wid-all))))
+             finally
+             (cl-loop for (wid-id . vis) in wid-all
+                      for wid = (ical-form--find-widget wid-id widgets)
+                      when wid
+                      do
+                      (ical-form--show-hide-widget
+                       wid (cl-some #'identity vis))))))
+
+(defun ical-form--collapse-whitespace (string)
+  "Collapse runs of whitespace in STRING to a single space, trimmed.
+HTML treats runs of whitespace, including newlines, as
+insignificant, so shr's rendering of otherwise-plain text can
+differ from the raw source purely in whitespace. Comparing
+collapsed forms avoids mistaking that for a meaningful change."
+  ;; [[:space:]] does not match newline in Emacs regexps, so this
+  ;; spells out the whitespace characters explicitly.
+  (string-trim (replace-regexp-in-string "[ \t\n\r\f]+" " " string)))
 
 (defun ical-form--html-content-maybe (content)
-  "Insert content rendered as HTML using shr.
-If the function in `ical-form-render-html-p' returns nil, just
-return CONTENT as is, otherwise return a rendering in SHR."
+  "Render CONTENT as HTML using shr, if that would change anything.
+Return a cons (RENDERED-P . TEXT). RENDERED-P is non-nil if TEXT
+is a shr rendering of CONTENT that actually differs from it
+(ignoring whitespace-only differences); it is nil, and TEXT is
+just CONTENT, if CONTENT doesn't look like HTML to begin with (see
+`ical-form--looks-like-html-p'), if Emacs has no libxml support to
+parse it, or if shr's rendering turns out to be the same as
+CONTENT anyway (nothing to gain from treating it as HTML, so it
+stays a plain editable field)."
   ;; Inspired by `notmuch-show--insert-part-text/html-shr'
-  (if (funcall ical-form-render-html-p content)
-      (with-temp-buffer
-        (shr-insert-document
-         (with-temp-buffer
-           (insert content)
-           (libxml-parse-html-region
-            (point-min)
-            (point-max))))
-        (buffer-substring
-         (point-min)
-         (point-max)))
-    content))
+  (if (and (libxml-available-p)
+           (ical-form--looks-like-html-p content))
+      (let ((rendered
+             (with-temp-buffer
+               (let ((shr-width (or (ignore-errors (window-body-width))
+                                    shr-width))
+                     (shr-inhibit-images t))
+                 (shr-insert-document
+                  (with-temp-buffer
+                    (insert content)
+                    (libxml-parse-html-region (point-min) (point-max)))))
+               (buffer-substring (point-min) (point-max)))))
+        (if (equal (ical-form--collapse-whitespace rendered)
+                   (ical-form--collapse-whitespace content))
+            (cons nil content)
+          (cons t rendered)))
+    (cons nil content)))
+
+(defun ical-form--notes-read-only (&rest _junk)
+  "Ignoring the arguments, signal an error.
+Used as a `modification-hooks' entry on the notes/description
+field while it is showing a rendered HTML preview rather than
+its raw source."
+  (unless inhibit-read-only
+    (error
+     "Showing a rendered preview; use `ical-form-toggle-notes-source' to edit")))
+
+(defun ical-form--notes-value (widgets)
+  "Return the current value of the notes/description field in WIDGETS.
+If the field is currently showing a rendered HTML preview, this
+returns the underlying raw source instead of the rendered text,
+so that saving an untouched HTML description never overwrites it
+with a lossy flattened copy."
+  (let ((wid (ical-form--find-widget 'notes widgets)))
+    (if (and (widget-get wid :html-rendered)
+             (not (widget-get wid :editing-raw)))
+        (widget-get wid :raw-value)
+      (widget-value wid))))
+
+(defun ical-form-toggle-notes-source (widget)
+  "Toggle the notes/description WIDGET between rendered and raw source.
+WIDGET must have been created with :html-rendered non-nil."
+  (if (widget-get widget :editing-raw)
+      ;; Currently showing the editable raw source; switch to a rendered,
+      ;; read-only preview, folding in whatever the user just edited --
+      ;; unless it no longer contains anything worth rendering, in which
+      ;; case just stay a plain editable field.
+      (let* ((raw (widget-value widget))
+             (rendered (ical-form--html-content-maybe raw)))
+        (widget-put widget :raw-value raw)
+        (widget-put widget :html-rendered (car rendered))
+        (widget-value-set widget (cdr rendered))
+        (widget-put widget :editing-raw nil)
+        (if (car rendered)
+            (ical-form--widget-overlay
+             widget :inactive nil
+             'evaporate t 'priority 100
+             'modification-hooks '(ical-form--notes-read-only))
+          (ical-form--widget-overlay widget :inactive t)))
+    ;; Currently showing the rendered, read-only preview; switch to editing
+    ;; the raw source.
+    (ical-form--widget-overlay widget :inactive t)
+    (widget-value-set widget (widget-get widget :raw-value))
+    (widget-put widget :editing-raw t))
+  (widget-setup))
 
 (defun ical-form-rebuild-buffer (event &optional no-erase)
   "Rebuild ical-form buffer from EVENT.
@@ -885,8 +917,7 @@ it."
   (let ((timezones ical-form--timezones)
         (calendars ical-form--calendars)
         (default-timezone ical-form--default-timezone)
-        (local-update-fn
-         (local-variable-p 'ical-form-update-event-function))
+        (local-update-fn (local-variable-p 'ical-form-update-event-function))
         (update-fn ical-form-update-event-function))
     (when (and
            (derived-mode-p 'ical-form-mode)
@@ -905,9 +936,7 @@ it."
       ;; permanently local. But my thinking is that this variable is
       ;; mode-specific and should not be
       (when local-update-fn
-        (setq-local
-         ical-form-update-event-function
-         update-fn))
+        (setq-local ical-form-update-event-function update-fn))
 
       (setq
        ical-form--calendars calendars
@@ -922,132 +951,169 @@ it."
         "\\<ical-form-mode-map>Event details. \
 Save `\\[ical-form-save]', \
 abort `\\[ical-form-kill]'."))
-
       (set-buffer-modified-p nil))))
+
+(defun ical-form--widget-group-value-create (widget)
+  "Create function for groups.
+This simply applies the `cursor-intangible' function to indent
+characters."
+  (let ((args (widget-get widget :args))
+	(value (widget-get widget :value))
+	arg answer children)
+    (while args
+      (setq arg (car args)
+	    args (cdr args)
+	    answer (widget-match-inline arg value)
+	    value (cdr answer))
+      (and (widget--should-indent-p)
+	   (widget-get widget :indent)
+           (insert
+            (ical-form--make-intangible
+             (make-string (widget-get widget :indent) ?\s))))
+      (push (cond ((null answer)
+		   (widget-create-child widget arg))
+                  ((widget-inline-p arg t)
+		   (widget-create-child-value widget arg (car answer)))
+		  (t
+		   (widget-create-child-value widget arg (car (car answer)))))
+	    children))
+    (widget-put widget :children (nreverse children))))
+
+(defun ical-form--make-intangible (&rest args)
+  (let ((result ""))
+    (dotimes (i (length args) result)
+      (let ((txt (pop args)))
+        (when (eq (mod i 2) 0)
+          (add-text-properties 0 (length txt)
+                               '(cursor-intangible t
+                                                   rear-nonsticky t
+                                                   front-sticky t)
+                               txt))
+        (setq result (concat result txt))))))
 
 (defun ical-form--create-form (event)
   "Create form in current buffer corresponding to EVENT."
-  (let* ((cal-id
-          (ical-form-event-get event 'X-EMACS-CALID))
-         (dt-start
-          (ical-form-event-get event 'DTSTART t))
+  (let* ((cal-id (ical-form-event-get event 'X-EMACS-CALID))
+         (dt-start (ical-form-event-get event 'DTSTART t))
          (timezones ical-form--timezones)
          (calendars ical-form--calendars)
-         (timezone
-          (or (alist-get 'TZID (cdr dt-start))
-              (car-safe ical-form--default-timezone)))
-         (all-day-p
-          (alist-get 'ALL-DAY-P (cdr dt-start)))
-         (end
-          (ical-form-event-get event 'DTEND)))
-    (widget-insert "\n\n")
+         (timezone (or (alist-get 'TZID (cdr dt-start))
+                       (car-safe ical-form--default-timezone)))
+         (all-day-p (alist-get 'ALL-DAY-P (cdr dt-start)))
+         (end (ical-form-event-get event 'DTEND))
+         (NL (ical-form--make-intangible "\n"))
+         (SPC (ical-form--make-intangible " "))
+         (NL2 (concat NL NL)))
+    (widget-insert NL2)
 
-    (widget-create
-     'editable-field
-     :field-key 'title
-     :event-data event
-     :keymap ical-form-field-map
-     :value-face 'ical-form-title-field
-     :format "%v \n"
-     (or (ical-form-event-get event 'SUMMARY) ""))
+    (widget-create 'editable-field
+                   :field-key 'title
+                   :event-data event
+                   :keymap ical-form-field-map
+                   :value-face 'ical-form-title-field
+                   :format (concat "%v" NL)
+                   (or (ical-form-event-get event 'SUMMARY) ""))
 
-    (let* ((options
-            (cl-loop
-             for x in calendars
-             when
-             (or (plist-get x :editable)
-                 (equal (plist-get x :id)
-                        cal-id))
-             collect
-             `(item
-               :tag ,(plist-get x :title)
-               :value ,(plist-get x :id)
-               :editable ,(plist-get x :editable)))))
+    (let* ((options (cl-loop
+                     for x in calendars
+                     when (or (plist-get x :editable)
+                              (equal (plist-get x :id)
+                                     cal-id))
+                     collect
+                     `(item :tag ,(plist-get x :title)
+                            :value ,(plist-get x :id)
+                            :format "%t"
+                            :editable ,(plist-get x :editable)))))
       (apply
        #'widget-create
        'menu-choice
        :field-key 'calendar-id
-       :tag "Calendar"
-       :format "%[%t%]: %v\n\n"
-       :value
-       (or cal-id
-           (plist-get
-            (cl-find-if
-             (lambda (x)
-               (plist-get x :default))
-             calendars)
-            :id)
-           (plist-get
-            (cl-find-if
-             (lambda (x)
-               (plist-get x :editable))
-             calendars)
-            :id))
+       :format (ical-form--make-intangible
+                (propertize "Calendar: " 'face 'ical-form-field-names)
+                "%[%v%]"
+                "\n\n")
+       :value (or cal-id
+                  (plist-get
+                   (cl-find-if
+                    (lambda (x) (plist-get x :default))
+                    calendars)
+                   :id)
+                  (plist-get
+                   (cl-find-if
+                    (lambda (x) (plist-get x :editable))
+                    calendars)
+                   :id))
        options))
 
-    (widget-create
-     'editable-field
-     :field-key 'start-date
-     :keymap ical-form-field-map
-     :format " %v "
-     :size 10
-     (and event
-          (format-time-string "%F" (car dt-start))))
+    (widget-create 'editable-field
+                   :field-key 'start-date
+                   :keymap ical-form-field-map
+                   :notify #'ical-form--update-end-time
+                   :format (concat SPC "%v" SPC)
+                   :size 10
+                   (and event
+                        (format-time-string "%F" (car dt-start))))
 
-    (widget-create
-     'editable-field
-     :field-key 'end-date
-     :keymap ical-form-field-map
-     :format "  --    %v   "
-     :size 10
-     (format-time-string "%F" end))
+    (widget-create 'editable-field
+                   :field-key 'start-time
+                   :keymap ical-form-field-map
+                   :format (ical-form--make-intangible
+                            " " "%v" " ")
+                   :notify #'ical-form--update-end-time
+                   :prev-time (car dt-start)
+                   :size 6
+                   (ical-form--format-time
+                    (car dt-start)
+                    timezone))
 
-    (widget-create
-     'editable-field
-     :field-key 'start-time
-     :keymap ical-form-field-map
-     :format " %v -- "
-     :size 6
-     (ical-form--format-time
-      (car dt-start)
-      timezone))
+    (widget-create 'editable-field
+                   :field-key 'end-date
+                   :keymap ical-form-field-map
+                   :format (ical-form--make-intangible
+                            "  --   " "%v" " ")
+                   :size 10
+                   (format-time-string "%F" end))
 
-    (widget-create
-     'editable-field
-     :field-key 'end-time
-     :keymap ical-form-field-map
-     :format " %v   "
-     :size 6
-     (ical-form--format-time end timezone))
+    (widget-create 'editable-field
+                   :field-key 'end-time
+                   :keymap ical-form-field-map
+                   :format (concat
+                            SPC
+                            "%v"
+                            (ical-form--make-intangible "   "))
+                   :size 6
+                   (ical-form--format-time end timezone))
 
-    (widget-create
-     'checkbox
-     :field-key 'all-day
-     :format " %[%v%] All day\n\n"
-     :notify #'ical-form--hs-action
-     :hs (ical-form--checkbox-hs
-          'end-date
-          '(start-time end-time timezone))
-     all-day-p)
-
-    (let* ((options
-            (mapcar
-             (lambda (x)
-               `(item
-                 :tag ,(format
-                        "%s (%s)"
-                        (car x)
-                        (plist-get (cdr x) :abbrev))
-                 :value ,(car x)
-                 :details x))
-             timezones)))
+    (widget-create 'checkbox
+                   :field-key 'all-day
+                   :format (concat
+                            SPC
+                            "%[%v%]"
+                            (ical-form--make-intangible " All day")
+                            NL2)
+                   :notify #'ical-form--hs-action
+                   :hs (ical-form--checkbox-hs
+                        nil
+                        '(start-time end-time timezone))
+                   all-day-p)
+    (let* ((options (mapcar
+                     (lambda (x)
+                       `(item :tag ,(format "%s (%s)"
+                                            (car x)
+                                            (plist-get (cdr x) :abbrev))
+                              :value ,(car x)
+                              :format "%t"
+                              :details x))
+                     timezones)))
       (apply
        #'widget-create
        'menu-choice
        :field-key 'timezone
        :notify #'ical-form--timezone-widget-notify
-       :tag "Timezone"
-       :format "%[%t%]: %v\n\n"
+       :format (ical-form--make-intangible
+                (propertize "Timezone: "
+                            'face 'ical-form-field-names)
+                "%[%v%]" "\n\n")
        :value timezone
        :old-value timezone
        options))
@@ -1055,209 +1121,175 @@ abort `\\[ical-form-kill]'."))
     (widget-create
      'radio-button-choice
      :field-key 'availability
-     :entry-format "%b %v "
-     :format "%v\n\n"
-     :value
-     (or
-      (ical-form-event-get
-       event
-       'X-EMACS-AVAILABILITY)
-      'busy)
-     '(item :format "%[Tentative%] " :value tentative)
-     '(item :format "%[Free%] " :value free)
-     '(item :format "%[Busy%] " :value busy)
-     '(item :format "%[Unavailable%] " :value unavailable))
+     :entry-format (concat "%b" SPC "%v" SPC)
+     :format (concat "%v" NL2)
+     :value (or
+             (ical-form-event-get event 'X-EMACS-AVAILABILITY) 'busy)
+     `(item :format ,(ical-form--make-intangible "Tentative")
+            :value tentative)
+     `(item :format ,(ical-form--make-intangible "Free")
+            :value free)
+     `(item :format ,(ical-form--make-intangible "Busy")
+            :value busy)
+     `(item :format ,(ical-form--make-intangible "Unavailable")
+            :value unavailable))
 
     (widget-create
      'editable-field
      :field-key 'location
      :keymap ical-form-field-map
      :format
-     (concat
-      (propertize
-       "Location: "
-       'face 'ical-form-field-names)
-      "%v\n")
+     (ical-form--make-intangible
+      (propertize "Location: " 'face 'ical-form-field-names)
+      "%v" "\n")
      (or (ical-form-event-get event 'LOCATION) ""))
 
-    (let* ((recur
-            (cdr
-             (ical-form-event-get event 'RRULE t)))
+    (let* ((recur (cdr (ical-form-event-get event 'RRULE t)))
            (group-items
             (list
              `(editable-field
                :field-key recurrence-interval
-               :value-to-external
-               ical-form--parse-integer-field
+               :value-to-external ical-form--parse-integer-field
                :keymap ical-form-field-map
-               :format "every %v "
+               :format ,(ical-form--make-intangible
+                         "every " "%v" " ")
                :size 5
-               ,(or
-                 (when-let*
-                     ((interval
-                       (alist-get 'INTERVAL recur)))
-                   (format "%d" interval))
-                 "1"))
+               ,(or (when-let* ((interval
+                                (alist-get 'INTERVAL recur)))
+                      (format "%d" interval))
+                    "1"))
 
              `(radio-button-choice
                :field-key recurrence-freq
-               :entry-format "%b %v"
-               :format "%v\n"
-               :hs
-               ((weekly . recurrence-byday)
-                (monthly recurrence-byday
-                         recurrence-bymonthday)
-                (yearly recurrence-byday
-                        recurrence-bymonth
-                        recurrence-byweekno
-                        recurrence-byyearday))
+               :entry-format ,(concat "%b" SPC "%v" SPC)
+               :format ,(concat "%v" NL)
+               :hs ((weekly . recurrence-byday)
+                    (monthly recurrence-byday
+                             recurrence-bymonthday)
+                    (yearly recurrence-byday
+                            recurrence-bymonth
+                            recurrence-byweekno
+                            recurrence-byyearday))
                :notify ical-form--hs-action
                :value ,(or (alist-get 'FREQ recur)
                            'weekly)
-               (item :format "%[Day%] " :value daily)
-               (item :format "%[Week%] " :value weekly)
-               (item :format "%[Month%] " :value monthly)
-               (item :format "%[Year%] " :value yearly))
+               (item :format ,(ical-form--make-intangible "Day")
+                     :value daily)
+               (item :format ,(ical-form--make-intangible "Week")
+                     :value weekly)
+               (item :format ,(ical-form--make-intangible "Month")
+                     :value monthly)
+               (item :format ,(ical-form--make-intangible "Year")
+                     :value yearly))
 
              (append
               `(checklist
                 :field-key recurrence-byday
                 :indent 3
-                :format "on %v\n"
-                :value
-                ,(cl-loop
-                  for day in (alist-get 'BYDAY recur)
-                  collect (car day)))
+                :entry-format ,(concat "%b" SPC "%v")
+                :format ,(ical-form--make-intangible "on " "%v" "\n")
+                :value ,(cl-loop for day in (alist-get 'BYDAY recur)
+                                 collect (car day)))
               (cl-loop
-               with lst =
-               '("SUNDAY" "MONDAY" "TUESDAY"
-                 "WEDNESDAY" "THURSDAY" "FRIDAY"
-                 "SATURDAY")
+               with lst = '("SUNDAY" "MONDAY" "TUESDAY"
+                            "WEDNESDAY" "THURSDAY" "FRIDAY"
+                            "SATURDAY")
                for w in lst
-               collect
-               `(item
-                 :format "%t "
-                 :tag ,(capitalize (substring w 0 3))
-                 ,(intern (substring w 0 2)))))
+               collect `(item :format
+                              ,(ical-form--make-intangible
+                                (concat (capitalize (substring w 0 3))
+                                        " "))
+                              ,(intern (substring w 0 2)))))
 
              `(editable-field
                :field-key recurrence-bymonthday
-               :value-to-external
-               ical-form--parse-integer-list-field
+               :value-to-external ical-form--parse-integer-list-field
                :keymap ical-form-field-map
-               :format "on days of month [-31 to 31]: %v\n"
+               :format ,(ical-form--make-intangible
+                         "on days of month [-31 to 31]: "
+                         "%v"
+                         "\n")
                :size 10
-               ,(or
-                 (when-let*
-                     ((mdays
-                       (alist-get 'BYMONTHDAY recur)))
-                   (string-join
-                    (cl-loop
-                     for i in mdays
-                     collect (number-to-string i))
-                    ", "))
-                 ""))
-
+               ,(or (when-let* ((mdays (alist-get 'BYMONTHDAY recur)))
+                      (string-join (cl-loop for i in mdays
+                                            collect (number-to-string i))
+                                   ", "))
+                    ""))
              (append
               `(checklist
                 :field-key recurrence-bymonth
-                :format "on %v\n"
+                :format ,(ical-form--make-intangible "on " "%v" "\n")
                 :value ,(alist-get 'BYMONTH recur))
               (cl-loop
-               with lst =
-               '("JAN" "FEB" "MAR" "APR"
-                 "MAY" "JUN" "JUL" "AUG"
-                 "SEP" "OCT" "NOV" "DEC")
+               with lst = '("JAN" "FEB" "MAR" "APR"
+                            "MAY" "JUN" "JUL" "AUG"
+                            "SEP" "OCT" "NOV" "DEC")
                for w in lst
                for idx from 1
-               collect
-               `(item
-                 :format "%t "
-                 :tag ,w
-                 ,idx)))
-
+               collect `(item :format
+                              ,(ical-form--make-intangible "%t ")
+                              :tag ,w
+                              ,idx)))
              `(editable-field
                :field-key recurrence-byweekno
-               :value-to-external
-               ical-form--parse-integer-list-field
+               :value-to-external ical-form--parse-integer-list-field
                :keymap ical-form-field-map
                :format "on weeks of year [-53 to 53]: %v\n"
                :size 10
-               ,(or
-                 (when-let*
-                     ((mdays
-                       (alist-get 'BYWEEKNO recur)))
-                   (string-join
-                    (cl-loop
-                     for i in mdays
-                     collect (number-to-string i))
-                    ", "))
-                 ""))
-
+               ,(or (when-let* ((mdays (alist-get 'BYWEEKNO recur)))
+                      (string-join (cl-loop for i in mdays
+                                            collect (number-to-string i))
+                                   ", "))
+                    ""))
              `(editable-field
                :field-key recurrence-byyearday
-               :value-to-external
-               ical-form--parse-integer-list-field
+               :value-to-external ical-form--parse-integer-list-field
                :keymap ical-form-field-map
                :format "on days of year [-366 to 366]: %v\n"
                :size 10
-               ,(or
-                 (when-let*
-                     ((mdays
-                       (alist-get 'BYYEARDAY recur)))
-                   (string-join
-                    (cl-loop
-                     for i in mdays
-                     collect (number-to-string i))
-                    ", "))
-                 ""))
-
+               ,(or (when-let* ((mdays (alist-get 'BYYEARDAY recur)))
+                      (string-join (cl-loop for i in mdays
+                                            collect (number-to-string i))
+                                   ", "))
+                    ""))
              `(radio-button-choice
                :field-key recurrence-end-rule
                :do-not-save t
-               :entry-format "%b %v"
+               :entry-format ,(concat "%b" SPC "%v" SPC)
                :format "%v"
-               :hs
-               ((on . recurrence-until)
-                (after . recurrence-count))
+               :hs ((on . recurrence-until)
+                    (after . recurrence-count))
                :notify ical-form--hs-action
-               :value
-               ,(or
-                 (and (alist-get 'UNTIL recur) 'on)
-                 (and (alist-get 'COUNT recur) 'after))
-               (item :format "%[Until%] " :value on)
-               (item :format "%[After%] " :value after))
+               :value ,(or (and (alist-get 'UNTIL recur) 'on)
+                           (and (alist-get 'COUNT recur) 'after))
+               (item :format ,(ical-form--make-intangible "Until")
+                     :value on)
+               (item :format ,(ical-form--make-intangible "After")
+                     :value after))
 
              `(editable-field
                :field-key recurrence-until
-               :value-to-external
-               ical-form--parse-date-field
+               :value-to-external ical-form--parse-date-field
                :keymap ical-form-field-map
-               ;; additional space is needed, otherwise :from and :to
-               ;; of the widget change as text is added to it
-               :format " %v "
+               ;; additional space is needed, otherwise :from and :to of the widget
+               ;; change as text is added to it
+               :format ,(concat SPC "%v" SPC)
                :size 10
-               ,(or
-                 (when-let*
-                     ((end-date
-                       (alist-get 'UNTIL recur)))
-                   (format-time-string "%F" end-date))
-                 ""))
+               ,(or (when-let* ((end-date (alist-get 'UNTIL recur)))
+                      (format-time-string "%F" end-date))
+                    ""))
 
              `(editable-field
                :field-key recurrence-count
-               :value-to-external
-               ical-form--parse-integer-field
+               :value-to-external ical-form--parse-integer-field
                :keymap ical-form-field-map
-               :format " %v occurrences"
+               :format ,(concat SPC "%v"
+                                (ical-form--make-intangible " occurrences"))
                :size 5
-               ,(or
-                 (when-let*
-                     ((occurrence-count
-                       (alist-get 'COUNT recur)))
-                   (format "%d" occurrence-count))
-                 ""))
-
+               ,(or (when-let* ((occurrence-count
+                                (alist-get 'COUNT recur)))
+                      (format "%d" occurrence-count))
+                    ""))
              ;; TODO: Unimplemented features:
              ;; - How do we handle BYDAY's week-number (in cdr)?
              ;; - set-positions.
@@ -1265,184 +1297,181 @@ abort `\\[ical-form-kill]'."))
              ;; rule treats as the first day of the week.
              ))
            (group-value
-            (cl-loop
-             for x in group-items
-             collect
-             (if (eq (car x) 'editable-field)
-                 (car (last x))
-               (plist-get (cdr x) :value)))))
-
+            (cl-loop for x in group-items
+                     collect
+                     (if (eq (car x) 'editable-field)
+                         (car (last x))
+                       (plist-get (cdr x) :value)))))
       (widget-create
        'checkbox
        :field-key 'recurrence-p
-       :format "%[%v%] Repeat "
+       :format (concat "%[%v%]"
+                       (ical-form--make-intangible " Repeat "))
        :notify #'ical-form--hs-action
        :hs (ical-form--checkbox-hs 'recurrence)
        recur)
 
-      (apply
-       #'widget-create
-       'group
-       :format (concat (propertize ":" 'display "") "%v")
-       :field-key 'recurrence
-       :value-to-external
-       (lambda (widget _value)
-         (unless (widget-get widget :hidden)
-           (string-join
-            (cl-loop
-             with value = nil
-             for child in (widget-get widget :children)
-             for field-key = (widget-get child :field-key)
-             for up-field-key =
-             (upcase
-              (string-trim-left
-               (symbol-name field-key)
-               "recurrence-"))
-             when
-             (and field-key
-                  (not (widget-get child :do-not-save))
-                  ;; If it's hidden, it shouldn't be part of the value.
-                  (not (widget-get child :hidden)))
-             do
-             (setq value (widget-value child))
-             and when value
-             collect
-             (format
-              "%s=%s"
-              up-field-key
-              (cond
-               ((equal up-field-key "UNTIL")
-                (concat
-                 (format-time-string
-                  "%Y%m%d"
-                  value
-                  nil)
-                 ;; Get the time from the current entry
-                 (if-let*
-                     ((prev-until
-                       (ical-form-event-get
-                        (ical-form-data)
-                        'RRULE
-                        'UNTIL)))
-                     (format-time-string
-                      "T%H%M%SZ"
-                      prev-until
-                      t)
-                   "T235959Z")))
-               ((equal up-field-key "FREQ")
-                (upcase (symbol-name value)))
-               ((equal up-field-key "BYDAY")
-                (string-join
-                 (cl-loop
-                  for v in value
-                  collect
-                  (upcase (symbol-name v)))
-                 ","))
-               ((listp value)
-                (string-join value ","))
-               (t
-                (format "%s" value)))))
-            ";")))
-       :indent 3
-       ;; We have to set the group value here because otherwise the
-       ;; checklists are not set correctly. This is because the group
-       ;; value is nil by default which leads to resetting of all
-       ;; checklists. See bug#75171
-       :value group-value
-       group-items))
+      (apply #'widget-create
+             'group
+             :format (ical-form--make-intangible
+                      (propertize ":" 'display "")
+                      "%v")
+             :field-key 'recurrence
+             :value-create #'ical-form--widget-group-value-create
+             :value-to-external
+             (lambda (widget _value)
+               (unless (widget-get widget :hidden)
+                 (string-join
+                  (cl-loop
+                   with value = nil
+                   for child in (widget-get widget :children)
+                   for field-key = (widget-get child :field-key)
+                   for up-field-key = (upcase (string-trim-left
+                                               (symbol-name field-key)
+                                               "recurrence-"))
+                   when (and field-key
+                             (not (widget-get child :do-not-save))
+                             ;; If it's hidden, it shouldn't be part of the
+                             ;; value.
+                             (not (widget-get child :hidden)))
+                   do (setq value (widget-value child))
+                   and when value
+                   collect
+                   (format "%s=%s"
+                           up-field-key
+                           (cond
+                            ((equal up-field-key "UNTIL")
+                             (concat (format-time-string "%Y%m%d" value nil)
+                                     ;; Get the time from the current entry
+                                     (if-let* ((prev-until (ical-form-event-get
+                                                           (ical-form-data)
+                                                           'RRULE
+                                                           'UNTIL)))
+                                         (format-time-string "T%H%M%SZ"
+                                                             prev-until t)
+                                       "T235959Z")))
+                            ((equal up-field-key "FREQ")
+                             (upcase (symbol-name value)))
+                            ((equal up-field-key "BYDAY")
+                             (string-join (cl-loop for v in value
+                                                   collect (upcase
+                                                            (symbol-name v)))
+                                          ","))
+                            ((listp value) (string-join value ","))
+                            (t (format "%s" value)))))
+                  ";")))
+             :indent 3
+             ;; We have to set the group value here because otherwise the
+             ;; checklists are not set correctly. This is because the group
+             ;; value is nil by default which leads to resetting of all
+             ;; checklists. See bug#75171
+             :value group-value
+             group-items))
 
-    (widget-insert "\n\n")
+    (widget-insert NL2)
 
-    (when-let* ((stat
-                 (ical-form-event-get event 'STATUS)))
+    (when-let* ((stat (ical-form-event-get event 'STATUS)))
       (unless (eq stat 'none)
         (widget-insert
-         (propertize
-          "Status: "
-          'face 'ical-form-field-names)
-         (symbol-name stat)
-         "\n\n")))
+         (ical-form--make-intangible
+          (concat (propertize "Status: "
+                              'face 'ical-form-field-names)
+                  (symbol-name stat)
+                  NL2)))))
 
-    (when-let* ((org
-                 (ical-form-event-get event 'ORGANIZER)))
+    (when-let* ((org (ical-form-event-get event 'ORGANIZER)))
       (widget-insert
-       (propertize
-        "Organizer: "
-        'face 'ical-form-field-names)
-       org
-       "\n\n"))
+       (ical-form--make-intangible
+        (concat (propertize "Organizer: "
+                            'face 'ical-form-field-names)
+                org))
+       NL2))
+
 
     (widget-create
      'editable-field
      :field-key 'url
      :keymap ical-form-field-map
      :format
-     (concat
-      (propertize
-       "URL: "
-       'face 'ical-form-field-names)
-      "%v\n\n")
+     (ical-form--make-intangible
+      (propertize "URL: " 'face 'ical-form-field-names)
+      "%v" "\n\n")
      (or (ical-form-event-get event 'URL) ""))
 
-    (widget-create
-     'text
-     :field-key 'notes
-     :format "%v"
-     :keymap ical-form-text-map
-     :value-face 'ical-form-notes-field
-     (ical-form--html-content-maybe
-      (or
-       (ical-form-event-get event 'DESCRIPTION)
-       "")))
+    (let* ((raw-notes (or (ical-form-event-get event 'DESCRIPTION) ""))
+           (rendered (ical-form--html-content-maybe raw-notes))
+           (html-rendered (car rendered))
+           notes-wid)
+      (when html-rendered
+        (widget-create
+         'push-button
+         :notify (lambda (&rest _)
+                   (ical-form-toggle-notes-source notes-wid))
+         "Toggle rendered/source")
+        (widget-insert "\n"))
+      (setq notes-wid
+            (widget-create
+             'text
+             :field-key 'notes
+             :format "%v" ; Text after the field!
+             :keymap ical-form-text-map
+             :value-face 'ical-form-notes-field
+             :html-rendered html-rendered
+             :raw-value raw-notes
+             (cdr rendered))))
+
+    (insert (propertize "\n" 'cursor-intangible t
+                        'rear-nonsticky nil
+                        'front-sticky t))
 
     (widget-setup)
 
     (let ((widgets (ical-form--get-widgets)))
       ;; Call every hide-show notification so we have the correct initial
       ;; state.
-      (cl-loop
-       for wid in widgets
-       for notify = (widget-get wid :notify)
-       when (eq notify #'ical-form--hs-action)
-       do (funcall notify wid))
+      (cl-loop for wid in widgets
+               for notify = (widget-get wid :notify)
+               when (eq notify #'ical-form--hs-action)
+               do (funcall notify wid))
+
+      ;; If the notes field is showing a rendered HTML preview, make it
+      ;; read-only until toggled to editing its raw source (see
+      ;; `ical-form-toggle-notes-source'), so that saving an untouched
+      ;; HTML description never overwrites it with the flattened preview.
+      (when-let* ((notes-wid (ical-form--find-widget 'notes widgets))
+                  ((widget-get notes-wid :html-rendered)))
+        (ical-form--widget-overlay
+         notes-wid :inactive nil
+         'evaporate t 'priority 100
+         'modification-hooks '(ical-form--notes-read-only)))
 
       ;; This causes all lists of radio buttons to skip text when tabbing,
       ;; instead just going through the buttons
-      (cl-loop
-       for wid in widgets
-       when (eq (widget-type wid) 'radio-button-choice)
-       do
-       (cl-loop
-        for child in (widget-get wid :children)
-        do
-        (widget-put child :tab-order -1))))
+      (cl-loop for wid in widgets
+               when (eq (widget-type wid) 'radio-button-choice)
+               do
+               (cl-loop for child in (widget-get wid :children)
+                        do (widget-put child :tab-order -1))))
+    (cursor-intangible-mode)
 
     (goto-char (point-min))
-    (widget-move 1)
-    (widget-end-of-line)
+    (widget-move 1) ;; Go to next widget (should be title)
+    (widget-end-of-line) ;; Go to end of line
 
-    (add-hook
-     'post-command-hook
-     #'ical-form--avoid-point-max
-     nil t)
+    ;; (add-hook 'post-command-hook #'ical-form--avoid-point-max nil t)
 
-    (when
-        (ical-form-event-get event 'X-EMACS-READ-ONLY)
+    (when (ical-form-event-get event 'X-EMACS-READ-ONLY)
       (ical-form--make-inactive))))
 
 (defun ical-form--avoid-point-max ()
   "Keep point from being at point-max unless buffer is empty."
-  (when (and (> (point-max) (point-min))
-             (eobp))
+  (when (and (> (point-max) (point-min)) (eobp))
     (backward-char)))
 
 (defun ical-form-data ()
   "Return event data of current event."
   (let* ((widgets (ical-form--get-widgets))
-         (title-wid
-          (ical-form--find-widget
-           'title
-           widgets)))
+         (title-wid (ical-form--find-widget 'title widgets)))
     (widget-get title-wid :event-data)))
 
 (defun ical-form-duplicate ()
@@ -1461,25 +1490,15 @@ treated as new when saved."
     ;; reactivate form
     (ical-form--make-inactive t)))
 
-(defun ical-form-create-event
-    (start end &optional all-day time-zone-id)
+(defun ical-form-create-event (start end &optional all-day time-zone-id) ;
   "Return an event alist.
 START and END are the start and end time for the event. If
 ALL-DAY is non-nil, the event should be for the whole day.
 TIME-ZONE-ID specifies the timezone."
-  (list
-   (cons
-    'DTSTART
-    (ical-form--format-ical-date
-     start
-     all-day
-     time-zone-id))
-   (cons
-    'DTEND
-    (ical-form--format-ical-date
-     end
-     all-day
-     time-zone-id))))
+  (list (cons 'DTSTART
+              (ical-form--format-ical-date start all-day time-zone-id))
+        (cons 'DTEND
+              (ical-form--format-ical-date end all-day time-zone-id))))
 
 (provide 'ical-form)
 ;;; ical-form.el ends here
