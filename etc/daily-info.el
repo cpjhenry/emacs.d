@@ -119,10 +119,10 @@ are no birthdays in that period."
 	 (format "%s  %s (%s)"
 		 (format-time-string "%e %b" time)
 		 (daily-info--fontify-birthday-age title)
-          (cond
-           ((zerop offset) "today")
-           ((= offset 1) "1 day from now")
-           (t (format "%d days from now" offset)))))
+		 (cond
+		  ((zerop offset) "today")
+		  ((= offset 1) "1 day from now")
+		  (t (format "%d days from now" offset)))))
        (sort birthdays
              (lambda (a b)
                (time-less-p (car a) (car b))))

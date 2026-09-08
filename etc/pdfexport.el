@@ -4,7 +4,6 @@
 ;;; code:
 ;; https://github.com/munen/emacs.d
 
-(require 'ox-latex)
 (defun md-compile ()
   "Compiles the currently loaded markdown file using 'pandoc' into a PDF."
   (interactive)
@@ -40,6 +39,7 @@ The other buffer already has the PDF open."
   "Has as a premise that it's run from an `org-mode' buffer.
 The other buffer already has the PDF open."
   (interactive)
+  (require 'ox-beamer)
   (org-beamer-export-to-pdf)
   (update-other-buffer))
 
@@ -47,6 +47,7 @@ The other buffer already has the PDF open."
   "Has as a premise that it's run from an `org-mode' buffer.
 The other buffer already has the PDF open."
   (interactive)
+  (require 'ox-latex)
   (org-latex-export-to-pdf)
   (update-other-buffer))
 

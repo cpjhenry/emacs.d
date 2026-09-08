@@ -38,8 +38,10 @@
 
 ;;; Code:
 
-(require 'org)
-(require 'org-element)
+(declare-function org-at-table-p "org-table")
+(declare-function org-in-src-block-p "org")
+(declare-function org-element-at-point "org-element")
+(declare-function org-element-type "org-element")
 
 (defun normalize-text--org-fixed-width-p ()
   "Return non-nil when point is in an Org fixed-width element."

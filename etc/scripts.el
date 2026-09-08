@@ -10,18 +10,18 @@
 (require 'seq)
 (require 'subr-x)
 
-(defun wx-alert (&rest _ignore)
-  "Weather forecast from Environment Canada."
-  (interactive)
-  (switch-to-buffer "*WX*")
-  (shell-command "alert -sfml" (current-buffer))
-  (text-scale-increase 1)
-  (form-feed-st-mode)
-  (view-mode))
+;; (defun wx-alert (&rest _ignore)
+;;   "Weather forecast from Environment Canada."
+;;   (interactive)
+;;   (switch-to-buffer "*WX*")
+;;   (shell-command "alert -sfml" (current-buffer))
+;;   (text-scale-increase 1)
+;;   (form-feed-st-mode)
+;;   (view-mode))
 
-(defun wx () "Local weather."
-  (interactive)
-  (shell-command "alert -d"))
+;; (defun wx () "Local weather."
+;;   (interactive)
+;;   (shell-command "alert -d"))
 
 (defun wttr () "Local weather / forecast."
   (interactive)

@@ -15,6 +15,7 @@
 ;;   intent while changing behaviour, interactivity, or presentation.
 
 ;;; Code:
+
 ;; Initialize terminal
 (blink-cursor-mode -1)
 (delete-selection-mode t)
@@ -257,11 +258,13 @@
 
 ;; path
 (use-package exec-path-from-shell
-	:if	*mac*
-	:custom	(shell-file-name "/usr/local/bin/bash")
-		(exec-path-from-shell-variables '("PATH" "MANPATH" "PKG_CONFIG_PATH"))
-	:init (unless (bound-and-true-p ns-emacs-plus-injected-path)
-		(exec-path-from-shell-initialize)))
+	:if *mac*
+	:custom
+	(shell-file-name (getenv "SHELL"))
+	(exec-path-from-shell-variables '("PATH" "MANPATH" "PKG_CONFIG_PATH"))
+	:init
+	(unless (bound-and-true-p ns-emacs-plus-injected-path)
+	  (exec-path-from-shell-initialize)))
 
 ;; garbage collection
 (use-package gcmh :config (gcmh-mode 1))
@@ -321,6 +324,7 @@
 
 (use-package man
   :ensure nil
+  :defer t
   :custom
   (Man-notify-method 'pushy))
 
@@ -811,19 +815,12 @@
 
 (when *mac*
 
-  ;; Finder's `Open With...' and `org-protocol' use the custom
-  ;; `Emacs Client.app' in ~/Applications.
+  ;; Finder's `Open With...' and `org-protocol' use the Emacs Plus
+  ;; `Emacs Client.app' installed in /Applications.
   ;;
-  ;; Its `main.scpt' calls:
-  ;;
-  ;;   /usr/local/opt/emacs-plus@31/bin/emacsclient
-  ;;
-  ;; using the stable Homebrew `opt' path rather than a versioned
-  ;; Cellar path.
-  ;;
-  ;; In the `on open' handler, the `-c' argument has been removed so
-  ;; Finder-opened files use the existing Emacs frame instead of
-  ;; creating a small client frame.
+  ;; In `Contents/Resources/Scripts/main.scpt', the `-c' argument is
+  ;; removed from the `on open' handler so Finder-opened files use the
+  ;; existing Emacs frame instead of creating a separate client frame.
   ;;
   ;; The `on open location' handler passes `org-protocol' URLs directly
   ;; to `emacsclient -n', allowing browser capture to invoke
@@ -831,26 +828,12 @@
   ;;
   ;; After editing `main.scpt', re-sign and re-register the app with:
   ;;
-  ;;   ~/Applications/.local/sign-emacs-client
+  ;;   sign-emacs-client
   ;;
-  ;; Ordinary Emacs 31 upgrades should not require changes.
+  ;; A Homebrew upgrade may replace `Emacs Client.app'.  If so, remove
+  ;; `-c' from the new `main.scpt' and run `sign-emacs-client' again.
   ;;
-  ;; When moving to a new major Emacs version:
-  ;;
-  ;;   1. Copy the newly installed Emacs Client.app from the Homebrew
-  ;;      Cellar to ~/Applications.
-  ;;   2. Reapply or replace its `main.scpt' with the customized version.
-  ;;   3. Update the Homebrew `opt' path for the new major version.
-  ;;   4. Run `~/Applications/.local/sign-emacs-client'.
-  ;;   5. Refresh the Dock entry or Launch Services registration if
-  ;;      macOS continues to find the older application.
-  ;;
-  ;; Copying the fresh app bundle is preferable to replacing only
-  ;; `main.scpt', since the bundle may contain updated metadata,
-  ;; resources, or other upstream changes.
-  ;;
-  ;; With `-c' removed from the Finder handler, no client-frame geometry
-  ;; repair should normally be needed.
+  ;; No client-frame geometry repair should normally be needed.
 
   ;;; start Emacs server
 
@@ -980,6 +963,17 @@
              buddhist-observation-today
              buddhist-observation-stop-audio))
 
+;;; Weather
+(use-package weather-alert
+  :ensure nil
+  :commands (wx wx-alert))
+
+(use-package sparkweather
+  :after calendar
+  :custom (sparkweather-add-footer nil)
+  :bind (:map sparkweather-mode-map
+	 ("q" . quit-window)))
+
 
 ;;; Initialize packages
 (message "→ Initializing packages.")
@@ -1000,7 +994,6 @@
 
 ;; Transient keyboard user interfaces
 (use-package casual
-  :demand t
   :bind (("M-o" . casual-editkit-main-tmenu)
 	 :map calendar-mode-map
 	 ("M-o" . casual-calendar-tmenu)
@@ -1011,13 +1004,14 @@
 	 :map isearch-mode-map
 	 ("M-o" . casual-isearch-tmenu)
 	 :map Info-mode-map
-	 ("M-o" . casual-info-tmenu)
-	 :map Man-mode-map
-	 ("M-o" . casual-man-tmenu))
-  :config (require 'casual-timezone-utils)
-	  (setopt casual-timezone-datestamp-format "%a %e %b %Y %R")
-	  (advice-add 'casual-timezone-planner :after (lambda (&rest _) (calendar-exit-kill)))
-	  (keymap-set casual-timezone-planner-mode-map "q" 'kill-current-buffer))
+	 ("M-o" . casual-info-tmenu))
+  :config
+  (require 'casual-timezone-utils)
+  (setopt casual-timezone-datestamp-format "%a %e %b %Y %R")
+  (advice-add 'casual-timezone-planner :after (lambda (&rest _) (calendar-exit-kill)))
+  (keymap-set casual-timezone-planner-mode-map "q" #'kill-current-buffer)
+  (with-eval-after-load 'man
+    (keymap-set Man-mode-map "M-o" #'casual-man-tmenu)))
 
 ;; Fast, friendly searching with ripgrep
 (use-package deadgrep
@@ -1170,12 +1164,6 @@
   :bind (("<f9>" . shortcuts-mode)))
 
 (use-package simple-httpd :ensure t)
-
-(use-package sparkweather
-  :after calendar
-  :custom (sparkweather-add-footer nil)
-  :bind (:map sparkweather-mode-map
-	 ("q" . quit-window)))
 
 (use-package ssh)
 
@@ -1414,6 +1402,7 @@ With prefix argument PROMPT, confirm or edit the search term first."
 
 ;;; Org-mode
 (message "→ Configuring `org'.")
+
 (setopt org-directory
         (expand-file-name "~/Documents/org/")
 
@@ -1430,7 +1419,6 @@ With prefix argument PROMPT, confirm or edit the search term first."
 
 (use-package org
   :ensure nil
-  :demand t
 
   :custom
   ;; Editing and display.
@@ -1686,7 +1674,6 @@ With prefix argument PROMPT, confirm or edit the search term first."
 
 (use-package org-rehearsal
   :ensure nil
-  :demand t
   :after org
   :custom
   (org-rehearsal-auto-enable-directories
@@ -1704,7 +1691,6 @@ With prefix argument PROMPT, confirm or edit the search term first."
 (use-package org-paragraph-preview
   ;; Org export buffer with paragraphs shortened to LIMIT characters.
   :ensure nil
-  :demand t
   :after org
   :custom
   (org-paragraph-preview-latex-header
@@ -1725,7 +1711,6 @@ With prefix argument PROMPT, confirm or edit the search term first."
 ;; `org-chef-recipe-to-org-element' from `pre-' to `post-'.
 (use-package org-chef
   :if *natasha*
-  :demand t
   :after (org org-capture)
   :config
   (defvar org-chef-recipe-book "~/Documents/Recipes/Cookbook.org"
@@ -1929,7 +1914,12 @@ With prefix argument PROMPT, confirm or edit the search term first."
                       :weight 'normal))
 
 (use-package calfw :defer t)
-(use-package maccalfw :defer t)
+
+(use-package maccalfw
+  :ensure nil
+  :load-path "opt/maccalfw"
+  :defer t)
+
 (use-package calendar-data
   :ensure nil
   :commands (calendar-data-refresh
@@ -2627,7 +2617,7 @@ With prefix argument PROMPT, confirm or edit the search term first."
 ; LocalWords:  remotehost modeline mori featurep cbc smex vc ns ime
 ; LocalWords:  setq's setopt mailutils imagemagick usr dunnet Async
 ; LocalWords:  dir fullscreen dropbox keymap toc buddhist ewth ronn
-; LocalWords:  enscript noerror formfeed hline erc bbdb newsrc laGhv
+; LocalWords:  noerror formfeed hline erc bbdb newsrc laGhv
 ; LocalWords:  pandoc alphapapa unpackaged xml xsl xhtml nxml parens
 ; LocalWords:  MidnightBlue src numero documentclass subsubsection Tt
 ; LocalWords:  github cliplink Waterfox waterfox nov backend fboundp
