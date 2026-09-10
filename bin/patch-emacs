@@ -1,0 +1,263 @@
+#!/usr/bin/env bash
+# patch-emacs
+#
+# Repair an Emacs Plus installation after installation or upgrade.
+#
+# Emacs.app:
+#   - inject current PATH as EMACS_PLUS_PATH
+#   - remove stale LIBRARY_PATH
+#   - install site-start.el symlink
+#   - re-sign and register when changed
+#
+# Emacs Client.app:
+#   - remove -c from the Finder `on open' handler
+#   - leave `on open location' untouched
+#   - re-sign and register when changed
+#
+# Emacs must be completely stopped before this script is run.
+
+set -euo pipefail
+
+bundle_id="org.gnu.Emacs"
+
+plistbuddy="/usr/libexec/PlistBuddy"
+lsregister="/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister"
+
+site_dir="/opt/homebrew/share/emacs/site-lisp"
+site_dst="$site_dir/site-start.el"
+
+client_app="/Applications/Emacs Client.app"
+
+die()
+{
+    printf '%s\n' "$*" >&2
+    exit 1
+}
+
+say()
+{
+    printf '%s\n' "$*"
+}
+
+sign_and_register()
+{
+    local app="$1"
+
+    say "Removing extended attributes..."
+    xattr -cr "$app"
+
+    say "Removing existing signature..."
+    codesign --remove-signature "$app" 2>/dev/null || true
+
+    say "Applying ad-hoc signature..."
+    codesign --force --deep --sign - "$app"
+
+    say "Verifying signature..."
+    codesign --verify --deep --strict "$app"
+
+    say "Registering application with Launch Services..."
+    touch "$app"
+    "$lsregister" -f "$app"
+}
+
+find_emacs()
+{
+    local candidate candidate_plist candidate_id
+    local -a apps=()
+
+    while IFS= read -r candidate; do
+        [[ -d "$candidate" ]] || continue
+        [[ "$(basename "$candidate")" == "Emacs.app" ]] || continue
+
+        candidate_plist="$candidate/Contents/Info.plist"
+        [[ -f "$candidate_plist" ]] || continue
+
+        candidate_id="$(
+            "$plistbuddy" \
+                -c 'Print :CFBundleIdentifier' \
+                "$candidate_plist" \
+                2>/dev/null ||
+                true
+        )"
+
+        [[ "$candidate_id" == "$bundle_id" ]] &&
+            apps+=("$candidate")
+    done < <(mdfind "kMDItemCFBundleIdentifier == '$bundle_id'")
+
+    case "${#apps[@]}" in
+        0)
+            die "No Emacs.app found with bundle identifier: $bundle_id"
+            ;;
+        1)
+            printf '%s\n' "${apps[0]}"
+            ;;
+        *)
+            printf 'Multiple Emacs applications found with bundle identifier %s:\n' \
+                "$bundle_id" >&2
+            printf '  %s\n' "${apps[@]}" >&2
+            exit 1
+            ;;
+    esac
+}
+
+patch_emacs_app()
+{
+    local app="$1"
+    local plist="$app/Contents/Info.plist"
+    local site_src="$app/Contents/Resources/site-lisp/site-start.el"
+    local current
+    local changed=0
+
+    say "Emacs application:"
+    say "$app"
+    printf '\n'
+
+    current="$(
+        "$plistbuddy" \
+            -c 'Print :LSEnvironment:EMACS_PLUS_PATH' \
+            "$plist" \
+            2>/dev/null ||
+            true
+    )"
+
+    if [[ "$current" == "$PATH" ]]; then
+        say "PATH: already current"
+    else
+        if [[ -n "$current" ]]; then
+            "$plistbuddy" \
+                -c "Set :LSEnvironment:EMACS_PLUS_PATH $PATH" \
+                "$plist"
+        else
+            "$plistbuddy" \
+                -c "Add :LSEnvironment:EMACS_PLUS_PATH string $PATH" \
+                "$plist"
+        fi
+
+        say "PATH: injected"
+        changed=1
+    fi
+
+    if "$plistbuddy" \
+        -c 'Print :LSEnvironment:LIBRARY_PATH' \
+        "$plist" \
+        >/dev/null 2>&1
+    then
+        "$plistbuddy" \
+            -c 'Delete :LSEnvironment:LIBRARY_PATH' \
+            "$plist"
+
+        say "LIBRARY_PATH: removed"
+        changed=1
+    else
+        say "LIBRARY_PATH: absent"
+    fi
+
+    [[ -f "$site_src" ]] ||
+        die "site-start.el not found: $site_src"
+
+    mkdir -p "$site_dir"
+
+    if [[ -L "$site_dst" ]] &&
+       [[ "$(readlink "$site_dst")" == "$site_src" ]]; then
+        say "site-start.el: link already current"
+    else
+        ln -sfn "$site_src" "$site_dst"
+        say "site-start.el: link installed"
+    fi
+
+    if (( changed )); then
+        say "Checking Info.plist..."
+        plutil -lint "$plist"
+
+        sign_and_register "$app"
+
+        printf '\nEmacs.app patched.\n'
+    else
+        printf '\nEmacs.app requires no plist repair.\n'
+    fi
+}
+
+patch_emacs_client()
+{
+    local app="$1"
+    local script="$app/Contents/Resources/Scripts/main.scpt"
+
+    [[ -d "$app" ]] || {
+        say "Emacs Client.app not found; skipping."
+        return
+    }
+
+    [[ -f "$script" ]] ||
+        die "main.scpt not found in: $app"
+
+    local tmp source patched compiled
+    tmp="$(mktemp -d)"
+
+    source="$tmp/main.applescript"
+    patched="$tmp/main-patched.applescript"
+    compiled="$tmp/main.scpt"
+
+    trap 'rm -rf "$tmp"' RETURN
+
+    say "Checking Emacs Client Finder handler..."
+
+    osadecompile "$script" > "$source"
+
+    awk '
+        /^[[:space:]]*on open([[:space:]]|$)/ &&
+        !/^[[:space:]]*on open location([[:space:]]|$)/ {
+            in_open = 1
+        }
+
+        in_open {
+            gsub(/ -c /, " ")
+            gsub(/ -c"/, "\"")
+        }
+
+        {
+            print
+        }
+
+        in_open && /^[[:space:]]*end open[[:space:]]*$/ {
+            in_open = 0
+        }
+    ' "$source" > "$patched"
+
+    if cmp -s "$source" "$patched"; then
+        say "Emacs Client: Finder handler already patched"
+        return
+    fi
+
+    say "Recompiling AppleScript..."
+    osacompile -o "$compiled" "$patched"
+
+    say "Installing patched main.scpt..."
+    cp "$compiled" "$script"
+
+    sign_and_register "$app"
+
+    printf '\nEmacs Client patched.\n'
+}
+
+[[ -x "$plistbuddy" ]] ||
+    die "PlistBuddy not found: $plistbuddy"
+
+[[ -x "$lsregister" ]] ||
+    die "Launch Services registration tool not found: $lsregister"
+
+command -v mdfind >/dev/null 2>&1 ||
+    die "mdfind was not found."
+
+if pgrep -x Emacs >/dev/null 2>&1; then
+    die "Emacs is running. Quit it completely before running this script."
+fi
+
+emacs_app="$(find_emacs)"
+
+patch_emacs_app "$emacs_app"
+
+printf '\n'
+
+patch_emacs_client "$client_app"
+
+printf '\nRepair complete.\n'
