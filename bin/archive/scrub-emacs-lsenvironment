@@ -1,0 +1,183 @@
+#!/usr/bin/env bash
+
+# Remove stale compiler-related LSEnvironment entries from Emacs.app,
+# then apply a fresh ad-hoc signature and re-register the application.
+#
+# emacs-plus may preserve variables from its Homebrew build environment
+# in Emacs.app/Contents/Info.plist. When Emacs is launched as a macOS
+# application, Launch Services injects these values before Emacs reads
+# early-init.el or init.el.
+#
+# In particular, stale CC or LIBRARY_PATH values may refer to an older,
+# subsequently removed compiler and interfere with package compilation.
+#
+# This script:
+#
+#   1. locates Emacs.app by its bundle identifier without launching it;
+#   2. verifies the application's bundle identifier;
+#   3. reports and removes only these LSEnvironment entries:
+#
+#          CC
+#          LIBRARY_PATH
+#
+#   4. leaves every other Info.plist and LSEnvironment entry unchanged;
+#   5. validates Info.plist;
+#   6. removes extended attributes and the now-invalid signature;
+#   7. applies a fresh ad-hoc code signature;
+#   8. verifies the new signature; and
+#   9. re-registers the application with Launch Services.
+#
+# Emacs must be completely stopped before this script is run.
+
+set -euo pipefail
+
+bundle_id="org.gnu.Emacs"
+
+plistbuddy="/usr/libexec/PlistBuddy"
+lsregister="/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister"
+
+keys_to_remove=(
+    CC
+    LIBRARY_PATH
+)
+
+die()
+{
+    printf '%s\n' "$*" >&2
+    exit 1
+}
+
+[[ -x "$plistbuddy" ]] ||
+    die "PlistBuddy not found: $plistbuddy"
+
+[[ -x "$lsregister" ]] ||
+    die "Launch Services registration tool not found: $lsregister"
+
+command -v mdfind >/dev/null 2>&1 ||
+    die "mdfind was not found."
+
+# Locate applications indexed with the Emacs bundle identifier. Using
+# AppleScript's `path to application id` here may launch the application,
+# causing the subsequent running-process check to fail.
+apps=()
+
+while IFS= read -r candidate; do
+    [[ -d "$candidate" ]] || continue
+    [[ "$(basename "$candidate")" == "Emacs.app" ]] || continue
+
+    candidate_plist="$candidate/Contents/Info.plist"
+    [[ -f "$candidate_plist" ]] || continue
+
+    candidate_id="$(
+        "$plistbuddy" \
+            -c 'Print :CFBundleIdentifier' \
+            "$candidate_plist" \
+            2>/dev/null ||
+            true
+    )"
+
+    if [[ "$candidate_id" == "$bundle_id" ]]; then
+        apps+=("$candidate")
+    fi
+done < <(mdfind "kMDItemCFBundleIdentifier == '$bundle_id'")
+
+case "${#apps[@]}" in
+    0)
+        die "No Emacs.app found with bundle identifier: $bundle_id"
+        ;;
+
+    1)
+        app="${apps[0]}"
+        ;;
+
+    *)
+        printf 'Multiple Emacs applications found with bundle identifier %s:\n' \
+            "$bundle_id" >&2
+        printf '  %s\n' "${apps[@]}" >&2
+        exit 1
+        ;;
+esac
+
+plist="$app/Contents/Info.plist"
+
+actual_bundle_id="$(
+    "$plistbuddy" \
+        -c 'Print :CFBundleIdentifier' \
+        "$plist"
+)" || die "Unable to read CFBundleIdentifier from: $plist"
+
+[[ "$actual_bundle_id" == "$bundle_id" ]] ||
+    die "Unexpected bundle identifier in $app: $actual_bundle_id"
+
+if pgrep -x Emacs >/dev/null 2>&1; then
+    die "Emacs is running. Quit it completely before running this script."
+fi
+
+printf 'Emacs application:\n%s\n\n' "$app"
+
+found_keys=()
+
+for key in "${keys_to_remove[@]}"; do
+    if "$plistbuddy" \
+        -c "Print :LSEnvironment:$key" \
+        "$plist" \
+        >/dev/null 2>&1
+    then
+        found_keys+=("$key")
+    fi
+done
+
+if (( ${#found_keys[@]} == 0 )); then
+    printf 'No stale compiler-related LSEnvironment entries found.\n'
+    exit 0
+fi
+
+printf 'Compiler-related LSEnvironment entries to remove:\n'
+
+for key in "${found_keys[@]}"; do
+    value="$(
+        "$plistbuddy" \
+            -c "Print :LSEnvironment:$key" \
+            "$plist"
+    )"
+
+    printf '  %s=%s\n' "$key" "$value"
+done
+
+printf '\nRemoving selected LSEnvironment entries...\n'
+
+for key in "${found_keys[@]}"; do
+    "$plistbuddy" \
+        -c "Delete :LSEnvironment:$key" \
+        "$plist"
+done
+
+printf 'Checking Info.plist...\n'
+plutil -lint "$plist"
+
+printf 'Removing extended attributes...\n'
+xattr -cr "$app"
+
+printf 'Removing existing signature...\n'
+codesign --remove-signature "$app" 2>/dev/null || true
+
+printf 'Applying ad-hoc signature...\n'
+codesign \
+    --force \
+    --deep \
+    --sign - \
+    "$app"
+
+printf 'Verifying signature...\n'
+codesign \
+    --verify \
+    --deep \
+    --strict \
+    --verbose=2 \
+    "$app"
+
+printf 'Registering application with Launch Services...\n'
+touch "$app"
+"$lsregister" -f "$app"
+
+printf '\nScrubbed, signed, and registered:\n%s\n' "$app"

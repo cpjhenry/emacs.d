@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+# inject-path
+#
+# Repair the Emacs Plus cask environment on macOS:
+#
+#   1. Inject the current shell PATH into Emacs.app as EMACS_PLUS_PATH.
+#   2. Ensure the generated site-start.el is visible at the
+#      --enable-locallisppath location compiled into Emacs.
+#   3. Re-sign Emacs.app after modifying Info.plist.
+#
+# Intended for:
+#   /Applications/Emacs.app
+#   /opt/homebrew
+
+set -euo pipefail
+
+APP="/Applications/Emacs.app"
+PLIST="$APP/Contents/Info.plist"
+
+SITE_SRC="$APP/Contents/Resources/site-lisp/site-start.el"
+SITE_DIR="/opt/homebrew/share/emacs/site-lisp"
+SITE_DST="$SITE_DIR/site-start.el"
+
+say()
+{
+    printf '%s\n' "$*"
+}
+
+[[ -d "$APP" ]] || {
+    say "Emacs.app not found: $APP"
+    exit 1
+}
+
+[[ -f "$PLIST" ]] || {
+    say "Info.plist not found: $PLIST"
+    exit 1
+}
+
+[[ -f "$SITE_SRC" ]] || {
+    say "site-start.el not found: $SITE_SRC"
+    exit 1
+}
+
+current=$(
+    plutil -extract LSEnvironment.EMACS_PLUS_PATH raw "$PLIST" \
+        2>/dev/null || true
+)
+
+if [[ "$current" == "$PATH" ]]; then
+    say "Emacs.app: PATH already current"
+else
+    if [[ -n "$current" ]]; then
+        plutil -replace LSEnvironment.EMACS_PLUS_PATH \
+               -string "$PATH" "$PLIST"
+    else
+        plutil -insert LSEnvironment.EMACS_PLUS_PATH \
+               -string "$PATH" "$PLIST"
+    fi
+
+    say "Emacs.app: PATH injected"
+fi
+
+mkdir -p "$SITE_DIR"
+
+if [[ -L "$SITE_DST" ]] &&
+   [[ "$(readlink "$SITE_DST")" == "$SITE_SRC" ]]; then
+    say "site-start.el: link already current"
+else
+    ln -sfn "$SITE_SRC" "$SITE_DST"
+    say "site-start.el: link installed"
+fi
+
+codesign --force --deep --sign - "$APP"
+say "Emacs.app: re-signed"
+
+printf '\nEmacs Plus PATH:\n%s\n' "$PATH"

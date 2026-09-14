@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+app="${1:-/Applications/Emacs Client.app}"
+
+lsregister="/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister"
+
+if [[ ! -d "$app" ]]; then
+    printf 'Application not found: %s\n' "$app" >&2
+    exit 1
+fi
+
+if [[ ! -f "$app/Contents/Resources/Scripts/main.scpt" ]]; then
+    printf 'main.scpt not found in: %s\n' "$app" >&2
+    exit 1
+fi
+
+printf 'Stopping any running Emacs Client applet...\n'
+killall droplet 2>/dev/null || true
+
+printf 'Removing extended attributes...\n'
+xattr -cr "$app"
+
+printf 'Removing existing signature...\n'
+codesign --remove-signature "$app" 2>/dev/null || true
+
+printf 'Applying ad-hoc signature...\n'
+codesign \
+    --force \
+    --deep \
+    --sign - \
+    "$app"
+
+printf 'Verifying signature...\n'
+codesign \
+    --verify \
+    --deep \
+    --strict \
+    --verbose=2 \
+    "$app"
+
+printf 'Registering application with Launch Services...\n'
+"$lsregister" -f "$app"
+
+printf '\nSigned and registered:\n%s\n' "$app"

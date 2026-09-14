@@ -1764,25 +1764,54 @@ With prefix argument PROMPT, confirm or edit the search term first."
       ("⅞"   . "{{{frac(7,8)}}}"))
     "Fraction spellings normalized by `my/org-normalize-fractions'.")
 
-  (defun my/org-normalize-fractions ()
-    "Normalize common fractions in the accessible portion of the buffer."
+  (defun cpj/org-normalize-fractions ()
+    "Normalize common fractions in the accessible portion of the buffer.
+Report the number of fractions replaced."
     (interactive)
-    (save-mark-and-excursion
-      (dolist (replacement my/org-fraction-replacements)
-	(goto-char (point-min))
-	(while (search-forward (car replacement) nil t)
-          (replace-match (cdr replacement) t t)))
+    (let ((count 0))
+      (save-mark-and-excursion
+	(dolist (replacement my/org-fraction-replacements)
+          (goto-char (point-min))
+          (while (search-forward (car replacement) nil t)
+            (replace-match (cdr replacement) t t)
+            (cl-incf count)))
 
-      ;; Close up mixed numbers such as 1 1/2, 1-½, and 1–½.
-      (goto-char (point-min))
-      (while (re-search-forward
-              "\\b\\([0-9]+\\)[[:space:]\u00A0\u2010\u2011\u2012\u2013-]*\
+	;; Close up mixed numbers such as 1 1/2, 1-½, and 1–½.
+	(goto-char (point-min))
+	(while (re-search-forward
+		"\\b\\([0-9]+\\)[[:space:]\u00A0\u2010\u2011\u2012\u2013-]*\
 \\({{{frac([0-9]+,[0-9]+)}}}\\)"
-              nil t)
-	(replace-match "\\1\\2"))))
+		nil t)
+          (replace-match "\\1\\2")))
+
+      (message "%d fraction%s replaced"
+               count
+               (if (= count 1) "" "s"))
+      count))
 
   (add-hook 'org-capture-before-finalize-hook
-            #'my/org-normalize-fractions))
+            #'cpj/org-normalize-fractions)
+
+  (defun cpj/org-latex-headline-provenance (orig headline contents info)
+    "Add provenance after the owning headline in LaTeX export."
+    (let* ((latex (funcall orig headline contents info))
+           (provenance (org-element-property :PROVENANCE headline))
+           (provenance-latex
+            (when (and provenance (not (string-empty-p provenance)))
+              (string-trim
+               (org-export-string-as provenance 'latex t)))))
+      (if (and latex
+               provenance-latex
+               (string-match "\\\\label{[^}]+}" latex))
+          (replace-match
+           (concat (match-string 0 latex)
+                   "\n\\vspace{-\\parskip}\n"
+                   provenance-latex)
+           t t latex)
+	latex)))
+
+  (advice-add 'org-latex-headline
+              :around #'cpj/org-latex-headline-provenance))
 
 (use-package org-cliplink
   :after org

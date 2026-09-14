@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+# patch-emacs-client
+#
+# Remove `-c' from the Finder `on open' handler in the Emacs Plus
+# Emacs Client.app, then re-sign and register the application.
+#
+# The `on open location' handler used by org-protocol is left untouched.
+
+set -euo pipefail
+
+app="${1:-/Applications/Emacs Client.app}"
+script="$app/Contents/Resources/Scripts/main.scpt"
+
+signer="$(command -v sign-emacs-client || true)"
+
+if [[ ! -d "$app" ]]; then
+    printf 'Application not found: %s\n' "$app" >&2
+    exit 1
+fi
+
+if [[ ! -f "$script" ]]; then
+    printf 'main.scpt not found in: %s\n' "$app" >&2
+    exit 1
+fi
+
+if [[ -z "$signer" ]]; then
+    printf 'sign-emacs-client not found in PATH\n' >&2
+    exit 1
+fi
+
+tmp="$(mktemp -d)"
+trap 'rm -rf "$tmp"' EXIT
+
+source="$tmp/main.applescript"
+patched="$tmp/main-patched.applescript"
+compiled="$tmp/main.scpt"
+
+printf 'Decompiling Emacs Client AppleScript...\n'
+osadecompile "$script" > "$source"
+
+# Remove -c only from the Finder `on open' handler.
+awk '
+    /^[[:space:]]*on open([[:space:]]|$)/ &&
+    !/^[[:space:]]*on open location([[:space:]]|$)/ {
+        in_open = 1
+    }
+
+    in_open {
+        gsub(/ -c /, " ")
+        gsub(/ -c"/, "\"")
+    }
+
+    {
+        print
+    }
+
+    in_open && /^[[:space:]]*end open[[:space:]]*$/ {
+        in_open = 0
+    }
+' "$source" > "$patched"
+
+if cmp -s "$source" "$patched"; then
+    printf 'Emacs Client: Finder handler already patched\n'
+    "$signer" "$app"
+    exit 0
+fi
+
+printf 'Recompiling AppleScript...\n'
+osacompile -o "$compiled" "$patched"
+
+printf 'Installing patched main.scpt...\n'
+cp "$compiled" "$script"
+
+printf 'Signing and registering Emacs Client...\n'
+"$signer" "$app"
+
+printf '\nPatched Emacs Client:\n%s\n' "$app"

@@ -86,27 +86,26 @@ the resulting day in March."
          "Tishrei" "Cheshvan" "Kislev" "Tevet" "Sh'vat"
          "Adar I" "Adar II"]))
 
-(defun holiday-hebrew-rosh-hashanah (&optional _all)
-  "Return major autumn observances for the displayed year.
-
-This is a simplified variant of the corresponding Emacs holiday
-function. The original implementation includes a broader selection of
-observances and optional detail controlled by
-`calendar-hebrew-all-holidays-flag'.
+(defun my/holiday-hebrew-rosh-hashanah ()
+  "Return selected major holidays related to Rosh Hashanah.
 
 The spelling \"Rosh Hashana\" follows the convention used by `hebcal'
 and related calendar references."
-  (when (memq displayed-month '(8 9 10 11))
-    (let ((abs-r-h (calendar-hebrew-to-absolute
-                    (list 7 1 (+ displayed-year 3761)))))
-      (holiday-filter-visible-calendar
-       (list
-        (list (calendar-gregorian-from-absolute abs-r-h)
-              (format "Rosh Hashana %d" (+ 3761 displayed-year)))
-        (list (calendar-gregorian-from-absolute (+ abs-r-h 9))
-              "Yom Kippur")
-        (list (calendar-gregorian-from-absolute (+ abs-r-h 14))
-              "Sukkot"))))))
+  (mapcar
+   (lambda (holiday)
+     (if (string-prefix-p "Rosh HaShanah" (cadr holiday))
+         (list (car holiday)
+               (replace-regexp-in-string
+                "\\`Rosh HaShanah"
+                "Rosh Hashana"
+                (cadr holiday)))
+       holiday))
+   (seq-remove
+    (lambda (holiday)
+      (member (cadr holiday)
+              '("Shemini Atzeret"
+                "Simchat Torah")))
+    (holiday-hebrew-rosh-hashanah))))
 
 (defun holiday-hebrew-tisha-b-av ()
   "Return Tisha B'Av for the displayed year.
@@ -417,7 +416,7 @@ Tuesday instead."
      (holiday-hebrew-passover)
      (holiday-hebrew-yom-hashoah)
      (holiday-hebrew-tisha-b-av)
-     (holiday-hebrew-rosh-hashanah)
+     (my/holiday-hebrew-rosh-hashanah)
      (holiday-hebrew 9 25 "Chanukah"))
 
    holiday-islamic-holidays

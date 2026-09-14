@@ -1,0 +1,110 @@
+#!/usr/bin/env bash
+# repair-emacs-dock
+#
+# Locate the currently installed Emacs application by bundle identifier and
+# add Homebrew's stable opt-path application bundle to the Dock.
+#
+# This avoids Dock entries that refer directly to a versioned Cellar path.
+#
+# Requirements:
+#
+#   dockutil
+#
+# Install it with:
+#
+#   brew install dockutil
+#
+# Usage:
+#
+#   repair-emacs-dock
+
+set -euo pipefail
+
+BUNDLE_ID="org.gnu.Emacs"
+
+die()
+{
+    printf 'error: %s\n' "$*" >&2
+    exit 1
+}
+
+say()
+{
+    printf '==> %s\n' "$*"
+}
+
+need_cmd()
+{
+    command -v "$1" >/dev/null 2>&1 ||
+        die "required command not found: $1"
+}
+
+need_cmd mdfind
+need_cmd dockutil
+need_cmd killall
+need_cmd /usr/libexec/PlistBuddy
+
+# Ask Spotlight which installed application bundles have the Emacs bundle
+# identifier. Restrict the result to Emacs Plus Cellar installations and
+# choose the newest version.
+DISCOVERED_APP="$(
+    mdfind "kMDItemCFBundleIdentifier == '$BUNDLE_ID'" |
+        grep '/Cellar/emacs-plus@[^/]*/[^/]*/Emacs\.app$' |
+        sort -V |
+        tail -n 1
+)"
+
+[[ -n "$DISCOVERED_APP" ]] ||
+    die "could not locate an Emacs Plus application"
+
+[[ -d "$DISCOVERED_APP" ]] ||
+    die "application bundle not found: $DISCOVERED_APP"
+
+DISCOVERED_PLIST="$DISCOVERED_APP/Contents/Info.plist"
+
+ACTUAL_ID="$(
+    /usr/libexec/PlistBuddy \
+        -c 'Print :CFBundleIdentifier' \
+        "$DISCOVERED_PLIST" 2>/dev/null || true
+)"
+
+[[ "$ACTUAL_ID" == "$BUNDLE_ID" ]] ||
+    die "unexpected bundle identifier: ${ACTUAL_ID:-unknown}"
+
+# Derive the formula name from the Cellar path:
+#
+#   /usr/local/Cellar/emacs-plus@31/31.0.91/Emacs.app
+#                      ^^^^^^^^^^^^^
+#
+# and use Homebrew's stable opt path for the Dock item.
+CELLAR_PREFIX="${DISCOVERED_APP%%/Cellar/*}"
+CELLAR_REMAINDER="${DISCOVERED_APP#*/Cellar/}"
+FORMULA="${CELLAR_REMAINDER%%/*}"
+
+APP="$CELLAR_PREFIX/opt/$FORMULA/Emacs.app"
+
+[[ -d "$APP" ]] ||
+    die "stable Homebrew application path not found: $APP"
+
+say "Discovered Emacs application:"
+printf '%s\n' "$DISCOVERED_APP"
+
+say "Stable Homebrew application:"
+printf '%s\n' "$APP"
+
+say "Removing existing Emacs Dock entries"
+dockutil --remove "$BUNDLE_ID" --no-restart >/dev/null 2>&1 ||
+    dockutil --remove Emacs --no-restart >/dev/null 2>&1 ||
+    true
+
+say "Adding stable Emacs application to the Dock"
+dockutil --add "$APP" --no-restart
+
+say "Restarting the Dock"
+killall Dock
+
+printf '\nDock entry repaired:\n%s\n' "$APP"
+
+#  LocalWords:  usr Homebrew's dockutil mdfind plist libexec dev
+#  LocalWords:  kMDItemCFBundleIdentifier PlistBuddy nDock
+#  LocalWords:  CFBundleIdentifier

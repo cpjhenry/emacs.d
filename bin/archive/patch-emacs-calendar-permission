@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+# patch-emacs-calendar-permission
+#
+# Locate the currently installed Emacs application by bundle identifier and
+# patch it so macOS can ask for Calendar permission.
+#
+# Intended for Emacs Plus / macOS / maccalfw.
+
+set -euo pipefail
+
+BUNDLE_ID="org.gnu.Emacs"
+USAGE_KEY="NSCalendarsUsageDescription"
+USAGE_TEXT="Emacs requires permission to access Calendar for maccalfw."
+
+die()
+{
+    printf 'error: %s\n' "$*" >&2
+    exit 1
+}
+
+say()
+{
+    printf '==> %s\n' "$*"
+}
+
+need_cmd()
+{
+    command -v "$1" >/dev/null 2>&1 ||
+        die "required command not found: $1"
+}
+
+need_cmd mdfind
+need_cmd /usr/libexec/PlistBuddy
+need_cmd codesign
+need_cmd tccutil
+
+APP="$(
+    mdfind "kMDItemCFBundleIdentifier == '$BUNDLE_ID'" |
+        grep '/Cellar/emacs-plus@[^/]*/[^/]*/Emacs\.app$' |
+        sort -V |
+        tail -n 1
+)"
+
+[[ -n "$APP" ]] ||
+    die "could not locate an Emacs Plus application"
+
+[[ -d "$APP" ]] ||
+    die "application bundle not found: $APP"
+
+PLIST="$APP/Contents/Info.plist"
+
+[[ -f "$PLIST" ]] ||
+    die "Info.plist not found: $PLIST"
+
+[[ -w "$PLIST" ]] ||
+    die "Info.plist is not writable: $PLIST"
+
+ACTUAL_ID="$(
+    /usr/libexec/PlistBuddy \
+        -c 'Print :CFBundleIdentifier' \
+        "$PLIST" 2>/dev/null || true
+)"
+
+[[ "$ACTUAL_ID" == "$BUNDLE_ID" ]] ||
+    die "unexpected bundle identifier: ${ACTUAL_ID:-unknown}"
+
+say "Emacs application:"
+printf '%s\n' "$APP"
+
+if /usr/libexec/PlistBuddy \
+       -c "Print :$USAGE_KEY" \
+       "$PLIST" >/dev/null 2>&1; then
+    say "Updating $USAGE_KEY"
+    /usr/libexec/PlistBuddy \
+        -c "Set :$USAGE_KEY $USAGE_TEXT" \
+        "$PLIST"
+else
+    say "Adding $USAGE_KEY"
+    /usr/libexec/PlistBuddy \
+        -c "Add :$USAGE_KEY string $USAGE_TEXT" \
+        "$PLIST"
+fi
+
+say "Re-signing application"
+codesign --force --deep --sign - "$APP"
+
+SIG="$(
+    codesign -dv "$APP" 2>&1 |
+        sed -n 's/^Signature=//p'
+)"
+
+[[ "$SIG" == "adhoc" ]] ||
+    die "unexpected code signature: ${SIG:-none}"
+
+say "Signature verified: $SIG"
+
+say "Resetting Calendar permission"
+
+if tccutil reset Calendar "$BUNDLE_ID" >/dev/null 2>&1; then
+    say "Calendar permission reset"
+elif tccutil reset Calendars "$BUNDLE_ID" >/dev/null 2>&1; then
+    say "Calendar permission reset"
+else
+    say "Calendar permission could not be reset"
+fi
+
+printf '\nPatched and signed:\n%s\n' "$APP"
+
+#  LocalWords:  usr Homebrew's maccalfw mdfind plist libexec dev
+#  LocalWords:  kMDItemCFBundleIdentifier PlistBuddy
+#  LocalWords:  CFBundleIdentifier NSCalendarsUsageDescription
+#  LocalWords:  codesign tccutil
