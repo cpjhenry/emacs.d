@@ -641,3 +641,4 @@ Tuesday instead."
 
 ; LocalWords:  bahai Deepavali Kartik Amavasya panchang दीपावली Iyyar
 ; LocalWords:  Jayanti Tamuz Tishrei Cheshvan Sh'vat amavasya Kartika
+; LocalWords:  HaShanah Shemini Atzeret Simchat
