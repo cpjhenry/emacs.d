@@ -4,6 +4,7 @@
 (require 'calendar)
 (require 'holidays)
 (require 'lunar)
+(require 'solar)
 (require 'parse-time)
 (require 'cal-julian)
 

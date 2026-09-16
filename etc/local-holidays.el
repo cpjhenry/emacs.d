@@ -57,23 +57,23 @@
 ;; this calendar.
 
 (defun holiday-bahai-naw-ruz ()
-  "Return Bahá’í New Year for the displayed year.
+  "Return Bahá’í New Year for the visible calendar.
 
 Naw-Rúz is formally defined by the Bahá’í calendar as occurring at the
 Vernal Equinox as observed in Tehran. Earlier Emacs holiday definitions
 approximated this by fixing the observance on 21 March.
 
 This implementation improves upon that approximation by deriving the
-date from the calculated Vernal Equinox for the displayed year and using
-the resulting day in March."
-  (when (memq displayed-month '(3 4))
-    (let* ((y displayed-year)
-           (day (floor (nth 1 (solar-equinoxes/solstices 1 y)))))
-      (holiday-filter-visible-calendar
-       (list
+date from the calculated Vernal Equinox for the relevant Gregorian year
+and using the resulting day in March."
+  (holiday-filter-visible-calendar
+   (mapcar
+    (lambda (y)
+      (let ((day (floor (nth 1 (solar-equinoxes/solstices 1 y)))))
         (list (list 3 day y)
               (format "Bahá’í New Year (Naw-Rúz) %d"
-                      (- y (1- 1844)))))))))
+                      (- y 1843)))))
+    (calendar-month-visible-p 3 1))))
 
 ;; Prefer Hebcal-style English transliterations for Hebrew month names.
 ;; https://www.hebcal.com/
@@ -385,7 +385,7 @@ Tuesday instead."
      (holiday-julian 2 14 "Old St. Valentine's Day"))
 
    holiday-bahai-holidays
-  '((holiday-bahai-new-year)
+  '((holiday-bahai-naw-ruz)
     (if calendar-bahai-all-holidays-flag
         (append
 	 (holiday-bahai-ridvan) ; respects calendar-bahai-all-holidays-flag
@@ -413,7 +413,7 @@ Tuesday instead."
 
    holiday-hebrew-holidays
    '((holiday-hebrew-fast-of-esther)
-     (holiday-hebrew-passover)
+     (holiday-hebrew-passover) ; includes 'Shavuot'
      (holiday-hebrew-yom-hashoah)
      (holiday-hebrew-tisha-b-av)
      (my/holiday-hebrew-rosh-hashanah)
@@ -506,6 +506,43 @@ Tuesday instead."
      (holiday-mercury-retrograde))
    "Seasonal and astronomical observances.")
 
+(defconst holiday-zodiacal-marker-names
+  '("Aquarius" "Pisces" "Aries" "Taurus"
+    "Gemini" "Cancer" "Leo" "Virgo"
+    "Libra" "Scorpio" "Sagittarius" "Capricorn")
+  "Names of the zodiacal signs, indexed by Gregorian month.")
+
+(defun holiday-zodiacal-marker ()
+  "Return zodiacal ingress dates and times visible in the calendar."
+  (let (result)
+    (dolist (month (number-sequence 1 12))
+      (when-let* ((year (calendar-month-visible-p month))
+                  (start
+                   (calendar-astro-from-absolute
+                    (calendar-absolute-from-gregorian
+                     (list month 1 year))))
+                  (jd (solar-date-next-longitude start 30))
+                  (abs-day (calendar-astro-to-absolute jd))
+                  (date (calendar-gregorian-from-absolute
+                         (floor abs-day)))
+                  (name (nth (1- month)
+                             holiday-zodiacal-marker-names)))
+        (push
+         (list date
+               (format "%s %s"
+                       name
+                       (solar-time-string
+                        (* 24 (- abs-day (floor abs-day)))
+                        (if (dst-in-effect abs-day)
+                            calendar-daylight-time-zone-name
+                          calendar-standard-time-zone-name))))
+         result)))
+    (nreverse result)))
+
+(defvar holiday-zodiacal-markers
+  '((holiday-zodiacal-marker))
+  "Zodiacal ingress dates and times.")
+
 (defvar holiday-saints-days
   '((holiday-fixed 1 28  "St. Thomas Aquinas (Academics)")
     (holiday-fixed 2 5   "St. Agatha (Martyr)")
@@ -553,39 +590,50 @@ Tuesday instead."
                 holiday-oriental-holidays
 		holiday-hindu-holidays
 		holiday-solar-holidays
-                holiday-seasonal-observances))
+                holiday-seasonal-observances
+		holiday-zodiacal-markers))
 
 (defun cpj/holiday-available-holiday-lists (holiday-lists)
   "Add custom holiday categories to HOLIDAY-LISTS."
+  (setq holiday-lists
+        (assoc-delete-all "Bahá’í" holiday-lists))
   (append
    holiday-lists
    (delq nil
          (list
-	  (and holiday-scottish-observances
-	       (cons "Scottish" holiday-scottish-observances))
+          ;; Work around `list-holidays' capitalizing "Bahá’í" to "Bahá’Í".
+          (and holiday-bahai-holidays
+               (cons "Bahai" holiday-bahai-holidays))
 
-	  (and holiday-roman-observances
-	       (cons "Roman" holiday-roman-observances))
+          (and holiday-scottish-observances
+               (cons "Scottish" holiday-scottish-observances))
 
-	  (and holiday-discordian-observances
-	       (cons "Discordian" holiday-discordian-observances))
+          (and holiday-roman-observances
+               (cons "Roman" holiday-roman-observances))
 
-	  (and holiday-buddhist-holidays
-	       (cons "Buddhist" holiday-buddhist-holidays))
+          (and holiday-discordian-observances
+               (cons "Discordian" holiday-discordian-observances))
 
-	  (and holiday-hindu-holidays
-	       (cons "Hindu" holiday-hindu-holidays))
+          (and holiday-buddhist-holidays
+               (cons "Buddhist" holiday-buddhist-holidays))
 
-	  (and holiday-seasonal-observances
-	       (cons "Seasonal" holiday-seasonal-observances))
+          (and holiday-hindu-holidays
+               (cons "Hindu" holiday-hindu-holidays))
 
-	  (and holiday-saints-days
-	       (cons "Saints" holiday-saints-days))))))
+          (and holiday-seasonal-observances
+               (cons "Seasonal" holiday-seasonal-observances))
+
+	  (and holiday-zodiacal-markers
+               (cons "Zodiacal" holiday-zodiacal-markers))
+
+          (and holiday-saints-days
+               (cons "Saints" holiday-saints-days))))))
 
 (remove-function (symbol-function 'holiday-available-holiday-lists)
-		 #'cpj/holiday-available-holiday-lists)
+                 #'cpj/holiday-available-holiday-lists)
 
-(add-function :filter-return (symbol-function 'holiday-available-holiday-lists)
+(add-function :filter-return
+              (symbol-function 'holiday-available-holiday-lists)
               #'cpj/holiday-available-holiday-lists)
 
 (provide 'local-holidays)

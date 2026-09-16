@@ -15,17 +15,6 @@
   " --- "
   str
   " -*- lexical-binding: t; -*-\n\n"
-  ";; Author: "
-  user-full-name
-  (if (and user-mail-address
-           (not (string= user-mail-address "")))
-      (concat " <" user-mail-address ">")
-    "")
-  "\n"
-  ";; Package-Requires: ((emacs \"29.1\"))\n"
-  ";; Keywords: "
-  _
-  "\n\n"
   ";;; Commentary:\n\n"
   ";;; Code:")
 
@@ -38,5 +27,20 @@
   ";;; "
   (file-name-nondirectory (buffer-file-name))
   " ends here\n")
+
+(define-skeleton cpj/elisp-package-metadata
+  "Insert package metadata for a distributable Emacs Lisp file."
+  "Minimum Emacs version: "
+  ";; Author: "
+  user-full-name
+  (if (and user-mail-address
+           (not (string-empty-p user-mail-address)))
+      (concat " <" user-mail-address ">")
+    "")
+  "\n"
+  ";; Package-Requires: ((emacs \"" str "\"))\n"
+  ";; Keywords: "
+  _
+  "\n")
 
 ;;; skeletons.el ends here

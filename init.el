@@ -677,7 +677,8 @@
 (setopt dired-omit-files
         (concat dired-omit-files
                 "\\|^.DS_Store"
-                "\\|^.localized"))
+                "\\|^.localized"
+		"\\|^\\.~$"))
 
 (dolist (ext '(".synctex.gz" ".tex"))
   (add-to-list 'dired-omit-extensions ext))
@@ -913,6 +914,9 @@
 	calendar-month-header '(propertize
 	  (format "%s %d" (calendar-month-name month) year)
 	  'font-lock-face 'calendar-month-header)
+	calendar-time-display-form
+        '(24-hours ":" minutes
+		   (if time-zone " (") time-zone (if time-zone ")"))
 	cal-tex-holidays t
 	cal-tex-diary t)
 
@@ -1174,46 +1178,9 @@
 (use-package wiki-summary
   :bind ("M-s M-s" . cpj/wiki-summary)
   :config
-  (defun cpj/wiki-summary-clean-term (term)
-    "Clean TERM for use as a Wikipedia search phrase."
-    (when term
-      (setq term
-            (replace-regexp-in-string
-             "[ \t]*(.*?)[ \t]*" " " term))
-      (setq term
-            (replace-regexp-in-string
-             "[ \t]*\"[^\"]*\"[ \t]*" " " term))
-      (setq term (string-trim term))
-      (setq term
-            (replace-regexp-in-string
-             "[ \t]+Day\\'" "" term))
-      (string-trim term)))
-
-  (defun cpj/wiki-summary (&optional prompt)
-    "Look up the region, agenda item, or word at point in Wikipedia.
-
-With prefix argument PROMPT, confirm or edit the search term first."
-    (interactive "P")
-    (let* ((term
-            (cond
-             ((use-region-p)
-              (buffer-substring-no-properties
-               (region-beginning) (region-end)))
-             ((derived-mode-p 'org-agenda-mode)
-              (buffer-substring-no-properties
-               (line-beginning-position)
-               (line-end-position)))
-             (t
-              (thing-at-point 'word t))))
-           (term (cpj/wiki-summary-clean-term term)))
-      (wiki-summary
-       (if prompt
-           (read-string
-            (concat "Wikipedia Article"
-                    (if term (format " (%s)" term) "")
-                    ": ")
-            nil nil term)
-	 term)))))
+  (require 'wiki-summary-functions)
+  (advice-add 'wiki-summary/format-summary-in-buffer
+              :override #'cpj/wiki-summary-format-summary-in-buffer))
 
 
 ;;; Text, Prog, and Markdown modes
