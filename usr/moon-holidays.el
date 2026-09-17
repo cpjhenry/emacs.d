@@ -1,21 +1,5 @@
 ;;; moon-holidays.el --- Holidays based on first full moon -*- lexical-binding: t; -*-
 
-;; Author: cpj <cn914@ncf.ca>
-;; Keywords: calendar
-
-;; This program is free software; you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation, either version 3 of the License, or
-;; (at your option) any later version.
-
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; GNU General Public License for more details.
-
-;; You should have received a copy of the GNU General Public License
-;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 ;;; Commentary:
 
 ;; Define holidays based on the first full moon in selected Gregorian
@@ -25,8 +9,12 @@
 ;; independently of the Emacs holiday display machinery.
 ;;
 ;; `holiday-named-full-moons' adapts that calculation to the active
-;; Calendar holiday window, whether called from Calendar, `list-holidays',
-;; `holiday-in-range', or another holiday consumer.
+;; Calendar holiday window for general first-full-moon observances.
+;;
+;; Theravāda Buddhist observances are defined separately in
+;; `moon-holidays-buddhist-observances'.  Their dates are available
+;; programmatically through `moon-holidays-buddhist-date' and to the
+;; Emacs holiday machinery through `holiday-buddhist'.
 
 ;;; Code:
 
@@ -97,16 +85,53 @@ This makes the function suitable for Calendar, `list-holidays',
                holidays))))))
     (holiday-filter-visible-calendar holidays)))
 
+(defconst moon-holidays-buddhist-observances
+  '((magha    2 0 "Magha")
+    (vesak    5 0 "Vesak")
+    (asalha   7 0 "Asalha")
+    (vassa    7 1 "Vassa")
+    (pavarana 10 0 "Pavarana"))
+  "Theravāda Buddhist observance specifications.
+
+Each entry has the form:
+
+  (KEY MONTH OFFSET NAME)
+
+MONTH is the Gregorian month whose first full moon determines
+the observance.  OFFSET is the number of days after that full
+moon.")
+
+(defun moon-holidays-buddhist-date (observance year)
+  "Return the Gregorian date of Buddhist OBSERVANCE in YEAR.
+
+OBSERVANCE is a key in `moon-holidays-buddhist-observances'.
+Return nil when OBSERVANCE is unknown or when the relevant full
+moon cannot be calculated."
+  (when-let* ((spec
+               (assq observance
+                     moon-holidays-buddhist-observances))
+              (month (nth 1 spec))
+              (offset (nth 2 spec))
+              (date
+               (moon-holidays-first-full-moon month year)))
+    (calendar-gregorian-from-absolute
+     (+ offset
+        (calendar-absolute-from-gregorian date)))))
+
 (defun holiday-buddhist ()
   "Return Theravāda Buddhist full-moon holidays.
 
 Return Magha, Vesak, Asalha, Vassa, and Pavarana when they fall
 within the active Calendar holiday window."
-  (holiday-named-full-moons
-   '(2  "Magha")
-   '(5  "Vesak")
-   '(7  "Asalha" "Vassa")
-   '(10 "Pavarana")))
+  (let (holidays)
+    (dolist (year (moon-holidays--years-in-window))
+      (dolist (spec moon-holidays-buddhist-observances)
+        (pcase-let ((`(,key ,_month ,_offset ,name) spec))
+          (when-let* ((date
+                       (moon-holidays-buddhist-date key year)))
+            (push (list date name)
+                  holidays)))))
+    (holiday-filter-visible-calendar holidays)))
 
 (defvar holiday-buddhist-holidays
   '((holiday-buddhist))

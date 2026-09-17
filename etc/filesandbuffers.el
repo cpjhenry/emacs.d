@@ -29,6 +29,9 @@
   (recenter-top-bottom 0)
   (beginning-of-line))
 
+(put 'my/backward-page 'CUA 'move)
+(put 'my/forward-page  'CUA 'move)
+
 (declare-function outline-previous-heading "outline")
 (defun my/outline-previous-heading ()
   "Go to previous heading."

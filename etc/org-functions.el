@@ -177,19 +177,99 @@ finished its normal buffer setup:
 
 `message' identifies the line as a holiday.
 `dictionary' looks up the holiday name using `dictionary-search'.
-nil preserves the normal Org Agenda error."
+nil preserves normal Org Agenda behaviour."
   :type '(choice
           (const :tag "Display a message" message)
           (const :tag "Search the dictionary" dictionary)
           (const :tag "Use normal Org behaviour" nil))
   :group 'org-agenda)
 
+(defvar cpj/org-agenda-lookup-marker nil
+  "Marker for the Agenda position from which a lookup was started.")
+
+(defun cpj/dictionary-do-matching-around
+    (orig-fun word dictionary strategy function)
+  "Fall back to browser when Dictionary finds no match for WORD."
+  (condition-case err
+      (funcall orig-fun word dictionary strategy function)
+    (user-error
+     (if (string-match-p
+          "\\`No match for"
+          (error-message-string err))
+         (let ((buffer (current-buffer))
+               (window cpj/org-agenda-lookup-window)
+               (marker cpj/org-agenda-lookup-marker))
+           (delete-windows-on buffer)
+
+           ;; Wait until Dictionary has completely unwound before
+           ;; cleaning up and restoring the Agenda position.
+           (run-at-time
+            0 nil
+            (lambda ()
+              (when (buffer-live-p buffer)
+                (kill-buffer buffer))
+              (when (and (window-live-p window)
+                         (marker-buffer marker))
+                (select-window window)
+                (set-window-point window marker)
+                (with-current-buffer (marker-buffer marker)
+                  (when hl-line-mode
+                    (hl-line-highlight))))))
+
+           (browser-search word)
+           (message nil))
+       (signal (car err) (cdr err))))))
+
+(advice-add 'dictionary-do-matching
+            :around #'cpj/dictionary-do-matching-around)
+
+(defun cpj/org-agenda-lookup-term (name)
+  "Return a normalized lookup term from Agenda entry NAME."
+  (let ((term (string-trim name)))
+
+    ;; Remove Agenda time and separator.
+    (setq term
+          (string-trim
+           (replace-regexp-in-string
+            "\\`[0-9]+:[0-9]+[[:space:]┄]*"
+            "" term)))
+
+    ;; Remove trailing parenthetical information.
+    (setq term
+          (string-trim
+           (replace-regexp-in-string
+            "(.*)\\'"
+            "" term)))
+
+    ;; Remove trailing `Day'.
+    (setq term
+          (string-trim
+           (replace-regexp-in-string
+            "\\bDay\\'"
+            "" term)))
+
+    term))
+
+(defun cpj/org-agenda-holiday-lookup (name)
+  "Look up holiday NAME according to `cpj/org-agenda-holiday-action'."
+  (pcase cpj/org-agenda-holiday-action
+    ('message
+     (message "%s is a holiday" name))
+
+    ('dictionary
+     (setq cpj/org-agenda-lookup-window (selected-window)
+	   cpj/org-agenda-lookup-marker (point-marker))
+     (dictionary-search
+      (cpj/org-agenda-lookup-term name)))
+
+    (_
+     (org-agenda-switch-to))))
+
 (defun cpj/org-agenda-return ()
   "Act appropriately on the current Org Agenda line.
 
-Display configured Buddhist observances, visit ordinary Org and
-diary entries, and handle non-visitable holidays according to
-`cpj/org-agenda-holiday-action'."
+Display configured Buddhist observances, look up Diary
+observances, and visit ordinary Org Agenda entries."
   (interactive)
   (let* ((name
           (string-trim
@@ -197,24 +277,20 @@ diary entries, and handle non-visitable holidays according to
             (line-beginning-position)
             (line-end-position))))
          (key
-          (buddhist-observation-key-for-calendar-name name)))
-    (if key
-        (buddhist-observation-display key)
-      (condition-case err
-          (org-agenda-switch-to)
-        (error
-         (if (string-match-p
-              "Command not allowed in this line"
-              (error-message-string err))
-             (pcase cpj/org-agenda-holiday-action
-               ('message
-                (message "%s is a holiday" name))
-               ('dictionary
-                (dictionary-search name))
-               (_
-                (signal (car err) (cdr err))))
-           (signal (car err) (cdr err))))))))
+          (buddhist-observation-key-for-calendar-name name))
+         (category
+          (get-text-property (point) 'org-category)))
+    (cond
+     (key
+      (buddhist-observation-display key))
 
+     ((equal category "Diary")
+      (cpj/org-agenda-holiday-lookup name))
+
+     (t
+      (org-agenda-switch-to)))))
+
+
 ;;;###autoload
 (defun my/org-agenda-list ()
   "Refresh calendar data, then display the Org agenda."

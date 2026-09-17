@@ -1,22 +1,5 @@
 ;;; buddhist-observation.el --- Display Buddhist observances -*- lexical-binding: t; -*-
 
-;; Author: cpj <cn914@ncf.ca>
-;; Keywords: calendar, religion, multimedia
-;; Package-Requires: ((emacs "29.1"))
-
-;; This program is free software; you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation, either version 3 of the License, or
-;; (at your option) any later version.
-
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; GNU General Public License for more details.
-
-;; You should have received a copy of the GNU General Public License
-;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 ;;; Commentary:
 
 ;; Display explanatory and devotional material for Theravāda Buddhist
@@ -32,11 +15,9 @@
 ;;   M-x buddhist-observation-display
 ;;   M-x buddhist-observation-stop-audio
 ;;
-;; The observation buffer provides buttons for opening texts, playing
-;; associated audio, and uses the macOS `afplay' utility for
-;; audio playback.
-;;
-;; Audio playback uses the macOS `afplay' utility.
+;; The observation buffer provides buttons for opening texts and
+;; playing associated audio.  Audio playback uses the macOS `afplay'
+;; utility by default.
 
 ;; The principal Theravāda Buddhist observances are presented in
 ;; Gregorian calendar order, following the modern Thai Buddhist Era
@@ -127,8 +108,6 @@ TEXT-FILE and AUDIO-FILE are interpreted relative to
   '((magha
      :calendar-name "Magha"
      :title "Māgha Pūjā"
-     :month 2
-     :offset 0
      :aspect "Sangha"
      :description
      "Commemorates the spontaneous gathering of the Buddha's \
@@ -138,8 +117,6 @@ disciples and the teaching of the principles of the Dhamma."
     (vesak
      :calendar-name "Vesak"
      :title "Vesākha Pūjā"
-     :month 5
-     :offset 0
      :aspect "Buddha"
      :description
      "Commemorates the birth, awakening, and final passing of the \
@@ -149,8 +126,6 @@ Buddha."
     (asalha
      :calendar-name "Asalha"
      :title "Āsāḷha Pūjā"
-     :month 7
-     :offset 0
      :aspect "Dhamma"
      :description
      "Commemorates the Buddha's first discourse, the setting in \
@@ -160,8 +135,6 @@ motion of the Wheel of Dhamma, and the arising of the Sangha."
     (vassa
      :calendar-name "Vassa"
      :title "Vassa"
-     :month 7
-     :offset 1
      :aspect "Rains Retreat"
      :description
      "Marks the beginning of the traditional three-month rains \
@@ -171,8 +144,6 @@ retreat following Āsāḷha Pūjā."
     (pavarana
      :calendar-name "Pavarana"
      :title "Pavāraṇā"
-     :month 10
-     :offset 0
      :aspect "Conclusion of Vassa"
      :description
      "Marks the conclusion of the rains retreat and the occasion \
@@ -186,17 +157,12 @@ Each record has the form:
 
   (KEY :calendar-name NAME
        :title TITLE
-       :month MONTH
-       :offset OFFSET
        :aspect ASPECT
        :description DESCRIPTION
        :resources RESOURCE-KEYS)
 
-MONTH identifies the Gregorian month whose first full moon
-determines the observance.
-
-OFFSET is the number of days after that full moon.  Vassa, for
-example, has an offset of one day from Āsāḷha Pūjā.")
+Calendrical definitions for these observances are maintained by
+`moon-holidays.el'.")
 
 (defvar-local buddhist-observation--current-key nil
   "Key of the observance displayed in the current buffer.")
@@ -219,16 +185,10 @@ example, has an offset of one day from Āsāḷha Pūjā.")
 (defun buddhist-observation-date (key year)
   "Return the Gregorian date of observation KEY in YEAR.
 
-Return nil if KEY has no valid observation record or no relevant
-full moon can be calculated."
-  (when-let* ((record (buddhist-observation-get key))
-              (month (plist-get record :month))
-              (offset (plist-get record :offset))
-              (full-moon
-               (moon-holidays-first-full-moon month year)))
-    (calendar-gregorian-from-absolute
-     (+ offset
-        (calendar-absolute-from-gregorian full-moon)))))
+Return nil when KEY is not a configured Buddhist observance or
+when its date cannot be calculated."
+  (when (buddhist-observation-get key)
+    (moon-holidays-buddhist-date key year)))
 
 (defun buddhist-observation-for-date (date)
   "Return the observation key associated with Gregorian DATE.
