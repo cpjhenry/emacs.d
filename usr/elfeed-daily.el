@@ -31,13 +31,6 @@
               "")
             (or feed ""))))
 
-(defun cpj/elfeed-daily-title-max-width ()
-  "Return the available title width for the daily Elfeed view."
-  (- (window-body-width)
-     (nth 1 elfeed-search-date-format)
-     elfeed-search-trailing-width
-     2))
-
 (defun cpj/elfeed-daily-trailing-width ()
   "Return the width required for feed titles in the daily search results."
   (1+
@@ -47,6 +40,13 @@
              (string-width
               (or (elfeed-search--column-feed entry) "")))
            elfeed-search-entries))))
+
+(defun cpj/elfeed-daily-title-max-width ()
+  "Return the available title width for the daily Elfeed view."
+  (- (window-body-width)
+     (nth 1 elfeed-search-date-format)
+     elfeed-search-trailing-width
+     2))
 
 (defun cpj/elfeed-daily-update-widths ()
   "Update column widths for the daily Elfeed view."
