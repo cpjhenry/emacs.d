@@ -5,7 +5,6 @@
 #
 # Emacs.app:
 #   - inject current PATH as EMACS_PLUS_PATH
-#   - remove stale LIBRARY_PATH
 #   - install site-start.el symlink
 #   - re-sign and register when changed
 #
@@ -135,21 +134,6 @@ patch_emacs_app()
 
         say "PATH: injected"
         changed=1
-    fi
-
-    if "$plistbuddy" \
-        -c 'Print :LSEnvironment:LIBRARY_PATH' \
-        "$plist" \
-        >/dev/null 2>&1
-    then
-        "$plistbuddy" \
-            -c 'Delete :LSEnvironment:LIBRARY_PATH' \
-            "$plist"
-
-        say "LIBRARY_PATH: removed"
-        changed=1
-    else
-        say "LIBRARY_PATH: absent"
     fi
 
     [[ -f "$site_src" ]] ||

@@ -819,20 +819,22 @@
   ;; Finder's `Open With...' and `org-protocol' use the Emacs Plus
   ;; `Emacs Client.app' installed in /Applications.
   ;;
-  ;; In `Contents/Resources/Scripts/main.scpt', the `-c' argument is
-  ;; removed from the `on open' handler so Finder-opened files use the
-  ;; existing Emacs frame instead of creating a separate client frame.
+  ;; Its `Contents/Resources/Scripts/main.scpt' is patched so the
+  ;; `on open' handler does not pass `-c' to `emacsclient', allowing
+  ;; Finder-opened files to use the existing Emacs frame instead of
+  ;; creating a separate client frame.
   ;;
   ;; The `on open location' handler passes `org-protocol' URLs directly
-  ;; to `emacsclient -n', allowing browser capture to invoke
-  ;; `org-capture' in the running Emacs server.
+  ;; to `emacsclient -n', allowing browser capture to invoke `org-capture'
+  ;; in the running Emacs server.
   ;;
-  ;; After editing `main.scpt', re-sign and re-register the app with:
+  ;; A Homebrew upgrade may replace `Emacs Client.app'. After installing
+  ;; or upgrading Emacs, run:
   ;;
-  ;;   sign-emacs-client
+  ;;     patch-emacs
   ;;
-  ;; A Homebrew upgrade may replace `Emacs Client.app'.  If so, remove
-  ;; `-c' from the new `main.scpt' and run `sign-emacs-client' again.
+  ;; This installs the patched AppleScript, re-signs `Emacs Client.app',
+  ;; and re-registers it with Launch Services.
   ;;
   ;; No client-frame geometry repair should normally be needed.
 
@@ -1847,16 +1849,16 @@ Report the number of fractions replaced."
 ;;; Calendar data and Org Agenda
 
 ;; Calendar data from macOS Calendar is projected into
-;; `calendar-data.org', which is read by `org-agenda' as an ordinary
+;; calendar-data.org', which is read by `org-agenda’ as an ordinary
 ;; Org agenda source.
 ;;
 ;; macOS calendar access is granted to a specific Emacs application
 ;; bundle.  After installing, replacing, or moving Emacs.app, run:
 ;;
-;;     patch-emacs-calendar-permission
+;;     patch-emacs
 ;;
-;; This restores Mac Calendar access used by `calendar-data' through
-;; `maccalfw'.
+;; This performs the required post-install patches, including restoring
+;; Mac Calendar access used by calendar-data' through maccalfw’.
 (message "→ Configuring calendar dashboards.")
 
 (defvar cpj/org-agenda-file
@@ -2613,7 +2615,7 @@ Report the number of fractions replaced."
 ; LocalWords:  remotehost modeline mori featurep cbc smex vc ns ime
 ; LocalWords:  setq's setopt mailutils imagemagick usr dunnet Async
 ; LocalWords:  dir fullscreen dropbox keymap toc buddhist ewth ronn
-; LocalWords:  noerror formfeed hline erc bbdb newsrc laGhv
+; LocalWords:  noerror formfeed hline erc bbdb newsrc laGhv conf scpt
 ; LocalWords:  pandoc alphapapa unpackaged xml xsl xhtml nxml parens
 ; LocalWords:  MidnightBlue src numero documentclass subsubsection Tt
 ; LocalWords:  github cliplink Waterfox waterfox nov backend fboundp
@@ -2621,4 +2623,4 @@ Report the number of fractions replaced."
 ; LocalWords:  plist nopgnos flymake api todo paren docstrings ibuf
 ; LocalWords:  ibuffer ish minibuffer emacsclient Uncomment maccalfw
 ; LocalWords:  kMDItemCFBundleIdentifier mdfind nndraft defvar nnimap
-; LocalWords:  funcall ecompleterc nntp
+; LocalWords:  funcall ecompleterc nntp vspace parskip perl

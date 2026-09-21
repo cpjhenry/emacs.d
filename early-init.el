@@ -99,5 +99,17 @@
 
 (add-hook 'emacs-startup-hook #'cpj/restore-gc-cons-threshold 105)
 
+;; Emacs Plus supplies LIBRARY_PATH through the application bundle for
+;; native compilation. Its site-start.el runs before early-init.el and
+;; adds the required library directories directly to
+;; `native-comp-driver-options', so the inherited environment variable
+;; is not needed here. Remove it to prevent those paths leaking into
+;; subprocesses started by Emacs.
+;;
+;; This is an Emacs environment-policy choice, not an installation
+;; repair; `patch-emacs' therefore leaves the upstream bundle setting
+;; untouched.
+(setenv "LIBRARY_PATH" nil)
+
 ;;; early-init.el ends here
 ; LocalWords:  dir eln tmp
