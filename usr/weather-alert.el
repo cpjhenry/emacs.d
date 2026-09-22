@@ -8,7 +8,7 @@
 ;; Public commands:
 ;;
 ;;   `wx'       Local conditions and daily forecast.
-;;   `wx-alert' Full weather report.  [To be implemented.]
+;;   `wx-alert' Full weather report.
 ;;
 ;; The implementation uses Emacs' URL and XML/HTML facilities rather
 ;; than external programs such as curl, xml2, sed, grep, and fold.
@@ -38,7 +38,7 @@
   "City used for public weather bulletins."
   :type 'string)
 
-(defcustom weather-alert-waterway "Eastern Lake Ontario"
+(defcustom weather-alert-waterway "Lake Ontario"
   "Waterway used for marine bulletins."
   :type 'string)
 
@@ -315,7 +315,9 @@
          (forecast
           (weather-alert--extract-block
            text
-           (regexp-quote weather-alert-waterway))))
+           (concat "^"
+                   (regexp-quote weather-alert-waterway)
+                   "\\.$"))))
 
     (when header
       (let* ((lines (split-string header "\n" t))
@@ -324,11 +326,11 @@
         (setq prose
               (replace-regexp-in-string
                "[ \t]+" " " prose))
-	(setq prose
-	      (replace-regexp-in-string
-	       "The next scheduled forecast.*\\'"
-	       ""
-	       prose))
+        (setq prose
+              (replace-regexp-in-string
+               "The next scheduled forecast.*\\'"
+               ""
+               prose))
         (setq header
               (string-join
                (delq nil
@@ -471,9 +473,15 @@
   (let ((buffer (get-buffer-create "*WX*")))
     (with-current-buffer buffer
       (let ((inhibit-read-only t)
-            (short (weather-alert--short))
-            (alert (weather-alert--full))
-            (maritime (weather-alert--maritime)))
+	    (short (weather-alert--short))
+	    (alert (weather-alert--full))
+	    (maritime
+	     (condition-case err
+		 (weather-alert--maritime)
+               (error
+		(message "Maritime weather unavailable: %s"
+			 (error-message-string err))
+		nil))))
         (erase-buffer)
 
         (insert short)
@@ -481,7 +489,8 @@
         (when alert
           (insert "\n\n" alert))
 
-        (insert "\n\n\f\n" maritime "\n")
+	(when maritime
+	  (insert "\n\n\f\n" maritime "\n"))
 
         (goto-char (point-min))
 	(weather-alert-mode)

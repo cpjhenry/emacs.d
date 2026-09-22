@@ -47,7 +47,9 @@
   "Scroll half a window or go to the next entry."
   (interactive)
   (condition-case nil
-      (scroll-up-command (cpj/window-half-height))
+      (progn
+	(scroll-up-command (cpj/window-half-height))
+	(my/backward-paragraph))
     (end-of-buffer
      (elfeed-show-next))))
 

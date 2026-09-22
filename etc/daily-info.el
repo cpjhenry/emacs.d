@@ -135,7 +135,12 @@ are no birthdays in that period."
   ;; Load buffers in reverse reading order, so that *daily-info* is
   ;; the final selected buffer.
   (my/org-agenda-list)
-  (wx-alert)
+
+  (condition-case err
+      (wx-alert)
+    (error
+     (message "Weather unavailable: %s"
+              (error-message-string err))))
 
   (switch-to-buffer "*daily-info*")
 
