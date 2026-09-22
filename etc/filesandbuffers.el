@@ -57,6 +57,21 @@
   (interactive)
   (recenter-top-bottom 0))
 
+;; scrolling
+(defun cpj/window-half-height ()
+  (max 1 (/ (1- (window-height (selected-window))) 2)))
+
+(defun cpj/scroll-up-half ()
+  "Scroll forward half a window."
+  (interactive)
+  (scroll-up-command (cpj/window-half-height))
+  (my/backward-paragraph))
+
+(defun cpj/scroll-down-half ()
+  "Scroll backward half a window."
+  (interactive)
+  (scroll-down-command (cpj/window-half-height)))
+
 
 (declare-function View-scroll-line-backward "view")
 (defun my/View-scroll-line-backward ()
@@ -474,21 +489,6 @@ mode when toggled off."
 	      default-directory))))
      (list (ido-read-file-name "Find file: " default-directory) t)))
   (find-file file wildcards))
-
-
-;; scrolling
-(defun cpj/window-half-height ()
-  (max 1 (/ (1- (window-height (selected-window))) 2)))
-
-(defun cpj/scroll-up-half ()
-  "Scroll forward half a window."
-  (interactive)
-  (scroll-up-command (cpj/window-half-height)))
-
-(defun cpj/scroll-down-half ()
-  "Scroll backward half a window."
-  (interactive)
-  (scroll-down-command (cpj/window-half-height)))
 
 
 ;; web browsing

@@ -84,18 +84,6 @@
           (propertize new 'face 'elfeed-show-date-face))
          t t)))))
 
-(defun cpj/elfeed-show--copy-edit ()
-  "Fix spurious typesetting errors in the current Elfeed show buffer."
-  (save-excursion
-    (goto-char (point-min))
-    (while (re-search-forward "^[[:blank:]]*[[*]]*[[:blank:]]*$" nil t)
-      (replace-match ""))
-
-    (goto-char (point-min))
-    (while (re-search-forward "^[[:space:]]*\n" nil t)
-      (replace-match "\n")))
-  (delete-trailing-whitespace))
-
 (defun cpj/elfeed-show--hide-metadata ()
   "Hide selected metadata fields in the Elfeed show header."
   (save-excursion
@@ -130,7 +118,6 @@
     (with-silent-modifications
       (let ((inhibit-read-only t))
         (cpj/elfeed-show--rewrite-date)
-        (cpj/elfeed-show--copy-edit)
         (cpj/elfeed-show--hide-metadata)))
     (cpj/elfeed-show--wrap-title)
     (goto-char (point-min))))

@@ -393,6 +393,20 @@
               ("{" . outline-backward-same-level)
               ("}" . outline-forward-same-level)))
 
+(use-package shr
+  :ensure nil
+  :config
+  ;; When images are inhibited, SHR normally substitutes alt text (and
+  ;; sometimes other cruft) for <img> elements.  Suppress the elements
+  ;; entirely instead.
+  (defun cpj/shr-tag-img-no-alt-when-inhibited (orig-fun dom)
+    "Suppress IMG entirely when `shr-inhibit-images' is non-nil."
+    (unless shr-inhibit-images
+      (funcall orig-fun dom)))
+
+  (advice-add 'shr-tag-img :around
+              #'cpj/shr-tag-img-no-alt-when-inhibited))
+
 (use-package view
   :ensure nil
   :bind (:map view-mode-map
