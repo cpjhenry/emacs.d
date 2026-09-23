@@ -38,9 +38,10 @@
   "City used for public weather bulletins."
   :type 'string)
 
-(defcustom weather-alert-waterway "Lake Ontario"
-  "Waterway used for marine bulletins."
-  :type 'string)
+(defcustom weather-alert-waterways
+  '("Eastern Lake Ontario" "Lake Ontario")
+  "Waterway names, in preference order, used for marine bulletins."
+  :type '(repeat string))
 
 (defconst weather-alert--daily-url
   "https://weather.gc.ca/rss/weather/%s_e.xml")
@@ -313,11 +314,14 @@
            text
            "^FQCN"))
          (forecast
-          (weather-alert--extract-block
-           text
-           (concat "^"
-                   (regexp-quote weather-alert-waterway)
-                   "\\.$"))))
+          (seq-some
+           (lambda (waterway)
+             (weather-alert--extract-block
+              text
+              (concat "^"
+                      (regexp-quote waterway)
+                      "\\.$")))
+           weather-alert-waterways)))
 
     (when header
       (let* ((lines (split-string header "\n" t))
@@ -341,7 +345,7 @@
     (unless forecast
       (user-error
        "No marine forecast found for %s"
-       weather-alert-waterway))
+       (string-join weather-alert-waterways " or ")))
 
     ;; Join source-wrapped continuation lines.
     (setq forecast
