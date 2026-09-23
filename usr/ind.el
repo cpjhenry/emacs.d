@@ -13,11 +13,11 @@
 ;; programmatically for an arbitrary date.
 ;;
 ;; The daily section includes Gregorian and Julian dates, ordinal
-;; and ISO week reckonings, regnal and pontifical years, continuous
-;; day counts, the lunar phase and age, and dates in the Roman,
-;; Hebrew, French Republican, Hanke-Henry Permanent, and Discordian
-;; calendars. The extended daily section also includes Persian and
-;; Mayan Calendar Round dates.
+;; and ISO week reckonings, regnal and pontifical years, Canadian
+;; federal Parliaments and sessions, continuous day counts, the lunar
+;; phase and age, and dates in the Roman, Hebrew, French Republican,
+;; Hanke-Henry Permanent, and Discordian calendars. The extended daily
+;; section also includes Persian and Mayan Calendar Round dates.
 ;;
 ;; A parallel era-year concordance places systems of historical,
 ;; religious, and cultural reckoning alongside the daily dates. It
@@ -70,6 +70,7 @@
 (require 'julian-day-counts)
 (require 'moon-holidays)
 (require 'regnal-years)
+(require 'canadian-parliament)
 (require 'roman-clock)
 (require 'tibdate)
 
@@ -282,6 +283,25 @@ When EXTENDED is non-nil, use the unabbreviated form."
 (defun ind--regnal-line (date)
   "Return the royal and papal regnal line for DATE."
   (regnal-years-date-string date))
+
+(defun ind--parliament-line (date)
+  "Return the Canadian Parliament and session line for DATE."
+  (pcase (canadian-parliament-date date)
+    ('nil nil)
+    ('no-parliament "No Parliament")
+    (`(,parliament nil)
+     (concat
+      (ind--ordinal parliament)
+      (ind--fractional-space 0.45)
+      " Parl. No Session"))
+    (`(,parliament ,session)
+     (concat
+      (ind--ordinal parliament)
+      (ind--fractional-space 0.45)
+      " Parl. "
+      (ind--ordinal session)
+      (ind--fractional-space 0.45)
+      " Sess."))))
 
 (defun ind--julian-count-line (date)
   "Return the MJD and TJD line for Gregorian DATE."
@@ -1116,6 +1136,7 @@ information."
      (ind--day-line date)
      (ind--old-style-line date)
      (ind--regnal-line date)
+     (ind--parliament-line date)
      (ind--julian-count-line date)
      (ind--lunar-line date)
      (ind--roman-calendar-line date extended)
