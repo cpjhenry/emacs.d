@@ -67,6 +67,12 @@
 ;; In particular, an open current Parliament or session is not assumed
 ;; to continue beyond the current local civil date.
 
+;; `canadian-parliament-check-source' is an interactive maintenance
+;; aid which retrieves Appendix 13 from the House of Commons and
+;; compares its entries for the current and immediately preceding
+;; Parliaments with the locally maintained historical tables.  It
+;; does not modify those tables; updates remain a manual operation.
+
 ;;; Code:
 
 (require 'calendar)
@@ -282,6 +288,358 @@ DATE defaults to the current local civil date."
   (if-let* ((result (canadian-parliament-date-string date)))
       (insert result)
     (user-error "No parliamentary date available")))
+
+;;; Source checking
+
+(defconst canadian-parliament--source-url
+  "https://www.ourcommons.ca/procedure/procedure-and-practice-4/app13-e.html"
+  "House of Commons source for Canadian Parliament and session dates.")
+
+(defun canadian-parliament--source-strip-tags (string)
+  "Return normalized text from HTML fragment STRING."
+  (setq string (replace-regexp-in-string "<[^>]*>" " " string))
+  (string-trim
+   (replace-regexp-in-string
+    "[[:space:]\n\r]+" " " string)))
+
+(defun canadian-parliament--source-cells (row)
+  "Return textual table cells from Appendix 13 HTML ROW."
+  (with-temp-buffer
+    (insert row)
+    (goto-char (point-min))
+    (let (cells)
+      (while (re-search-forward "<td\\b" nil t)
+        (let ((tag-start (match-beginning 0)))
+          (unless (search-forward ">" nil t)
+            (error "Malformed <td> in Appendix 13"))
+          (let ((tag
+                 (buffer-substring-no-properties
+                  tag-start (point))))
+            (if (string-match-p "/[[:space:]]*>\\'" tag)
+                (push "" cells)
+              (let ((content-start (point)))
+                (unless (search-forward "</td>" nil t)
+                  (error "Unclosed <td> in Appendix 13"))
+                (push
+                 (canadian-parliament--source-strip-tags
+                  (buffer-substring-no-properties
+                   content-start
+                   (- (point) 5)))
+                 cells))))))
+      (nreverse cells))))
+
+(defun canadian-parliament--source-date (string)
+  "Convert Appendix 13 date STRING to an Emacs Gregorian date.
+
+Return nil when STRING contains no date."
+  (when (and string
+             (string-match
+              "\\b\\([0-9][0-9]\\)-\\([0-9][0-9]\\)-\\([0-9]\\{4\\}\\)\\b"
+              string))
+    (list (string-to-number (match-string 2 string))
+          (string-to-number (match-string 1 string))
+          (string-to-number (match-string 3 string)))))
+
+(defun canadian-parliament--source-dates (string)
+  "Return all Appendix 13 dates contained in STRING."
+  (let ((pos 0)
+        dates)
+    (while
+        (string-match
+         "\\b\\([0-9][0-9]\\)-\\([0-9][0-9]\\)-\\([0-9]\\{4\\}\\)\\b"
+         string pos)
+      (push
+       (list (string-to-number (match-string 2 string))
+             (string-to-number (match-string 1 string))
+             (string-to-number (match-string 3 string)))
+       dates)
+      (setq pos (match-end 0)))
+    (nreverse dates)))
+
+(defun canadian-parliament--source-parliament-number (string)
+  "Return the Parliament number found in STRING."
+  (when (string-match
+         "\\b\\([0-9]+\\)\\(?:st\\|nd\\|rd\\|th\\) Parliament\\b"
+         string)
+    (string-to-number (match-string 1 string))))
+
+(defun canadian-parliament--source-session-count (string)
+  "Return the number of sessions represented in STRING."
+  (let ((pos 0)
+        (count 0))
+    (while
+        (string-match
+         "\\b[0-9]+\\(?:st\\|nd\\|rd\\|th\\) Session\\b"
+         string pos)
+      (setq count (1+ count)
+            pos (match-end 0)))
+    count))
+
+(defun canadian-parliament--source-row-data (row)
+  "Parse one Appendix 13 Parliament ROW.
+
+Return a plist describing the Parliament and its sessions.
+Signal an error if ROW does not have the expected structure."
+  (let ((cells (canadian-parliament--source-cells row)))
+    (unless (= (length cells) 9)
+      (error "Unexpected Appendix 13 row structure: %d cells"
+             (length cells)))
+
+    (let* ((heading (nth 0 cells))
+           (number
+            (canadian-parliament--source-parliament-number heading))
+           (session-count
+            (canadian-parliament--source-session-count heading))
+           (election
+            (canadian-parliament--source-date (nth 1 cells)))
+           (writs
+            (canadian-parliament--source-date (nth 2 cells)))
+           (openings
+            (canadian-parliament--source-dates (nth 3 cells)))
+           (last-sittings
+            (canadian-parliament--source-dates (nth 4 cells)))
+           (prorogations
+            (canadian-parliament--source-dates (nth 5 cells)))
+           (dissolution
+            (canadian-parliament--source-date (nth 6 cells))))
+
+      (unless (and number writs (> session-count 0))
+        (error "Incomplete Appendix 13 parliamentary row"))
+
+      (unless (= session-count (length openings))
+        (error
+         "Appendix 13 session/opening mismatch for Parliament %d"
+         number))
+
+      (list :parliament number
+            :session-count session-count
+            :election election
+            :writs writs
+            :openings openings
+            :last-sittings last-sittings
+            :prorogations prorogations
+            :dissolution dissolution))))
+
+(defun canadian-parliament--source-session-end
+    (opening next-opening prorogations dissolution)
+  "Return the end of the session beginning at OPENING.
+
+NEXT-OPENING is the opening of the following session, or nil.
+PROROGATIONS contains the Parliament's prorogation dates.
+DISSOLUTION is the Parliament's dissolution date."
+  (or
+   (cl-find-if
+    (lambda (date)
+      (and
+       (> (calendar-absolute-from-gregorian date)
+          (calendar-absolute-from-gregorian opening))
+       (or
+        (null next-opening)
+        (< (calendar-absolute-from-gregorian date)
+           (calendar-absolute-from-gregorian next-opening)))))
+    prorogations)
+   (and (null next-opening)
+        dissolution)))
+
+(defun canadian-parliament--source-parliament-entry (source)
+  "Return the Parliament table entry represented by SOURCE."
+  (list
+   (plist-get source :writs)
+   (plist-get source :dissolution)
+   (plist-get source :parliament)))
+
+(defun canadian-parliament--source-session-entries (source)
+  "Return session table entries represented by SOURCE.
+
+Entries are returned oldest first."
+  (let* ((number (plist-get source :parliament))
+         (openings (plist-get source :openings))
+         (prorogations (plist-get source :prorogations))
+         (dissolution (plist-get source :dissolution))
+         entries)
+    (dotimes (i (length openings))
+      (let* ((opening (nth i openings))
+             (next-opening (nth (1+ i) openings))
+             (end
+              (canadian-parliament--source-session-end
+               opening next-opening prorogations dissolution)))
+        (push
+         (list opening end number (1+ i))
+         entries)))
+    (nreverse entries)))
+
+(defun canadian-parliament--local-parliament (number)
+  "Return the local Parliament entry numbered NUMBER."
+  (cl-find number canadian-parliament-parliaments
+           :key (lambda (entry) (nth 2 entry))))
+
+(defun canadian-parliament--local-sessions (number)
+  "Return local sessions for Parliament NUMBER, oldest first.
+
+`canadian-parliament-sessions' is stored newest first."
+  (reverse
+   (cl-remove-if-not
+    (lambda (entry)
+      (= (nth 2 entry) number))
+    canadian-parliament-sessions)))
+
+(defun canadian-parliament--check-entry (source local)
+  "Return comparison text for SOURCE and LOCAL table entries."
+  (cond
+   ((equal source local) "OK")
+   ((null local) "MISSING")
+   (t "DIFF")))
+
+(defun canadian-parliament--check-one (source)
+  "Insert comparison results for one SOURCE Parliament."
+  (let* ((number (plist-get source :parliament))
+         (source-parliament
+          (canadian-parliament--source-parliament-entry source))
+         (source-sessions
+          (canadian-parliament--source-session-entries source))
+         (local-parliament
+          (canadian-parliament--local-parliament number))
+         (local-sessions
+          (canadian-parliament--local-sessions number)))
+
+    (insert
+     (format "%s Parliament\n"
+             (canadian-parliament--ordinal number)))
+
+    (insert
+     (format "  Parliament  House: %-29S Local: %-29S %s\n"
+             source-parliament
+             local-parliament
+             (canadian-parliament--check-entry
+              source-parliament local-parliament)))
+
+    (dotimes (i (max (length source-sessions)
+                     (length local-sessions)))
+      (let ((source-session (nth i source-sessions))
+            (local-session (nth i local-sessions)))
+        (insert
+         (format "  Session %-2d  House: %-29S Local: %-29S %s\n"
+                 (1+ i)
+                 source-session
+                 local-session
+                 (canadian-parliament--check-entry
+                  source-session local-session)))))
+
+    (insert "\n")))
+
+(defun canadian-parliament--source-row-html (number)
+  "Return the Appendix 13 HTML row for Parliament NUMBER."
+  (goto-char (point-min))
+  (let ((heading
+         (format "%s Parliament"
+                 (canadian-parliament--ordinal number))))
+    (unless (search-forward heading nil t)
+      (error "%s not found in Appendix 13" heading))
+
+    (let ((beg
+           (save-excursion
+             (unless (search-backward "<tr" nil t)
+               (error "Opening <tr> not found for %s" heading))
+             (point)))
+          (end
+           (save-excursion
+             (unless (search-forward "</tr>" nil t)
+               (error "Closing </tr> not found for %s" heading))
+             (point))))
+      (buffer-substring-no-properties beg end))))
+
+(defun canadian-parliament--source-parliaments (numbers)
+  "Retrieve source data for Parliaments in NUMBERS."
+  (require 'url)
+  (let ((buffer
+         (url-retrieve-synchronously
+          canadian-parliament--source-url
+          'silent 'inhibit-cookies 15)))
+    (unless buffer
+      (error "Unable to retrieve Appendix 13"))
+    (unwind-protect
+        (with-current-buffer buffer
+          (mapcar
+           (lambda (number)
+             (canadian-parliament--source-row-data
+              (canadian-parliament--source-row-html number)))
+           numbers))
+      (when (buffer-live-p buffer)
+        (kill-buffer buffer)))))
+
+;;;###autoload
+;;;###autoload
+(defun canadian-parliament-check-source (&optional parliament)
+  "Check local data against House of Commons Appendix 13.
+
+Without a prefix argument, compare the current and immediately
+preceding Parliaments with the locally maintained Parliament and
+session tables.
+
+With a prefix argument, prompt for a PARLIAMENT number and check
+that Parliament only.
+
+This command is a read-only maintenance aid.  It never modifies
+`canadian-parliament-parliaments' or
+`canadian-parliament-sessions'."
+  (interactive
+   (list
+    (when current-prefix-arg
+      (read-number "Parliament number: "))))
+  (condition-case err
+      (let* ((current
+              (nth 2 (car canadian-parliament-parliaments)))
+             (numbers
+              (if parliament
+                  (list parliament)
+                (list current (1- current))))
+             (sources
+              (canadian-parliament--source-parliaments numbers)))
+        (with-current-buffer
+            (get-buffer-create "*Canadian Parliament Check*")
+          (let ((inhibit-read-only t))
+            (erase-buffer)
+            (insert
+             "Canadian Parliament source check\n"
+             "House of Commons Procedure and Practice, Appendix 13\n\n")
+
+            (dolist (source sources)
+              (canadian-parliament--check-one source))
+
+            (goto-char (point-min))
+            (special-mode))
+
+          (pop-to-buffer (current-buffer))))
+
+    (error
+     (user-error
+      "Unable to check Appendix 13: %s"
+      (error-message-string err)))))
+
+(defun canadian-parliament-show-source-row (number)
+  "Retrieve and display the Appendix 13 row for Parliament NUMBER."
+  (interactive "nParliament number: ")
+  (require 'url)
+  (let ((buffer
+         (url-retrieve-synchronously
+          canadian-parliament--source-url
+          'silent 'inhibit-cookies 15)))
+    (unless buffer
+      (user-error "Unable to retrieve Appendix 13"))
+    (unwind-protect
+        (with-current-buffer buffer
+          (let ((row
+                 (canadian-parliament--source-row-html number)))
+            (with-current-buffer
+                (get-buffer-create "*Canadian Parliament Source Row*")
+              (let ((inhibit-read-only t))
+                (erase-buffer)
+                (insert row)
+                (goto-char (point-min))
+                (special-mode))
+              (pop-to-buffer (current-buffer)))))
+      (when (buffer-live-p buffer)
+        (kill-buffer buffer)))))
 
 (provide 'canadian-parliament)
 
