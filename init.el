@@ -946,7 +946,7 @@
 (easy-menu-add-item calendar-mode-map '(menu-bar holidays)
   ["Yearly Holidays" list-holidays-this-year])
 
-(advice-add 'calendar-exit :before #'save-diary-before-calendar-exit)
+(advice-add 'calendar-exit :before #'save-diary)
 
 (use-package year-calendar
   :ensure nil
@@ -1251,7 +1251,8 @@
   :demand t
   :bind
   (:map emacs-lisp-mode-map
-        ("C-c C-e" . elisp-eval-page-region-or-buffer)))
+        ("C-c C-e" . elisp-eval-page-region-or-buffer)
+	("C-c C-d" . elisp-normalize-doc-spacing)))
 
 (use-package elisp-mode
   :ensure nil
@@ -1923,7 +1924,9 @@ Report the number of fractions replaced."
                       :inherit nil
                       :foreground (face-foreground 'default nil t)
                       :background (face-background 'default nil t)
-                      :weight 'normal))
+                      :weight 'normal)
+
+  (advice-add 'org-agenda-quit :before #'save-diary))
 
 (use-package calfw :defer t)
 

@@ -130,12 +130,12 @@ current month if no calendar month is displayed."
     (and (get-buffer buffer)
 	 (kill-buffer buffer))))
 
-;; https://emacs.stackexchange.com/questions/63533/exit-emacs-calendar-without-having-to-save-the-diary-file
-(defun save-diary-before-calendar-exit (_)
-  (let ((diary-buffer (get-file-buffer diary-file)))
-    (or (not diary-buffer)
-	(not (buffer-modified-p diary-buffer))
-	(with-current-buffer diary-buffer (save-buffer)))))
+(defun save-diary (&rest _)
+  "Save `diary-file' if its buffer is modified."
+  (when-let ((diary-buffer (get-file-buffer diary-file)))
+    (when (buffer-modified-p diary-buffer)
+      (with-current-buffer diary-buffer
+        (save-buffer)))))
 
 ;; https://www.emacswiki.org/emacs/DiaryMode
 (defun alt-clean-equal-signs () "Make lines of = signs invisible."

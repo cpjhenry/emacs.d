@@ -64,7 +64,6 @@
               elfeed-search-print-entry-function
               #'cpj/elfeed-daily-print-entry
               mode-name "Elfeed Daily")
-  (cpj/elfeed-daily-update-widths)
   (add-hook 'elfeed-search-update-hook
             #'cpj/elfeed-daily-update-widths nil t)
   (elfeed-search-update :force))
