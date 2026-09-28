@@ -140,6 +140,21 @@ finished its normal buffer setup:
         (goto-char position)
         (org-fold-hide-block-toggle t)))))
 
+(defun cpj/org-toggle-checkbox-dwim ()
+  "Toggle or create an Org checkbox at point.
+
+On an existing checkbox, toggle its state.  Otherwise, ensure
+the current element is a list item and add an unchecked checkbox."
+  (interactive)
+  (cond
+   ((org-at-item-checkbox-p)
+    (org-toggle-checkbox))
+   ((org-at-item-p)
+    (org-toggle-checkbox '(4)))
+   (t
+    (org-ctrl-c-minus)
+    (org-toggle-checkbox '(4)))))
+
 
 ;;; auto-sort after capture (when variable set)
 

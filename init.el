@@ -102,7 +102,13 @@
   (keymap-global-set "<home>" nil) ; 'move-beginning-of-line
   (keymap-global-set "<end>"  nil) ; 'move-end-of-line
 
-  ;; Alternates
+  ;; Reserve A-a through A-z as an Emacs Alt command namespace
+  (dolist (char (number-sequence ?a ?z))
+    (let ((key (format "A-%c" char)))
+      (define-key key-translation-map
+                  (kbd key)
+                  (kbd key))))
+
   (keymap-global-set "A-<left>" "s-<left>")
   (keymap-global-set "A-<right>" "s-<right>")
   (keymap-global-set "A-k" "s-k")
@@ -1407,7 +1413,6 @@
   :custom
   ;; Editing and display.
   (org-ctrl-k-protect-subtree t)
-  (org-element-use-cache nil)
   (org-ellipsis "·")
   (org-fold-catch-invisible-edits 'smart)
   (org-footnote-auto-adjust t)
@@ -1526,7 +1531,8 @@
    ("C-c o r"    . org-mode-restart)
    ("C-c o t"    . org-toggle-link-display)
    ("A-b"        . cpj/org-emphasize-bold)
-   ("A-i"        . cpj/org-emphasize-italic))
+   ("A-i"        . cpj/org-emphasize-italic)
+   ("A-c"        . cpj/org-toggle-checkbox-dwim))
 
   :hook
   (org-capture-after-finalize . cpj/org-sort-capture-target)
@@ -1572,6 +1578,11 @@
   (org-remap org-mode-map
              #'back-to-indentation-or-beginning-of-line
              #'org-beginning-of-line)
+
+  ;; Disable the Org element cache to avoid parser/cache errors;
+  ;; defer until `org-element' has initialized the variable.
+  (with-eval-after-load 'org-element
+    (setopt org-element-use-cache nil))
 
   ;; Tweak behaviour of M-up and M-down.
   (defun my/org-transpose-paragraph-up ()
@@ -2641,4 +2652,4 @@ Report the number of fractions replaced."
 ; LocalWords:  plist nopgnos flymake api todo paren docstrings ibuf
 ; LocalWords:  ibuffer ish minibuffer emacsclient Uncomment maccalfw
 ; LocalWords:  kMDItemCFBundleIdentifier mdfind nndraft defvar nnimap
-; LocalWords:  funcall ecompleterc nntp vspace parskip perl
+; LocalWords:  funcall ecompleterc nntp vspace parskip perl cb img
