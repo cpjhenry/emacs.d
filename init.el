@@ -2544,7 +2544,8 @@ Report the number of fractions replaced."
 (with-eval-after-load 'iso-transl
   (keymap-set iso-transl-ctl-x-8-map "0" "\u200B")
   (keymap-set iso-transl-ctl-x-8-map "a |" "↕")
-  (keymap-set iso-transl-ctl-x-8-map "y" "✓"))
+  (keymap-set iso-transl-ctl-x-8-map "y" "✓")
+  (keymap-set iso-transl-ctl-x-8-map ". '" "\u2234"))
 
 (which-key-alias "C-x 8"   "keys")
 (which-key-alias "C-x 8 0" "ZWS")

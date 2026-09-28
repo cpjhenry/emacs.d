@@ -132,7 +132,7 @@ current month if no calendar month is displayed."
 
 (defun save-diary (&rest _)
   "Save `diary-file' if its buffer is modified."
-  (when-let ((diary-buffer (get-file-buffer diary-file)))
+  (when-let* ((diary-buffer (get-file-buffer diary-file)))
     (when (buffer-modified-p diary-buffer)
       (with-current-buffer diary-buffer
         (save-buffer)))))
