@@ -137,7 +137,6 @@
   (menu-bar-mode 1)
   (message "→ Running on Windows."))
 
-
 ;;; Initialize package manager
 (require 'package)
 (setopt package-archive-column-width 1
@@ -231,36 +230,25 @@
 	read-buffer-completion-ignore-case t
 	read-file-name-completion-ignore-case t)
 
-;; quit-window / kill-buffer
-(if my/emacs-31-p
-    (setopt quit-window-kill-buffer t)
-  (defun my/quit-window ()
-    "Quit the current window, killing its buffer."
-    (interactive)
-    (quit-window t))
-  (define-key key-translation-map [remap quit-window] #'my/quit-window))
-(keymap-set messages-buffer-mode-map "q" #'bury-buffer)
-
-;; kill-region
-(if my/emacs-31-p
-    (setopt kill-region-dwim 'emacs-word))
-
 ;; files --- move out of ~/.emacs.d
-(setopt	custom-file			(concat user-emacs-directory "var/custom.el")
-	nsm-settings-file		(concat user-emacs-directory "var/network-security.data")
-	transient-history-file		(concat user-emacs-directory "var/transient/history.el")
-	transient-levels-file		(concat user-emacs-directory "var/transient/levels.el")
-	transient-values-file		(concat user-emacs-directory "var/transient/values.el")
-	url-configuration-directory	(concat user-emacs-directory "var/url/configuration/"))
+(setopt
+ custom-file
+ (expand-file-name "var/custom.el" user-emacs-directory)
 
-(require 'persist)
-(setq persist--directory-location (concat user-emacs-directory "var/persist"))
+ nsm-settings-file
+ (expand-file-name "var/network-security.data" user-emacs-directory)
 
-(require 'multisession)
-(setopt multisession-directory (concat user-emacs-directory "var/multisession/"))
+ transient-history-file
+ (expand-file-name "var/transient/history.el" user-emacs-directory)
 
-(require 'request)
-(setopt request-storage-directory (concat user-emacs-directory "var/request/"))
+ transient-levels-file
+ (expand-file-name "var/transient/levels.el" user-emacs-directory)
+
+ transient-values-file
+ (expand-file-name "var/transient/values.el" user-emacs-directory)
+
+ url-configuration-directory
+ (expand-file-name "var/url/configuration/" user-emacs-directory))
 
 ;; path
 (use-package exec-path-from-shell
@@ -315,7 +303,31 @@
   (bookmark-save-flag 1)
   (bookmark-fringe-mark nil)
   (bookmark-sort-flag nil)
-  (bookmark-default-file (expand-file-name "etc/bookmarks" user-emacs-directory)))
+  (bookmark-default-file
+   (expand-file-name "etc/bookmarks" user-emacs-directory)))
+
+(use-package calc
+  :ensure nil
+  :bind (:map calc-mode-map
+              ("q" . kill-current-buffer))
+  :config
+  (defun cpj/quick-calc-cleanup (function &rest arguments)
+    "Run FUNCTION with ARGUMENTS without leaving a new Calc buffer."
+    (let ((calculator-buffer (get-buffer "*Calculator*")))
+      (unwind-protect
+          (apply function arguments)
+        (unless calculator-buffer
+          (when-let* ((buffer (get-buffer "*Calculator*")))
+            (kill-buffer buffer))))))
+  (advice-add 'quick-calc :around #'cpj/quick-calc-cleanup))
+
+(use-package emacs-news-mode
+  :ensure nil
+  :bind (:map emacs-news-view-mode-map
+              ("[" . my/outline-previous-heading)
+              ("]" . my/outline-next-heading)
+              ("{" . outline-backward-same-level)
+              ("}" . outline-forward-same-level)))
 
 (use-package eshell
   :ensure nil
@@ -328,23 +340,16 @@
   :custom
   (grep-use-headings t))
 
-(use-package man
+(use-package help-mode
   :ensure nil
-  :defer t
-  :custom
-  (Man-notify-method 'pushy))
-
-(use-package net-utils
-  :ensure nil
-  :custom
-  (whois-server-name "whois.ca.fury.ca")
-  :config
-  (defun cpj/whois-use-net-utils-mode (&rest _)
-    "Put the Whois results buffer in `net-utils-mode'."
-    (when-let* ((buffer (get-buffer "*Whois*")))
-      (with-current-buffer buffer
-	(net-utils-mode))))
-  (advice-add #'whois :after #'cpj/whois-use-net-utils-mode))
+  :hook
+  (help-mode . goto-address-mode)
+  :bind
+  (("C-h C-s" . cpj/find-symbol-source)
+   :map help-mode-map
+   ("["       . help-go-back)
+   ("]"       . help-go-forward)
+   ("M-RET"   . goto-address-at-point)))
 
 (use-package info
   :ensure nil
@@ -365,39 +370,38 @@
   (add-to-list 'Info-additional-directory-list
                (expand-file-name "usr/info/" user-emacs-directory)))
 
-(use-package calc
+(use-package man
   :ensure nil
-  :bind (:map calc-mode-map
-              ("q" . kill-current-buffer))
+  :defer t
+  :custom
+  (Man-notify-method 'pushy))
+
+(use-package multisession
+  :custom
+  (multisession-directory
+   (expand-file-name "var/multisession/" user-emacs-directory)))
+
+(use-package net-utils
+  :ensure nil
+  :custom
+  (whois-server-name "whois.ca.fury.ca")
   :config
-  (defun cpj/quick-calc-cleanup (function &rest arguments)
-    "Run FUNCTION with ARGUMENTS without leaving a new Calc buffer."
-    (let ((calculator-buffer (get-buffer "*Calculator*")))
-      (unwind-protect
-          (apply function arguments)
-        (unless calculator-buffer
-          (when-let* ((buffer (get-buffer "*Calculator*")))
-            (kill-buffer buffer))))))
-  (advice-add 'quick-calc :around #'cpj/quick-calc-cleanup))
+  (defun cpj/whois-use-net-utils-mode (&rest _)
+    "Put the Whois results buffer in `net-utils-mode'."
+    (when-let* ((buffer (get-buffer "*Whois*")))
+      (with-current-buffer buffer
+	(net-utils-mode))))
+  (advice-add #'whois :after #'cpj/whois-use-net-utils-mode))
 
-(use-package help-mode
-  :ensure nil
-  :hook
-  (help-mode . goto-address-mode)
-  :bind
-  (("C-h C-s" . cpj/find-symbol-source)
-   :map help-mode-map
-   ("["       . help-go-back)
-   ("]"       . help-go-forward)
-   ("M-RET"   . goto-address-at-point)))
+(use-package persist
+  :custom
+  (persist--directory-location
+   (expand-file-name "var/persist/" user-emacs-directory)))
 
-(use-package emacs-news-mode
-  :ensure nil
-  :bind (:map emacs-news-view-mode-map
-              ("[" . my/outline-previous-heading)
-              ("]" . my/outline-next-heading)
-              ("{" . outline-backward-same-level)
-              ("}" . outline-forward-same-level)))
+(use-package request
+  :custom
+  (request-storage-directory
+   (expand-file-name "var/request/" user-emacs-directory)))
 
 (use-package shr
   :ensure nil
@@ -419,6 +423,16 @@
               ("j" . View-scroll-line-forward)
               ("k" . my/View-scroll-line-backward)
               ("q" . View-kill-and-leave)))
+
+;; quit-window / kill-buffer
+(if my/emacs-31-p
+    (setopt quit-window-kill-buffer t)
+  (define-key key-translation-map [remap quit-window] #'my/quit-window))
+(keymap-set messages-buffer-mode-map "q" #'bury-buffer)
+
+;; kill-region
+(if my/emacs-31-p
+    (setopt kill-region-dwim 'emacs-word))
 
 ;; Files and saving
 (setopt auto-save-default nil
@@ -536,7 +550,6 @@
 (keymap-set emacs-lisp-mode-map "S-<return>" #'default-indent-new-line)
 
 ;; Which-key
-
 (use-package which-key
   :custom
   (which-key-idle-delay 0.5)
@@ -563,7 +576,7 @@
   (push '((nil . "\\`cpj/which-key-abort-quietly\\'") . t)
         which-key-replacement-alist))
 
-;; Search and narrowing
+;;; Search and narrowing
 
 ;; Search TERM in a web browser.
 (keymap-set search-map "b" #'browser-search)
@@ -621,8 +634,9 @@
 
 ;; M-x enhancement
 (use-package smex
-  :custom (smex-save-file (concat user-emacs-directory "var/smex.history"))
-  :bind ( ("M-x" . smex))
+  :custom (smex-save-file
+	   (expand-file-name "var/smex.history" user-emacs-directory))
+  :bind (("M-x" . smex))
   :config (smex-initialize))
 
 
@@ -714,30 +728,37 @@
   :config (unless *w32* (setopt ls-lisp-use-insert-directory-program nil)))
 
 (use-package dired-narrow
-  :after dired
-  :demand t
-  :bind ( :map dired-mode-map
-	  ("/" . dired-narrow))
-  :config (easy-menu-add-item dired-mode-map '(menu-bar immediate)
-	    ["Narrow dired buffer" dired-narrow :help "Narrow to the files matching a string"]))
+  :bind
+  (:map dired-mode-map
+        ("/" . dired-narrow))
+  :init
+  (with-eval-after-load 'dired
+    (easy-menu-add-item
+     dired-mode-map '(menu-bar immediate)
+     ["Narrow dired buffer" dired-narrow
+      :help "Narrow to the files matching a string"])))
 
 (use-package quick-preview
-  :after dired
-  :demand t
-  :bind ( :map dired-mode-map
-	  ("<SPC>" . quick-preview-at-point))
-  :config
-  (easy-menu-add-item dired-mode-map '(menu-bar immediate)
-    ["Quick Preview" quick-preview-at-point :help "Preview file at point with quick preview tool"]))
+  :bind
+  (:map dired-mode-map
+        ("<SPC>" . quick-preview-at-point))
+  :init
+  (with-eval-after-load 'dired
+    (easy-menu-add-item
+     dired-mode-map '(menu-bar immediate)
+     ["Quick Preview" quick-preview-at-point
+      :help "Preview file at point with quick preview tool"])))
 
 (use-package reveal-in-osx-finder
-  :after dired
-  :demand t
-  :bind ( :map dired-mode-map
-	  ("r" . reveal-in-osx-finder))
-  :config
-  (easy-menu-add-item dired-mode-map '(menu-bar immediate)
-    ["Reveal in Finder" reveal-in-osx-finder :help "Reveal the file in the OS X Finder"]))
+  :bind
+  (:map dired-mode-map
+        ("r" . reveal-in-osx-finder))
+  :init
+  (with-eval-after-load 'dired
+    (easy-menu-add-item
+     dired-mode-map '(menu-bar immediate)
+     ["Reveal in Finder" reveal-in-osx-finder
+      :help "Reveal the file in the OS X Finder"])))
 
 
 ;;; Ibuffer
@@ -980,14 +1001,6 @@
   :if (display-graphic-p)
   :config
   (roman-clock-period-notify-mode 1))
-
-;;; Buddhist observances
-(use-package buddhist-observation; usr/
-  :ensure nil
-  :demand t
-  :commands (buddhist-observation-display
-             buddhist-observation-today
-             buddhist-observation-stop-audio))
 
 ;;; Weather
 (use-package weather-alert
@@ -1872,7 +1885,8 @@ Report the number of fractions replaced."
   :ensure nil
   :after ox-latex)
 
-;;; Calendar data and Org Agenda
+;;; Calendar data
+;;; org-agenda
 
 ;; Calendar data from macOS Calendar is projected into
 ;; calendar-data.org', which is read by `org-agenda’ as an ordinary
@@ -1937,7 +1951,16 @@ Report the number of fractions replaced."
                       :background (face-background 'default nil t)
                       :weight 'normal)
 
-  (advice-add 'org-agenda-quit :before #'save-diary))
+  (advice-add 'org-agenda-quit :before #'save-diary)
+
+  (require 'buddhist-observation))
+
+(use-package buddhist-observation ; usr/
+  :ensure nil
+  :commands
+  (buddhist-observation-display
+   buddhist-observation-today
+   buddhist-observation-stop-audio))
 
 (use-package calfw :defer t)
 

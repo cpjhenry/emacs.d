@@ -71,7 +71,6 @@
   (interactive)
   (scroll-down-command (cpj/window-half-height)))
 
-
 (declare-function View-scroll-line-backward "view")
 (defun my/View-scroll-line-backward ()
   "Scroll line backward, jump to new top of screen."
@@ -79,6 +78,8 @@
   (View-scroll-line-backward)
   (move-to-window-line-top-bottom))
 
+
+;; conveniences
 (defun my/init ()
   "Load init-file."
   (interactive)
@@ -124,6 +125,11 @@ Useful if your *scratch* is already holding something important."
     (let ((case-fold-search nil))
       (while (search-forward "" nil t) ; group separator
 	(replace-match "")))))
+
+(defun my/quit-window ()
+  "Quit the current window, killing its buffer."
+  (interactive)
+  (quit-window t))
 
 (defun my/delete-other-windows (&rest _)
   "Advice wrapper to discard unnecessary arguments to function."
