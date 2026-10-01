@@ -236,9 +236,13 @@ organizations."
      (ind--fractional-space 0.45))))
 
 (defun ind--day-line (date)
-  "Return day-of-year, days remaining, ISO week, quarter, and time zone for DATE."
+  "Return day-of-year, days remaining, ISO week, quarter, and time zone for DATE.
+
+Determine the time zone from DATE rather than the current time, so that
+historical time-zone rules and abbreviations are respected."
   (let* ((month (calendar-extract-month date))
          (year (calendar-extract-year date))
+         (day-of-month (calendar-extract-day date))
          (day (calendar-day-number date))
          (days-in-year (if (calendar-leap-year-p year) 366 365))
          (remaining (- days-in-year day))
@@ -246,7 +250,8 @@ organizations."
          (iso-date (calendar-iso-from-absolute absolute))
          (week (car iso-date))
          (quarter (1+ (/ (1- month) 3)))
-         (zone (format-time-string "%Z")))
+         (time (encode-time 0 0 12 day-of-month month year))
+         (zone (format-time-string "%Z" time)))
     (format "Day %d/%d Week %d Q%d %s"
             day
             remaining
@@ -304,10 +309,15 @@ When EXTENDED is non-nil, use the unabbreviated form."
       " Sess."))))
 
 (defun ind--julian-count-line (date)
-  "Return the MJD and TJD line for Gregorian DATE."
-  (format "MJD %d · TJD %d"
-          (modified-julian-date-from-gregorian date)
-          (truncated-julian-date-from-gregorian date)))
+  "Return the applicable MJD and TJD counts for Gregorian DATE."
+  (let ((mjd (modified-julian-date-from-gregorian date))
+        (tjd (truncated-julian-date-from-gregorian date)))
+    (cond
+     ((natnump tjd)
+      (format "MJD %d · TJD %d" mjd tjd))
+     ((natnump mjd)
+      (format "MJD %d" mjd))
+     (t nil))))
 
 (defun ind--lunar-phase-time (phase)
   "Return the encoded local time of lunar PHASE data."

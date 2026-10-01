@@ -69,35 +69,41 @@ regions."
 
       ;; Remove leading and trailing whitespace line by line.
       (goto-char (point-min))
-      (while (not (eobp))
-        (beginning-of-line)
-        (delete-horizontal-space)
-        (end-of-line)
-        (delete-horizontal-space)
-        (forward-line 1))
+      (while (re-search-forward "^[ \t]+" nil t)
+	(replace-match ""))
+
+      (goto-char (point-min))
+      (while (re-search-forward "[ \t]+$" nil t)
+	(replace-match ""))
 
       ;; Normalize Markdown-style bullets in non-Org text buffers.
       (when (and (derived-mode-p 'text-mode)
-                 (not (derived-mode-p 'org-mode)))
-        (goto-char (point-min))
-        (while (re-search-forward "^\\* " nil t)
-          (replace-match "- " t t)))
+		 (not (derived-mode-p 'org-mode)))
+	(goto-char (point-min))
+	(while (re-search-forward "^\\* " nil t)
+	  (replace-match "- " t t)))
 
       ;; Collapse runs of 2+ literal spaces to one space.
       ;; Tabs are untouched.  Org tables/src/fixed-width regions are skipped.
       (goto-char (point-min))
       (while (re-search-forward "  +" nil t)
-        (unless (and (derived-mode-p 'org-mode)
-                     (or (org-at-table-p)
-                         (org-in-src-block-p)
-                         (normalize-text--org-fixed-width-p)))
-          (replace-match " " t t)))
+	(unless
+	    (and (derived-mode-p 'org-mode)
+		 ;; Preserve our regexp match while Org's context predicates do
+		 ;; their own searching; widen so they can inspect surrounding text.
+		 (save-match-data
+		   (save-restriction
+		     (widen)
+		     (or (org-at-table-p)
+			 (org-in-src-block-p)
+			 (normalize-text--org-fixed-width-p)))))
+	  (replace-match " " t t)))
 
       ;; Collapse 3+ newlines to 2 newlines.
       ;; This preserves paragraph breaks, but removes blank-line bloat.
       (goto-char (point-min))
       (while (re-search-forward "\n\\{3,\\}" nil t)
-        (replace-match "\n\n")))))
+	(replace-match "\n\n")))))
 
 (provide 'normalize-text)
 ;;; normalize-text.el ends here

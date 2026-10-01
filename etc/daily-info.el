@@ -30,12 +30,6 @@
 (declare-function ordinal-number "filesandbuffers")
 (declare-function turn-off-cursor "filesandbuffers")
 
-(defvar diary-number-of-entries)
-
-(defun daily-info--ind-summary ()
-  "Return the native Emacs `ind' daily summary."
-  (ind-summary-string))
-
 (defcustom daily-info-include-holidays t
   "Whether `daily-info' includes calendar holidays."
   :type 'boolean
@@ -45,6 +39,8 @@
   "Whether `daily-info' includes diary entries."
   :type 'boolean
   :group 'daily-info)
+
+(defvar diary-number-of-entries)
 
 (defun daily-info--diary-entries (date)
   "Return diary entry strings for DATE."
@@ -147,7 +143,7 @@ are no birthdays in that period."
   (let ((inhibit-read-only t))
     (erase-buffer)
 
-    (when-let* ((ind (daily-info--ind-summary)))
+    (when-let* ((ind (ind-summary-string)))
       (insert (string-trim-right ind))
       (insert "\n"))
 

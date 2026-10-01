@@ -1952,7 +1952,6 @@ Report the number of fractions replaced."
                       :weight 'normal)
 
   (advice-add 'org-agenda-quit :before #'save-diary)
-
   (require 'buddhist-observation))
 
 (use-package buddhist-observation ; usr/

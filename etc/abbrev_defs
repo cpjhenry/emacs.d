@@ -23,7 +23,7 @@
     ("midot" "·" nil :count 6)
     ("spd" "Salutem plurimam dicit." nil :count 3)
     ("sqpd" "Salutem quam plurimam dicit." nil :count 0)
-    ("svb" "Si vales, bene est; ego valeo." nil :count 5)
+    ("svbe" "Si vales, bene est; ego valeo." nil :count 5)
    ))
 
 (define-abbrev-table 'latex-mode-abbrev-table
@@ -46,7 +46,7 @@
 #+LATEX: \\noindent\\parindent=0pt\\parskip=.5\\baselineskip plus 2pt
 
 #+LATEX: \\end{abstract}" nil :count 0)
-    ("myheader" "#+INCLUDE: \"~/Documents/org/latexhdr.org\"" nil :count 4)
+    ("myheader" "#+INCLUDE: \"~/Documents/org/latexhdr.org\"" nil :count 5)
     ("mykeywords" ":KEYWORDS:
 #+DESCRIPTION:
 #+KEYWORDS:

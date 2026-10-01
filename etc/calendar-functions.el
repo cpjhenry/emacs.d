@@ -226,6 +226,14 @@ Each weekday is a symbol such as `monday', `tuesday', or `saturday'."
     (and (<= start today end)
          (zerop (% (- today start) 14)))))
 
+(defun diary-historical-anniversary (month day year text)
+  "Display historical anniversary TEXT for MONTH, DAY, and YEAR."
+  (when (and (= (calendar-extract-month date) month)
+             (= (calendar-extract-day date) day))
+    (format "%s (%d %s)"
+            text year
+            (ordinal-number (- (calendar-extract-year date) year)))))
+
 
 ;;; calfw
 
