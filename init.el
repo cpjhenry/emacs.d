@@ -405,6 +405,16 @@
 
 (use-package shr
   :ensure nil
+  :custom
+  (shr-folding-mode t)
+  (shr-inhibit-images t)
+  (shr-use-colors nil)
+  (shr-use-fonts nil)
+  (shr-bullet "• ")
+  (shr-indentation 2)	; Left-side margin
+  (shr-width nil)	; Fold text for comfiness
+  (shr-max-width 94)	; Maximum width for web-derived pages (e.g. Elfeed);
+			; especially useful at increased text scale.
   :config
   ;; When images are inhibited, SHR normally substitutes alt text (and
   ;; sometimes other cruft) for <img> elements.  Suppress the elements
@@ -1105,7 +1115,6 @@
 
 (use-package eww
   :ensure nil
-  :demand t
   :custom
   (browse-url-browser-function 'eww-browse-url)
   (eww-auto-rename-buffer t)
@@ -1113,17 +1122,6 @@
   (eww-readable-adds-to-history nil)
   (eww-search-confirm-send-region nil)
   (url-privacy-level '(email lastloc))
-
-  ;; look-and-feel
-  (shr-folding-mode t)
-  (shr-inhibit-images t)
-  (shr-use-colors nil)
-  (shr-use-fonts nil)
-  (shr-bullet "• ")
-  (shr-indentation 2)	; Left-side margin
-  (shr-width nil)	; Fold text for comfiness
-  (shr-max-width 94)	; Controls fold-column in web-derived pages (ie. Elfeed)
-			; Useful especially when you increase text-scale.
   :bind
   (("C-x g" . browse-url-at-point)
    ("M-s M-w" . cpj/eww-search-words)
@@ -1648,6 +1646,9 @@
 
   (advice-add 'org-latex-export-as-latex
               :after #'cpj/org-latex-export-as-latex-cleanup-windows)
+
+  (advice-add 'org-latex-table-row
+	      :around #'cpj/org-latex-cardtable-row)
 
   ;; Fix `org-table-convert-region' menu entry.
   (define-key org-tbl-menu [Convert\ Region]

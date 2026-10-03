@@ -333,8 +333,10 @@ mode when toggled off."
       (setq s (replace-match "\\1,\\2" nil nil s)))
     s))
 
-(defun ordinal-number (n)
-  "Return N as an ordinal string with a raised suffix."
+(defun ordinal-number (n &optional plain)
+  "Return N as an ordinal string.
+
+Unless PLAIN is non-nil, display the suffix raised and smaller."
   (let* ((n100 (% n 100))
          (suffix
           (cond
@@ -345,9 +347,11 @@ mode when toggled off."
            (t "th"))))
     (concat
      (commify-number n)
-     (propertize suffix
-                 'display '(raise 0.3)
-                 'face '(:height 0.8)))))
+     (if plain
+         suffix
+       (propertize suffix
+                   'display '(raise 0.3)
+                   'face '(:height 0.8))))))
 
 
 ;; DIRED functions

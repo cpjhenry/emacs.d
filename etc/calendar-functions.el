@@ -232,7 +232,7 @@ Each weekday is a symbol such as `monday', `tuesday', or `saturday'."
              (= (calendar-extract-day date) day))
     (format "%s (%d %s)"
             text year
-            (ordinal-number (- (calendar-extract-year date) year)))))
+            (ordinal-number (- (calendar-extract-year date) year) t))))
 
 
 ;;; calfw

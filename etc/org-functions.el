@@ -66,6 +66,19 @@
   (when (called-interactively-p 'any)
     (delete-other-windows)))
 
+;; org-latex horizontal lines
+(defun cpj/org-latex-cardtable-row (orig-fun table-row contents info)
+  "Add a horizontal rule after each body row of a cardtable."
+  (let* ((table (org-element-parent table-row))
+         (attrs (org-export-read-attribute :attr_latex table))
+         (environment (plist-get attrs :environment))
+         (latex (funcall orig-fun table-row contents info)))
+    (if (and (equal environment "cardtable")
+             (eq (org-element-type table-row) 'table-row)
+             (not (eq (org-element-property :type table-row) 'rule)))
+        (concat latex "\\hline\n")
+      latex)))
+
 (defun cpj/org-at-table-p-any-advice (oldfun &rest _args)
   "Call OLDFUN as though `org-at-table-p' had been given ANY."
   (funcall oldfun t))
@@ -577,3 +590,4 @@ PATH should be a topic that can be thrown at the man command."
 ;;; org-functions.el ends here
 
 ; LocalWords:  http pandoc mmd metadown metaup Org's printf href uref
+; LocalWords:  bDay cardtable hline

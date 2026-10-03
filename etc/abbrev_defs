@@ -35,6 +35,9 @@
 
 (define-abbrev-table 'org-mode-abbrev-table
   '(
+    ("3x5" "#+LATEX_HEADER: \\usepackage[paperwidth=3in,paperheight=5in,margin=0in,top=0.25in,bottom=0in]{geometry}
+#+LATEX_HEADER: \\usepackage[fontsize=9.5,parindent=0pt]{fontsize}
+#+LATEX_HEADER: \\newenvironment{cardtable}[1]{\\begin{tabular}{#1}}{\\end{tabular}}" nil :count 0)
     ("a5vc" "# Set for A5 paper. You can still print this to booklet format." nil :count 0)
     ("cad" "CHECK AGAINST DELIVERY" nil :count 1)
     ("ccc" "#+AUTHOR:/Capital City Council \\textnumero154/" nil :count 0)
