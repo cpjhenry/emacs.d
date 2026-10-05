@@ -1,6 +1,15 @@
 ;;; filesandbuffers.el --- General editing, buffer, and utility helpers -*- lexical-binding: t; -*-
 ;;; Commentary:
 
+;; Naming convention:
+;;
+;; - `cpj/' functions are my own utilities, helpers, commands, and
+;;   glue. They are not pretending to be part of another package.
+;;
+;; - `my/' functions are local replacements or wrappers around
+;;   existing package functions, usually preserving the original
+;;   intent while changing behaviour, interactivity, or presentation.
+
 ;;; Code:
 (defun my/backward-paragraph ()
   "Backward paragraph."
