@@ -888,6 +888,10 @@
   ;; and re-registers it with Launch Services.
   ;;
   ;; No client-frame geometry repair should normally be needed.
+  ;;
+  ;; N.B. --- `org-protocol' is deliberately lazy-loaded with Org.
+  ;; Browser capture therefore requires Org to have been loaded in
+  ;; this session.
 
   ;;; start Emacs server
 
@@ -2512,7 +2516,7 @@ Report the number of fractions replaced."
 (keymap-global-set "<f12>" 	'list-buffers)
 
 (keymap-global-set "C-`"	'scratch-buffer)
-(keymap-global-set "C-<escape>"	'my/shell)
+(keymap-global-set "C-<escape>"	'cpj/iterm)
 
 (keymap-global-set "S-<f1>"	'my/emacs-help)
 (keymap-global-set "S-<f2>"	'shortdoc)

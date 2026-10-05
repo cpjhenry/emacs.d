@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+bundle="${1:-org.gnu.EmacsClient}"
+lsregister="/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister"
+
+app="$(
+    osascript -e \
+        "POSIX path of (path to application id \"$bundle\")"
+)"
+app="${app%/}"
+
+if [[ ! -d "$app" ]]; then
+    printf 'Application not found: %s\n' "$bundle" >&2
+    exit 1
+fi
+
+printf 'Signing %s...\n' "$app"
+killall droplet 2>/dev/null || true
+
+codesign --force --sign - "$app"
+
+printf 'Verifying signature...\n'
+codesign --verify --strict --verbose=2 "$app"
+
+printf 'Registering with Launch Services...\n'
+"$lsregister" -f "$app"
+
+printf 'Signed and registered: %s\n' "$app"

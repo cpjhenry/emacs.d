@@ -85,8 +85,18 @@
   (interactive)
   (find-file user-init-file))
 
+(defun cpj/iterm ()
+  "Activate iTerm, creating a window if necessary."
+  (interactive)
+  (start-process
+   "iterm" nil "osascript"
+   "-e" "tell application \"iTerm\""
+   "-e" "activate"
+   "-e" "if (count of windows) = 0 then create window with default profile"
+   "-e" "end tell"))
+
 (declare-function mistty "mistty")
-(defun my/shell ()
+(defun my/mistty ()
   "Open shell at ~/ always."
   (interactive)
   (let ((default-directory "~"))
@@ -569,5 +579,5 @@ active region.  Otherwise call `eww-search-words' normally."
 
 ;;; filesandbuffers.el ends here
 
-; LocalWords:  sNew DNew Ibuffer reddit filesandbuffers usr
-; LocalWords:  mistty FILE's somevar
+; LocalWords:  sNew DNew Ibuffer reddit filesandbuffers usr osascript
+; LocalWords:  mistty FILE's somevar ariable iterm
