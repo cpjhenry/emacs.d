@@ -92,7 +92,8 @@
   (keymap-global-set "s-3" "C-x 3")
 
   (dolist (key '("s-C" "s-D" "s-d" "s-e" "s-F" "s-f" "s-g" "s-j" "s-L"
-		 "s-M" "s-m" "s-n" "s-p" "s-q" "s-t" "s-^" "s-&" "s-|"))
+		 "s-M" "s-m" "s-n" "s-p" "s-q" "s-t" "s-^" "s-&" "s-|"
+		 "s-;" "s-:" "s-'"))
 	  (keymap-global-unset key))
 
   ;; Disable suspend-frame
