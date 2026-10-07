@@ -74,6 +74,8 @@
 (defun cpj/elfeed-search-clear-filter ()
   "Restore the default Elfeed search view."
   (interactive)
+  (remove-hook 'elfeed-search-update-hook
+               #'cpj/elfeed-daily-update-widths t)
   (dolist (variable '(elfeed-search-date-format
                       elfeed-search-print-entry-function
                       elfeed-search-title-max-width
