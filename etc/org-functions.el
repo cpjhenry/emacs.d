@@ -79,6 +79,21 @@
         (concat latex "\\hline\n")
       latex)))
 
+(defun cpj/odt-strip-thanks (backend)
+  "Remove LaTeX \\thanks commands from ODT metadata."
+  (when (org-export-derived-backend-p backend 'odt)
+    (save-excursion
+      (goto-char (point-min))
+      (while (re-search-forward
+              "^#\\+\\(?:AUTHOR\\|DATE\\):.*?\\(\\\\thanks{\\)"
+              nil t)
+        (let* ((start (match-beginning 1))
+               (open (1- (match-end 1)))
+               (end (scan-sexps open 1)))
+          (when end
+            (delete-region start end)
+            (goto-char start)))))))
+
 (defun cpj/org-at-table-p-any-advice (oldfun &rest _args)
   "Call OLDFUN as though `org-at-table-p' had been given ANY."
   (funcall oldfun t))

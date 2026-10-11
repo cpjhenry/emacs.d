@@ -1659,6 +1659,10 @@
   (advice-add 'org-latex-table-row
 	      :around #'cpj/org-latex-cardtable-row)
 
+  ;; ODT export
+  (add-hook 'org-export-before-processing-hook
+            #'cpj/odt-strip-thanks)
+
   ;; Fix `org-table-convert-region' menu entry.
   (define-key org-tbl-menu [Convert\ Region]
               '(menu-item "Convert Region" org-table-convert-region
