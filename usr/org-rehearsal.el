@@ -25,9 +25,6 @@
 ;;
 ;;   ¶14·35d
 ;;   ¶7·17.5d
-;;
-;; See also `org-monologue-time.el', which estimates delivery duration
-;; rather than rehearsal workload.
 
 ;; Enable with:
 ;;

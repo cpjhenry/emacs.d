@@ -585,7 +585,9 @@
    #'cpj/which-key-abort-quietly)
 
   (push '((nil . "\\`cpj/which-key-abort-quietly\\'") . t)
-        which-key-replacement-alist))
+        which-key-replacement-alist)
+
+  (keymap-global-unset "C-c ^")) ; this key is mapped by which-key remap. Don't ask.
 
 ;;; Search and narrowing
 
@@ -1139,7 +1141,8 @@
    :map eww-bookmark-mode-map
    ("w" . eww))
   :config
-  (url-setup-privacy-info))
+  (url-setup-privacy-info)
+  (keymap-unset eww-mode-map "C-c C-x M-w"))
 
 (use-package ace-link ; alternative to tabbing
   :after eww
@@ -1545,6 +1548,7 @@
    ("C-c o ^"    . my/org-sort)
    ("C-c o c"    . org-check-misformatted-subtree)
    ("C-c o r"    . org-mode-restart)
+   ("C-c o s"    . speaking-time)
    ("C-c o t"    . org-toggle-link-display)
    ("A-b"        . cpj/org-emphasize-bold)
    ("A-i"        . cpj/org-emphasize-italic)
@@ -1682,6 +1686,23 @@
   :after org
   :hook (org-mode . org-macro-display-mode))
 
+(use-package org-paragraph-preview
+  ;; Org export buffer with paragraphs shortened to LIMIT characters.
+  :ensure nil
+  :after org
+  :custom
+  (org-paragraph-preview-latex-header
+   (expand-file-name "latexhdr.org" org-directory))
+  (org-paragraph-preview-latex-directives
+   '("\\ritual"
+     "\\nopgnos"))
+  :bind (:map org-mode-map
+              ("C-c o p" . org-paragraph-preview)))
+
+(use-package org-plain-latex-preview
+  :ensure nil
+  :after org)
+
 (use-package org-prose
   :ensure nil
   :commands org-prose-count)
@@ -1702,20 +1723,7 @@
   :bind (:map org-mode-map
               ([remap org-return] . org-return-dwim)))
 
-(use-package org-paragraph-preview
-  ;; Org export buffer with paragraphs shortened to LIMIT characters.
-  :ensure nil
-  :after org
-  :custom
-  (org-paragraph-preview-latex-header
-   (expand-file-name "latexhdr.org" org-directory))
-  (org-paragraph-preview-latex-directives
-   '("\\ritual"
-     "\\nopgnos"))
-  :bind (:map org-mode-map
-              ("C-c o p" . org-paragraph-preview)))
-
-(use-package org-plain-latex-preview
+(use-package org-metadata
   :ensure nil
   :after org)
 
@@ -1984,7 +1992,8 @@ Report the number of fractions replaced."
    (list user-gmail
 	 "Birthdays"
 	 "Home"
-	 "Family"))
+	 "Family"
+	 "Garbage & Recycling"))
   (calendar-data-past-days 30)
   (calendar-data-future-days 365))
 
@@ -2245,6 +2254,7 @@ Report the number of fractions replaced."
     . cpj/elfeed-show-scroll-down-half-or-prev))
   :hook
   (elfeed-search-update . cpj/elfeed-search-goto-top)
+  (elfeed-search-update . replace-garbage-chars)
   (elfeed-show-update . cpj/elfeed-show-tidy-buffer)
   (elfeed-show-update . replace-garbage-chars)
   (elfeed-show-update . my/text-scale-increase)

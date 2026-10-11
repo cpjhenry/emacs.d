@@ -65,8 +65,8 @@ BEG and END mark the limits of the region."
 When a region is active, measure that region.  Otherwise, measure
 the accessible portion of the buffer.
 
-In Org buffers, count prose using `org-prose-count'.
-Otherwise, count all words.
+In Org buffers, count prose using `org-prose-count'. Otherwise, count
+all words.
 
 With a prefix argument, prompt for the speaking rate in words per
 minute.  The default is 150 words per minute."

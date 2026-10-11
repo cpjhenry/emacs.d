@@ -88,7 +88,6 @@ Return nil when PARAGRAPH should not contribute to the prose count."
       text)))
 
 ;;;###autoload
-;;;###autoload
 (defun org-prose-count (&optional begin end scope)
   "Count lines, sentences, words, and characters of Org prose.
 
