@@ -39,7 +39,6 @@
 #+LATEX_HEADER: \\usepackage[fontsize=9.5,parindent=0pt]{fontsize}
 #+LATEX_HEADER: \\newenvironment{cardtable}[1]{\\begin{tabular}{#1}}{\\end{tabular}}" nil :count 0)
     ("a5vc" "# Set for A5 paper. You can still print this to booklet format." nil :count 0)
-    ("cad" "CHECK AGAINST DELIVERY" nil :count 1)
     ("ccc" "#+AUTHOR:/Capital City Council \\textnumero154/" nil :count 0)
     ("hdr" "#+LATEX_HEADER:" nil :count 142)
     ("lat" "#+LATEX:" nil :count 64)
