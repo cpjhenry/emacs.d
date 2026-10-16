@@ -46,6 +46,19 @@ When nil, include all available calendars."
   :type 'natnum
   :group 'calendar-data)
 
+(defcustom calendar-data-title-transforms
+  '(("12EB269D-571F-470E-B851-4C0B5C65B8E8"
+     (", and yard trimmings\\'" . "")))
+  "Calendar-specific regexp substitutions for event titles.
+
+Each entry associates a calendar ID with a list of
+(REGEXP . REPLACEMENT) pairs.  Substitutions are applied
+in order, and only to event titles."
+  :type '(alist :key-type string
+                :value-type
+                (repeat (cons regexp string)))
+  :group 'calendar-data)
+
 (defun calendar-data-stale-p ()
   "Return non-nil if calendar data is missing or too old."
   (or (not (file-exists-p calendar-data-file))
@@ -161,6 +174,16 @@ inclusive, matching maccalfw's observed output."
                   (calendar-data--format-time
                    end-hour end-minute)))))))
 
+(defun calendar-data--transform-title (calendar-id title)
+  "Apply CALENDAR-ID-specific substitutions to TITLE."
+  (when title
+    (dolist (rule (cdr (assoc calendar-id
+                              calendar-data-title-transforms))
+                  title)
+      (setq title
+            (replace-regexp-in-string
+             (car rule) (cdr rule) title t t)))))
+
 (defun calendar-data--clean-heading (string)
   "Return STRING suitable for use as an Org heading."
   (replace-regexp-in-string
@@ -183,11 +206,14 @@ inclusive, matching maccalfw's observed output."
 (defun calendar-data--insert-event (record)
   "Insert wrapped calendar event RECORD as Org text."
   (let* ((calendar (plist-get record :calendar))
-         (event (plist-get record :event))
-         (title (calendar-data--event-property 'SUMMARY event))
-         (description
+	 (event (plist-get record :event))
+	 (title
+          (calendar-data--transform-title
+           (plist-get calendar :id)
+           (calendar-data--event-property 'SUMMARY event)))
+	 (description
           (calendar-data--event-property 'DESCRIPTION event))
-         (timezone
+	 (timezone
           (calendar-data--event-parameter
            'DTSTART 'TZID event)))
     (insert "** "

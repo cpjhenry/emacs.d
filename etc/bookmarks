@@ -19,9 +19,9 @@
 ("org-capture-last-stored"
  (filename . "~/Documents/org/notes.org")
  (front-context-string . "** [[https://www")
- (rear-context-string . "estigious Man]]\n")
- (position . 39545)
- (last-modified 27340 7983 827829 0))
+ (rear-context-string . "tal Etiquette]]\n")
+ (position . 39965)
+ (last-modified 27344 56863 905971 0))
 ("2023-05-10 - Six years of gopher"
  (position . 684)
  (location . "gemini://zaibatsu.circumlunar.space/users/solderpunk/gemlog/six-years-of-gopher.gmi")
