@@ -481,6 +481,69 @@ Example:
 (eval-after-load 'org-list
   '(add-hook 'org-checkbox-statistics-hook (function ndk/checkbox-list-complete)))
 
+;; org-chef tools
+(defun cpj/refile-woksoflife ()
+  "Move Woks of Life recipes into woksoflife.org."
+  (interactive)
+  (unless (buffer-file-name)
+    (user-error "Current buffer is not visiting a file"))
+  (let* ((source (current-buffer))
+         (target-file
+          (expand-file-name
+           "woksoflife.org"
+           (file-name-directory (buffer-file-name))))
+         (target (find-file-noselect target-file))
+         (recipes nil))
+    ;; Collect matching level-one subtrees.
+    (org-map-entries
+     (lambda ()
+       (when-let* ((url (org-entry-get nil "source-url")))
+         (when (and (= (org-outline-level) 1)
+                    (string-match-p "thewoksoflife\\.com" url))
+           (push (cons (point-marker)
+                       (save-excursion
+                         (org-end-of-subtree t t)
+                         (copy-marker (point))))
+                 recipes))))
+     nil 'file)
+
+    (unless recipes
+      (user-error "No matching recipes found"))
+
+    (unless (yes-or-no-p
+             (format "Move %d recipes to %s? "
+                     (length recipes) target-file))
+      (user-error "Cancelled"))
+
+    ;; Copy recipes into destination, preserving their order.
+    (with-current-buffer target
+      (when (= (buffer-size) 0)
+        (insert "#+TITLE: The Woks of Life\n"
+                "#+STARTUP: fold\n\n"))
+      (goto-char (point-max))
+      (unless (bolp)
+        (insert "\n"))
+      (dolist (recipe (reverse recipes))
+        (insert
+         (with-current-buffer source
+           (buffer-substring-no-properties
+            (car recipe) (cdr recipe))))))
+
+    ;; Delete original subtrees, working backwards.
+    (with-current-buffer source
+      (dolist (recipe recipes)
+        (delete-region (car recipe) (cdr recipe))
+        (set-marker (car recipe) nil)
+        (set-marker (cdr recipe) nil)))
+
+    (with-current-buffer target
+      (save-buffer))
+    (with-current-buffer source
+      (save-buffer))
+
+    (message "Moved %d recipes to %s"
+             (length recipes) target-file)))
+
 
 ;;; Convert to org-mode from other formats
 ;; https://jao.io/blog/eww-to-org.html

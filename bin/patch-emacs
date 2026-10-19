@@ -1,22 +1,29 @@
 #!/usr/bin/env bash
 # patch-emacs
 #
-# Repair Emacs Client.app after an Emacs Plus installation or upgrade.
+# Repair an Emacs Plus installation after installation or upgrade.
 #
-# The stock client may:
-#   - use an empty alternate editor, which starts an Emacs daemon
-#   - use -c, which creates a new frame
+# Emacs.app:
+#   - inject current PATH as EMACS_PLUS_PATH
+#   - preserve existing LSEnvironment entries
+#   - re-sign and register only when changed
 #
-# We want `emacsclient -n': use the existing Emacs server and current
-# frame, and return immediately.
+# Emacs Client.app:
+#   - remove daemon autostart (-a '')
+#   - remove new-frame creation (-c)
+#   - retain emacsclient -n
+#   - re-sign and register only when changed
+#
+# Emacs Plus manages site-start.el itself.
 #
 # Emacs must be completely stopped before this script is run.
 
 set -euo pipefail
 
+emacs_app="/Applications/Emacs.app"
 client_app="/Applications/Emacs Client.app"
-script="$client_app/Contents/Resources/Scripts/main.scpt"
 
+plistbuddy="/usr/libexec/PlistBuddy"
 lsregister="/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister"
 
 die()
@@ -25,75 +32,176 @@ die()
     exit 1
 }
 
-sign_and_register()
+say()
 {
-    printf '%s\n' \
-        "Removing extended attributes..." \
-        "Removing existing signature..."
-
-    xattr -cr "$client_app"
-    codesign --remove-signature "$client_app" 2>/dev/null || true
-
-    printf '%s\n' "Applying ad-hoc signature..."
-    codesign --force --deep --sign - "$client_app"
-
-    printf '%s\n' "Verifying signature..."
-    codesign --verify --deep --strict "$client_app"
-
-    printf '%s\n' "Registering application with Launch Services..."
-    touch "$client_app"
-    "$lsregister" -f "$client_app"
+    printf '%s\n' "$*"
 }
 
-[[ -d "$client_app" ]] ||
-    die "Emacs Client.app not found: $client_app"
+sign_and_register()
+{
+    local app="$1"
 
-[[ -f "$script" ]] ||
-    die "main.scpt not found: $script"
+    say "Removing extended attributes..."
+    xattr -cr "$app"
+
+    say "Removing existing signature..."
+    codesign --remove-signature "$app" 2>/dev/null || true
+
+    say "Applying ad-hoc signature..."
+    codesign --force --deep --sign - "$app"
+
+    say "Verifying signature..."
+    codesign --verify --deep --strict "$app"
+
+    say "Registering application with Launch Services..."
+    touch "$app"
+    "$lsregister" -f "$app"
+}
+
+patch_emacs_app()
+{
+    local plist="$emacs_app/Contents/Info.plist"
+    local current
+
+    [[ -d "$emacs_app" ]] ||
+        die "Emacs.app not found: $emacs_app"
+
+    [[ -f "$plist" ]] ||
+        die "Info.plist not found: $plist"
+
+    say "Checking Emacs.app PATH..."
+
+    current="$(
+        "$plistbuddy" \
+            -c 'Print :LSEnvironment:EMACS_PLUS_PATH' \
+            "$plist" 2>/dev/null || true
+    )"
+
+    if [[ "$current" == "$PATH" ]]; then
+        say "Emacs.app: PATH already current"
+        return
+    fi
+
+    # Do not install an incomplete GUI-style PATH.
+    [[ ":$PATH:" == *":/opt/homebrew/bin:"* ]] ||
+        die "PATH does not contain /opt/homebrew/bin"
+
+    if [[ -n "$current" ]]; then
+        "$plistbuddy" \
+            -c "Set :LSEnvironment:EMACS_PLUS_PATH $PATH" \
+            "$plist"
+    else
+        "$plistbuddy" \
+            -c "Add :LSEnvironment:EMACS_PLUS_PATH string $PATH" \
+            "$plist"
+    fi
+
+    say "Emacs.app: PATH injected"
+
+    say "Checking Info.plist..."
+    plutil -lint "$plist"
+
+    sign_and_register "$emacs_app"
+
+    say "Emacs.app repaired."
+}
+
+patch_emacs_client()
+{
+    local script="$client_app/Contents/Resources/Scripts/main.scpt"
+    local tmp source patched compiled
+
+    [[ -d "$client_app" ]] ||
+        die "Emacs Client.app not found: $client_app"
+
+    [[ -f "$script" ]] ||
+        die "main.scpt not found: $script"
+
+    tmp="$(mktemp -d)"
+
+    source="$tmp/main.applescript"
+    patched="$tmp/main-patched.applescript"
+    compiled="$tmp/main.scpt"
+
+    say "Checking Emacs Client Finder handler..."
+
+    osadecompile "$script" > "$source"
+
+    # Restrict changes to the Finder 'on open' handler.
+    awk '
+        /^[[:space:]]*on open([[:space:]]|$)/ &&
+        !/^[[:space:]]*on open location([[:space:]]|$)/ {
+            in_open = 1
+        }
+
+        in_open {
+            gsub(/ -a '\'','\''/, "")
+            gsub(/ -c /, " ")
+            gsub(/ -c"/, "\"")
+        }
+
+        {
+            print
+        }
+
+        in_open && /^[[:space:]]*end open[[:space:]]*$/ {
+            in_open = 0
+        }
+    ' "$source" > "$patched"
+
+    if cmp -s "$source" "$patched"; then
+        say "Emacs Client.app: already patched"
+        rm -rf "$tmp"
+        return
+    fi
+
+    say "Patching Emacs Client.app..."
+    say "  removing daemon autostart (-a '')"
+    say "  removing new-frame creation (-c)"
+    say "  retaining emacsclient -n"
+
+    say "Recompiling AppleScript..."
+    osacompile -o "$compiled" "$patched"
+
+    say "Installing patched main.scpt..."
+    cp "$compiled" "$script"
+
+    rm -rf "$tmp"
+
+    sign_and_register "$client_app"
+
+    say "Emacs Client.app repaired."
+}
+
+# Prerequisites.
+
+[[ -x "$plistbuddy" ]] ||
+    die "PlistBuddy not found: $plistbuddy"
 
 [[ -x "$lsregister" ]] ||
     die "Launch Services registration tool not found: $lsregister"
 
 command -v osadecompile >/dev/null 2>&1 ||
-    die "osadecompile was not found."
+    die "osadecompile was not found"
 
 command -v osacompile >/dev/null 2>&1 ||
-    die "osacompile was not found."
+    die "osacompile was not found"
+
+command -v codesign >/dev/null 2>&1 ||
+    die "codesign was not found"
+
+# Do not modify an application while Emacs is running.
 
 if pgrep -x Emacs >/dev/null 2>&1; then
-    die "Emacs is running. Quit it completely before running this script."
+    die "Emacs is running. Quit it completely before proceeding."
 fi
 
-tmp="$(mktemp -d)"
-trap 'rm -rf "$tmp"' EXIT
+# Repair both applications independently.
 
-source="$tmp/main.applescript"
-patched="$tmp/main-patched.applescript"
-compiled="$tmp/main.scpt"
+patch_emacs_app
 
-osadecompile "$script" > "$source"
+printf '\n'
 
-sed \
-    -e "s/ -a ''//g" \
-    -e 's/ -c / /g' \
-    -e 's/ -c"/"/g' \
-    "$source" > "$patched"
+patch_emacs_client
 
-# A previously repaired installation requires no further work.
-cmp -s "$source" "$patched" && exit 0
-
-printf '%s\n' \
-    "Patching Emacs Client.app..." \
-    "  removing daemon autostart (-a '')" \
-    "  removing new-frame creation (-c)" \
-    "  retaining emacsclient -n"
-
-printf '%s\n' "Recompiling AppleScript..."
-osacompile -o "$compiled" "$patched"
-
-printf '%s\n' "Installing patched main.scpt..."
-cp "$compiled" "$script"
-
-sign_and_register
-
-printf '\nEmacs Client.app repaired.\n'
+printf '\nRepair complete.\n'

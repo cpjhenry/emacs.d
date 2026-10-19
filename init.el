@@ -251,16 +251,6 @@
  url-configuration-directory
  (expand-file-name "var/url/configuration/" user-emacs-directory))
 
-;; path
-(use-package exec-path-from-shell
-	:if *mac*
-	:custom
-	(shell-file-name (getenv "SHELL"))
-	(exec-path-from-shell-variables '("PATH" "MANPATH" "PKG_CONFIG_PATH"))
-	:init
-	(unless (bound-and-true-p ns-emacs-plus-injected-path)
-	  (exec-path-from-shell-initialize)))
-
 ;; garbage collection
 (use-package gcmh :config (gcmh-mode 1))
 
@@ -1731,6 +1721,10 @@
   :ensure nil
   :after org)
 
+(use-package ox-rapport
+  :ensure nil
+  :after ox-latex)
+
 ;;; Optional Org packages
 
 ;; HACK · After upgrading org-chef, adjust spacing in
@@ -1886,6 +1880,9 @@ Report the number of fractions replaced."
   :config
   (add-hook 'org-mode-hook #'org-mindmap-mode))
 
+(use-package org-ql
+  :after org)
+
 (use-package org-ref ; setup bibliography, cite, ref, and label org-mode links
   :if *natasha*
   :disabled
@@ -1898,10 +1895,6 @@ Report the number of fractions replaced."
 
 (use-package ox-gemini
   :after org)
-
-(use-package ox-rapport
-  :ensure nil
-  :after ox-latex)
 
 ;;; Calendar data
 ;;; org-agenda

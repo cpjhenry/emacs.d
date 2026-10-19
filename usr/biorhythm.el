@@ -2,109 +2,352 @@
 
 ;;; Commentary:
 
-;; Provides simple personal chronology calculations based on a user's
-;; birth date, including elapsed days since birth, ordinal day-on-earth
-;; calculations, and traditional biorhythm indicators.
+;; Personal chronology calculations based on a user's birth date,
+;; including elapsed days, ordinal day-on-earth calculations, and
+;; traditional physical, emotional, and intellectual biorhythms.
 ;;
-;; Biorhythms were popularized during the twentieth century as a means
-;; of representing recurring physical, emotional, and intellectual
-;; cycles. While not supported by modern scientific evidence, they
-;; remain of historical and recreational interest.
+;; Biorhythms are of historical and recreational interest; their
+;; predictive claims are not supported by scientific evidence.
 ;;
-;; Example output:
+;; Commands:
 ;;
-;;   Phy=+087%! Emo=-012%- Int=+043%+
+;;   M-x biorhythm             Display today's biorhythm.
+;;   C-u M-x biorhythm         Insert today's biorhythm at point.
+;;   M-x biorhythm-display     Display a 31-day SVG graph.
+;;   M-x biorhythm-insert      Insert an SVG graph at point.
+;;   M-x biorhythm-export-svg  Export the graph to an SVG file.
 ;;
-;; where '+' indicates an ascending cycle, '-' a descending cycle,
-;; and '!' a cycle crossing the zero line (a traditional "critical day").
-;;
-;; The package also provides helper functions for reporting elapsed
-;; lifetime measurements such as days since birth and day-on-earth
-;; counts.
+;; The graphical functions accept optional Gregorian dates and
+;; dimensions for use by other Emacs Lisp packages.
 
 ;;; Code:
-(require 'calendar)
-(defcustom user-birthdate nil
-  "User's birth date.
 
-The value is stored as a Gregorian date list in the form (MONTH DAY YEAR),
-as used internally by Emacs calendar functions. Interactive date entry
-may respect `calendar-date-style', but the stored value uses Emacs'
-calendar date representation."
+(require 'calendar)
+(require 'svg)
+
+(defgroup biorhythm nil
+  "Personal chronology and traditional biorhythm calculations."
+  :group 'calendar)
+
+(defcustom user-birthdate nil
+  "User's birth date as a Gregorian date (MONTH DAY YEAR)."
   :type '(choice
           (const :tag "Unset" nil)
           (sexp :tag "Gregorian date"))
-  :group 'calendar)
+  :group 'biorhythm)
+
+(defcustom biorhythm-graph-days 31
+  "Number of days displayed in a biorhythm graph."
+  :type '(integer 2)
+  :group 'biorhythm)
+
+(defcustom biorhythm-graph-width 800
+  "Width of a biorhythm graph in pixels."
+  :type '(integer 100)
+  :group 'biorhythm)
+
+(defcustom biorhythm-graph-height 400
+  "Height of a biorhythm graph in pixels."
+  :type '(integer 100)
+  :group 'biorhythm)
+
+(defconst biorhythm-cycles
+  '((Phy 23 "red")
+    (Emo 28 "blue")
+    (Int 33 "green"))
+  "Biorhythm cycle names, periods, and graph colours.")
+
+;;; Personal chronology
 
 (defun days-since-birthdate (&optional date)
-  "Return elapsed days since `user-birthdate'."
+  "Return elapsed days since `user-birthdate' to Gregorian DATE."
+  (unless user-birthdate
+    (user-error "Set `user-birthdate' first"))
   (- (calendar-absolute-from-gregorian
       (or date (calendar-current-date)))
      (calendar-absolute-from-gregorian user-birthdate)))
 
 (defun days-on-earth (&optional date)
-  "Return ordinal day on Earth since `user-birthdate'."
+  "Return ordinal day on Earth for Gregorian DATE."
   (1+ (days-since-birthdate date)))
 
 (defun weeks-on-earth (&optional date)
-  "Return the number of complete weeks elapsed since `user-birthdate'.
-
-DATE is a Gregorian date in (MONTH DAY YEAR) form and defaults
-to the current date."
+  "Return complete weeks elapsed since birth on Gregorian DATE."
   (/ (days-since-birthdate date) 7))
 
 (defun years-on-earth (&optional date)
-  "Return elapsed years since `user-birthdate'.
-
-DATE is a Gregorian date in (MONTH DAY YEAR) form and defaults
-to the current date. A year is the mean Gregorian year of
-365.2425 days."
+  "Return elapsed mean Gregorian years since birth on DATE."
   (/ (days-since-birthdate date) 365.2425))
 
-(defun biorhythm-string ()
-  "Return today's biorhythm as a string.
+;;; Biorhythm calculations
 
-Set variable `user-birthdate' in format `(MONTH DAY YEAR)'."
-  (let* ((diff (days-since-birthdate))
-         (rhythms '((Phy . 23)
-                    (Emo . 28)
-                    (Int . 33))))
+(defun biorhythm--value (days period)
+  "Return biorhythm value for DAYS elapsed and cycle PERIOD."
+  (sin (* 2 pi (/ (float days) period))))
+
+(defun biorhythm-values (&optional date)
+  "Return biorhythm values for Gregorian DATE.
+
+DATE defaults to today.  Return an alist mapping Phy, Emo,
+and Int to floating-point values between -1 and 1."
+  (let ((days (days-since-birthdate date)))
+    (mapcar
+     (lambda (cycle)
+       (cons (car cycle)
+             (biorhythm--value days (cadr cycle))))
+     biorhythm-cycles)))
+
+(defun biorhythm-string (&optional date)
+  "Return formatted biorhythm indicators for Gregorian DATE.
+
+DATE defaults to today.  A plus sign indicates an ascending
+cycle, a minus sign a descending cycle, and an exclamation
+mark a zero crossing before the following day."
+  (let ((days (days-since-birthdate date)))
     (mapconcat
-     #'identity
-     (mapcar
-      (lambda (r)
-        (let* ((name (car r))
-               (period (cdr r))
-               (angle (* 2 pi diff (/ 1.0 period)))
-               (next-angle (* 2 pi (1+ diff) (/ 1.0 period)))
-               (today (sin angle))
-               (tomorrow (sin next-angle))
-               (pct (round (* 100 today)))
-               (crossing-p (not (eq (>= today 0)
-                                    (>= tomorrow 0))))
-               (dir (cond
-                     (crossing-p "!")
-                     ((>= (cos angle) 0) "+")
-                     (t "-"))))
-          (format "%s=%+04d%%%s" name pct dir)))
-      rhythms)
+     (lambda (cycle)
+       (let* ((name (car cycle))
+              (period (cadr cycle))
+              (angle (* 2 pi (/ (float days) period)))
+              (today (sin angle))
+              (tomorrow (biorhythm--value (1+ days) period))
+              (pct (round (* 100 today)))
+              (crossing-p
+               (not (eq (>= today 0)
+                        (>= tomorrow 0))))
+              (direction
+               (cond
+                (crossing-p "!")
+                ((>= (cos angle) 0) "+")
+                (t "-"))))
+         (format "%s=%+04d%%%s" name pct direction)))
+     biorhythm-cycles
      " ")))
 
 (defun biorhythm (&optional insert)
   "Show today's biorhythm.
 
-Uses `user-birthdate' as the birth date. `user-birthdate' should be
-a Gregorian date list in the form (MONTH DAY YEAR), as used internally
-by Emacs calendar functions. Display follows the user's calendar
-settings where possible.
-
-With prefix argument INSERT, insert the result at point instead of
-displaying it in the echo area."
+With prefix argument INSERT, insert the result at point."
   (interactive "P")
-  (let ((s (biorhythm-string)))
+  (let ((result (biorhythm-string)))
     (if insert
-        (insert "- " s "\n")
-      (message "%s" s))))
+        (insert "- " result "\n")
+      (message "%s" result))))
+
+;;; SVG graphing
+
+(defun biorhythm-svg (&optional date days width height)
+  "Return an SVG biorhythm graph centred on Gregorian DATE.
+
+DAYS specifies the number of displayed days.
+WIDTH and HEIGHT specify the SVG dimensions in pixels.
+
+The result is an SVG DOM suitable for `svg-image' or export."
+  (let* ((date (or date (calendar-current-date)))
+         (days (or days biorhythm-graph-days))
+         (width (or width biorhythm-graph-width))
+         (height (or height biorhythm-graph-height))
+         (margin-left 55)
+         (margin-right 25)
+         (margin-top 15)
+         (margin-bottom 35)
+         (plot-width (- width margin-left margin-right))
+         (plot-height (- height margin-top margin-bottom))
+         (mid-y (+ margin-top (/ plot-height 2.0)))
+         (half-height (/ plot-height 2.0))
+         (centre (/ (1- days) 2.0))
+         (first-day (- (calendar-absolute-from-gregorian date)
+                       centre))
+         (birth-day (calendar-absolute-from-gregorian
+                     user-birthdate))
+         (svg (svg-create width height)))
+
+    (unless (and (integerp days)
+		 (> days 1)
+		 (= (% days 2) 1))
+      (user-error "Biorhythm graph requires an odd number of days"))
+
+    (unless (and (> plot-width 0) (> plot-height 0))
+      (user-error "Invalid biorhythm graph dimensions"))
+
+    ;; Background.
+    (svg-rectangle svg 0 0 width height
+                   :fill "white")
+
+    ;; Horizontal reference lines.
+    (dolist (level '(-100 -50 0 50 100))
+      (let ((y (- mid-y (* (/ level 100.0) half-height))))
+        (svg-line svg margin-left y
+                  (+ margin-left plot-width) y
+                  :stroke (if (= level 0) "#666666" "#dddddd")
+                  :stroke-width (if (= level 0) 1.5 1))
+        (svg-text svg (number-to-string level)
+                  :x (- margin-left 8)
+                  :y (+ y 4)
+                  :text-anchor "end"
+                  :font-size 11
+                  :fill "#555555")))
+
+    ;; Vertical reference-date marker.
+    (let ((x (+ margin-left
+                (* (/ centre (float (1- days)))
+                   plot-width))))
+      (svg-line svg x margin-top
+                x (+ margin-top plot-height)
+                :stroke "#777777"
+                :stroke-width 1
+                :stroke-dasharray "4,4"))
+
+    ;; Date labels at five-day intervals, always including the centre.
+    (dotimes (i days)
+      (let ((reference-p (= i centre)))
+	(when (or (= i 0)
+		  (= i (1- days))
+		  (= (% i 5) 0)
+		  reference-p)
+	  (let* ((absolute (+ first-day i))
+		 (gregorian
+		  (calendar-gregorian-from-absolute
+		   (round absolute)))
+		 (x (+ margin-left
+                       (* (/ i (float (1- days)))
+			  plot-width)))
+		 (month
+		  (substring
+		   (aref calendar-month-name-array
+			 (1- (car gregorian)))
+		   0 3)))
+            (svg-text
+             svg
+             (format "%d %s" (cadr gregorian) month)
+             :x x
+             :y (+ margin-top plot-height 20)
+             :text-anchor "middle"
+             :font-size 10
+             :font-weight (if reference-p "bold" "normal")
+             :fill (if reference-p "#222222" "#555555"))))))
+
+    ;; Three biorhythm curves.
+    (dolist (cycle biorhythm-cycles)
+      (let* ((period (cadr cycle))
+             (colour (caddr cycle))
+             (points nil))
+        (dotimes (i (* 4 (1- days)))
+          (let* ((offset (/ i 4.0))
+                 (absolute (+ first-day offset))
+                 (elapsed (- absolute birth-day))
+                 (value (biorhythm--value elapsed period))
+                 (x (+ margin-left
+                       (* (/ offset (float (1- days)))
+                          plot-width)))
+                 (y (- mid-y (* value half-height))))
+            (push (cons x y) points)))
+
+        ;; Include the final endpoint.
+        (let* ((elapsed (- (+ first-day (1- days))
+                           birth-day))
+               (value (biorhythm--value elapsed period)))
+          (push
+           (cons (+ margin-left plot-width)
+                 (- mid-y (* value half-height)))
+           points))
+
+        (svg-polyline svg (nreverse points)
+                      :fill "none"
+                      :stroke colour
+                      :stroke-width 2.2)))
+
+    ;; Mark the values on the reference date.
+    (let* ((elapsed (days-since-birthdate date))
+           (x (+ margin-left
+                 (* (/ centre (float (1- days)))
+                    plot-width))))
+      (dolist (cycle biorhythm-cycles)
+        (let* ((value (biorhythm--value
+                       elapsed (cadr cycle)))
+               (y (- mid-y (* value half-height))))
+          (svg-circle svg x y 4
+                      :fill (caddr cycle)
+                      :stroke "white"
+                      :stroke-width 1.5))))
+
+    svg))
+
+;;; Text presentation
+
+(defun biorhythm-legend (&optional date)
+  "Return a propertized biorhythm legend for Gregorian DATE.
+
+The legend uses ordinary Emacs text with colours matching
+the three SVG curves."
+  (let ((values (biorhythm-values date)))
+    (mapconcat
+     (lambda (cycle)
+       (let* ((name (car cycle))
+              (colour (caddr cycle))
+              (value (alist-get name values))
+              (label (format "%s %+d%%"
+                             name
+                             (round (* 100 value)))))
+         (propertize label
+                     'face `(:foreground ,colour))))
+     biorhythm-cycles
+     "    ")))
+
+;;; Presentation
+
+(defun biorhythm-insert (&optional date days)
+  "Insert an SVG biorhythm graph at point.
+
+DATE defaults to today and DAYS to `biorhythm-graph-days'."
+  (interactive)
+  (insert-image
+   (svg-image (biorhythm-svg date days)
+              :ascent 'center)
+   "[Biorhythm graph]"))
+
+(defun biorhythm-display (&optional date days)
+  "Display an SVG biorhythm graph in a dedicated buffer.
+
+DATE defaults to today and DAYS to `biorhythm-graph-days'."
+  (interactive)
+  (let* ((date (or date (calendar-current-date)))
+         (buffer (get-buffer-create "*Biorhythm*")))
+    (with-current-buffer buffer
+      (let ((inhibit-read-only t))
+        (erase-buffer)
+        (special-mode)
+
+        ;; Title.
+        (insert
+         (propertize
+          (format "Biorhythms — %s\n\n"
+                  (calendar-date-string date))
+          'face '(:height 1.3 :weight bold)))
+
+        ;; Graph.
+        (biorhythm-insert date days)
+
+        ;; Legend.
+        (insert "\n\n"
+                (biorhythm-legend date)
+                "\n")))
+    (display-buffer buffer)))
+
+;;; SVG export
+
+(defun biorhythm-export-svg (filename &optional date days)
+  "Export a biorhythm graph to FILENAME as SVG.
+
+DATE defaults to today and DAYS to `biorhythm-graph-days'."
+  (interactive
+   (list (read-file-name "Export biorhythm SVG: "
+                         nil "biorhythm.svg")))
+  (let ((svg (biorhythm-svg date days)))
+    (with-temp-file filename
+      (svg-print svg)))
+  (when (called-interactively-p 'interactive)
+    (message "Biorhythm graph exported to %s" filename)))
 
 (provide 'biorhythm)
 
