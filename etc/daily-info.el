@@ -57,8 +57,7 @@
             (format "My %s day (%s weeks, %.2f years)."
                     (ordinal-number (days-on-earth date))
                     (commify-number (weeks-on-earth date))
-                    (years-on-earth date))
-            (biorhythm-string))
+                    (years-on-earth date)))
            (when daily-info-include-holidays
              (calendar-check-holidays date))
            (when daily-info-include-diary
@@ -148,6 +147,8 @@ are no birthdays in that period."
       (insert "\n"))
 
     (daily-info--insert-items (daily-info--items))
+
+    (insert "- " (biorhythm-legend) "\n")
     (biorhythm-insert)
 
     (when-let* ((birthdays (daily-info--upcoming-birthdays)))

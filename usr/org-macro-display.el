@@ -36,6 +36,7 @@
     ("#+LATEX: \\newpage" . "=====")
     ("#+LATEX: \\asterism" . "* * *")
     ("#+LATEX: \\dinkus" . "* * *")
+    ("{{{ditto}}}" . "〃")
     ("#+LATEX: \\dinkus\\clearpage" . "= = =")
     ("#+LATEX: \\begin{samepage}" . "⟦keep together⟧")
     ("#+LATEX: \\end{samepage}" . "·")

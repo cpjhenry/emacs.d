@@ -98,17 +98,21 @@ and Int to floating-point values between -1 and 1."
              (biorhythm--value days (cadr cycle))))
      biorhythm-cycles)))
 
-(defun biorhythm-string (&optional date)
+(defun biorhythm-string (&optional date fontify)
   "Return formatted biorhythm indicators for Gregorian DATE.
 
 DATE defaults to today.  A plus sign indicates an ascending
 cycle, a minus sign a descending cycle, and an exclamation
-mark a zero crossing before the following day."
+mark a zero crossing before the following day.
+
+When FONTIFY is non-nil, colour each indicator to match its
+corresponding SVG curve."
   (let ((days (days-since-birthdate date)))
     (mapconcat
      (lambda (cycle)
        (let* ((name (car cycle))
               (period (cadr cycle))
+              (colour (caddr cycle))
               (angle (* 2 pi (/ (float days) period)))
               (today (sin angle))
               (tomorrow (biorhythm--value (1+ days) period))
@@ -120,8 +124,12 @@ mark a zero crossing before the following day."
                (cond
                 (crossing-p "!")
                 ((>= (cos angle) 0) "+")
-                (t "-"))))
-         (format "%s=%+04d%%%s" name pct direction)))
+                (t "-")))
+              (label (format "%s=%+04d%%%s"
+                             name pct direction)))
+         (if fontify
+             (propertize label 'face `(:foreground ,colour))
+           label)))
      biorhythm-cycles
      " ")))
 
@@ -277,23 +285,8 @@ The result is an SVG DOM suitable for `svg-image' or export."
 ;;; Text presentation
 
 (defun biorhythm-legend (&optional date)
-  "Return a propertized biorhythm legend for Gregorian DATE.
-
-The legend uses ordinary Emacs text with colours matching
-the three SVG curves."
-  (let ((values (biorhythm-values date)))
-    (mapconcat
-     (lambda (cycle)
-       (let* ((name (car cycle))
-              (colour (caddr cycle))
-              (value (alist-get name values))
-              (label (format "%s %+d%%"
-                             name
-                             (round (* 100 value)))))
-         (propertize label
-                     'face `(:foreground ,colour))))
-     biorhythm-cycles
-     "    ")))
+  "Return a coloured biorhythm legend for Gregorian DATE."
+  (biorhythm-string date t))
 
 ;;; Presentation
 

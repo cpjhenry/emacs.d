@@ -775,7 +775,7 @@ NAME is the display label, ABBREVIATION is the era abbreviation,
 and OFFSET is added to the Gregorian year."
   (ind--era-line
    name
-   "" ; suppress abbreviation for now
+   abbreviation
    (+ (calendar-extract-year date) offset)))
 
 (defun ind--anno-lucis-line (date)
@@ -1169,12 +1169,10 @@ optional Lodge dates."
   (delq
    nil
    (append
-    (list
-     (ind--byzantine-line date)
-     (ind--buddhist-line date))
-
     (when extended
       (list
+       (ind--byzantine-line date)
+       (ind--buddhist-line date)
        (ind--japanese-line date)
        (ind--chinese-line date)
        (ind--tibetan-line date)
@@ -1196,7 +1194,8 @@ optional Lodge dates."
        (ind--anno-foederis-line date)))
 
     (when extended
-      (ind--lodge-lines date)))))
+      (when-let* ((lodges (ind--lodge-lines date)))
+	(cons "" lodges))))))
 
 (defun ind-summary-string (&optional extended date)
   "Return the daily `ind' summary as a string.
