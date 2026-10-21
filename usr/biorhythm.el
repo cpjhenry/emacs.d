@@ -6,8 +6,9 @@
 ;; including elapsed days, ordinal day-on-earth calculations, and
 ;; traditional physical, emotional, and intellectual biorhythms.
 ;;
-;; Biorhythms are of historical and recreational interest; their
-;; predictive claims are not supported by scientific evidence.
+;; Biorhythms are an exercise in mathematically rigorous whimsy:
+;; the calculations are deterministic, but their correspondence
+;; to human experience remains scientifically unsubstantiated.
 ;;
 ;; Commands:
 ;;
@@ -41,12 +42,12 @@
   :type '(integer 2)
   :group 'biorhythm)
 
-(defcustom biorhythm-graph-width 800
+(defcustom biorhythm-graph-width 500
   "Width of a biorhythm graph in pixels."
   :type '(integer 100)
   :group 'biorhythm)
 
-(defcustom biorhythm-graph-height 400
+(defcustom biorhythm-graph-height 250
   "Height of a biorhythm graph in pixels."
   :type '(integer 100)
   :group 'biorhythm)
@@ -54,7 +55,7 @@
 (defconst biorhythm-cycles
   '((Phy 23 "red")
     (Emo 28 "blue")
-    (Int 33 "green"))
+    (Int 33 "#008000"))
   "Biorhythm cycle names, periods, and graph colours.")
 
 ;;; Personal chronology
@@ -352,3 +353,5 @@ DATE defaults to today and DAYS to `biorhythm-graph-days'."
 (provide 'biorhythm)
 
 ;;; biorhythm.el ends here
+
+; LocalWords:  Phy dddddd

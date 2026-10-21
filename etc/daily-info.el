@@ -148,9 +148,12 @@ are no birthdays in that period."
       (insert "\n"))
 
     (daily-info--insert-items (daily-info--items))
+    (biorhythm-insert)
 
     (when-let* ((birthdays (daily-info--upcoming-birthdays)))
       (insert "\n" birthdays "\n")))
+
+  (goto-char (point-min))
 
   (view-mode)
   (turn-off-cursor))
