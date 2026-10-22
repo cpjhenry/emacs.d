@@ -73,6 +73,7 @@
 (require 'canadian-parliament)
 (require 'roman-clock)
 (require 'tibdate)
+(require 'ind-lunar)
 
 (require 'cl-lib)
 (require 'subr-x)
@@ -368,9 +369,10 @@ When EXTENDED is non-nil, use the unabbreviated form."
 (defun ind--lunar-line (date)
   "Return the lunar phase and approximate age for DATE."
   (let ((age (ind--lunar-age date)))
-    (format "%s %dd"
+    (format "%s %dd · %s"
             (ind--lunar-phase-name age)
-            (floor age))))
+            (floor age)
+	    (ind-lunar-local-noon date))))
 
 (defun ind--french-day-name (date)
   "Return the French Revolutionary feast name for Gregorian DATE."
@@ -1148,8 +1150,8 @@ information."
      (ind--regnal-line date)
      (ind--parliament-line date)
      (ind--julian-count-line date)
-     (ind--lunar-line date)
      (ind--roman-calendar-line date extended)
+     (ind--lunar-line date)
      (ind--french-line date extended)
      (ind--hanke-henry-line date)
      (ind--discordian-line date)
@@ -1214,7 +1216,7 @@ defaulting to today."
       (string-join
        (append (list (car primary) "")
 	       (cdr primary)
-               (list (ind--section-rule))
+               ;(list (ind--section-rule))
                concordance)
        "\n"))))
 

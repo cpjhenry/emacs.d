@@ -343,6 +343,26 @@ DATE defaults to today and DAYS to `biorhythm-graph-days'."
   (when (called-interactively-p 'interactive)
     (message "Biorhythm graph exported to %s" filename)))
 
+;;; reverse calculation
+
+(defun date-on-earth (days)
+  "Return Gregorian date of ordinal day DAYS on Earth.
+
+Birth is day 1, consistent with `days-on-earth'."
+  (interactive "nDay on Earth: ")
+  (unless user-birthdate
+    (user-error "Set `user-birthdate' first"))
+  (unless (and (integerp days) (> days 0))
+    (user-error "DAYS must be a positive integer"))
+  (let ((date
+         (calendar-gregorian-from-absolute
+          (+ (calendar-absolute-from-gregorian user-birthdate)
+             (1- days)))))
+    (when (called-interactively-p 'interactive)
+      (message "Day %s on Earth: %s"
+               (commify-number days) (calendar-date-string date)))
+    date))
+
 (provide 'biorhythm)
 
 ;;; biorhythm.el ends here
