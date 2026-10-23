@@ -196,8 +196,8 @@ The result is a plist containing :sign, :symbol, :degree,
 (defun ind-format-lunar-zodiac (jd)
   "Format lunar zodiacal position for Julian date JD."
   (let ((zodiac (ind-lunar-zodiac jd)))
-    (format "%s %d°%02d′" ; ☽
-            ;(plist-get zodiac :symbol)
+    (format "%s %s %d°%02d′" ; ☽
+	    (plist-get zodiac :symbol)
             (plist-get zodiac :sign)
             (plist-get zodiac :degree)
             (plist-get zodiac :minute))))

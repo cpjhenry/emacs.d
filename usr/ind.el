@@ -367,12 +367,14 @@ When EXTENDED is non-nil, use the unabbreviated form."
    (t             "Waning Crescent")))
 
 (defun ind--lunar-line (date)
-  "Return the lunar phase and approximate age for DATE."
-  (let ((age (ind--lunar-age date)))
-    (format "%s %dd · %s"
+  "Return the lunar phase, zodiacal sign, and approximate age for DATE."
+  (let* ((age (ind--lunar-age date))
+         (zodiac (ind-lunar-local-noon date))
+         (sign (nth 1 (split-string zodiac))))
+    (format "%s in %s %dd"
             (ind--lunar-phase-name age)
-            (floor age)
-	    (ind-lunar-local-noon date))))
+            sign
+            (floor age))))
 
 (defun ind--french-day-name (date)
   "Return the French Revolutionary feast name for Gregorian DATE."
@@ -1150,7 +1152,7 @@ information."
      (ind--regnal-line date)
      (ind--parliament-line date)
      (ind--julian-count-line date)
-     (ind--roman-calendar-line date extended)
+     (ind--roman-calendar-line date t)
      (ind--lunar-line date)
      (ind--french-line date extended)
      (ind--hanke-henry-line date)
