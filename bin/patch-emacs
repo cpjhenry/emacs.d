@@ -123,21 +123,28 @@ patch_emacs_client()
     patched="$tmp/main-patched.applescript"
     compiled="$tmp/main.scpt"
 
-    say "Checking Emacs Client Finder handler..."
+    say "Checking Emacs Client handlers..."
 
     osadecompile "$script" > "$source"
 
-    # Restrict changes to the Finder 'on open' handler.
     awk '
+        /^[[:space:]]*on open location([[:space:]]|$)/ {
+            in_location = 1
+        }
+
         /^[[:space:]]*on open([[:space:]]|$)/ &&
         !/^[[:space:]]*on open location([[:space:]]|$)/ {
             in_open = 1
         }
 
         in_open {
-            gsub(/ -a '\'','\''/, "")
+            gsub(/ -a '\'''\''/, "")
             gsub(/ -c /, " ")
             gsub(/ -c"/, "\"")
+        }
+
+        in_location {
+            gsub(/ -r /, " ")
         }
 
         {
@@ -146,6 +153,10 @@ patch_emacs_client()
 
         in_open && /^[[:space:]]*end open[[:space:]]*$/ {
             in_open = 0
+        }
+
+        in_location && /^[[:space:]]*end open location[[:space:]]*$/ {
+            in_location = 0
         }
     ' "$source" > "$patched"
 
@@ -156,8 +167,9 @@ patch_emacs_client()
     fi
 
     say "Patching Emacs Client.app..."
-    say "  removing daemon autostart (-a '')"
-    say "  removing new-frame creation (-c)"
+    say "  Finder: removing daemon autostart (-a '')"
+    say "  Finder: removing new-frame creation (-c)"
+    say "  URL handler: removing reuse-frame option (-r)"
     say "  retaining emacsclient -n"
 
     say "Recompiling AppleScript..."
