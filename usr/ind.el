@@ -3,13 +3,13 @@
 ;;; Commentary:
 
 ;; `ind' displays a Gregorian date through a compact concordance of
-;; human systems for reckoning and describing time.
+;; human systems for measuring and describing time.
 ;;
 ;; It brings together historical, religious, astronomical, civic,
 ;; and idiosyncratic chronologies, showing how a single day may be
-;; located within different traditions of temporal reckoning.
+;; situated within different traditions of temporal reckoning.
 ;;
-;; `ind' displays the current date by default, but may also be called
+;; `ind’ displays the current date by default, but may also be called
 ;; programmatically for an arbitrary date.
 ;;
 ;; The daily section includes Gregorian and Julian dates, ordinal
@@ -17,12 +17,13 @@
 ;; federal Parliaments and sessions, continuous day counts, the lunar
 ;; phase and age, and dates in the Roman, Hebrew, French Republican,
 ;; Hanke-Henry Permanent, and Discordian calendars. The extended daily
-;; section also includes Persian and Mayan Calendar Round dates.
+;; section also includes Persian dates and the Mayan Calendar Round
+;; and Long Count.
 ;;
 ;; A parallel era-year concordance places systems of historical,
 ;; religious, and cultural reckoning alongside the daily dates. It
 ;; includes Byzantine, Buddhist, Japanese, Chinese, Tibetan, Indian,
-;; Sikh, Hijri, and Bahá'í eras.
+;; Sikh, Hijri, and Bahá’í eras.
 ;;
 ;; The extended concordance adds several historical and comparative
 ;; chronological systems, including the eras of Nabonassar, the City
@@ -32,18 +33,18 @@
 ;; A separate Masonic concordance includes Anno Lucis, Anno
 ;; Inventionis, and Anno Foederis. The extended display can
 ;; optionally include the ages of selected historic and present
-;; Lodges or similar organizations; this is disabled by default and
+;; lodges or similar organizations; this is disabled by default and
 ;; controlled by `ind-show-lodge-dates'. The default entries may be
-;; extended or replaced through `ind-lodge-dates' to reflect locally
+;; extended or replaced through `ind-lodge-dates’ to reflect locally
 ;; relevant institutions.
 ;;
-;; `ind-diagnostics' displays annual calendrical diagnostics inherited
-;; from the verbose output of the author's original Bash
+;; `ind-diagnostics’ displays annual calendrical diagnostics inherited
+;; from the verbose output of the author’s original Bash
 ;; implementation. These include computistical values, selected
 ;; religious observances, calendar new years, and sexagenary year
 ;; names.
 ;;
-;; The package is an Emacs Lisp successor to the author's Bash program
+;; The package is an Emacs Lisp successor to the author’s Bash program
 ;; of the same name.
 
 ;;; Code:
@@ -486,12 +487,14 @@ in parentheses."
 
 ;;; Mayan dates
 (defun ind--mayan-line (date)
-  "Return the Mayan Calendar Round line for DATE."
+  "Return the Mayan Calendar Round and Long Count for DATE."
   (pcase-let* ((absolute (calendar-absolute-from-gregorian date))
                (`(,tz-number . ,tz-name)
                 (calendar-mayan-tzolkin-from-absolute absolute))
                (`(,haab-day . ,haab-month)
-                (calendar-mayan-haab-from-absolute absolute)))
+                (calendar-mayan-haab-from-absolute absolute))
+               (long-count
+                (calendar-mayan-long-count-from-absolute absolute)))
     (ind--two-column-line
      (format "%d %s · %d %s"
              tz-number
@@ -499,7 +502,29 @@ in parentheses."
              haab-day
              (aref ind--mayan-haab-month-names
                    (1- haab-month)))
-     "----")))
+     (mapconcat #'number-to-string long-count "."))))
+
+;;; Martian dates
+
+;; HACK: Timekeeping on Mars.
+;; Originally proposed in ind 3.13.0 (2026-04-25).
+;; Civil calendar pending; Olympus Mons timezone: AMT-9 (provisional).
+;; Daylight saving time: Not observed.
+
+(defun ind--mars-sol-date (date)
+  "Return the Mars Sol Date for Gregorian DATE at 00:00 UTC.
+
+Uses the Allison–McEwen approximation, with Julian Date
+expressed in Terrestrial Time (TT)."
+  (let* ((absolute (calendar-absolute-from-gregorian date))
+         (jd (+ absolute 1721424.5))
+         ;; Approximate TT - UTC as 69.184 seconds.
+         (jd-tt (+ jd (/ 69.184 86400.0))))
+    (+ (/ (- jd-tt 2451549.5) 1.0274912517)
+       44796.0
+       -0.0009626)))
+
+;; (format "MSD %.2f" (ind--mars-sol-date date))
 
 ;;; Era-year concordance
 

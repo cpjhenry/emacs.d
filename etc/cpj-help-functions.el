@@ -64,6 +64,11 @@ C-u C-x r N				number lines
 \f
 ORG-MODE
 
+A-b						cpj/org-emphasize-bold
+A-i						cpj/org-emphasize-italic
+
+A-c						cpj/org-toggle-checkbox-dwim
+
 S-TAB					cycle visibility
 C-'						cycle agenda
 C-c a					agenda

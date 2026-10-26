@@ -1880,7 +1880,7 @@ Report the number of fractions replaced."
   :config
   (add-hook 'org-mode-hook #'org-mindmap-mode))
 
-(use-package org-ql
+(use-package org-ql  ; org query language
   :after org)
 
 (use-package org-ref ; setup bibliography, cite, ref, and label org-mode links

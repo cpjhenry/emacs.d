@@ -98,3 +98,5 @@ BACKEND is the export backend and INFO is the export plist."
 (provide 'org-metadata)
 
 ;;; org-metadata.el ends here
+
+; LocalWords:  OpenDocument INFO's transcoded plist OrgSubtitle
