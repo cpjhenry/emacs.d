@@ -390,11 +390,10 @@ Roman day begins at 18:00 local time.  After 18:00, the date is
 treated as tomorrow's civil date."
   (interactive)
   (let ((long (roman-clock-ante-diem-string))
-        (short (roman-clock-ante-diem-string '(4))))
+        (short (roman-clock-ante-diem-string t)))
     (kill-new long)
     (message "%s (%s)" long short)))
 
 (provide 'roman-clock)
 
 ;;; roman-clock.el ends here
-; LocalWords:  diem
