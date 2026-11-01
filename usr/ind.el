@@ -82,16 +82,6 @@
 (defconst ind--line-width 38
   "Width of the aligned `ind' display lines.")
 
-(defcustom ind-show-anno-depositionis nil
-  "Whether to show Anno Depositionis in the Masoretic display."
-  :type 'boolean
-  :group 'ind)
-
-(defcustom ind-show-anno-ordinis nil
-  "Whether to show the Anno Ordinis Knights Templar year."
-  :type 'boolean
-  :group 'ind)
-
 (defconst ind--nabonassar-epoch -272787
   "Absolute date of 1 Thoth 1 in the Era of Nabonassar.
 
@@ -153,13 +143,23 @@ START-DATE is an Emacs calendar date in (MONTH DAY YEAR) form.")
    "Cumku" "Uayeb"]
   "Mayan Haab month names.")
 
+(defcustom ind-show-anno-depositionis nil
+  "Whether to show Anno Depositionis in the Masoretic display."
+  :type 'boolean
+  :group 'ind)
+
+(defcustom ind-show-anno-ordinis nil
+  "Whether to show the Anno Ordinis Knights Templar year."
+  :type 'boolean
+  :group 'ind)
+
 (defcustom ind-show-lodge-dates nil
   "Whether `ind-extended' shows Lodge age lines."
   :type 'boolean
   :group 'ind)
 
 (defcustom ind-lodge-dates
-  '(("United Grand Lodge"     . 1717)
+  '(("Premier Grand Lodge"    . 1717)
     ("Provincial Grand Lodge" . 1792)
     ("Grand Lodge of Canada"  . 1855))
   "Alist of organizations and their founding years for `ind-extended'.
@@ -1222,7 +1222,7 @@ optional Lodge dates."
        (ind--anno-ordinis-line date)
        (ind--anno-foederis-line date)))
 
-    (when extended
+    (when (and extended ind-show-lodge-dates)
       (when-let* ((lodges (ind--lodge-lines date)))
 	(cons "" lodges))))))
 

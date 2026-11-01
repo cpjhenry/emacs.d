@@ -117,9 +117,7 @@ corresponding SVG curve."
               (today (sin angle))
               (tomorrow (biorhythm--value (1+ days) period))
               (pct (round (* 100 today)))
-              (crossing-p
-               (not (eq (>= today 0)
-                        (>= tomorrow 0))))
+	      (crossing-p (zerop pct))
               (direction
                (cond
                 (crossing-p "!")
@@ -141,7 +139,8 @@ With prefix argument INSERT, insert the result at point."
   (let ((result (biorhythm-string)))
     (if insert
         (insert "- " result "\n")
-      (message "%s" result))))
+      (message "%s" result))
+    (kill-new result)))
 
 ;;; SVG graphing
 
