@@ -656,9 +656,10 @@
    (concat dired-garbage-files-regexp
 	   "\\|\\.DS_Store\\|\\.old\\|\\.synctex\\.gz\\|\\.log\\|\\.tex"))
   :bind ( :map dired-mode-map
-          ("q" . kill-dired-buffers)
+          ;("q" . kill-dired-buffers)
 	  ("C-<home>" . dired-home)
-	  ("C-<end>" . dired-end))
+	  ("C-<end>" . dired-end)
+	  ("M-s-c" . cpj/dired-copy-file))
   :config
   (set-face-attribute 'dired-ignored nil
 		      :inherit 'dired-file-name)

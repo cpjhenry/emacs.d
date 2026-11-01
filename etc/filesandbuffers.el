@@ -448,6 +448,23 @@ Unless PLAIN is non-nil, display the suffix raised and smaller."
       (kill-buffer dired-buf))))
 (advice-add 'dired-delete-file :before 'dired-kill-before-delete)
 
+(defun cpj/dired-copy-file ()
+  "Copy file at point in Dired to the macOS clipboard.
+
+Uses the `copy-file' executable, compiled from copy-file.swift
+and available through `exec-path'."
+  (interactive)
+  (let ((file (dired-get-file-for-visit))
+        (program (or (executable-find "copy-file")
+                     (user-error "copy-file executable not found"))))
+    (unless (file-regular-p file)
+      (user-error "Not a regular file: %s" file))
+    (let ((status (call-process program nil nil nil file)))
+      (unless (and (integerp status) (zerop status))
+        (user-error "Failed to copy file to clipboard"))
+      (message "Copied file to clipboard: %s"
+               (file-name-nondirectory file)))))
+
 
 ;; iBuffer functions
 (require 'ibuffer)

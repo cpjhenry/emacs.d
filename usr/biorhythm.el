@@ -358,8 +358,10 @@ Birth is day 1, consistent with `days-on-earth'."
           (+ (calendar-absolute-from-gregorian user-birthdate)
              (1- days)))))
     (when (called-interactively-p 'interactive)
-      (message "Day %s on Earth: %s"
-               (commify-number days) (calendar-date-string date)))
+      (let ((formatted (calendar-date-string date)))
+        (message "Day %s on Earth: %s"
+                 (commify-number days) formatted)
+        (kill-new formatted)))
     date))
 
 (provide 'biorhythm)
