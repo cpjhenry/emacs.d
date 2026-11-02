@@ -316,7 +316,7 @@ DATE defaults to today and DAYS to `biorhythm-graph-days'."
          (propertize
           (format "Biorhythms — %s\n\n"
                   (calendar-date-string date))
-          'face '(:height 1.3 :weight bold)))
+          'face '(:height 1.0 :weight bold)))
 
         ;; Graph.
         (biorhythm-insert date days)
