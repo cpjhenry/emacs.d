@@ -1,7 +1,7 @@
 ;;; init.el --- Emacs configuration -*- no-byte-compile: t; lexical-binding: t; -*-
 
 ;;; Commentary:
-;; brew install emacs-plus
+;; brew install --cask emacs-plus-app
 
 ;; `auto-insert' inserts code templates, including GPL notice.
 
@@ -15,7 +15,6 @@
 ;;   intent while changing behaviour, interactivity, or presentation.
 
 ;;; Code:
-
 ;; Initialize terminal
 (blink-cursor-mode -1)
 (delete-selection-mode t)
@@ -87,9 +86,9 @@
   (keymap-global-set "s-w" 'kill-current-buffer)
   (keymap-global-set "s-z" 'undo)
 
-  (keymap-global-set "s-1" "C-x 1")
-  (keymap-global-set "s-2" "C-x 2")
-  (keymap-global-set "s-3" "C-x 3")
+  (keymap-set key-translation-map "s-1" "C-x 1")
+  (keymap-set key-translation-map "s-2" "C-x 2")
+  (keymap-set key-translation-map "s-3" "C-x 3")
 
   (dolist (key '("s-C" "s-D" "s-d" "s-e" "s-F" "s-f" "s-g" "s-j" "s-L"
 		 "s-M" "s-m" "s-n" "s-p" "s-q" "s-t" "s-^" "s-&" "s-|"
@@ -110,10 +109,10 @@
                   (kbd key)
                   (kbd key))))
 
-  (keymap-global-set "A-<left>" "s-<left>")
-  (keymap-global-set "A-<right>" "s-<right>")
-  (keymap-global-set "A-k" "s-k")
-  (keymap-global-set "A-=" "s-=")
+  (keymap-set key-translation-map "A-<left>"  "s-<left>")
+  (keymap-set key-translation-map "A-<right>" "s-<right>")
+  (keymap-set key-translation-map "A-="       "s-=")
+  (keymap-set key-translation-map "A-k"       "s-k")
 
   ;; Emojis
   (easy-menu-add-item global-map '(menu-bar edit) ["Emoji & Symbols"
@@ -233,23 +232,12 @@
 
 ;; files --- move out of ~/.emacs.d
 (setopt
- custom-file
- (expand-file-name "var/custom.el" user-emacs-directory)
-
- nsm-settings-file
- (expand-file-name "var/network-security.data" user-emacs-directory)
-
- transient-history-file
- (expand-file-name "var/transient/history.el" user-emacs-directory)
-
- transient-levels-file
- (expand-file-name "var/transient/levels.el" user-emacs-directory)
-
- transient-values-file
- (expand-file-name "var/transient/values.el" user-emacs-directory)
-
- url-configuration-directory
- (expand-file-name "var/url/configuration/" user-emacs-directory))
+ custom-file (expand-file-name "var/custom.el" user-emacs-directory)
+ nsm-settings-file (expand-file-name "var/network-security.data" user-emacs-directory)
+ transient-history-file (expand-file-name "var/transient/history.el" user-emacs-directory)
+ transient-levels-file (expand-file-name "var/transient/levels.el" user-emacs-directory)
+ transient-values-file (expand-file-name "var/transient/values.el" user-emacs-directory)
+ url-configuration-directory (expand-file-name "var/url/configuration/" user-emacs-directory))
 
 ;; garbage collection
 (use-package gcmh :config (gcmh-mode 1))
@@ -2432,12 +2420,12 @@ Report the number of fractions replaced."
 (keymap-global-set "<remap> <scroll-up-command>" #'cpj/scroll-up-half)
 (keymap-global-set "<remap> <scroll-down-command>" #'cpj/scroll-down-half)
 
-(keymap-global-set "A-<up>" [prior])
-(keymap-global-set "A-<down>" [next])
+(keymap-set key-translation-map "A-<up>" "<prior>")
+(keymap-set key-translation-map "A-<down>" "<next>")
 
 (when *mac*
-  (keymap-global-set "s-<up>" [prior])
-  (keymap-global-set "s-<down>" [next]))
+  (keymap-set key-translation-map "s-<up>" "<prior>")
+  (keymap-set key-translation-map "s-<down>" "<next>"))
 
 ;;; mouse
 ;; https://github.com/purcell/disable-mouse
@@ -2478,8 +2466,8 @@ Report the number of fractions replaced."
 (keymap-global-set "M-j" 'join-line) ; default is `default-indent-new-line', see C-M-j
 (keymap-global-set "M-z" 'zap-up-to-char)
 
-(keymap-global-set "A-<return>" "M-<return>")
-(keymap-global-set "A-S-<return>" "M-S-<return>")
+(keymap-set key-translation-map "A-<return>" "M-<return>")
+(keymap-set key-translation-map "A-S-<return>" "M-S-<return>")
 
 ;; https://www.matem.unam.mx/~omar/apropos-emacs.html#writing-experience
 (keymap-global-set "C-d" 'delete-forward-char)      ; better replacement for delete-char
@@ -2589,10 +2577,11 @@ Report the number of fractions replaced."
 
 ;;; Ctrl-x 8 sequences
 (with-eval-after-load 'iso-transl
-  (keymap-set iso-transl-ctl-x-8-map "0" "\u200B")
+  (keymap-set iso-transl-ctl-x-8-map "0" "\u200B") ; ZWS
   (keymap-set iso-transl-ctl-x-8-map "a |" "↕")
   (keymap-set iso-transl-ctl-x-8-map "y" "✓")
-  (keymap-set iso-transl-ctl-x-8-map ". '" "\u2234"))
+  (keymap-set iso-transl-ctl-x-8-map ". '" "\u2234") ; therefore
+  (keymap-set iso-transl-ctl-x-8-map ". ," "\u2235")); since
 
 (which-key-alias "C-x 8"   "keys")
 (which-key-alias "C-x 8 0" "ZWS")
@@ -2689,3 +2678,4 @@ Report the number of fractions replaced."
 ; LocalWords:  ibuffer ish minibuffer emacsclient Uncomment maccalfw
 ; LocalWords:  kMDItemCFBundleIdentifier mdfind nndraft defvar nnimap
 ; LocalWords:  funcall ecompleterc nntp vspace parskip perl cb img
+; LocalWords:  abbrev bullwinkle natasha Inconsolata multimarkdown
