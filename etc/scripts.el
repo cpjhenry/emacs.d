@@ -95,6 +95,15 @@
     (text-scale-increase 1)
     (setq-local inhibit-read-only t)))
 
+(defun natbu ()
+  "Run my backup routine asynchronously in Bash."
+  (interactive)
+  (let ((shell-command-switch "-ic"))
+    (async-shell-command "source \"$HOME/.bash_logout\""
+                         "*natbu*"))
+  (with-current-buffer "*natbu*"
+    (local-set-key (kbd "q") #'quit-window)))
+
 ;;; scripts.el ends here
 
 ; LocalWords:  cbc sfm slashdot fw uf wttr aries perl eof az ccal
