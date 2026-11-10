@@ -4,6 +4,7 @@
 ;;; Code:
 (require 'org)
 (require 'org-element)
+(require 'ox)
 
 (defvar cpj/org-agenda-file)
 (defun my/agenda ()
@@ -182,6 +183,32 @@ the current element is a list item and add an unchecked checkbox."
    (t
     (org-ctrl-c-minus)
     (org-toggle-checkbox '(4)))))
+
+;; Add volume and number to Org export
+(add-to-list 'org-export-options-alist
+             '(:aimw-volume "VOLUME" nil nil t))
+(add-to-list 'org-export-options-alist
+             '(:aimw-number "NUMBER" nil nil t))
+
+(defun cpj/aimw-latex-volume-line (text backend info)
+  "Replace AIMW volume placeholder during LaTeX export.
+Read VOLUME and NUMBER from the Org export environment INFO."
+  (if (org-export-derived-backend-p backend 'latex)
+      (let* ((keywords (plist-get info :keyword-alist))
+	     (volume (plist-get info :aimw-volume))
+	     (number (plist-get info :aimw-number)))
+        (if (and volume number)
+            (replace-regexp-in-string
+             "AIMW_VOLUME_LINE"
+             (format
+              "\\begin{center}\\small Volume %s \\textperiodcentered\\ Number %s\\end{center}"
+              volume number)
+             text t t)
+          text))
+    text))
+
+(add-to-list 'org-export-filter-final-output-functions
+             #'cpj/aimw-latex-volume-line)
 
 
 ;;; auto-sort after capture (when variable set)
@@ -668,4 +695,5 @@ PATH should be a topic that can be thrown at the man command."
 ;;; org-functions.el ends here
 
 ; LocalWords:  http pandoc mmd metadown metaup Org's printf href uref
-; LocalWords:  bDay cardtable hline
+; LocalWords:  bDay cardtable hline textperiodcentered woksoflife
+; LocalWords:  thewoksoflife

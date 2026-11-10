@@ -435,7 +435,8 @@ Tuesday instead."
           (holiday-chinese 7 7 "Double Seventh Festival") ; 七夕 / Valentine's Day
           (holiday-chinese 7 15 "Ghost Festival") ; 中元 / All Hallows' Eve
           (holiday-chinese 8 15 "Mid-Autumn Festival") ; 中秋 / Thanksgiving
-          (holiday-chinese 9 9 "Double Ninth Festival")))) ; 重阳 / Double Yang Festival
+          (holiday-chinese 9 9 "Double Ninth Festival");  ; 重阳 / Double Yang Festival
+	  (holiday-chinese 10 1 "Winter Clothes Festival")))) ; 寒衣 / Hanyi Festival
 
    lunar-phase-names
    '("New Moon" "First Quarter" "Full Moon" "Last Quarter")
@@ -641,4 +642,4 @@ Tuesday instead."
 
 ; LocalWords:  bahai Deepavali Kartik Amavasya panchang दीपावली Iyyar
 ; LocalWords:  Jayanti Tamuz Tishrei Cheshvan Sh'vat amavasya Kartika
-; LocalWords:  HaShanah Shemini Atzeret Simchat
+; LocalWords:  HaShanah Shemini Atzeret Simchat Hanyi Bahá’Í 寒衣

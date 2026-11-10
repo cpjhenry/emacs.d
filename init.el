@@ -1540,6 +1540,7 @@
   (require 'org-tempo)
   (require 'org-capture)
   (require 'org-protocol)
+  (require 'ox)
   (require 'ox-latex)
   (require 'ox-md)
   (require 'ox-texinfo)
