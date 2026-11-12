@@ -111,6 +111,8 @@
 
   (keymap-set key-translation-map "A-<left>"  "s-<left>")
   (keymap-set key-translation-map "A-<right>" "s-<right>")
+  (keymap-set key-translation-map "A-0"       "s-0")
+  (keymap-set key-translation-map "A--"       "s--")
   (keymap-set key-translation-map "A-="       "s-=")
   (keymap-set key-translation-map "A-k"       "s-k")
 
@@ -259,7 +261,7 @@
   :ensure nil
   :demand t
   :bind
-  ("C-M-m" . match-paren)
+  ("A-m" . match-paren)
   :hook
   (find-file . large-find-file-hook)
   :config
@@ -1522,6 +1524,8 @@
    ([remap backward-paragraph] . my/org-backward-paragraph)
    ([remap forward-paragraph]  . my/org-forward-paragraph)
    ("S-<return>" . cpj/org-open-link-at-point-external)
+   ("A-<return>" . org-meta-return)
+
    ("M-["        . org-previous-visible-heading)
    ("M-]"        . my/org-end-of-subtree)
    ("C-c o ^"    . my/org-sort)
@@ -2466,9 +2470,6 @@ Report the number of fractions replaced."
 (keymap-global-set "M-d" 'kill-word-dwim)
 (keymap-global-set "M-j" 'join-line) ; default is `default-indent-new-line', see C-M-j
 (keymap-global-set "M-z" 'zap-up-to-char)
-
-(keymap-set key-translation-map "A-<return>" "M-<return>")
-(keymap-set key-translation-map "A-S-<return>" "M-S-<return>")
 
 ;; https://www.matem.unam.mx/~omar/apropos-emacs.html#writing-experience
 (keymap-global-set "C-d" 'delete-forward-char)      ; better replacement for delete-char

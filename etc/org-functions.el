@@ -360,6 +360,37 @@ observances, and visit ordinary Org Agenda entries."
      (t
       (org-agenda-switch-to)))))
 
+(defun list-org-events-this-month (&optional month)
+  "Display Org events for MONTH.
+
+When called interactively with a prefix argument, prompt for MONTH.
+Otherwise use the currently displayed calendar month, or the
+current month if no calendar month is displayed."
+  (interactive
+   (list
+    (when current-prefix-arg
+      (read-number "Month: "))))
+  (require 'org-agenda)
+  (let* ((today (calendar-current-date))
+         (month (or month
+                    (and (boundp 'displayed-month)
+                         displayed-month)
+                    (nth 0 today)))
+         (year (or (and (boundp 'displayed-year)
+                        displayed-year)
+                   (nth 2 today)))
+         (org-agenda-span 'month)
+         (org-agenda-start-on-weekday nil)
+         (org-agenda-start-day
+          (format "%04d-%02d-01" year month))
+         (org-agenda-include-diary nil)
+         (org-agenda-show-all-dates nil)
+         (org-agenda-use-time-grid nil)
+         (org-agenda-entry-types
+	  '(:timestamp :sexp :scheduled :deadline))
+	 (org-agenda-files (list cpj/org-agenda-file)))
+    (org-agenda-list)))
+
 
 ;;;###autoload
 (defun my/org-agenda-list ()
