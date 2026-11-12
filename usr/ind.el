@@ -486,6 +486,7 @@ in parentheses."
      year)))
 
 ;;; Mayan dates
+
 (defun ind--mayan-line (date)
   "Return the Mayan Calendar Round and Long Count for DATE."
   (pcase-let* ((absolute (calendar-absolute-from-gregorian date))
@@ -516,15 +517,14 @@ in parentheses."
 
 Uses the Allison–McEwen approximation, with Julian Date
 expressed in Terrestrial Time (TT)."
-  (let* ((absolute (calendar-absolute-from-gregorian date))
-         (jd (+ absolute 1721424.5))
-         ;; Approximate TT - UTC as 69.184 seconds.
-         (jd-tt (+ jd (/ 69.184 86400.0))))
+  (let ((jd-tt (julian-date-tt-from-gregorian date)))
     (+ (/ (- jd-tt 2451549.5) 1.0274912517)
        44796.0
        -0.0009626)))
 
-;; (format "MSD %.2f" (ind--mars-sol-date date))
+(defun ind--mars-sol-line (date)
+  "Return the Mars Sol Date for Gregorian DATE."
+  (format "MSD %.2f" (ind--mars-sol-date date)))
 
 ;;; Era-year concordance
 
@@ -690,7 +690,7 @@ The year changes at Chinese New Year."
   "Return the Nanakshahi year for Gregorian DATE.
 
 The Nanakshahi calendar, or Sikh calendar, is a tropical solar
-calendar used in Sikhism.  Its year begins on March 14 in the
+calendar used in Sikhism. Its year begins on March 14 in the
 Gregorian calendar."
   (let ((year (calendar-extract-year date))
         (month (calendar-extract-month date))
@@ -794,6 +794,28 @@ Gregorian calendar."
    "Nanakshahi (Sikh)"
    "NS"
    (ind--nanakshahi-year date)))
+
+;;; Anno Graecorum
+
+(defun ind--seleucid-year (&optional date)
+  "Return the Seleucid year for Gregorian DATE.
+Use the September 1 Julian New Year convention."
+  (let* ((date (or date (calendar-current-date)))
+         (year (calendar-extract-year date))
+         (new-year
+          (calendar-julian-to-absolute
+           (list 9 1 year))))
+    (+ year 312
+       (if (< (calendar-absolute-from-gregorian date)
+              new-year)
+           -1 0))))
+
+(defun ind--seleucid-line (date)
+  "Return the Seleucid (Grecian) year line for DATE."
+  (ind--era-line
+   "Grecian (Seleucidae)"
+   "AG"
+   (ind--seleucid-year date)))
 
 ;;; Masonic pieces
 
@@ -998,7 +1020,7 @@ The return value is:
 
   (DATE DESCRIPTION)
 
-DATE is the Gregorian date of Losar.  DESCRIPTION is the gender,
+DATE is the Gregorian date of Losar. DESCRIPTION is the gender,
 element, and animal of the Tibetan year whose Losar falls within
 Gregorian YEAR.
 
@@ -1211,6 +1233,7 @@ optional Lodge dates."
        (ind--bahai-line date)
        (ind--section-rule)
        (ind--nabonassar-line date)
+       (ind--seleucid-line date)
        (ind--auc-line date)
        (ind--diocletian-line date)
        (ind--julian-period-line date)
@@ -1322,3 +1345,5 @@ the width available before the Roman year."
 (provide 'ind)
 
 ;;; ind.el ends here
+
+; LocalWords:  Graecorum Seleucidae Parl Sess jour compl Mons

@@ -1,14 +1,5 @@
 ;;; julian-day-counts.el --- MJD, TJD, and Rata Die conversions -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2026 Paul Henry
-;;
-;; Author: Paul Henry
-;; Keywords: calendar
-;; Package-Requires: ((emacs "27.1"))
-;; Version: 0.1
-;;
-;; This file is not part of GNU Emacs.
-
 ;;; Commentary:
 
 ;; Convert between Gregorian dates and three continuous day-count systems:
@@ -61,6 +52,12 @@ MJD 0 is 1858-11-17 00:00 UTC.")
   "Rata Die value corresponding to NASA TJD 0.
 
 TJD 0 is 1968-05-24 00:00 UTC, equivalent to MJD 40000.")
+
+(defconst julian-day-counts-tt-tai-offset 32.184
+  "Constant difference TT - TAI, in seconds.")
+
+(defvar julian-day-counts-tai-utc-offset 37
+  "Current difference TAI - UTC, in seconds.")
 
 (defun julian-day-counts--current-utc-date ()
   "Return the current UTC date in Emacs calendar form."
@@ -136,7 +133,7 @@ returned."
 (defun modified-julian-date-from-time (&optional time)
   "Return the fractional MJD for Emacs TIME.
 
-TIME defaults to the current instant.  UTC is used."
+TIME defaults to the current instant. UTC is used."
   (+ (modified-julian-date-from-gregorian
       (pcase-let ((`(,_second ,_minute ,_hour ,day ,month ,year . ,_)
                     (decode-time time t)))
@@ -146,7 +143,7 @@ TIME defaults to the current instant.  UTC is used."
 (defun truncated-julian-date-from-time (&optional time)
   "Return the fractional NASA TJD for Emacs TIME.
 
-TIME defaults to the current instant.  UTC is used."
+TIME defaults to the current instant. UTC is used."
   (- (modified-julian-date-from-time time) 40000))
 
 (defun modified-julian-date-today ()
@@ -164,21 +161,76 @@ TIME defaults to the current instant.  UTC is used."
   (rata-die-from-gregorian
    (julian-day-counts--current-utc-date)))
 
+(defun julian-date-from-rata-die (rd)
+  "Convert Rata Die value RD to Julian Date at midnight UTC."
+  (+ rd 1721424.5))
+
+(defun julian-date-to-rata-die (jd)
+  "Convert Julian Date JD to Rata Die.
+
+Return the Rata Die day containing JD in UTC."
+  (floor (- jd 1721424.5)))
+
+(defun julian-date-from-gregorian (date)
+  "Return the Julian Date at midnight UTC beginning Gregorian DATE."
+  (julian-date-from-rata-die
+   (rata-die-from-gregorian date)))
+
+(defun julian-date-to-gregorian (jd)
+  "Convert Julian Date JD to the corresponding Gregorian UTC date."
+  (calendar-gregorian-from-absolute
+   (julian-date-to-rata-die jd)))
+
+(defun julian-date-from-time (&optional time)
+  "Return the Julian Date for Emacs TIME.
+
+TIME defaults to the current instant. UTC is used."
+  (+ (modified-julian-date-from-time time) 2400000.5))
+
+(defun julian-date-tt-from-time (&optional time)
+  "Return the Julian Date in Terrestrial Time for Emacs TIME.
+
+TIME defaults to the current instant. Uses the current
+TAI-UTC offset."
+  (+ (julian-date-from-time time)
+     (/ (+ julian-day-counts-tai-utc-offset
+           julian-day-counts-tt-tai-offset)
+        86400.0)))
+
+(defun julian-date-tt-from-gregorian (date)
+  "Return the Julian Date in TT at midnight UTC beginning DATE.
+
+Uses the current TAI-UTC offset."
+  (+ (julian-date-from-gregorian date)
+     (/ (+ julian-day-counts-tai-utc-offset
+           julian-day-counts-tt-tai-offset)
+        86400.0)))
+
+(defun julian-date-today ()
+  "Return the Julian Date at midnight UTC today."
+  (julian-date-from-gregorian
+   (julian-day-counts--current-utc-date)))
+
 (defun julian-day-counts-date-string (&optional date)
-  "Return MJD, TJD, and Rata Die for Gregorian DATE.
+  "Return JD, MJD, TJD, and Rata Die for Gregorian DATE.
 
 DATE defaults to today's UTC civil date."
   (let ((date (or date (julian-day-counts--current-utc-date))))
-    (format "MJD %d  TJD %d  RD %d"
+    (format "JD %.1f  MJD %d  TJD %d  RD %d"
+            (julian-date-from-gregorian date)
             (modified-julian-date-from-gregorian date)
             (truncated-julian-date-from-gregorian date)
             (rata-die-from-gregorian date))))
 
 ;;;###autoload
 (defun julian-day-counts-show-date ()
-  "Display today's MJD, TJD, and Rata Die in UTC."
+  "Display today's JD, MJD, TJD, and Rata Die in UTC.
+
+Also copy the result to the kill ring."
   (interactive)
-  (message "%s" (julian-day-counts-date-string)))
+  (let ((result (julian-day-counts-date-string)))
+    (message "%s" result)
+    (kill-new result)))
 
 ;;;###autoload
 (defun julian-day-counts-show-date-at-point ()
