@@ -117,7 +117,9 @@ corresponding SVG curve."
               (today (sin angle))
               (tomorrow (biorhythm--value (1+ days) period))
               (pct (round (* 100 today)))
-	      (crossing-p (zerop pct))
+	      (crossing-p (or (zerop pct)
+			      (not (eq (>= today 0)
+				       (>= tomorrow 0)))))
               (direction
                (cond
                 (crossing-p "!")
