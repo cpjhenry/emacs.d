@@ -53,6 +53,8 @@
 (require 'holidays)
 (require 'lunar)
 (require 'parse-time)
+(require 'cl-lib)
+(require 'subr-x)
 
 (require 'cal-iso)
 (require 'cal-julian)
@@ -75,9 +77,7 @@
 (require 'roman-clock)
 (require 'tibdate)
 (require 'ind-lunar)
-
-(require 'cl-lib)
-(require 'subr-x)
+(require 'naval-watch)
 
 (defconst ind--line-width 38
   "Width of the aligned `ind' display lines.")

@@ -2005,7 +2005,9 @@ Report the number of fractions replaced."
   :ensure nil
   :commands (ind
              ind-extended
-             ind-diagnostics)
+             ind-diagnostics
+	     naval-watch)
+  :bind ("C-c d n" . naval-watch)
   :custom
   (ind-show-lodge-dates t)
   :config

@@ -18,10 +18,10 @@
  (handler . Info-bookmark-jump))
 ("org-capture-last-stored"
  (filename . "~/Documents/org/notes.org")
- (front-context-string . "** [[https://www")
- (rear-context-string . " Self-Defense]]\n")
- (position . 40568)
- (last-modified 27379 59568 906459 0))
+ (front-context-string . "** [[https://man")
+ (rear-context-string . "ion & Meaning]]\n")
+ (position . 40664)
+ (last-modified 27382 36892 821453 0))
 ("2023-05-10 - Six years of gopher"
  (position . 684)
  (location . "gemini://zaibatsu.circumlunar.space/users/solderpunk/gemlog/six-years-of-gopher.gmi")

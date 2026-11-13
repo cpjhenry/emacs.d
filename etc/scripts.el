@@ -3,12 +3,11 @@
 
 ;;; Code:
 (require 'diary-lib)
+(require 'seq)
+(require 'subr-x)
 (declare-function turn-off-cursor "filesandbuffers")
 (declare-function markdown-preview "markdown-mode")
 (declare-function toggle-fill-column-center "filesandbuffers")
-
-(require 'seq)
-(require 'subr-x)
 
 ;; (defun wx-alert (&rest _ignore)
 ;;   "Weather forecast from Environment Canada."
