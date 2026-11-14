@@ -118,6 +118,56 @@ current month if no calendar month is displayed."
         (view-mode 1)))
     (pop-to-buffer buf)))
 
+(defun list-friday-the-13ths (&optional y1 y2)
+  "Return Friday the 13th dates from Y1 through Y2 as ISO strings.
+
+Y1 defaults to the current local year and Y2 defaults to Y1.
+Interactively, prompt for both years and display the dates in
+a read-only buffer."
+  (interactive
+   (let* ((start-year
+           (calendar-read-sexp
+            "Starting year (>0)"
+            (lambda (year) (and (integerp year) (> year 0)))
+            (calendar-extract-year (calendar-current-date))))
+          (end-year
+           (calendar-read-sexp
+            "Ending year (inclusive, >=%s)"
+            (lambda (year) (and (integerp year) (>= year start-year)))
+            start-year
+            start-year)))
+     (list start-year end-year)))
+  (let* ((start-year (or y1 (calendar-extract-year (calendar-current-date))))
+         (end-year (or y2 start-year))
+         dates)
+    (unless (and (integerp start-year) (> start-year 0)
+                 (integerp end-year) (>= end-year start-year))
+      (user-error "Enter positive integer years in ascending order"))
+    (dotimes (offset (1+ (- end-year start-year)))
+      (let ((year (+ start-year offset)))
+        (dotimes (index 12)
+          (let ((month (1+ index)))
+            (when (= (calendar-day-of-week (list month 13 year)) 5)
+              (push (format "%04d-%02d-13" year month) dates))))))
+    (setq dates (nreverse dates))
+    (when (called-interactively-p 'interactive)
+      (let ((buffer (get-buffer-create "*Friday the 13ths*"))
+            (label (if (= start-year end-year)
+                       (format "%d" start-year)
+                     (format "%d–%d" start-year end-year))))
+        (with-current-buffer buffer
+          (special-mode)
+          (let ((inhibit-read-only t))
+            (erase-buffer)
+            (dolist (date dates)
+              (let ((month (string-to-number (substring date -5 -3))))
+                (insert date ": " (calendar-month-name month) "\n"))))
+          (goto-char (point-min))
+          (calendar-set-mode-line
+           (format "Fridays the 13th in %s" label)))
+        (pop-to-buffer-same-window buffer)))
+    dates))
+
 
 ;;; cleanup routines
 

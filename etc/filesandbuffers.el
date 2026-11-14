@@ -68,24 +68,31 @@
 
 ;; scrolling
 (defun cpj/window-half-height ()
+  "Return half the usable height of the selected window, at least one line."
   (max 1 (/ (1- (window-height (selected-window))) 2)))
 
-(defun cpj/scroll-up-half ()
-  "Scroll forward half a window."
-  (interactive)
-  (scroll-up-command (cpj/window-half-height)))
+(defun cpj/scroll-up-half (&optional arg)
+  "Scroll forward half a window, or ARG lines if supplied."
+  (interactive "P")
+  (scroll-up-command
+   (if arg
+       (prefix-numeric-value arg)
+     (cpj/window-half-height))))
 
-(defun cpj/scroll-down-half ()
-  "Scroll backward half a window."
-  (interactive)
-  (scroll-down-command (cpj/window-half-height)))
+(defun cpj/scroll-down-half (&optional arg)
+  "Scroll backward half a window, or ARG lines if supplied."
+  (interactive "P")
+  (scroll-down-command
+   (if arg
+       (prefix-numeric-value arg)
+     (cpj/window-half-height))))
 
 (declare-function View-scroll-line-backward "view")
 (defun my/View-scroll-line-backward ()
-  "Scroll line backward, jump to new top of screen."
+  "Scroll backward one line and move point to the window top."
   (interactive)
   (View-scroll-line-backward)
-  (move-to-window-line-top-bottom))
+  (move-to-window-line 0))
 
 
 ;; conveniences

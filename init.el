@@ -1530,6 +1530,7 @@
    ("M-]"        . my/org-end-of-subtree)
    ("C-c o ^"    . my/org-sort)
    ("C-c o c"    . org-check-misformatted-subtree)
+   ("C-c o f"    . cpj/org-normalize-fractions)
    ("C-c o r"    . org-mode-restart)
    ("C-c o s"    . speaking-time)
    ("C-c o t"    . org-toggle-link-display)

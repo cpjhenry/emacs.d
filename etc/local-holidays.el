@@ -208,14 +208,6 @@ Friday, observe it on Thursday; if Sunday, observe it on Monday."
                        (chinese-zodiac-for-year year)))))
      h))))
 
-(defun scottish-quarter-days ()
-  "Return Scottish Quarter Days."
-  (append
-   (holiday-fixed 2  2  "Candlemas")
-   (holiday-fixed 5 15  "Whitsun")
-   (holiday-fixed 8  1  "Lammas")
-   (holiday-fixed 11 11 "Martinmas")))
-
 (defun solar-equinoxes-only ()
   "Return only equinox entries from `solar-equinoxes-solstices'."
   ;; Keep equinoxes, drop solstices (preserve upstream time formatting)
@@ -467,12 +459,31 @@ Tuesday instead."
      ("Australia/Sydney" "Sydney")
      ("NZ" "Wellington"))))
 
+(defvar scottish-quarter-days
+  '((holiday-fixed  2  2 "Candlemas")
+    (holiday-fixed  5 15 "Whitsun")
+    (holiday-fixed  8  1 "Lammas")
+    (holiday-fixed 11 11 "Martinmas"))
+  "Holiday forms for the Scottish quarter days.")
+
 (defvar holiday-scottish-observances
-  '((holiday-fixed 1 25  "Robert Burns Day")
-    (holiday-fixed 11 30 "St. Andrew's Day")
-    (holiday-fixed 12 31 "Hogmanay")
-    (scottish-quarter-days))
-  "Scottish cultural and traditional observances.")
+  (append
+   '((holiday-fixed  1 25 "Robert Burns Day")
+     (holiday-fixed 11 30 "St. Andrew's Day")
+     (holiday-fixed 12 31 "Hogmanay"))
+   scottish-quarter-days)
+  "Scottish cultural and traditional observances, including quarter days.")
+
+(defvar british-quarter-cross-days
+  '((holiday-fixed  2  2 "Candlemas")
+    (holiday-fixed  3 25 "Lady Day")
+    (holiday-fixed  5  1 "May Day")
+    (holiday-fixed  6 24 "Johnmas")
+    (holiday-fixed  8  1 "Lammas")
+    (holiday-fixed  9 29 "Michaelmas")
+    (holiday-fixed 11  1 "All Saints'")
+    (holiday-fixed 12 25 "Nativity"))
+  "British quarter and cross-quarter days.")
 
 (defvar holiday-roman-observances
   '((holiday-fixed 1 13  "Ides of January")
@@ -609,6 +620,9 @@ Tuesday instead."
           (and holiday-scottish-observances
                (cons "Scottish" holiday-scottish-observances))
 
+	  (and british-quarter-cross-days
+	       (cons "Quarter" british-quarter-cross-days))
+
           (and holiday-roman-observances
                (cons "Roman" holiday-roman-observances))
 
@@ -643,3 +657,4 @@ Tuesday instead."
 ; LocalWords:  bahai Deepavali Kartik Amavasya panchang दीपावली Iyyar
 ; LocalWords:  Jayanti Tamuz Tishrei Cheshvan Sh'vat amavasya Kartika
 ; LocalWords:  HaShanah Shemini Atzeret Simchat Hanyi Bahá’Í 寒衣
+; LocalWords:  Johnmas
