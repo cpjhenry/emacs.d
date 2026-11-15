@@ -77,7 +77,6 @@
 (require 'roman-clock)
 (require 'tibdate)
 (require 'ind-lunar)
-(require 'naval-watch)
 
 (defconst ind--line-width 38
   "Width of the aligned `ind' display lines.")

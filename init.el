@@ -535,9 +535,11 @@
     (advice-add 'kf-display-something-maybe-big
                 :around #'my/kf-display-with-form-feed-st)))
 
-;; Editing conveniences
+;; help screens
+(require 'kf-library)
+(load "cpj-help-functions" nil 'nomessage)
 
-;; Comment continuation.
+;; Comment continuation
 (keymap-set emacs-lisp-mode-map "S-<return>" #'default-indent-new-line)
 
 ;; Which-key
@@ -1895,16 +1897,10 @@ Report the number of fractions replaced."
 ;;; org-agenda
 
 ;; Calendar data from macOS Calendar is projected into
-;; calendar-data.org', which is read by `org-agenda’ as an ordinary
+;; calendar-data.org, which is read by `org-agenda' as an ordinary
 ;; Org agenda source.
 ;;
-;; macOS calendar access is granted to a specific Emacs application
-;; bundle.  After installing, replacing, or moving Emacs.app, run:
-;;
-;;     patch-emacs
-;;
-;; This performs the required post-install patches, including restoring
-;; Mac Calendar access used by calendar-data' through maccalfw’.
+;; Calendar integration is provided by `maccalfw'.
 (message "→ Configuring calendar dashboards.")
 
 (defvar cpj/org-agenda-file
@@ -1991,7 +1987,6 @@ Report the number of fractions replaced."
 
 (use-package biorhythm ; usr/
   :ensure nil
-  :demand t
   :commands (biorhythm
              biorhythm-string
              days-on-earth))
@@ -2006,14 +2001,17 @@ Report the number of fractions replaced."
   :ensure nil
   :commands (ind
              ind-extended
-             ind-diagnostics
-	     naval-watch)
-  :bind ("C-c d n" . naval-watch)
+             ind-diagnostics)
   :custom
   (ind-show-lodge-dates t)
   :config
   (dolist (lodge user-lodges)
     (add-to-list 'ind-lodge-dates lodge t)))
+
+(use-package naval-watch ; usr/
+  :ensure nil
+  :commands (naval-watch)
+  :bind ("C-c d n" . naval-watch))
 
 (use-package daily-info ; etc/
   :ensure nil
@@ -2321,9 +2319,6 @@ Report the number of fractions replaced."
 (message "→ Configuring sundry.")
 (load "misc-functions" nil 'nomessage)
 (load "scripts" 'noerror 'nomessage)
-
-(require 'kf-library)
-(load "cpj-help-functions" nil 'nomessage)
 
 (load "pdfexport" nil 'nomessage)
 (with-eval-after-load 'latex-mode
