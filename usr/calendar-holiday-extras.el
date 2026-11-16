@@ -299,13 +299,13 @@ Tuesday instead."
   "Scottish cultural and traditional observances, including quarter days.")
 
 (defvar british-quarter-cross-days
-  '((holiday-fixed  2  2 "Candlemas")
+  '((holiday-fixed  2  2 "Candlemas (+¼)")
     (holiday-fixed  3 25 "Lady Day (¼)")
-    (holiday-fixed  5  1 "May Day")
+    (holiday-fixed  5  1 "May Day (+¼)")
     (holiday-fixed  6 24 "Johnmas (¼)")
-    (holiday-fixed  8  1 "Lammas")
+    (holiday-fixed  8  1 "Lammas (+¼)")
     (holiday-fixed  9 29 "Michaelmas (¼)")
-    (holiday-fixed 11  1 "All Saints'")
+    (holiday-fixed 11  1 "All Saints' (+¼)")
     (holiday-fixed 12 25 "Nativity (¼)"))
   "British quarter and cross-quarter days.")
 

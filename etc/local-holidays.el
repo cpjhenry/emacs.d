@@ -251,25 +251,24 @@ and related calendar references."
                            (solar-time-string
                             (/ calendar-daylight-savings-ends-time (float 60))
                             calendar-daylight-time-zone-name)))
+
      (holiday-mercury-retrograde))
    "Seasonal and astronomical observances.")
 
 (defvar holiday-saints-days
   '((holiday-fixed 1 28  "St. Thomas Aquinas (Academics)")
-    (holiday-fixed 2 5   "St. Agatha (Martyr)")
+    (holiday-fixed 2 5   "St. Agatha")
     (holiday-fixed 3 1   "St. David (Wales)")
     (holiday-fixed 3 16  "St. Urho (Finland)")
     (holiday-fixed 3 17  "St. Patrick (Ireland)")
-    (holiday-fixed 3 19  "St. Joseph (Fathers)")
     (holiday-fixed 4 17  "St. Kateri Tekakwitha (Indigenous Peoples)")
     (holiday-fixed 4 23  "St. George (Soldiers)")
     (holiday-fixed 5 4   "St. Florian (Firefighters)")
-    (holiday-fixed 5 30  "St. Joan of Arc (Martyr)")
+    (holiday-fixed 5 30  "St. Joan of Arc")
     (holiday-fixed 6 13  "St. Anthony (Lost Souls & Items)")
     ;(holiday-fixed 6 24 "St. John the Baptist") ; see Saint-Jean-Baptiste
-    (holiday-fixed 6 29  "St. Peter (Apostle)")
     (holiday-fixed 7 11  "St. Benedict (Monasticism)")
-    (holiday-fixed 7 17  "St. Nicholas Passion-Bearer (Martyr)")
+    (holiday-fixed 7 17  "St. Nicholas Passion-Bearer")
     (holiday-fixed 7 25  "St. Christopher (Travellers)")
     (holiday-fixed 8 10  "St. Lawrence (Archives)")
     (holiday-fixed 8 28  "St. Augustine (Theologians)")
@@ -277,13 +276,13 @@ and related calendar references."
     (holiday-fixed 9 29  "St. Michael (Police)")
     (holiday-fixed 9 30  "St. Jerome (Libraries)")
     (holiday-fixed 10 16 "St. Marguerite d'Youville (Poverty)")
-    (holiday-fixed 10 22 "St. John Paul II (Pope)")
-    (holiday-fixed 10 25 "St. Minias (Martyr)")
-    (holiday-fixed 11 30 "St. Andrew (Scotland)")
-    (holiday-fixed 12 6  "St. Nicholas (Children)")
+    (holiday-fixed 10 22 "St. John Paul II")
+    (holiday-fixed 10 25 "St. Minias")
+    ;(holiday-fixed 11 30 "St. Andrew (Scotland)") ; see Scottish Observances
+    (holiday-fixed 12 6  "St. Nicholas")
     (holiday-fixed 12 13 "St. Lucy (Light)")
-    (holiday-fixed 12 26 "St. Stephen (Proto-martyr)")
-    (holiday-fixed 12 31 "St. Sylvester (Pope)"))
+    (holiday-fixed 12 26 "St. Stephen")
+    (holiday-fixed 12 31 "St. Sylvester"))
   "Saints' days and patronal commemorations.")
 
 (setopt calendar-holidays
