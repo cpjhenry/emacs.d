@@ -284,10 +284,10 @@ Tuesday instead."
 ;;; Holiday lists and observances
 
 (defvar scottish-quarter-days
-  '((holiday-fixed  2  2 "Candlemas")
-    (holiday-fixed  5 15 "Whitsun")
-    (holiday-fixed  8  1 "Lammas")
-    (holiday-fixed 11 11 "Martinmas"))
+  '((holiday-fixed  2  2 "Candlemas (¼)")
+    (holiday-fixed  5 15 "Whitsun (¼)")
+    (holiday-fixed  8  1 "Lammas (¼)")
+    (holiday-fixed 11 11 "Martinmas (¼)"))
   "Holiday forms for the Scottish quarter days.")
 
 (defvar holiday-scottish-observances
@@ -300,13 +300,13 @@ Tuesday instead."
 
 (defvar british-quarter-cross-days
   '((holiday-fixed  2  2 "Candlemas")
-    (holiday-fixed  3 25 "Lady Day")
+    (holiday-fixed  3 25 "Lady Day (¼)")
     (holiday-fixed  5  1 "May Day")
-    (holiday-fixed  6 24 "Johnmas")
+    (holiday-fixed  6 24 "Johnmas (¼)")
     (holiday-fixed  8  1 "Lammas")
-    (holiday-fixed  9 29 "Michaelmas")
+    (holiday-fixed  9 29 "Michaelmas (¼)")
     (holiday-fixed 11  1 "All Saints'")
-    (holiday-fixed 12 25 "Nativity"))
+    (holiday-fixed 12 25 "Nativity (¼)"))
   "British quarter and cross-quarter days.")
 
 (defvar holiday-roman-observances

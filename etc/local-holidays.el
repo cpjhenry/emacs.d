@@ -94,41 +94,41 @@ and related calendar references."
    world-clock-time-format "%a %e %b %R %Z"
 
    holiday-local-holidays ;; (Canadian) National / Provincial Holidays and Commemorations
-   '((holiday-fixed 1 1    "New Year's Day")
-     (holiday-float 2 1 3  "Family Day")
-     (holiday-float 5 1 -1 "Victoria Day" 24)
-     (holiday-fixed 7 1    "Canada Day")
-     (holiday-float 8 1 1  "Civic Holiday")
-     (holiday-float 9 1 1  "Labour Day")
-     (holiday-fixed 9 30   "Truth and Reconciliation")
-     (holiday-float 10 1 2 "Thanksgiving")
-     (holiday-fixed 11 11  "Remembrance Day")
-     (holiday-fixed 12 26  "Boxing Day")
+   '((holiday-fixed 1 1     "New Year's Day")
+     (holiday-float 2 1 3   "Family Day")
+     (holiday-float 5 1 -1  "Victoria Day" 24)
+     (holiday-fixed 7 1     "Canada Day")
+     (holiday-float 8 1 1   "Civic Holiday")
+     (holiday-float 9 1 1   "Labour Day")
+     (holiday-fixed 9 30    "Truth and Reconciliation")
+     (holiday-float 10 1 2  "Thanksgiving")
+     (holiday-fixed 11 11   "Remembrance Day")
+     (holiday-fixed 12 26   "Boxing Day")
 
-     (holiday-fixed 1 21   "Lincoln Alexander Day")
-     (holiday-fixed 2 2    "Groundhog Day")
-     (holiday-fixed 2 14   "Valentine's Day")
-     (holiday-fixed 2 15   "Flag of Canada Day")
-     (holiday-fixed 3 8    "Women's Day")
-     (holiday-float 3 1 2  "Commonwealth Day")
-     (holiday-fixed 3 18   "Sheelagh's Day")
-     (holiday-fixed 4 1    "April Fools' Day")
-     (holiday-fixed 4 6    "Tartan Day")
-     (holiday-fixed 4 9    "Vimy Ridge Day")
-     (holiday-fixed 4 22   "Earth Day")
-     (holiday-float 5 0 1  "Bereaved Mother's Day")
-     (holiday-float 5 0 2  "Mother's Day")
-     (holiday-fixed 5 5    "Red Dress Day")
-     (holiday-float 6 0 3  "Father's Day")
-     (holiday-fixed 6 21   "Indigenous Peoples Day")
-     (holiday-fixed 6 24   "Saint-Jean-Baptiste")
-     (holiday-float 7 0 -1 "Garland Sunday")
-     (holiday-fixed 8 9    "Peacekeepers' Day")
-     (holiday-float 9 0 2  "Grandparents' Day")
-     (holiday-fixed 10 31  "Halloween")
-     (holiday-float 11 0 2 "Remembrance Sunday")
-     (holiday-fixed 12 6   "White Ribbon Day")
-     (holiday-fixed 12 11  "Statute of Westminster"))
+     (holiday-fixed 1 21    "Lincoln Alexander Day")
+     (holiday-fixed 2 2     "Groundhog Day")
+     (holiday-fixed 2 14    "Valentine's Day")
+     (holiday-fixed 2 15    "Flag of Canada Day")
+     (holiday-fixed 3 8     "Women's Day")
+     (holiday-float 3 1 2   "Commonwealth Day")
+     (holiday-fixed 3 18    "Sheelagh's Day")
+     (holiday-fixed 4 1     "April Fools' Day")
+     (holiday-fixed 4 6     "Tartan Day")
+     (holiday-fixed 4 9     "Vimy Ridge Day")
+     (holiday-fixed 4 22    "Earth Day")
+     (holiday-float 5 0 1   "Bereaved Mother's Day")
+     (holiday-float 5 0 2   "Mother's Day")
+     (holiday-fixed 5 5     "Red Dress Day")
+     (holiday-float 6 0 3   "Father's Day")
+     (holiday-fixed 6 21    "Indigenous Peoples Day")
+     (holiday-fixed 6 24    "Saint-Jean-Baptiste")
+     (holiday-float 7 0 -1  "Garland Sunday")
+     (holiday-fixed 8 9     "Peacekeepers' Day")
+     (holiday-float 9 0 2   "Grandparents' Day")
+     (holiday-fixed 10 31   "Halloween")
+     (holiday-float 11 0 -1 "Remembrance Sunday" 14)
+     (holiday-fixed 12 6    "White Ribbon Day")
+     (holiday-fixed 12 11   "Statute of Westminster"))
 
    holiday-general-holidays ;; US Holidays and Commemorations
    '(;; third Monday of January
@@ -162,17 +162,7 @@ and related calendar references."
      (holiday-julian 2 14 "Old St. Valentine's Day"))
 
    holiday-bahai-holidays
-  '((holiday-bahai-naw-ruz)
-    (if calendar-bahai-all-holidays-flag
-        (append
-	 (holiday-bahai-ridvan)
-	 (holiday-fixed  5 23 "Declaration of the Báb")
-	 (holiday-fixed  5 29 "Ascension of Bahá’u’lláh")
-	 (holiday-fixed  7  9 "Martyrdom of the Báb")
-	 (holiday-fixed 10 20 "Birth of the Báb")
-	 (holiday-fixed 11 12 "Birth of Bahá’u’lláh")
-         (holiday-fixed 11 26 "Day of the Covenant")
-         (holiday-fixed 11 28 "Ascension of `Abdu’l-Bahá"))))
+  '((holiday-bahai-naw-ruz))
 
    holiday-christian-holidays
    '((holiday-easter-etc)
@@ -276,7 +266,7 @@ and related calendar references."
     (holiday-fixed 5 4   "St. Florian (Firefighters)")
     (holiday-fixed 5 30  "St. Joan of Arc (Martyr)")
     (holiday-fixed 6 13  "St. Anthony (Lost Souls & Items)")
-    ;; (holiday-fixed 6 24 "St. John the Baptist") ; see Saint-Jean-Baptiste
+    ;(holiday-fixed 6 24 "St. John the Baptist") ; see Saint-Jean-Baptiste
     (holiday-fixed 6 29  "St. Peter (Apostle)")
     (holiday-fixed 7 11  "St. Benedict (Monasticism)")
     (holiday-fixed 7 17  "St. Nicholas Passion-Bearer (Martyr)")
@@ -291,7 +281,7 @@ and related calendar references."
     (holiday-fixed 10 25 "St. Minias (Martyr)")
     (holiday-fixed 11 30 "St. Andrew (Scotland)")
     (holiday-fixed 12 6  "St. Nicholas (Children)")
-    (holiday-fixed 12 13 "St. Lucy (Festival of Light)")
+    (holiday-fixed 12 13 "St. Lucy (Light)")
     (holiday-fixed 12 26 "St. Stephen (Proto-martyr)")
     (holiday-fixed 12 31 "St. Sylvester (Pope)"))
   "Saints' days and patronal commemorations.")
@@ -312,7 +302,8 @@ and related calendar references."
 		holiday-hindu-holidays
 		holiday-solar-holidays
                 holiday-seasonal-observances
-		holiday-zodiacal-markers))
+		holiday-zodiacal-markers
+		holiday-saints-days))
 
 (defun cpj/holiday-available-holiday-lists (holiday-lists)
   "Add custom holiday categories to HOLIDAY-LISTS."
