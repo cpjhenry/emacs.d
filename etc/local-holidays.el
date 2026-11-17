@@ -236,11 +236,14 @@ and related calendar references."
 
 (defvar holiday-seasonal-observances
    '((solar-equinoxes-only)
+
      ;; first Saturday of June following the Summer Solstice
      (holiday-float 6 6 1 "Midsummer" (floor (nth 1 (solar-equinoxes/solstices 1 displayed-year))))
+
      ;; Winter Solstice
      (holiday-fixed 12 (floor (nth 1 (solar-equinoxes/solstices 3 displayed-year))) "Midwinter")
 
+     ;; Daylight Saving Time
      (holiday-sexp calendar-daylight-savings-starts
                    (format "Daylight Saving Time begins %s"
                            (solar-time-string
@@ -261,11 +264,11 @@ and related calendar references."
     (holiday-fixed 3 1   "St. David (Wales)")
     (holiday-fixed 3 16  "St. Urho (Finland)")
     (holiday-fixed 3 17  "St. Patrick (Ireland)")
-    (holiday-fixed 4 17  "St. Kateri Tekakwitha (Indigenous Peoples)")
+    (holiday-fixed 4 17  "St. Kateri Tekakwitha (Indigenous)")
     (holiday-fixed 4 23  "St. George (Soldiers)")
     (holiday-fixed 5 4   "St. Florian (Firefighters)")
     (holiday-fixed 5 30  "St. Joan of Arc")
-    (holiday-fixed 6 13  "St. Anthony (Lost Souls & Items)")
+    (holiday-fixed 6 13  "St. Anthony (Lost Souls)")
     ;(holiday-fixed 6 24 "St. John the Baptist") ; see Saint-Jean-Baptiste
     (holiday-fixed 7 11  "St. Benedict (Monasticism)")
     (holiday-fixed 7 17  "St. Nicholas Passion-Bearer")
