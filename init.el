@@ -310,11 +310,8 @@
               ("{" . outline-backward-same-level)
               ("}" . outline-forward-same-level)))
 
-(use-package eshell
-  :ensure nil
-  :custom
-  (eshell-directory-name
-   (expand-file-name "var/eshell/" user-emacs-directory)))
+(setq eshell-directory-name
+      (expand-file-name "var/eshell/" user-emacs-directory))
 
 (use-package grep
   :ensure nil

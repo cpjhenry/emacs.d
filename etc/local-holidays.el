@@ -264,7 +264,7 @@ and related calendar references."
     (holiday-fixed 3 1   "St. David (Wales)")
     (holiday-fixed 3 16  "St. Urho (Finland)")
     (holiday-fixed 3 17  "St. Patrick (Ireland)")
-    (holiday-fixed 4 17  "St. Kateri Tekakwitha (Indigenous)")
+    ;(holiday-fixed 4 17  "St. Kateri Tekakwitha (Indigenous)")
     (holiday-fixed 4 23  "St. George (Soldiers)")
     (holiday-fixed 5 4   "St. Florian (Firefighters)")
     (holiday-fixed 5 30  "St. Joan of Arc")
@@ -278,7 +278,7 @@ and related calendar references."
     (holiday-fixed 9 18  "St. Joseph of Cupertino (Astronauts)")
     (holiday-fixed 9 29  "St. Michael (Police)")
     (holiday-fixed 9 30  "St. Jerome (Libraries)")
-    (holiday-fixed 10 16 "St. Marguerite d'Youville (Poverty)")
+    ;(holiday-fixed 10 16 "St. Marguerite d'Youville (Poverty)")
     (holiday-fixed 10 22 "St. John Paul II")
     (holiday-fixed 10 25 "St. Minias")
     ;(holiday-fixed 11 30 "St. Andrew (Scotland)") ; see Scottish Observances
