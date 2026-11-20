@@ -18,10 +18,10 @@
  (handler . Info-bookmark-jump))
 ("org-capture-last-stored"
  (filename . "~/Documents/org/notes.org")
- (front-context-string . "** [[elfeed:plan")
- (rear-context-string . "e Boxer Brief]]\n")
- (position . 40724)
- (last-modified 27389 48945 651896 0))
+ (front-context-string . "** [[elfeed:rss.")
+ (rear-context-string . "fu: mu 1.1.14]]\n")
+ (position . 40830)
+ (last-modified 27392 17454 79025 0))
 ("2023-05-10 - Six years of gopher"
  (position . 684)
  (location . "gemini://zaibatsu.circumlunar.space/users/solderpunk/gemlog/six-years-of-gopher.gmi")
